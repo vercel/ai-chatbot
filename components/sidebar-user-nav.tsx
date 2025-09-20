@@ -2,10 +2,10 @@
 
 import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type { User } from 'next-auth';
 import { signOut, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,10 +18,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useRouter } from 'next/navigation';
-import { toast } from './toast';
-import { LoaderIcon } from './icons';
 import { guestRegex } from '@/lib/constants';
+import { LoaderIcon } from './icons';
+import { toast } from './toast';
 
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();

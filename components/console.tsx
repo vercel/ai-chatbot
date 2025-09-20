@@ -1,6 +1,3 @@
-import { TerminalWindowIcon, CrossSmallIcon } from './icons';
-import { Loader } from './elements/loader';
-import { Button } from './ui/button';
 import {
   type Dispatch,
   type SetStateAction,
@@ -9,8 +6,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { cn } from '@/lib/utils';
 import { useArtifactSelector } from '@/hooks/use-artifact';
+import { cn } from '@/lib/utils';
+import { Loader } from './elements/loader';
+import { CrossSmallIcon, TerminalWindowIcon } from './icons';
+import { Button } from './ui/button';
 
 export interface ConsoleOutputContent {
   type: 'text' | 'image';

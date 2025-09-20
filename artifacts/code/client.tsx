@@ -1,5 +1,11 @@
-import { Artifact } from '@/components/create-artifact';
+import { toast } from 'sonner';
 import { CodeEditor } from '@/components/code-editor';
+import {
+  Console,
+  type ConsoleOutput,
+  type ConsoleOutputContent,
+} from '@/components/console';
+import { Artifact } from '@/components/create-artifact';
 import {
   CopyIcon,
   LogsIcon,
@@ -8,13 +14,7 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
-import { toast } from 'sonner';
 import { generateUUID } from '@/lib/utils';
-import {
-  Console,
-  type ConsoleOutput,
-  type ConsoleOutputContent,
-} from '@/components/console';
 
 const OUTPUT_HANDLERS = {
   matplotlib: `

@@ -14,26 +14,25 @@ import {
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-
-import {
-  user,
-  chat,
-  type User,
-  document,
-  type Suggestion,
-  suggestion,
-  message,
-  vote,
-  type DBMessage,
-  type Chat,
-  stream,
-} from './schema';
 import type { ArtifactKind } from '@/components/artifact';
-import { generateUUID } from '../utils';
-import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
 import type { AppUsage } from '../usage';
+import { generateUUID } from '../utils';
+import {
+  type Chat,
+  chat,
+  type DBMessage,
+  document,
+  message,
+  type Suggestion,
+  stream,
+  suggestion,
+  type User,
+  user,
+  vote,
+} from './schema';
+import { generateHashedPassword } from './utils';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth

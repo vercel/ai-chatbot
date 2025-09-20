@@ -1,9 +1,9 @@
+import { gateway } from '@ai-sdk/gateway';
 import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { gateway } from '@ai-sdk/gateway';
 import { isTestEnvironment } from '../constants';
 
 export const myProvider = isTestEnvironment

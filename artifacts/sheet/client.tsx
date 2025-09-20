@@ -1,3 +1,5 @@
+import { parse, unparse } from 'papaparse';
+import { toast } from 'sonner';
 import { Artifact } from '@/components/create-artifact';
 import {
   CopyIcon,
@@ -7,8 +9,6 @@ import {
   UndoIcon,
 } from '@/components/icons';
 import { SpreadsheetEditor } from '@/components/sheet-editor';
-import { parse, unparse } from 'papaparse';
-import { toast } from 'sonner';
 
 type Metadata = any;
 

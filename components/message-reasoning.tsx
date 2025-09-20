@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Reasoning,
-  ReasoningTrigger,
   ReasoningContent,
+  ReasoningTrigger,
 } from './elements/reasoning';
 
 interface MessageReasoningProps {

@@ -1,7 +1,7 @@
 'use client';
 
+import type { Session } from 'next-auth';
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
-
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,12 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { chatModels } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
-
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import type { Session } from 'next-auth';
 
 export function ModelSelector({
   session,

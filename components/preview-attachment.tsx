@@ -1,8 +1,8 @@
+import Image from 'next/image';
 import type { Attachment } from '@/lib/types';
 import { Loader } from './elements/loader';
 import { CrossSmallIcon } from './icons';
 import { Button } from './ui/button';
-import Image from 'next/image';
 
 export const PreviewAttachment = ({
   attachment,

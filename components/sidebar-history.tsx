@@ -1,11 +1,12 @@
 'use client';
 
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
+import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import type { User } from 'next-auth';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import useSWRInfinite from 'swr/infinite';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +25,8 @@ import {
 } from '@/components/ui/sidebar';
 import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
-import { ChatItem } from './sidebar-history-item';
-import useSWRInfinite from 'swr/infinite';
 import { LoaderIcon } from './icons';
+import { ChatItem } from './sidebar-history-item';
 
 type GroupedChats = {
   today: Chat[];

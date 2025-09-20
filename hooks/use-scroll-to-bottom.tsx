@@ -1,5 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
-import { useRef, useEffect, useCallback, useState } from 'react';
 
 type ScrollFlag = ScrollBehavior | false;
 

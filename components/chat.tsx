@@ -1,28 +1,13 @@
 'use client';
 
-import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState, useRef } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
-import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
-import { Artifact } from './artifact';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
-import { unstable_serialize } from 'swr/infinite';
-import { getChatHistoryPaginationKey } from './sidebar-history';
-import { toast } from './toast';
-import type { Session } from 'next-auth';
+import { DefaultChatTransport } from 'ai';
 import { useSearchParams } from 'next/navigation';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
-import { useAutoResume } from '@/hooks/use-auto-resume';
-import { ChatSDKError } from '@/lib/errors';
-import type { Attachment, ChatMessage } from '@/lib/types';
-import type { AppUsage } from '@/lib/usage';
-import { useDataStream } from './data-stream-provider';
+import type { Session } from 'next-auth';
+import { useEffect, useRef, useState } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { unstable_serialize } from 'swr/infinite';
+import { ChatHeader } from '@/components/chat-header';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +18,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useAutoResume } from '@/hooks/use-auto-resume';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import type { Vote } from '@/lib/db/schema';
+import { ChatSDKError } from '@/lib/errors';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import type { AppUsage } from '@/lib/usage';
+import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { Artifact } from './artifact';
+import { useDataStream } from './data-stream-provider';
+import { Messages } from './messages';
+import { MultimodalInput } from './multimodal-input';
+import { getChatHistoryPaginationKey } from './sidebar-history';
+import { toast } from './toast';
+import type { VisibilityType } from './visibility-selector';
 
 export function Chat({
   id,

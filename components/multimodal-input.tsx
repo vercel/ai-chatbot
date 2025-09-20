@@ -1,51 +1,49 @@
 'use client';
 
+import type { UseChatHelpers } from '@ai-sdk/react';
+import * as SelectPrimitive from '@radix-ui/react-select';
 import type { UIMessage } from 'ai';
+import equal from 'fast-deep-equal';
 import {
-  useRef,
-  useEffect,
-  useState,
-  useCallback,
-  type Dispatch,
-  type SetStateAction,
   type ChangeEvent,
+  type Dispatch,
   memo,
+  type SetStateAction,startTransition, 
+  useCallback,
+  useEffect,
   useMemo,
+  useRef,
+  useState
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
-
-import {
-  ArrowUpIcon,
-  PaperclipIcon,
-  CpuIcon,
-  StopIcon,
-  ChevronDownIcon,
-} from './icons';
-import { PreviewAttachment } from './preview-attachment';
-import { Button } from './ui/button';
-import { SuggestedActions } from './suggested-actions';
+import { saveChatModelAsCookie } from '@/app/(chat)/actions';
+import { SelectItem } from '@/components/ui/select';
+import { chatModels } from '@/lib/ai/models';
+import { myProvider } from '@/lib/ai/providers';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import type { AppUsage } from '@/lib/usage';
+import { Context } from './elements/context';
 import {
   PromptInput,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputSubmit,
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
-  PromptInputSubmit,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
 } from './elements/prompt-input';
-import { SelectItem } from '@/components/ui/select';
-import * as SelectPrimitive from '@radix-ui/react-select';
-import equal from 'fast-deep-equal';
-import type { UseChatHelpers } from '@ai-sdk/react';
+import {
+  ArrowUpIcon,
+  ChevronDownIcon,
+  CpuIcon,
+  PaperclipIcon,
+  StopIcon,
+} from './icons';
+import { PreviewAttachment } from './preview-attachment';
+import { SuggestedActions } from './suggested-actions';
+import { Button } from './ui/button';
 import type { VisibilityType } from './visibility-selector';
-import type { Attachment, ChatMessage } from '@/lib/types';
-import type { AppUsage } from '@/lib/usage';
-import { chatModels } from '@/lib/ai/models';
-import { saveChatModelAsCookie } from '@/app/(chat)/actions';
-import { startTransition } from 'react';
-import { Context } from './elements/context';
-import { myProvider } from '@/lib/ai/providers';
 
 function PureMultimodalInput({
   chatId,

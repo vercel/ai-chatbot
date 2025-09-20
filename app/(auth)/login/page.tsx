@@ -2,14 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useActionState, useEffect, useState } from 'react';
-import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-
-import { login, type LoginActionState } from '../actions';
-import { useSession } from 'next-auth/react';
+import { toast } from '@/components/toast';
+import { type LoginActionState, login } from '../actions';
 
 export default function Page() {
   const router = useRouter();

@@ -1,15 +1,15 @@
 'use client';
 
+import type { ComponentProps } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import type { ComponentProps } from 'react';
-import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
 import type { AppUsage } from '@/lib/usage';
+import { cn } from '@/lib/utils';
 
 export type ContextProps = ComponentProps<'button'> & {
   /** Optional full usage payload to enable breakdown view */

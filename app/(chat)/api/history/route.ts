@@ -1,5 +1,5 @@
-import { auth } from '@/app/(auth)/auth';
 import type { NextRequest } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
 import { getChatsByUserId } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 

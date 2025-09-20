@@ -1,14 +1,12 @@
+import equal from 'fast-deep-equal';
+import { memo } from 'react';
+import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
-
 import type { Vote } from '@/lib/db/schema';
-
-import { CopyIcon, ThumbDownIcon, ThumbUpIcon, PencilEditIcon } from './icons';
-import { Actions, Action } from './elements/actions';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
-import { toast } from 'sonner';
 import type { ChatMessage } from '@/lib/types';
+import { Action, Actions } from './elements/actions';
+import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
 
 export function PureMessageActions({
   chatId,

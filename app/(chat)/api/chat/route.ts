@@ -1,3 +1,4 @@
+import { geolocation } from '@vercel/functions';
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -6,8 +7,26 @@ import {
   stepCountIs,
   streamText,
 } from 'ai';
+import { unstable_cache as cache } from 'next/cache';
+import { after } from 'next/server';
+import {
+  createResumableStreamContext,
+  type ResumableStreamContext,
+} from 'resumable-stream';
+import type { ModelCatalog } from 'tokenlens/core';
+import { fetchModels } from 'tokenlens/fetch';
+import { getUsage } from 'tokenlens/helpers';
 import { auth, type UserType } from '@/app/(auth)/auth';
+import type { VisibilityType } from '@/components/visibility-selector';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import type { ChatModel } from '@/lib/ai/models';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
+import { myProvider } from '@/lib/ai/providers';
+import { createDocument } from '@/lib/ai/tools/create-document';
+import { getWeather } from '@/lib/ai/tools/get-weather';
+import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
+import { updateDocument } from '@/lib/ai/tools/update-document';
+import { isProductionEnvironment } from '@/lib/constants';
 import {
   createStreamId,
   deleteChatById,
@@ -15,34 +34,14 @@ import {
   getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
-  saveMessages,
+  saveMessages,updateChatLastContextById 
 } from '@/lib/db/queries';
-import { updateChatLastContextById } from '@/lib/db/queries';
-import { convertToUIMessages, generateUUID } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProductionEnvironment } from '@/lib/constants';
-import { myProvider } from '@/lib/ai/providers';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import { postRequestBodySchema, type PostRequestBody } from './schema';
-import { geolocation } from '@vercel/functions';
-import {
-  createResumableStreamContext,
-  type ResumableStreamContext,
-} from 'resumable-stream';
-import { after } from 'next/server';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
-import type { ChatModel } from '@/lib/ai/models';
-import type { VisibilityType } from '@/components/visibility-selector';
-import { unstable_cache as cache } from 'next/cache';
-import { fetchModels } from 'tokenlens/fetch';
-import { getUsage } from 'tokenlens/helpers';
-import type { ModelCatalog } from 'tokenlens/core';
 import type { AppUsage } from '@/lib/usage';
+import { convertToUIMessages, generateUUID } from '@/lib/utils';
+import { generateTitleFromUserMessage } from '../../actions';
+import { type PostRequestBody, postRequestBodySchema } from './schema';
 
 export const maxDuration = 60;
 

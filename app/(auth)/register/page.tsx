@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useActionState, useEffect, useState } from 'react';
-
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-
-import { register, type RegisterActionState } from '../actions';
 import { toast } from '@/components/toast';
-import { useSession } from 'next-auth/react';
+import { type RegisterActionState, register } from '../actions';
 
 export default function Page() {
   const router = useRouter();

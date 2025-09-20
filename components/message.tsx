@@ -1,29 +1,29 @@
 'use client';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import equal from 'fast-deep-equal';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
+import type { ChatMessage } from '@/lib/types';
+import { cn, sanitizeText } from '@/lib/utils';
+import { useDataStream } from './data-stream-provider';
 import { DocumentToolResult } from './document';
-import { SparklesIcon } from './icons';
-import { Response } from './elements/response';
+import { DocumentPreview } from './document-preview';
 import { MessageContent } from './elements/message';
+import { Response } from './elements/response';
 import {
   Tool,
-  ToolHeader,
   ToolContent,
+  ToolHeader,
   ToolInput,
   ToolOutput,
 } from './elements/tool';
+import { SparklesIcon } from './icons';
 import { MessageActions } from './message-actions';
+import { MessageEditor } from './message-editor';
+import { MessageReasoning } from './message-reasoning';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
-import equal from 'fast-deep-equal';
-import { cn, sanitizeText } from '@/lib/utils';
-import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
-import { MessageReasoning } from './message-reasoning';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatMessage } from '@/lib/types';
-import { useDataStream } from './data-stream-provider';
 
 const PurePreviewMessage = ({
   chatId,

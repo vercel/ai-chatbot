@@ -1,12 +1,12 @@
-import { PreviewMessage, ThinkingMessage } from './message';
-import type { Vote } from '@/lib/db/schema';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
-import type { UIArtifact } from './artifact';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import equal from 'fast-deep-equal';
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 import { useMessages } from '@/hooks/use-messages';
+import type { Vote } from '@/lib/db/schema';
 import type { ChatMessage } from '@/lib/types';
+import type { UIArtifact } from './artifact';
+import { PreviewMessage, ThinkingMessage } from './message';
 
 interface ArtifactMessagesProps {
   chatId: string;

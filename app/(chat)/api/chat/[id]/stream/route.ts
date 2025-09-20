@@ -1,3 +1,5 @@
+import { createUIMessageStream, JsonToSseTransformStream } from 'ai';
+import { differenceInSeconds } from 'date-fns';
 import { auth } from '@/app/(auth)/auth';
 import {
   getChatById,
@@ -7,9 +9,7 @@ import {
 import type { Chat } from '@/lib/db/schema';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
-import { createUIMessageStream, JsonToSseTransformStream } from 'ai';
 import { getStreamContext } from '../../route';
-import { differenceInSeconds } from 'date-fns';
 
 export async function GET(
   _: Request,
