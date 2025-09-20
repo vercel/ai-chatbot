@@ -136,7 +136,7 @@ export class ChatPage {
     const messageElements = await this.page
       .getByTestId('message-assistant')
       .all();
-    const lastMessageElement = messageElements[messageElements.length - 1];
+    const lastMessageElement = messageElements.at(-1);
 
     const content = await lastMessageElement
       .getByTestId('message-content')

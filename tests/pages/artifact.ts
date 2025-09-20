@@ -37,7 +37,7 @@ export class ArtifactPage {
     const messageElements = await this.artifact
       .getByTestId('message-assistant')
       .all();
-    const lastMessageElement = messageElements[messageElements.length - 1];
+    const lastMessageElement = messageElements.at(-1);
 
     const content = await lastMessageElement
       .getByTestId('message-content')
@@ -72,7 +72,7 @@ export class ArtifactPage {
     const messageElements = await this.artifact
       .getByTestId('message-user')
       .all();
-    const lastMessageElement = messageElements[messageElements.length - 1];
+    const lastMessageElement = messageElements.at(-1);
 
     const content = await lastMessageElement.innerText();
 

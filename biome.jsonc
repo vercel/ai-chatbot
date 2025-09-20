@@ -24,7 +24,6 @@
         "useConsistentObjectDefinitions": "off",
         "useCollapsedElseIf": "off",
         "noNestedTernary": "off",
-        "useAtIndex": "off",
         "noParameterProperties": "off",
 
         "useReadonlyClassProperties": "off",
