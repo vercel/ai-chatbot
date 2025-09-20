@@ -43,6 +43,10 @@ export class ArtifactPage {
       .all();
     const lastMessageElement = messageElements.at(-1);
 
+    if (!lastMessageElement) {
+      return null;
+    }
+
     const content = await lastMessageElement
       .getByTestId("message-content")
       .innerText()
@@ -77,6 +81,10 @@ export class ArtifactPage {
       .getByTestId("message-user")
       .all();
     const lastMessageElement = messageElements.at(-1);
+
+    if (!lastMessageElement) {
+      return null;
+    }
 
     const content = await lastMessageElement.innerText();
 

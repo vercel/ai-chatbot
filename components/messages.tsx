@@ -92,7 +92,7 @@ function PureMessages({
 
           {status === "submitted" &&
             messages.length > 0 &&
-            messages.at(-1).role === "user" &&
+            messages.at(-1)?.role === "user" &&
             selectedModelId !== "chat-model-reasoning" && <ThinkingMessage />}
 
           <div

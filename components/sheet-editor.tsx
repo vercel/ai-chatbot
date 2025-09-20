@@ -12,6 +12,8 @@ type SheetEditorProps = {
   content: string;
   saveContent: (content: string, isCurrentVersion: boolean) => void;
   currentVersionIndex: number;
+  isCurrentVersion: boolean;
+  status: string;
 };
 
 const MIN_ROWS = 50;
