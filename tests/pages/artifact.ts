@@ -24,8 +24,8 @@ export class ArtifactPage {
   }
 
   async isGenerationComplete() {
-    const response = await this.page.waitForResponse((response) =>
-      response.url().includes('/api/chat'),
+    const response = await this.page.waitForResponse((currentResponse) =>
+      currentResponse.url().includes('/api/chat'),
     );
 
     await response.finished();

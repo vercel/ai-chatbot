@@ -46,8 +46,8 @@ export const createDecorations = (
     decorations.push(
       Decoration.widget(
         suggestion.selectionStart,
-        (view) => {
-          const { dom } = createSuggestionWidget(suggestion, view);
+        (currentView) => {
+          const { dom } = createSuggestionWidget(suggestion, currentView);
           return dom;
         },
         {

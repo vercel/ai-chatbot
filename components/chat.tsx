@@ -87,14 +87,14 @@ export function Chat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
       fetch: fetchWithErrorHandlers,
-      prepareSendMessagesRequest({ messages, id, body }) {
+      prepareSendMessagesRequest(request) {
         return {
           body: {
-            id,
-            message: messages.at(-1),
+            id: request.id,
+            message: request.messages.at(-1),
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
-            ...body,
+            ...request.body,
           },
         };
       },

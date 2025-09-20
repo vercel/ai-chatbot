@@ -45,16 +45,16 @@ export class ChatPage {
   }
 
   async isGenerationComplete() {
-    const response = await this.page.waitForResponse((response) =>
-      response.url().includes('/api/chat'),
+    const response = await this.page.waitForResponse((currentResponse) =>
+      currentResponse.url().includes('/api/chat'),
     );
 
     await response.finished();
   }
 
   async isVoteComplete() {
-    const response = await this.page.waitForResponse((response) =>
-      response.url().includes('/api/vote'),
+    const response = await this.page.waitForResponse((currentResponse) =>
+      currentResponse.url().includes('/api/vote'),
     );
 
     await response.finished();
@@ -107,7 +107,7 @@ export class ChatPage {
 
   async chooseModelFromSelector(chatModelId: string) {
     const chatModel = chatModels.find(
-      (chatModel) => chatModel.id === chatModelId,
+      (currentChatModel) => currentChatModel.id === chatModelId,
     );
 
     if (!chatModel) {

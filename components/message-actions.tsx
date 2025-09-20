@@ -92,7 +92,7 @@ export function PureMessageActions({
                   if (!currentVotes) { return []; }
 
                   const votesWithoutCurrent = currentVotes.filter(
-                    (vote) => vote.messageId !== message.id,
+                    (currentVote) => currentVote.messageId !== message.id,
                   );
 
                   return [
@@ -139,7 +139,7 @@ export function PureMessageActions({
                   if (!currentVotes) { return []; }
 
                   const votesWithoutCurrent = currentVotes.filter(
-                    (vote) => vote.messageId !== message.id,
+                    (currentVote) => currentVote.messageId !== message.id,
                   );
 
                   return [

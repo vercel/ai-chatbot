@@ -46,8 +46,8 @@ export function DocumentPreview({
     const boundingBox = hitboxRef.current?.getBoundingClientRect();
 
     if (artifact.documentId && boundingBox) {
-      setArtifact((artifact) => ({
-        ...artifact,
+      setArtifact((currentArtifact) => ({
+        ...currentArtifact,
         boundingBox: {
           left: boundingBox.x,
           top: boundingBox.y,

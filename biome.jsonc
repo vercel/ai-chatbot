@@ -35,7 +35,6 @@
         "noNestedTernary": "off"
       },
       "nursery": {
-        "noShadow": "off",
         "noUselessUndefined": "off",
         "noUnnecessaryConditions": "off",
         "useImageSize": "off"

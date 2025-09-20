@@ -205,7 +205,7 @@ function PureArtifact({
     }
 
     if (type === 'toggle') {
-      setMode((mode) => (mode === 'edit' ? 'diff' : 'edit'));
+      setMode((currentMode) => (currentMode === 'edit' ? 'diff' : 'edit'));
     }
 
     if (type === 'prev') {
