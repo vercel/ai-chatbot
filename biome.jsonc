@@ -28,8 +28,6 @@
         "useAtIndex": "off",
         "noParameterProperties": "off",
 
-        /* This one has false positives. It's a bit... iffy 😉 */
-        "useCollapsedIf": "off",
         "useReadonlyClassProperties": "off",
         "useConsistentBuiltinInstantiation": "off"
       },
@@ -49,10 +47,12 @@
       "complexity": {
         "noUselessEmptyExport": "off",
         "noExcessiveCognitiveComplexity": "off",
-        "useSimplifiedLogicExpression": "off",
         "noUselessFragments": "off",
         "noBannedTypes": "off",
-        "noStaticOnlyClass": "off"
+        "noStaticOnlyClass": "off",
+
+        /* This one has false positives. It's a bit... iffy 😉 */
+        "useSimplifiedLogicExpression": "off"
       },
       "correctness": {
         "useExhaustiveDependencies": "off",

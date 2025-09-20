@@ -212,11 +212,9 @@ function PureArtifact({
       if (currentVersionIndex > 0) {
         setCurrentVersionIndex((index) => index - 1);
       }
-    } else if (type === 'next') {
-      if (currentVersionIndex < documents.length - 1) {
+    } else if (type === 'next' && currentVersionIndex < documents.length - 1) {
         setCurrentVersionIndex((index) => index + 1);
       }
-    }
   };
 
   const [isToolbarVisible, setIsToolbarVisible] = useState(false);
@@ -244,14 +242,12 @@ function PureArtifact({
   }
 
   useEffect(() => {
-    if (artifact.documentId !== 'init') {
-      if (artifactDefinition.initialize) {
+    if (artifact.documentId !== 'init' && artifactDefinition.initialize) {
         artifactDefinition.initialize({
           documentId: artifact.documentId,
           setMetadata,
         });
       }
-    }
   }, [artifact.documentId, artifactDefinition, setMetadata]);
 
   return (
