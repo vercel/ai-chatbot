@@ -27,7 +27,6 @@
         "useNumericSeparators": "off",
         "noNestedTernary": "off",
         "useAtIndex": "off",
-        "useImportType": "off",
         "noParameterProperties": "off",
         "useCollapsedIf": "off",
         "useConsistentMemberAccessibility": "off",
