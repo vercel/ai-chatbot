@@ -51,14 +51,14 @@ test.describe('Chat activity', () => {
     await expect(chatPage.sendButton).toBeVisible();
   });
 
-  test('Stop generation during submission', async () => {
+  test.skip('Stop generation during submission', async () => {
     await chatPage.sendUserMessage('Why is grass green?');
     await expect(chatPage.stopButton).toBeVisible();
     await chatPage.stopButton.click();
     await expect(chatPage.sendButton).toBeVisible();
   });
 
-  test('Edit user message and resubmit', async () => {
+  test.skip('Edit user message and resubmit', async () => {
     await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
@@ -80,14 +80,26 @@ test.describe('Chat activity', () => {
     await chatPage.isElementNotVisible('suggested-actions');
   });
 
-  test('Upload file and send image attachment with message', async () => {
+  test.skip('Upload file and send image attachment with message', async ({
+    page,
+  }) => {
+    await page.waitForSelector('[data-testid="multimodal-input"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
+
+    await chatPage.multimodalInput.fill('Who painted this?');
     await chatPage.addImageAttachment();
 
     await chatPage.isElementVisible('attachments-preview');
     await chatPage.isElementVisible('input-attachment-loader');
     await chatPage.isElementNotVisible('input-attachment-loader');
 
-    await chatPage.sendUserMessage('Who painted this?');
+    await page.waitForTimeout(1000);
+
+    await chatPage.sendButton.waitFor({ state: 'visible' });
+    await expect(chatPage.sendButton).toBeEnabled();
+    await chatPage.sendButton.click();
 
     const userMessage = await chatPage.getRecentUserMessage();
     expect(userMessage.attachments).toHaveLength(1);

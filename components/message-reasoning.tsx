@@ -23,7 +23,7 @@ export function MessageReasoning({
       setHasBeenStreaming(true);
     }
   }, [isLoading]);
-  
+
   return (
     <Reasoning
       isStreaming={isLoading}

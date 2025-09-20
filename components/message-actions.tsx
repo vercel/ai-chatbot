@@ -51,6 +51,7 @@ export function PureMessageActions({
         <div className="relative">
           {setMode && (
             <Action
+              data-testid="message-edit-button"
               tooltip="Edit"
               onClick={() => setMode('edit')}
               className="-left-10 absolute top-0 opacity-0 transition-opacity group-hover/message:opacity-100"

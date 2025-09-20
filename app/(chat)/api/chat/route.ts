@@ -210,13 +210,19 @@ export async function POST(request: Request) {
                 myProvider.languageModel(selectedChatModel).modelId;
               if (!modelId) {
                 finalMergedUsage = usage;
-                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                dataStream.write({
+                  type: 'data-usage',
+                  data: finalMergedUsage,
+                });
                 return;
               }
 
               if (!providers) {
                 finalMergedUsage = usage;
-                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                dataStream.write({
+                  type: 'data-usage',
+                  data: finalMergedUsage,
+                });
                 return;
               }
 
