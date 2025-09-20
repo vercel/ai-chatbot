@@ -31,7 +31,7 @@ export function useAutoResume({
 
     // we intentionally run this once
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [autoResume, initialMessages.at, resumeStream]);
 
   useEffect(() => {
     if (!dataStream) { return; }

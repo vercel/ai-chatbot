@@ -42,7 +42,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
     };
     // NOTE: we only want to run this effect once
     // eslint-disable-next-line
-  }, []);
+  }, [content]);
 
   useEffect(() => {
     if (editorRef.current) {

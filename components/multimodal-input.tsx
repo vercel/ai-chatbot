@@ -82,23 +82,23 @@ function PureMultimodalInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
 
+  const adjustHeight = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '44px';
+    }
+  }, []);
+
   useEffect(() => {
     if (textareaRef.current) {
       adjustHeight();
     }
+  }, [adjustHeight]);
+
+  const resetHeight = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '44px';
+    }
   }, []);
-
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '44px';
-    }
-  };
-
-  const resetHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '44px';
-    }
-  };
 
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     'input',
@@ -115,7 +115,7 @@ function PureMultimodalInput({
     }
     // Only run once after hydration
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [adjustHeight, localStorageInput, setInput]);
 
   useEffect(() => {
     setLocalStorageInput(input);
@@ -156,17 +156,18 @@ function PureMultimodalInput({
       textareaRef.current?.focus();
     }
   }, [
-    input,
-    setInput,
-    attachments,
-    sendMessage,
-    setAttachments,
-    setLocalStorageInput,
-    width,
+    input, 
+    setInput, 
+    attachments, 
+    sendMessage, 
+    setAttachments, 
+    setLocalStorageInput, 
+    width, 
     chatId,
+    resetHeight,
   ]);
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = useCallback(async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -191,7 +192,7 @@ function PureMultimodalInput({
     } catch (_error) {
       toast.error('Failed to upload file, please try again!');
     }
-  };
+  }, []);
 
   const _modelResolver = useMemo(() => {
     return myProvider.languageModel(selectedModelId);
@@ -227,7 +228,7 @@ function PureMultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments, uploadFile],
   );
 
   return (

@@ -37,7 +37,7 @@ function Toast(props: ToastProps) {
     ro.observe(el);
 
     return () => ro.disconnect();
-  }, [description]);
+  }, []);
 
   return (
     <div className="flex toast-mobile:w-[356px] w-full justify-center">

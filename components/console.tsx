@@ -69,7 +69,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
 
   useEffect(() => {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [consoleOutputs]);
+  }, []);
 
   useEffect(() => {
     if (!isArtifactVisible) {

@@ -121,7 +121,7 @@ function PureArtifact({
 
   useEffect(() => {
     mutateDocuments();
-  }, [artifact.status, mutateDocuments]);
+  }, [mutateDocuments]);
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
