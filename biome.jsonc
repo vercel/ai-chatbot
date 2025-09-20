@@ -11,8 +11,8 @@
 
         /* Allow for Tailwind @ rules */
         "noUnknownAtRules": "off",
+
         "noConsole": "off",
-        "noGlobalIsNan": "off",
         "useIterableCallbackReturn": "off",
         "noEvolvingTypes": "off",
         "noBitwiseOperators": "off",
