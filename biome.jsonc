@@ -35,8 +35,8 @@
         "noNestedTernary": "off"
       },
       "nursery": {
-        "noUnnecessaryConditions": "off",
-        "useImageSize": "off"
+        /* Too many false positives */
+        "noUnnecessaryConditions": "off"
       },
       "performance": {
         "noBarrelFile": "off",

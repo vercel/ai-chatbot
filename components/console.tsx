@@ -153,6 +153,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                   {consoleOutput.contents.map((content, contentIndex) =>
                     content.type === 'image' ? (
                       <picture key={`${consoleOutput.id}-${contentIndex}`}>
+                        {/** biome-ignore lint/nursery/useImageSize: "Generated image without explicit size" */}
                         <img
                           alt="output"
                           className="w-full max-w-(--breakpoint-toast-mobile) rounded-md"

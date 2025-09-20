@@ -12,7 +12,7 @@ export const Image = ({
   mediaType,
   ...props
 }: ImageProps) => (
-  // eslint-disable-next-line @next/next/no-img-element
+  // biome-ignore lint/nursery/useImageSize: "Generated image without explicit size"
   <img
     {...props}
     alt={props.alt}
