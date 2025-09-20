@@ -1,7 +1,11 @@
 import { expect, type Page } from '@playwright/test';
 
 export class ArtifactPage {
-  constructor(private page: Page) {}
+  private page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   get artifact() {
     return this.page.getByTestId('artifact');

@@ -4,7 +4,11 @@ import { expect, type Page } from '@playwright/test';
 import { chatModels } from '@/lib/ai/models';
 
 export class ChatPage {
-  constructor(private page: Page) {}
+  private page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   get sendButton() {
     return this.page.getByTestId('send-button');
