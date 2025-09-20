@@ -6,7 +6,7 @@
       "**/*",
       "!components/ui",
       "!lib/utils.ts",
-      "!hooks/use-mobile.tsx"
+      "!hooks/use-mobile.ts"
     ]
   },
   "linter": {
