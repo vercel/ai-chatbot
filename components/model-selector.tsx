@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import type { Session } from 'next-auth';
-import { startTransition, useMemo, useOptimistic, useState } from 'react';
-import { saveChatModelAsCookie } from '@/app/(chat)/actions';
-import { Button } from '@/components/ui/button';
+import type { Session } from "next-auth";
+import { startTransition, useMemo, useOptimistic, useState } from "react";
+import { saveChatModelAsCookie } from "@/app/(chat)/actions";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import { chatModels } from '@/lib/ai/models';
-import { cn } from '@/lib/utils';
-import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
+} from "@/components/ui/dropdown-menu";
+import { entitlementsByUserType } from "@/lib/ai/entitlements";
+import { chatModels } from "@/lib/ai/models";
+import { cn } from "@/lib/utils";
+import { CheckCircleFillIcon, ChevronDownIcon } from "./icons";
 
 export function ModelSelector({
   session,
@@ -31,15 +31,15 @@ export function ModelSelector({
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
   const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
+    availableChatModelIds.includes(chatModel.id)
   );
 
   const selectedChatModel = useMemo(
     () =>
       availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
+        (chatModel) => chatModel.id === optimisticModelId
       ),
-    [optimisticModelId, availableChatModels],
+    [optimisticModelId, availableChatModels]
   );
 
   return (
@@ -47,8 +47,8 @@ export function ModelSelector({
       <DropdownMenuTrigger
         asChild
         className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
+          "w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
+          className
         )}
       >
         <Button

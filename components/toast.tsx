@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { toast as sonnerToast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { CheckCircleFillIcon, WarningIcon } from './icons';
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { toast as sonnerToast } from "sonner";
+import { cn } from "@/lib/utils";
+import { CheckCircleFillIcon, WarningIcon } from "./icons";
 
-const iconsByType: Record<'success' | 'error', ReactNode> = {
+const iconsByType: Record<"success" | "error", ReactNode> = {
   success: <CheckCircleFillIcon />,
   error: <WarningIcon />,
 };
 
-export function toast(props: Omit<ToastProps, 'id'>) {
+export function toast(props: Omit<ToastProps, "id">) {
   return sonnerToast.custom((id) => (
     <Toast description={props.description} id={id} type={props.type} />
   ));
@@ -24,7 +24,9 @@ function Toast(props: ToastProps) {
 
   useEffect(() => {
     const el = descriptionRef.current;
-    if (!el) { return; }
+    if (!el) {
+      return;
+    }
 
     const update = () => {
       const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight);
@@ -43,16 +45,16 @@ function Toast(props: ToastProps) {
     <div className="flex toast-mobile:w-[356px] w-full justify-center">
       <div
         className={cn(
-          'flex toast-mobile:w-fit w-full flex-row gap-3 rounded-lg bg-zinc-100 p-3',
-          multiLine ? 'items-start' : 'items-center',
+          "flex toast-mobile:w-fit w-full flex-row gap-3 rounded-lg bg-zinc-100 p-3",
+          multiLine ? "items-start" : "items-center"
         )}
         data-testid="toast"
         key={id}
       >
         <div
           className={cn(
-            'data-[type=error]:text-red-600 data-[type=success]:text-green-600',
-            { 'pt-1': multiLine },
+            "data-[type=error]:text-red-600 data-[type=success]:text-green-600",
+            { "pt-1": multiLine }
           )}
           data-type={type}
         >
@@ -68,6 +70,6 @@ function Toast(props: ToastProps) {
 
 type ToastProps = {
   id: string | number;
-  type: 'success' | 'error';
+  type: "success" | "error";
   description: string;
 };

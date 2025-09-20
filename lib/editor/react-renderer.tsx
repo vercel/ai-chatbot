@@ -1,4 +1,4 @@
-import { createRoot } from 'react-dom/client';
+import { createRoot } from "react-dom/client";
 
 // biome-ignore lint/complexity/noStaticOnlyClass: "Needs to be static"
 export class ReactRenderer {

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
-import { useWindowSize } from 'usehooks-ts';
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import { useWindowSize } from "usehooks-ts";
 
-import type { UISuggestion } from '@/lib/editor/suggestions';
-import { cn } from '@/lib/utils';
-import type { ArtifactKind } from './artifact';
-import { CrossIcon, MessageIcon } from './icons';
-import { Button } from './ui/button';
+import type { UISuggestion } from "@/lib/editor/suggestions";
+import { cn } from "@/lib/utils";
+import type { ArtifactKind } from "./artifact";
+import { CrossIcon, MessageIcon } from "./icons";
+import { Button } from "./ui/button";
 
 export const Suggestion = ({
   suggestion,
@@ -31,7 +31,7 @@ export const Suggestion = ({
           exit={{ opacity: 0, y: -10 }}
           initial={{ opacity: 0, y: -10 }}
           key={suggestion.id}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
           whileHover={{ scale: 1.05 }}
         >
           <div className="flex flex-row items-center justify-between">
@@ -60,9 +60,9 @@ export const Suggestion = ({
         </motion.div>
       ) : (
         <motion.div
-          className={cn('cursor-pointer p-1 text-muted-foreground', {
-            '-right-8 absolute': artifactKind === 'text',
-            'sticky top-0 right-4': artifactKind === 'code',
+          className={cn("cursor-pointer p-1 text-muted-foreground", {
+            "-right-8 absolute": artifactKind === "text",
+            "sticky top-0 right-4": artifactKind === "code",
           })}
           onClick={() => {
             setIsExpanded(true);

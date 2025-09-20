@@ -3,7 +3,7 @@ export const BotIcon = () => {
     <svg
       height="16"
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width="16"
     >
@@ -23,7 +23,7 @@ export const UserIcon = () => {
       data-testid="geist-icon"
       height="16"
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width="16"
     >
@@ -42,7 +42,7 @@ export const AttachmentIcon = () => {
     <svg
       height="16"
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width="16"
     >
@@ -61,7 +61,7 @@ export const VercelIcon = ({ size = 17 }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -80,7 +80,7 @@ export const GitIcon = () => {
     <svg
       height="16"
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width="16"
     >
@@ -106,7 +106,7 @@ export const BoxIcon = ({ size = 16 }: { size: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -125,7 +125,7 @@ export const HomeIcon = ({ size = 16 }: { size: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -144,7 +144,7 @@ export const GPSIcon = ({ size = 16 }: { size: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -165,7 +165,7 @@ export const InvoiceIcon = ({ size = 16 }: { size: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -184,7 +184,7 @@ export const LogoOpenAI = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -202,7 +202,7 @@ export const LogoGoogle = ({ size = 16 }: { size?: number }) => {
       data-testid="geist-icon"
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -230,7 +230,7 @@ export const LogoAnthropic = () => {
   return (
     <svg
       height="18px"
-      style={{ color: 'currentcolor', fill: 'currentcolor' }}
+      style={{ color: "currentcolor", fill: "currentcolor" }}
       viewBox="0 0 92.2 65"
       width="18px"
       x="0px"
@@ -251,7 +251,7 @@ export const RouteIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -270,7 +270,7 @@ export const FileIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -289,7 +289,7 @@ export const LoaderIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -365,7 +365,7 @@ export const UploadIcon = ({ size = 16 }: { size?: number }) => {
       data-testid="geist-icon"
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -384,7 +384,7 @@ export const MenuIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -403,7 +403,7 @@ export const PencilEditIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -422,7 +422,7 @@ export const CheckedSquare = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -441,7 +441,7 @@ export const UncheckedSquare = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -463,7 +463,7 @@ export const MoreIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -482,7 +482,7 @@ export const TrashIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -501,7 +501,7 @@ export const InfoIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -523,7 +523,7 @@ export const ArrowUpIcon = ({
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor', ...props.style }}
+      style={{ color: "currentcolor", ...props.style }}
       viewBox="0 0 16 16"
       width={size}
       {...props}
@@ -545,7 +545,7 @@ export const StopIcon = ({
   return (
     <svg
       height={size}
-      style={{ color: 'currentcolor', ...props.style }}
+      style={{ color: "currentcolor", ...props.style }}
       viewBox="0 0 16 16"
       width={size}
       {...props}
@@ -569,7 +569,7 @@ export const PaperclipIcon = ({
       className="-rotate-45"
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor', ...props.style }}
+      style={{ color: "currentcolor", ...props.style }}
       viewBox="0 0 16 16"
       width={size}
       {...props}
@@ -589,7 +589,7 @@ export const MoreHorizontalIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -608,7 +608,7 @@ export const MessageIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -626,7 +626,7 @@ export const CrossIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -643,7 +643,7 @@ export const CrossSmallIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -660,7 +660,7 @@ export const UndoIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -677,7 +677,7 @@ export const RedoIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -694,7 +694,7 @@ export const DeltaIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -713,11 +713,14 @@ export const CpuIcon = ({ size = 16 }: { size?: number }) => (
     height={size}
     stroke="currentColor"
     strokeWidth="2"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 24 24"
     width={size}
   >
-    <path d="M4 12C4 8.22876 4 6.34315 5.17157 5.17157C6.34315 4 8.22876 4 12 4C15.7712 4 17.6569 4 18.8284 5.17157C20 6.34315 20 8.22876 20 12C20 15.7712 20 17.6569 18.8284 18.8284C17.6569 20 15.7712 20 12 20C8.22876 20 6.34315 20 5.17157 18.8284C4 17.6569 4 15.7712 4 12Z" strokeLinejoin="round" />
+    <path
+      d="M4 12C4 8.22876 4 6.34315 5.17157 5.17157C6.34315 4 8.22876 4 12 4C15.7712 4 17.6569 4 18.8284 5.17157C20 6.34315 20 8.22876 20 12C20 15.7712 20 17.6569 18.8284 18.8284C17.6569 20 15.7712 20 12 20C8.22876 20 6.34315 20 5.17157 18.8284C4 17.6569 4 15.7712 4 12Z"
+      strokeLinejoin="round"
+    />
     <path d="M9.5 2V4" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M14.5 2V4" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M9.5 20V22" strokeLinecap="round" strokeLinejoin="round" />
@@ -735,7 +738,7 @@ export const PenIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -752,7 +755,7 @@ export const SummarizeIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -769,7 +772,7 @@ export const SidebarLeftIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -786,7 +789,7 @@ export const PlusIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -803,7 +806,7 @@ export const CopyIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -820,7 +823,7 @@ export const ThumbUpIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -837,7 +840,7 @@ export const ThumbDownIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -854,7 +857,7 @@ export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -871,7 +874,7 @@ export const SparklesIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -895,7 +898,7 @@ export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -914,7 +917,7 @@ export const GlobeIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -933,7 +936,7 @@ export const LockIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -952,7 +955,7 @@ export const EyeIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -971,7 +974,7 @@ export const ShareIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -990,7 +993,7 @@ export const CodeIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1009,7 +1012,7 @@ export const PlayIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1028,7 +1031,7 @@ export const PythonIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1049,7 +1052,7 @@ export const TerminalWindowIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1068,7 +1071,7 @@ export const TerminalIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1087,7 +1090,7 @@ export const ClockRewind = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1106,7 +1109,7 @@ export const LogsIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1125,7 +1128,7 @@ export const ImageIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >
@@ -1143,7 +1146,7 @@ export const FullscreenIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -1160,7 +1163,7 @@ export const DownloadIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -1177,7 +1180,7 @@ export const LineChartIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}
   >
@@ -1195,7 +1198,7 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
     <svg
       height={size}
       strokeLinejoin="round"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox="0 0 16 16"
       width={size}
     >

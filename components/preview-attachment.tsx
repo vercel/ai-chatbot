@@ -1,8 +1,8 @@
-import Image from 'next/image';
-import type { Attachment } from '@/lib/types';
-import { Loader } from './elements/loader';
-import { CrossSmallIcon } from './icons';
-import { Button } from './ui/button';
+import Image from "next/image";
+import type { Attachment } from "@/lib/types";
+import { Loader } from "./elements/loader";
+import { CrossSmallIcon } from "./icons";
+import { Button } from "./ui/button";
 
 export const PreviewAttachment = ({
   attachment,
@@ -20,9 +20,9 @@ export const PreviewAttachment = ({
       className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
       data-testid="input-attachment-preview"
     >
-      {contentType?.startsWith('image') ? (
+      {contentType?.startsWith("image") ? (
         <Image
-          alt={name ?? 'An image attachment'}
+          alt={name ?? "An image attachment"}
           className="size-full object-cover"
           height={64}
           src={url}

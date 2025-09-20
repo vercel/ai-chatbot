@@ -1,9 +1,10 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { expect, type Page } from '@playwright/test';
-import { chatModels } from '@/lib/ai/models';
+import fs from "node:fs";
+import path from "node:path";
+import { expect, type Page } from "@playwright/test";
+import { chatModels } from "@/lib/ai/models";
 
-const CHAT_ID_REGEX = /^http:\/\/localhost:3000\/chat\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const CHAT_ID_REGEX =
+  /^http:\/\/localhost:3000\/chat\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export class ChatPage {
   private readonly page: Page;
@@ -13,27 +14,27 @@ export class ChatPage {
   }
 
   get sendButton() {
-    return this.page.getByTestId('send-button');
+    return this.page.getByTestId("send-button");
   }
 
   get stopButton() {
-    return this.page.getByTestId('stop-button');
+    return this.page.getByTestId("stop-button");
   }
 
   get multimodalInput() {
-    return this.page.getByTestId('multimodal-input');
+    return this.page.getByTestId("multimodal-input");
   }
 
   get scrollContainer() {
-    return this.page.locator('.overflow-y-scroll');
+    return this.page.locator(".overflow-y-scroll");
   }
 
   get scrollToBottomButton() {
-    return this.page.getByTestId('scroll-to-bottom-button');
+    return this.page.getByTestId("scroll-to-bottom-button");
   }
 
   async createNewChat() {
-    await this.page.goto('/');
+    await this.page.goto("/");
   }
 
   getCurrentURL(): string {
@@ -48,7 +49,7 @@ export class ChatPage {
 
   async isGenerationComplete() {
     const response = await this.page.waitForResponse((currentResponse) =>
-      currentResponse.url().includes('/api/chat'),
+      currentResponse.url().includes("/api/chat")
     );
 
     await response.finished();
@@ -56,7 +57,7 @@ export class ChatPage {
 
   async isVoteComplete() {
     const response = await this.page.waitForResponse((currentResponse) =>
-      currentResponse.url().includes('/api/vote'),
+      currentResponse.url().includes("/api/vote")
     );
 
     await response.finished();
@@ -68,7 +69,7 @@ export class ChatPage {
 
   async sendUserMessageFromSuggestion() {
     await this.page
-      .getByRole('button', { name: 'What are the advantages of' })
+      .getByRole("button", { name: "What are the advantages of" })
       .click();
   }
 
@@ -81,55 +82,53 @@ export class ChatPage {
   }
 
   async addImageAttachment() {
-    this.page.on('filechooser', async (fileChooser) => {
+    this.page.on("filechooser", async (fileChooser) => {
       const filePath = path.join(
         process.cwd(),
-        'public',
-        'images',
-        'mouth of the seine, monet.jpg',
+        "public",
+        "images",
+        "mouth of the seine, monet.jpg"
       );
       const imageBuffer = fs.readFileSync(filePath);
 
       await fileChooser.setFiles({
-        name: 'mouth of the seine, monet.jpg',
-        mimeType: 'image/jpeg',
+        name: "mouth of the seine, monet.jpg",
+        mimeType: "image/jpeg",
         buffer: imageBuffer,
       });
     });
 
-    await this.page.getByTestId('attachments-button').click();
+    await this.page.getByTestId("attachments-button").click();
   }
 
   async getSelectedModel() {
-    const modelId = await this.page.getByTestId('model-selector').innerText();
+    const modelId = await this.page.getByTestId("model-selector").innerText();
     return modelId;
   }
 
   async chooseModelFromSelector(chatModelId: string) {
     const chatModel = chatModels.find(
-      (currentChatModel) => currentChatModel.id === chatModelId,
+      (currentChatModel) => currentChatModel.id === chatModelId
     );
 
     if (!chatModel) {
       throw new Error(`Model with id ${chatModelId} not found`);
     }
 
-    await this.page.getByTestId('model-selector').click();
+    await this.page.getByTestId("model-selector").click();
     await this.page.getByTestId(`model-selector-item-${chatModelId}`).click();
     expect(await this.getSelectedModel()).toBe(chatModel.name);
   }
 
   async getSelectedVisibility() {
     const visibilityId = await this.page
-      .getByTestId('visibility-selector')
+      .getByTestId("visibility-selector")
       .innerText();
     return visibilityId;
   }
 
-  async chooseVisibilityFromSelector(
-    chatVisibility: 'public' | 'private',
-  ) {
-    await this.page.getByTestId('visibility-selector').click();
+  async chooseVisibilityFromSelector(chatVisibility: "public" | "private") {
+    await this.page.getByTestId("visibility-selector").click();
     await this.page
       .getByTestId(`visibility-selector-item-${chatVisibility}`)
       .click();
@@ -138,24 +137,24 @@ export class ChatPage {
 
   async getRecentAssistantMessage() {
     const messageElements = await this.page
-      .getByTestId('message-assistant')
+      .getByTestId("message-assistant")
       .all();
     const lastMessageElement = messageElements.at(-1);
 
     const content = await lastMessageElement
-      .getByTestId('message-content')
+      .getByTestId("message-content")
       .innerText()
       .catch(() => null);
 
     const reasoningElement = await lastMessageElement
-      .getByTestId('message-reasoning')
+      .getByTestId("message-reasoning")
       .isVisible()
       .then(async (visible) =>
         visible
           ? await lastMessageElement
-              .getByTestId('message-reasoning')
+              .getByTestId("message-reasoning")
               .innerText()
-          : null,
+          : null
       )
       .catch(() => null);
 
@@ -165,38 +164,38 @@ export class ChatPage {
       reasoning: reasoningElement,
       async toggleReasoningVisibility() {
         await lastMessageElement
-          .getByTestId('message-reasoning-toggle')
+          .getByTestId("message-reasoning-toggle")
           .click();
       },
       async upvote() {
-        await lastMessageElement.getByTestId('message-upvote').click();
+        await lastMessageElement.getByTestId("message-upvote").click();
       },
       async downvote() {
-        await lastMessageElement.getByTestId('message-downvote').click();
+        await lastMessageElement.getByTestId("message-downvote").click();
       },
     };
   }
 
   async getRecentUserMessage() {
-    const messageElements = await this.page.getByTestId('message-user').all();
+    const messageElements = await this.page.getByTestId("message-user").all();
     const lastMessageElement = messageElements.at(-1);
 
     if (!lastMessageElement) {
-      throw new Error('No user message found');
+      throw new Error("No user message found");
     }
 
     const content = await lastMessageElement
-      .getByTestId('message-content')
+      .getByTestId("message-content")
       .innerText()
       .catch(() => null);
 
     const hasAttachments = await lastMessageElement
-      .getByTestId('message-attachments')
+      .getByTestId("message-attachments")
       .isVisible()
       .catch(() => false);
 
     const attachments = hasAttachments
-      ? await lastMessageElement.getByTestId('message-attachments').all()
+      ? await lastMessageElement.getByTestId("message-attachments").all()
       : [];
 
     const page = this.page;
@@ -206,28 +205,28 @@ export class ChatPage {
       content,
       attachments,
       async edit(newMessage: string) {
-        await page.getByTestId('message-edit-button').click();
-        await page.getByTestId('message-editor').fill(newMessage);
-        await page.getByTestId('message-editor-send-button').click();
+        await page.getByTestId("message-edit-button").click();
+        await page.getByTestId("message-editor").fill(newMessage);
+        await page.getByTestId("message-editor-send-button").click();
         await expect(
-          page.getByTestId('message-editor-send-button'),
+          page.getByTestId("message-editor-send-button")
         ).not.toBeVisible();
       },
     };
   }
 
   async expectToastToContain(text: string) {
-    await expect(this.page.getByTestId('toast')).toContainText(text);
+    await expect(this.page.getByTestId("toast")).toContainText(text);
   }
 
   async openSideBar() {
-    const sidebarToggleButton = this.page.getByTestId('sidebar-toggle-button');
+    const sidebarToggleButton = this.page.getByTestId("sidebar-toggle-button");
     await sidebarToggleButton.click();
   }
 
   isScrolledToBottom(): Promise<boolean> {
     return this.scrollContainer.evaluate(
-      (el) => Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 1,
+      (el) => Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 1
     );
   }
 
@@ -235,7 +234,9 @@ export class ChatPage {
     const start = Date.now();
 
     while (Date.now() - start < timeout) {
-      if (await this.isScrolledToBottom()) { return; }
+      if (await this.isScrolledToBottom()) {
+        return;
+      }
       await this.page.waitForTimeout(100);
     }
 
@@ -244,7 +245,7 @@ export class ChatPage {
 
   async sendMultipleMessages(
     count: number,
-    makeMessage: (i: number) => string,
+    makeMessage: (i: number) => string
   ) {
     for (let i = 0; i < count; i++) {
       await this.sendUserMessage(makeMessage(i));

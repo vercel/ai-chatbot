@@ -1,12 +1,12 @@
-import type { UIMessageStreamWriter } from 'ai';
-import type { Session } from 'next-auth';
-import { codeDocumentHandler } from '@/artifacts/code/server';
-import { sheetDocumentHandler } from '@/artifacts/sheet/server';
-import { textDocumentHandler } from '@/artifacts/text/server';
-import type { ArtifactKind } from '@/components/artifact';
-import { saveDocument } from '../db/queries';
-import type { Document } from '../db/schema';
-import type { ChatMessage } from '../types';
+import type { UIMessageStreamWriter } from "ai";
+import type { Session } from "next-auth";
+import { codeDocumentHandler } from "@/artifacts/code/server";
+import { sheetDocumentHandler } from "@/artifacts/sheet/server";
+import { textDocumentHandler } from "@/artifacts/text/server";
+import type { ArtifactKind } from "@/components/artifact";
+import { saveDocument } from "../db/queries";
+import type { Document } from "../db/schema";
+import type { ChatMessage } from "../types";
 
 export type SaveDocumentProps = {
   id: string;
@@ -95,4 +95,4 @@ export const documentHandlersByArtifactKind: DocumentHandler[] = [
   sheetDocumentHandler,
 ];
 
-export const artifactKinds = ['text', 'code', 'sheet'] as const;
+export const artifactKinds = ["text", "code", "sheet"] as const;

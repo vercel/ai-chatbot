@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import type { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from "@ai-sdk/react";
 import {
   type Dispatch,
   type SetStateAction,
@@ -8,18 +8,18 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import type { ChatMessage } from '@/lib/types';
-import { getTextFromMessage } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
+} from "react";
+import { deleteTrailingMessages } from "@/app/(chat)/actions";
+import type { ChatMessage } from "@/lib/types";
+import { getTextFromMessage } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
 
 export type MessageEditorProps = {
   message: ChatMessage;
-  setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
+  setMode: Dispatch<SetStateAction<"view" | "edit">>;
+  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
 };
 
 export function MessageEditor({
@@ -31,13 +31,13 @@ export function MessageEditor({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [draftContent, setDraftContent] = useState<string>(
-    getTextFromMessage(message),
+    getTextFromMessage(message)
   );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-   const adjustHeight = useCallback(() => {
+  const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
   }, []);
@@ -67,7 +67,7 @@ export function MessageEditor({
         <Button
           className="h-fit px-3 py-2"
           onClick={() => {
-            setMode('view');
+            setMode("view");
           }}
           variant="outline"
         >
@@ -90,7 +90,7 @@ export function MessageEditor({
               if (index !== -1) {
                 const updatedMessage: ChatMessage = {
                   ...message,
-                  parts: [{ type: 'text', text: draftContent }],
+                  parts: [{ type: "text", text: draftContent }],
                 };
 
                 return [...messages.slice(0, index), updatedMessage];
@@ -99,12 +99,12 @@ export function MessageEditor({
               return messages;
             });
 
-            setMode('view');
+            setMode("view");
             regenerate();
           }}
           variant="default"
         >
-          {isSubmitting ? 'Sending...' : 'Send'}
+          {isSubmitting ? "Sending..." : "Send"}
         </Button>
       </div>
     </div>

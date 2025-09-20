@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
-import { motion } from 'framer-motion';
-import { useParams, useRouter } from 'next/navigation';
-import type { User } from 'next-auth';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import useSWRInfinite from 'swr/infinite';
+import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
+import { motion } from "framer-motion";
+import { useParams, useRouter } from "next/navigation";
+import type { User } from "next-auth";
+import { useState } from "react";
+import { toast } from "sonner";
+import useSWRInfinite from "swr/infinite";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,17 +16,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   useSidebar,
-} from '@/components/ui/sidebar';
-import type { Chat } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
-import { LoaderIcon } from './icons';
-import { ChatItem } from './sidebar-history-item';
+} from "@/components/ui/sidebar";
+import type { Chat } from "@/lib/db/schema";
+import { fetcher } from "@/lib/utils";
+import { LoaderIcon } from "./icons";
+import { ChatItem } from "./sidebar-history-item";
 
 type GroupedChats = {
   today: Chat[];
@@ -72,23 +72,27 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
       lastWeek: [],
       lastMonth: [],
       older: [],
-    } as GroupedChats,
+    } as GroupedChats
   );
 };
 
 export function getChatHistoryPaginationKey(
   pageIndex: number,
-  previousPageData: ChatHistory,
+  previousPageData: ChatHistory
 ) {
   if (previousPageData && previousPageData.hasMore === false) {
     return null;
   }
 
-  if (pageIndex === 0) { return `/api/history?limit=${PAGE_SIZE}`; }
+  if (pageIndex === 0) {
+    return `/api/history?limit=${PAGE_SIZE}`;
+  }
 
   const firstChatFromPage = previousPageData.chats.at(-1);
 
-  if (!firstChatFromPage) { return null; }
+  if (!firstChatFromPage) {
+    return null;
+  }
 
   return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
 }
@@ -121,11 +125,11 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   const handleDelete = () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
 
     toast.promise(deletePromise, {
-      loading: 'Deleting chat...',
+      loading: "Deleting chat...",
       success: () => {
         mutate((chatHistories) => {
           if (chatHistories) {
@@ -136,15 +140,15 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
           }
         });
 
-        return 'Chat deleted successfully';
+        return "Chat deleted successfully";
       },
-      error: 'Failed to delete chat',
+      error: "Failed to delete chat",
     });
 
     setShowDeleteDialog(false);
 
     if (deleteId === id) {
-      router.push('/');
+      router.push("/");
     }
   };
 
@@ -177,7 +181,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                   className="h-4 max-w-(--skeleton-width) flex-1 rounded-md bg-sidebar-accent-foreground/10"
                   style={
                     {
-                      '--skeleton-width': `${item}%`,
+                      "--skeleton-width": `${item}%`,
                     } as React.CSSProperties
                   }
                 />
@@ -209,7 +213,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
             {paginatedChatHistories &&
               (() => {
                 const chatsFromHistory = paginatedChatHistories.flatMap(
-                  (paginatedChatHistory) => paginatedChatHistory.chats,
+                  (paginatedChatHistory) => paginatedChatHistory.chats
                 );
 
                 const groupedChats = groupChatsByDate(chatsFromHistory);

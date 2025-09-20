@@ -1,27 +1,24 @@
-'use client';
+"use client";
 
-import type { UseChatHelpers } from '@ai-sdk/react';
-import { motion } from 'framer-motion';
-import { memo } from 'react';
-import type { ChatMessage } from '@/lib/types';
-import { Suggestion } from './elements/suggestion';
-import type { VisibilityType } from './visibility-selector';
+import type { UseChatHelpers } from "@ai-sdk/react";
+import { motion } from "framer-motion";
+import { memo } from "react";
+import type { ChatMessage } from "@/lib/types";
+import { Suggestion } from "./elements/suggestion";
+import type { VisibilityType } from "./visibility-selector";
 
 type SuggestedActionsProps = {
   chatId: string;
-  sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
+  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
   selectedVisibilityType: VisibilityType;
 };
 
-function PureSuggestedActions({
-  chatId,
-  sendMessage,
-}: SuggestedActionsProps) {
+function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   const suggestedActions = [
-    'What are the advantages of using Next.js?',
+    "What are the advantages of using Next.js?",
     "Write code to demonstrate Dijkstra's algorithm",
-    'Help me write an essay about Silicon Valley',
-    'What is the weather in San Francisco?',
+    "Help me write an essay about Silicon Valley",
+    "What is the weather in San Francisco?",
   ];
 
   return (
@@ -40,10 +37,10 @@ function PureSuggestedActions({
           <Suggestion
             className="h-auto w-full whitespace-normal p-3 text-left"
             onClick={(suggestion) => {
-              window.history.replaceState({}, '', `/chat/${chatId}`);
+              window.history.replaceState({}, "", `/chat/${chatId}`);
               sendMessage({
-                role: 'user',
-                parts: [{ type: 'text', text: suggestion }],
+                role: "user",
+                parts: [{ type: "text", text: suggestion }],
               });
             }}
             suggestion={suggestedAction}
@@ -59,11 +56,13 @@ function PureSuggestedActions({
 export const SuggestedActions = memo(
   PureSuggestedActions,
   (prevProps, nextProps) => {
-    if (prevProps.chatId !== nextProps.chatId) { return false; }
+    if (prevProps.chatId !== nextProps.chatId) {
+      return false;
+    }
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType) {
       return false;
     }
 
     return true;
-  },
+  }
 );
