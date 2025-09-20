@@ -13,6 +13,7 @@ export const Image = ({
   ...props
 }: ImageProps) => (
   // biome-ignore lint/nursery/useImageSize: "Generated image without explicit size"
+  // biome-ignore lint/performance/noImgElement: "Generated image without explicit size"
   <img
     {...props}
     alt={props.alt}
