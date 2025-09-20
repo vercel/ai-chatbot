@@ -56,7 +56,7 @@ const getTokenlensCatalog = cache(
         'TokenLens: catalog fetch failed, using default catalog',
         err,
       );
-      return undefined; // tokenlens helpers will fall back to defaultCatalog
+      return; // tokenlens helpers will fall back to defaultCatalog
     }
   },
   ['tokenlens-catalog'],

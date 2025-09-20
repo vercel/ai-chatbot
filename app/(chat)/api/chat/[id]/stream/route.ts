@@ -63,7 +63,8 @@ export async function GET(
   }
 
   const emptyDataStream = createUIMessageStream<ChatMessage>({
-    execute: () => undefined,
+    // biome-ignore lint/suspicious/noEmptyBlockStatements: "Needs to exist"
+    execute: () => {},
   });
 
   const stream = await streamContext.resumableStream(recentStreamId, () =>

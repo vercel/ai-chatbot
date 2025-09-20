@@ -133,7 +133,9 @@ function PureArtifact({
       mutate<Document[]>(
         `/api/document?id=${artifact.documentId}`,
         async (currentDocuments) => {
-          if (!currentDocuments) { return undefined; }
+          if (!currentDocuments) {
+            return [];
+          }
 
           const currentDocument = currentDocuments.at(-1);
 
