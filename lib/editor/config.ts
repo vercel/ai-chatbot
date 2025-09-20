@@ -30,7 +30,7 @@ export const handleTransaction = ({
   editorRef: MutableRefObject<EditorView | null>;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
 }) => {
-  if (!editorRef || !editorRef.current) return;
+  if (!editorRef || !editorRef.current) { return; }
 
   const newState = editorRef.current.state.apply(transaction);
   editorRef.current.updateState(newState);

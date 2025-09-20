@@ -60,9 +60,10 @@ function PureSuggestedActions({
 export const SuggestedActions = memo(
   PureSuggestedActions,
   (prevProps, nextProps) => {
-    if (prevProps.chatId !== nextProps.chatId) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+    if (prevProps.chatId !== nextProps.chatId) { return false; }
+    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType) {
       return false;
+    }
 
     return true;
   },

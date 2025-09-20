@@ -128,12 +128,12 @@ function PureArtifact({
 
   const handleContentChange = useCallback(
     (updatedContent: string) => {
-      if (!artifact) return;
+      if (!artifact) { return; }
 
       mutate<Array<Document>>(
         `/api/document?id=${artifact.documentId}`,
         async (currentDocuments) => {
-          if (!currentDocuments) return undefined;
+          if (!currentDocuments) { return undefined; }
 
           const currentDocument = currentDocuments.at(-1);
 
@@ -191,13 +191,13 @@ function PureArtifact({
   );
 
   function getDocumentContentById(index: number) {
-    if (!documents) return '';
-    if (!documents[index]) return '';
+    if (!documents) { return ''; }
+    if (!documents[index]) { return ''; }
     return documents[index].content ?? '';
   }
 
   const handleVersionChange = (type: 'next' | 'prev' | 'toggle' | 'latest') => {
-    if (!documents) return;
+    if (!documents) { return; }
 
     if (type === 'latest') {
       setCurrentVersionIndex(documents.length - 1);
@@ -503,12 +503,13 @@ function PureArtifact({
 }
 
 export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
-  if (prevProps.status !== nextProps.status) return false;
-  if (!equal(prevProps.votes, nextProps.votes)) return false;
-  if (prevProps.input !== nextProps.input) return false;
-  if (!equal(prevProps.messages, nextProps.messages.length)) return false;
-  if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+  if (prevProps.status !== nextProps.status) { return false; }
+  if (!equal(prevProps.votes, nextProps.votes)) { return false; }
+  if (prevProps.input !== nextProps.input) { return false; }
+  if (!equal(prevProps.messages, nextProps.messages.length)) { return false; }
+  if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType) {
     return false;
+  }
 
   return true;
 });

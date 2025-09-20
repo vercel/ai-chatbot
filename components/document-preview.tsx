@@ -97,7 +97,7 @@ export function DocumentPreview({
         }
       : null;
 
-  if (!document) return <LoadingSkeleton artifactKind={artifact.kind} />;
+  if (!document) { return <LoadingSkeleton artifactKind={artifact.kind} />; }
 
   return (
     <div className="relative w-full cursor-pointer">
@@ -195,7 +195,7 @@ const PureHitboxLayer = ({
 };
 
 const HitboxLayer = memo(PureHitboxLayer, (prevProps, nextProps) => {
-  if (!equal(prevProps.result, nextProps.result)) return false;
+  if (!equal(prevProps.result, nextProps.result)) { return false; }
   return true;
 });
 
@@ -228,8 +228,8 @@ const PureDocumentHeader = ({
 );
 
 const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
-  if (prevProps.title !== nextProps.title) return false;
-  if (prevProps.isStreaming !== nextProps.isStreaming) return false;
+  if (prevProps.title !== nextProps.title) { return false; }
+  if (prevProps.isStreaming !== nextProps.isStreaming) { return false; }
 
   return true;
 });

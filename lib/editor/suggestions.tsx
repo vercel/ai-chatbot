@@ -140,7 +140,7 @@ export const suggestionsPlugin = new Plugin({
     },
     apply(tr, state) {
       const newDecorations = tr.getMeta(suggestionsPluginKey);
-      if (newDecorations) return newDecorations;
+      if (newDecorations) { return newDecorations; }
 
       return {
         decorations: state.decorations.map(tr.mapping, tr.doc),

@@ -99,13 +99,15 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
 }
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
-  if (prevProps.suggestions !== nextProps.suggestions) return false;
-  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
+  if (prevProps.suggestions !== nextProps.suggestions) { return false; }
+  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) {
     return false;
-  if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
-  if (prevProps.status === 'streaming' && nextProps.status === 'streaming')
+  }
+  if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) { return false; }
+  if (prevProps.status === 'streaming' && nextProps.status === 'streaming') {
     return false;
-  if (prevProps.content !== nextProps.content) return false;
+  }
+  if (prevProps.content !== nextProps.content) { return false; }
 
   return true;
 }

@@ -291,12 +291,13 @@ const PurePreviewMessage = ({
 export const PreviewMessage = memo(
   PurePreviewMessage,
   (prevProps, nextProps) => {
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
-    if (prevProps.message.id !== nextProps.message.id) return false;
-    if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
+    if (prevProps.isLoading !== nextProps.isLoading) { return false; }
+    if (prevProps.message.id !== nextProps.message.id) { return false; }
+    if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding) {
       return false;
-    if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
+    }
+    if (!equal(prevProps.message.parts, nextProps.message.parts)) { return false; }
+    if (!equal(prevProps.vote, nextProps.vote)) { return false; }
 
     return false;
   },

@@ -102,7 +102,7 @@ const Tool = ({
             handleSelect();
           }}
           onHoverEnd={() => {
-            if (selectedTool !== description) setIsHovered(false);
+            if (selectedTool !== description) { setIsHovered(false); }
           }}
           onHoverStart={() => {
             setIsHovered(true);
@@ -404,12 +404,12 @@ const PureToolbar = ({
           setIsAnimating(true);
         }}
         onHoverEnd={() => {
-          if (status === 'streaming') return;
+          if (status === 'streaming') { return; }
 
           startCloseTimer();
         }}
         onHoverStart={() => {
-          if (status === 'streaming') return;
+          if (status === 'streaming') { return; }
 
           cancelCloseTimer();
           setIsToolbarVisible(true);
@@ -456,9 +456,9 @@ const PureToolbar = ({
 };
 
 export const Toolbar = memo(PureToolbar, (prevProps, nextProps) => {
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) return false;
-  if (prevProps.artifactKind !== nextProps.artifactKind) return false;
+  if (prevProps.status !== nextProps.status) { return false; }
+  if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) { return false; }
+  if (prevProps.artifactKind !== nextProps.artifactKind) { return false; }
 
   return true;
 });

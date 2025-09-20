@@ -120,13 +120,13 @@ function PureMessages({
 }
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
+  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) { return true; }
 
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-  if (!equal(prevProps.messages, nextProps.messages)) return false;
-  if (!equal(prevProps.votes, nextProps.votes)) return false;
+  if (prevProps.status !== nextProps.status) { return false; }
+  if (prevProps.selectedModelId !== nextProps.selectedModelId) { return false; }
+  if (prevProps.messages.length !== nextProps.messages.length) { return false; }
+  if (!equal(prevProps.messages, nextProps.messages)) { return false; }
+  if (!equal(prevProps.votes, nextProps.votes)) { return false; }
 
   return false;
 });

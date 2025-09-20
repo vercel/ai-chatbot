@@ -21,7 +21,6 @@
       "style": {
         "noMagicNumbers": "off",
         "noParameterAssign": "off",
-        "useBlockStatements": "off",
         "useConsistentArrayType": "off",
         "noUnusedTemplateLiteral": "off",
         "useConsistentObjectDefinitions": "off",

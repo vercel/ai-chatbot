@@ -12,7 +12,7 @@ export function useScrollToBottom() {
     useSWR<ScrollFlag>('messages:should-scroll', null, { fallbackData: false });
 
   const handleScroll = useCallback(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) { return; }
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
 
     // Check if we are within 100px of the bottom (like v0 does)
@@ -20,7 +20,7 @@ export function useScrollToBottom() {
     }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) { return; }
 
     const container = containerRef.current;
     
@@ -56,7 +56,7 @@ export function useScrollToBottom() {
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) { return; }
 
     container.addEventListener('scroll', handleScroll);
     handleScroll(); // Check initial state

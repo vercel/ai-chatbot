@@ -231,7 +231,7 @@ export class ChatPage {
     const start = Date.now();
 
     while (Date.now() - start < timeout) {
-      if (await this.isScrolledToBottom()) return;
+      if (await this.isScrolledToBottom()) { return; }
       await this.page.waitForTimeout(100);
     }
 

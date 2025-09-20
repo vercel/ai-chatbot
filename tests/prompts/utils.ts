@@ -6,7 +6,7 @@ export function compareMessages(
   firstMessage: ModelMessage,
   secondMessage: ModelMessage,
 ): boolean {
-  if (firstMessage.role !== secondMessage.role) return false;
+  if (firstMessage.role !== secondMessage.role) { return false; }
 
   if (
     !Array.isArray(firstMessage.content) ||
@@ -23,15 +23,15 @@ export function compareMessages(
     const item1 = firstMessage.content[i];
     const item2 = secondMessage.content[i];
 
-    if (item1.type !== item2.type) return false;
+    if (item1.type !== item2.type) { return false; }
 
     if (item1.type === 'file' && item2.type === 'file') {
       // if (item1.image.toString() !== item2.image.toString()) return false;
       // if (item1.mimeType !== item2.mimeType) return false;
     } else if (item1.type === 'text' && item2.type === 'text') {
-      if (item1.text !== item2.text) return false;
+      if (item1.text !== item2.text) { return false; }
     } else if (item1.type === 'tool-result' && item2.type === 'tool-result') {
-      if (item1.toolCallId !== item2.toolCallId) return false;
+      if (item1.toolCallId !== item2.toolCallId) { return false; }
     } else {
       return false;
     }

@@ -29,9 +29,9 @@ export function useChatVisibility({
   );
 
   const visibilityType = useMemo(() => {
-    if (!history) return localVisibility;
+    if (!history) { return localVisibility; }
     const chat = history.chats.find((chat) => chat.id === chatId);
-    if (!chat) return 'private';
+    if (!chat) { return 'private'; }
     return chat.visibility;
   }, [history, chatId, localVisibility]);
 

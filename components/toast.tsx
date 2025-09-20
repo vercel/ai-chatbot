@@ -24,7 +24,7 @@ function Toast(props: ToastProps) {
 
   useEffect(() => {
     const el = descriptionRef.current;
-    if (!el) return;
+    if (!el) { return; }
 
     const update = () => {
       const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight);

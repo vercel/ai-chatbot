@@ -341,12 +341,13 @@ function PureMultimodalInput({
 export const MultimodalInput = memo(
   PureMultimodalInput,
   (prevProps, nextProps) => {
-    if (prevProps.input !== nextProps.input) return false;
-    if (prevProps.status !== nextProps.status) return false;
-    if (!equal(prevProps.attachments, nextProps.attachments)) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+    if (prevProps.input !== nextProps.input) { return false; }
+    if (prevProps.status !== nextProps.status) { return false; }
+    if (!equal(prevProps.attachments, nextProps.attachments)) { return false; }
+    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType) {
       return false;
-    if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
+    }
+    if (prevProps.selectedModelId !== nextProps.selectedModelId) { return false; }
 
     return true;
   },

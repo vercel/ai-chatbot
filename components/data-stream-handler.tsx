@@ -12,7 +12,7 @@ export function DataStreamHandler() {
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
-    if (!dataStream?.length) return;
+    if (!dataStream?.length) { return; }
 
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;

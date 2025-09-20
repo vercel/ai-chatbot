@@ -30,7 +30,7 @@ export const VersionFooter = ({
   const { mutate } = useSWRConfig();
   const [isMutating, setIsMutating] = useState(false);
 
-  if (!documents) return;
+  if (!documents) { return; }
 
   return (
     <motion.div

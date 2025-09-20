@@ -24,7 +24,7 @@ export function PureMessageActions({
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
 
-  if (isLoading) return null;
+  if (isLoading) { return null; }
 
   const textFromParts = message.parts
     ?.filter((part) => part.type === 'text')
@@ -89,7 +89,7 @@ export function PureMessageActions({
               mutate<Array<Vote>>(
                 `/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
-                  if (!currentVotes) return [];
+                  if (!currentVotes) { return []; }
 
                   const votesWithoutCurrent = currentVotes.filter(
                     (vote) => vote.messageId !== message.id,
@@ -136,7 +136,7 @@ export function PureMessageActions({
               mutate<Array<Vote>>(
                 `/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
-                  if (!currentVotes) return [];
+                  if (!currentVotes) { return []; }
 
                   const votesWithoutCurrent = currentVotes.filter(
                     (vote) => vote.messageId !== message.id,
@@ -170,8 +170,8 @@ export function PureMessageActions({
 export const MessageActions = memo(
   PureMessageActions,
   (prevProps, nextProps) => {
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
+    if (!equal(prevProps.vote, nextProps.vote)) { return false; }
+    if (prevProps.isLoading !== nextProps.isLoading) { return false; }
 
     return true;
   },

@@ -21,7 +21,7 @@ export function useAutoResume({
   const { dataStream } = useDataStream();
 
   useEffect(() => {
-    if (!autoResume) return;
+    if (!autoResume) { return; }
 
     const mostRecentMessage = initialMessages.at(-1);
 
@@ -34,8 +34,8 @@ export function useAutoResume({
   }, []);
 
   useEffect(() => {
-    if (!dataStream) return;
-    if (dataStream.length === 0) return;
+    if (!dataStream) { return; }
+    if (dataStream.length === 0) { return; }
 
     const dataPart = dataStream[0];
 
