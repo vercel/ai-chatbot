@@ -1,21 +1,22 @@
-import { compare } from 'bcrypt-ts';
-import NextAuth, { type DefaultSession } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import { createGuestUser, getUser } from '@/lib/db/queries';
-import { authConfig } from './auth.config';
-import { DUMMY_PASSWORD } from '@/lib/constants';
-import type { DefaultJWT } from 'next-auth/jwt';
+import { compare } from "bcrypt-ts";
+import NextAuth, { type DefaultSession } from "next-auth";
+import type { DefaultJWT } from "next-auth/jwt";
+import Credentials from "next-auth/providers/credentials";
+import { DUMMY_PASSWORD } from "@/lib/constants";
+import { createGuestUser, getUser } from "@/lib/db/queries";
+import { authConfig } from "./auth.config";
 
-export type UserType = 'guest' | 'regular';
+export type UserType = "guest" | "regular";
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
       type: UserType;
-    } & DefaultSession['user'];
+    } & DefaultSession["user"];
   }
 
+  // biome-ignore lint/nursery/useConsistentTypeDefinitions: "Required"
   interface User {
     id?: string;
     email?: string | null;
@@ -23,7 +24,7 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     id: string;
     type: UserType;
@@ -57,22 +58,24 @@ export const {
 
         const passwordsMatch = await compare(password, user.password);
 
-        if (!passwordsMatch) return null;
+        if (!passwordsMatch) {
+          return null;
+        }
 
-        return { ...user, type: 'regular' };
+        return { ...user, type: "regular" };
       },
     }),
     Credentials({
-      id: 'guest',
+      id: "guest",
       credentials: {},
       async authorize() {
         const [guestUser] = await createGuestUser();
-        return { ...guestUser, type: 'guest' };
+        return { ...guestUser, type: "guest" };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
         token.type = user.type;
@@ -80,7 +83,7 @@ export const {
 
       return token;
     },
-    async session({ session, token }) {
+    session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;
