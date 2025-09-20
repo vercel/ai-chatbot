@@ -250,18 +250,20 @@ const DocumentContent = ({ document }: { document: Document }) => {
     isCurrentVersion: true,
     currentVersionIndex: 0,
     status: artifact.status,
-    saveContent: () => {},
+    saveContent: () => null,
     suggestions: [],
   };
+
+  const handleSaveContent = () => null;
 
   return (
     <div className={containerClassName}>
       {document.kind === 'text' ? (
-        <Editor {...commonProps} onSaveContent={() => {}} />
+        <Editor {...commonProps} onSaveContent={handleSaveContent} />
       ) : document.kind === 'code' ? (
         <div className="relative flex w-full flex-1">
           <div className="absolute inset-0">
-            <CodeEditor {...commonProps} onSaveContent={() => {}} />
+            <CodeEditor {...commonProps} onSaveContent={handleSaveContent} />
           </div>
         </div>
       ) : document.kind === 'sheet' ? (

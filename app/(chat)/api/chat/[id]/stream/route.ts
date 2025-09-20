@@ -63,7 +63,7 @@ export async function GET(
   }
 
   const emptyDataStream = createUIMessageStream<ChatMessage>({
-    execute: () => {},
+    execute: () => undefined,
   });
 
   const stream = await streamContext.resumableStream(recentStreamId, () =>

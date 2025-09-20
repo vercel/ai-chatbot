@@ -8,7 +8,6 @@
     "rules": {
       "suspicious": {
         "noExplicitAny": "off",
-        "noEmptyBlockStatements": "off",
         "noUnknownAtRules": "off",
         "noConsole": "off",
         "noGlobalIsNan": "off",
