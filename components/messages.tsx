@@ -30,7 +30,6 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
-  isArtifactVisible,
   selectedModelId,
 }: MessagesProps) {
   const {
@@ -40,7 +39,6 @@ function PureMessages({
     scrollToBottom,
     hasSentMessage,
   } = useMessages({
-    chatId,
     status,
   });
 
@@ -73,7 +71,6 @@ function PureMessages({
           {messages.map((message, index) => (
             <PreviewMessage
               chatId={chatId}
-              isArtifactVisible={isArtifactVisible}
               isLoading={
                 status === 'streaming' && messages.length - 1 === index
               }

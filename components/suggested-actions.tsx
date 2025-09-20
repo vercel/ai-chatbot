@@ -16,7 +16,6 @@ type SuggestedActionsProps = {
 function PureSuggestedActions({
   chatId,
   sendMessage,
-  selectedVisibilityType,
 }: SuggestedActionsProps) {
   const suggestedActions = [
     'What are the advantages of using Next.js?',

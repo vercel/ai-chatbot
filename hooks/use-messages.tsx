@@ -4,10 +4,8 @@ import type { ChatMessage } from '@/lib/types';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 
 export function useMessages({
-  chatId,
   status,
 }: {
-  chatId: string;
   status: UseChatHelpers<ChatMessage>['status'];
 }) {
   const {

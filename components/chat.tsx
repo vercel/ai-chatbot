@@ -40,7 +40,6 @@ export function Chat({
   initialChatModel,
   initialVisibilityType,
   isReadonly,
-  session,
   autoResume,
   initialLastContext,
 }: {
@@ -49,7 +48,6 @@ export function Chat({
   initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
-  session: Session;
   autoResume: boolean;
   initialLastContext?: AppUsage;
 }) {
@@ -162,7 +160,6 @@ export function Chat({
           chatId={id}
           isReadonly={isReadonly}
           selectedVisibilityType={initialVisibilityType}
-          session={session}
         />
 
         <Messages

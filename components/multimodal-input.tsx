@@ -23,6 +23,7 @@ import { chatModels } from '@/lib/ai/models';
 import { myProvider } from '@/lib/ai/providers';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import type { AppUsage } from '@/lib/usage';
+import { cn } from '@/lib/utils';
 import { Context } from './elements/context';
 import {
   PromptInput,
@@ -230,7 +231,7 @@ function PureMultimodalInput({
   );
 
   return (
-    <div className="relative flex w-full flex-col gap-4">
+    <div className={cn("relative flex w-full flex-col gap-4", className)}>
 
       {messages.length === 0 &&
         attachments.length === 0 &&

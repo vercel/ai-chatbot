@@ -8,12 +8,10 @@ export const PreviewAttachment = ({
   attachment,
   isUploading = false,
   onRemove,
-  onEdit,
 }: {
   attachment: Attachment;
   isUploading?: boolean;
   onRemove?: () => void;
-  onEdit?: () => void;
 }) => {
   const { name, url, contentType } = attachment;
 

@@ -11,8 +11,6 @@ import 'react-data-grid/lib/styles.css';
 type SheetEditorProps = {
   content: string;
   saveContent: (content: string, isCurrentVersion: boolean) => void;
-  status: string;
-  isCurrentVersion: boolean;
   currentVersionIndex: number;
 };
 
@@ -22,8 +20,6 @@ const MIN_COLS = 26;
 const PureSpreadsheetEditor = ({
   content,
   saveContent,
-  status,
-  isCurrentVersion,
 }: SheetEditorProps) => {
   const { resolvedTheme } = useTheme();
 

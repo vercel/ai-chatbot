@@ -20,11 +20,9 @@ export type UserContext = {
 export async function createAuthenticatedContext({
   browser,
   name,
-  chatModel = 'chat-model',
 }: {
   browser: Browser;
   name: string;
-  chatModel?: 'chat-model' | 'chat-model-reasoning';
 }): Promise<UserContext> {
   const directory = path.join(__dirname, '../playwright/.sessions');
 

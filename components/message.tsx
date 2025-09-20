@@ -34,7 +34,6 @@ const PurePreviewMessage = ({
   regenerate,
   isReadonly,
   requiresScrollPadding,
-  isArtifactVisible,
 }: {
   chatId: string;
   message: ChatMessage;
@@ -44,7 +43,6 @@ const PurePreviewMessage = ({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
-  isArtifactVisible: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 

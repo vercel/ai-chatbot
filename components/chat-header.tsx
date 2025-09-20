@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { Session } from 'next-auth';
 import { memo } from 'react';
 import { useWindowSize } from 'usehooks-ts';
 import { SidebarToggle } from '@/components/sidebar-toggle';
@@ -15,12 +14,10 @@ function PureChatHeader({
   chatId,
   selectedVisibilityType,
   isReadonly,
-  session,
 }: {
   chatId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
-  session: Session;
 }) {
   const router = useRouter();
   const { open } = useSidebar();

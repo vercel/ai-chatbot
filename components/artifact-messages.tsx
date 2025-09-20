@@ -35,7 +35,6 @@ function PureArtifactMessages({
     onViewportLeave,
     hasSentMessage,
   } = useMessages({
-    chatId,
     status,
   });
 
@@ -47,7 +46,6 @@ function PureArtifactMessages({
       {messages.map((message, index) => (
         <PreviewMessage
           chatId={chatId}
-          isArtifactVisible={true}
           isLoading={status === 'streaming' && index === messages.length - 1}
           isReadonly={isReadonly}
           key={message.id}
