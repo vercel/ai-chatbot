@@ -80,11 +80,23 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   return consoleOutputs.length > 0 ? (
     <>
       <div
-        aria-valuenow={minHeight}
+        aria-label="Resize console"
+        aria-orientation="horizontal"
+        aria-valuemax={maxHeight}
+        aria-valuemin={minHeight}
+        aria-valuenow={height}
         className="fixed z-50 h-2 w-full cursor-ns-resize"
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowUp') {
+            setHeight((prev) => Math.min(prev + 10, maxHeight));
+          } else if (e.key === 'ArrowDown') {
+            setHeight((prev) => Math.max(prev - 10, minHeight));
+          }
+        }}
         onMouseDown={startResizing}
         role="slider"
         style={{ bottom: height - 4 }}
+        tabIndex={0}
       />
 
       <div

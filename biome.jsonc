@@ -51,7 +51,6 @@
         "useSimplifiedLogicExpression": "off"
       },
       "a11y": {
-        "useFocusableInteractive": "off",
         "noSvgWithoutTitle": "off",
         "useSemanticElements": "off"
       }
