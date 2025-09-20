@@ -28,7 +28,7 @@ const PureSpreadsheetEditor = ({
   const { resolvedTheme } = useTheme();
 
   const parseData = useMemo(() => {
-    if (!content) { return Array(MIN_ROWS).fill(Array(MIN_COLS).fill('')); }
+    if (!content) { return new Array(MIN_ROWS).fill(new Array(MIN_COLS).fill('')); }
     const result = parse<string[]>(content, { skipEmptyLines: true });
 
     const paddedData = result.data.map((row) => {
@@ -40,7 +40,7 @@ const PureSpreadsheetEditor = ({
     });
 
     while (paddedData.length < MIN_ROWS) {
-      paddedData.push(Array(MIN_COLS).fill(''));
+      paddedData.push(new Array(MIN_COLS).fill(''));
     }
 
     return paddedData;

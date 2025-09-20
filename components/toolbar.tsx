@@ -129,7 +129,7 @@ const Tool = ({
   );
 };
 
-const randomArr = [...Array(6)].map((x) => nanoid(5));
+const randomArr = [...new Array(6)].map((x) => nanoid(5));
 
 const ReadingLevelSelector = ({
   setSelectedTool,

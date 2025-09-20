@@ -32,9 +32,7 @@
         "noMagicNumbers": "off",
 
         /* Needs more work to fix */
-        "noNestedTernary": "off",
-
-        "useConsistentBuiltinInstantiation": "off"
+        "noNestedTernary": "off"
       },
       "nursery": {
         "useConsistentTypeDefinitions": "off",
