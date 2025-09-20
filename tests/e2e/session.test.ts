@@ -17,7 +17,7 @@ test.describe
 
       let request = response.request();
 
-      const chain = [];
+      const chain: string[] = [];
 
       while (request) {
         chain.unshift(request.url());
@@ -59,7 +59,7 @@ test.describe
 
       let request = response.request();
 
-      const chain = [];
+      const chain: string[] = [];
 
       while (request) {
         chain.unshift(request.url());

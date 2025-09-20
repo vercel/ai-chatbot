@@ -12,8 +12,9 @@
         /* Allow for Tailwind @ rules */
         "noUnknownAtRules": "off",
 
+        /* Allowing console for debugging */
         "noConsole": "off",
-        "noEvolvingTypes": "off",
+
         "noBitwiseOperators": "off",
         "noDocumentCookie": "off",
         "noTsIgnore": "off"
