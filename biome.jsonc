@@ -9,7 +9,7 @@
       "**/*",
       "!components/ui",
       "!lib/utils.ts",
-      "!hooks/use-mobile.ts"
+      "!hooks/use-mobile.tsx"
     ]
   },
   "linter": {
@@ -40,8 +40,7 @@
       },
       "performance": {
         "noBarrelFile": "off",
-        "useTopLevelRegex": "off",
-        "noNamespaceImport": "off"
+        "useTopLevelRegex": "off"
       },
       "complexity": {
         /* Needs more work to fix */
