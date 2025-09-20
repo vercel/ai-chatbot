@@ -49,7 +49,6 @@
         "noNamespaceImport": "off"
       },
       "complexity": {
-        "noForEach": "off",
         "noUselessEmptyExport": "off",
         "noExcessiveCognitiveComplexity": "off",
         "useSimplifiedLogicExpression": "off",

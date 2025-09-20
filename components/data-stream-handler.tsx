@@ -17,7 +17,7 @@ export function DataStreamHandler() {
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;
 
-    newDeltas.forEach((delta) => {
+    for (const delta of newDeltas) {
       const artifactDefinition = artifactDefinitions.find(
         (artifactDefinition) => artifactDefinition.kind === artifact.kind,
       );
@@ -74,7 +74,7 @@ export function DataStreamHandler() {
             return draftArtifact;
         }
       });
-    });
+    }
   }, [dataStream, setArtifact, setMetadata, artifact]);
 
   return null;
