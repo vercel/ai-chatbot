@@ -1,42 +1,42 @@
-import OrderedMap from 'orderedmap';
+import OrderedMap from "orderedmap";
 import {
-  Schema,
-  type Node as ProsemirrorNode,
-  type MarkSpec,
   DOMParser,
-} from 'prosemirror-model';
-import { schema } from 'prosemirror-schema-basic';
-import { addListNodes } from 'prosemirror-schema-list';
-import { EditorState } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
-import React, { useEffect, useRef } from 'react';
-import { renderToString } from 'react-dom/server';
-import { Streamdown } from 'streamdown';
+  type MarkSpec,
+  type Node as ProsemirrorNode,
+  Schema,
+} from "prosemirror-model";
+import { schema } from "prosemirror-schema-basic";
+import { addListNodes } from "prosemirror-schema-list";
+import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
+import { useEffect, useRef } from "react";
+import { renderToString } from "react-dom/server";
+import { Streamdown } from "streamdown";
 
-import { diffEditor, DiffType } from '@/lib/editor/diff';
+import { DiffType, diffEditor } from "@/lib/editor/diff";
 
 const diffSchema = new Schema({
-  nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
+  nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
   marks: OrderedMap.from({
     ...schema.spec.marks.toObject(),
     diffMark: {
-      attrs: { type: { default: '' } },
+      attrs: { type: { default: "" } },
       toDOM(mark) {
-        let className = '';
+        let className = "";
 
         switch (mark.attrs.type) {
           case DiffType.Inserted:
             className =
-              'bg-green-100 text-green-700 dark:bg-green-500/70 dark:text-green-300';
+              "bg-green-100 text-green-700 dark:bg-green-500/70 dark:text-green-300";
             break;
           case DiffType.Deleted:
             className =
-              'bg-red-100 line-through text-red-600 dark:bg-red-500/70 dark:text-red-300';
+              "bg-red-100 line-through text-red-600 dark:bg-red-500/70 dark:text-red-300";
             break;
           default:
-            className = '';
+            className = "";
         }
-        return ['span', { class: className }, 0];
+        return ["span", { class: className }, 0];
       },
     } as MarkSpec,
   }),
@@ -60,16 +60,16 @@ export const DiffView = ({ oldContent, newContent }: DiffEditorProps) => {
       const parser = DOMParser.fromSchema(diffSchema);
 
       const oldHtmlContent = renderToString(
-        <Streamdown>{oldContent}</Streamdown>,
+        <Streamdown>{oldContent}</Streamdown>
       );
       const newHtmlContent = renderToString(
-        <Streamdown>{newContent}</Streamdown>,
+        <Streamdown>{newContent}</Streamdown>
       );
 
-      const oldContainer = document.createElement('div');
+      const oldContainer = document.createElement("div");
       oldContainer.innerHTML = oldHtmlContent;
 
-      const newContainer = document.createElement('div');
+      const newContainer = document.createElement("div");
       newContainer.innerHTML = newHtmlContent;
 
       const oldDoc = parser.parse(oldContainer);

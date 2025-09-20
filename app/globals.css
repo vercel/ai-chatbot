@@ -1,5 +1,4 @@
-/* set base path to root directory to include utility classes from app, components, pages, etc. */
-@import "tailwindcss" source("..");
+@import "tailwindcss";
 
 /* include utility classes in streamdown */
 @source '../node_modules/streamdown/dist/index.js';

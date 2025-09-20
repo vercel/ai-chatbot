@@ -1,13 +1,13 @@
-import { simulateReadableStream } from 'ai';
-import { MockLanguageModelV2 } from 'ai/test';
-import { getResponseChunksByPrompt } from '@/tests/prompts/utils';
+import { simulateReadableStream } from "ai";
+import { MockLanguageModelV2 } from "ai/test";
+import { getResponseChunksByPrompt } from "@/tests/prompts/utils";
 
 export const chatModel = new MockLanguageModelV2({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: 'stop',
+    finishReason: "stop",
     usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-    content: [{ type: 'text', text: 'Hello, world!' }],
+    content: [{ type: "text", text: "Hello, world!" }],
     warnings: [],
   }),
   doStream: async ({ prompt }) => ({
@@ -23,9 +23,9 @@ export const chatModel = new MockLanguageModelV2({
 export const reasoningModel = new MockLanguageModelV2({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: 'stop',
+    finishReason: "stop",
     usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-    content: [{ type: 'text', text: 'Hello, world!' }],
+    content: [{ type: "text", text: "Hello, world!" }],
     warnings: [],
   }),
   doStream: async ({ prompt }) => ({
@@ -41,9 +41,9 @@ export const reasoningModel = new MockLanguageModelV2({
 export const titleModel = new MockLanguageModelV2({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: 'stop',
+    finishReason: "stop",
     usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-    content: [{ type: 'text', text: 'This is a test title' }],
+    content: [{ type: "text", text: "This is a test title" }],
     warnings: [],
   }),
   doStream: async () => ({
@@ -51,12 +51,12 @@ export const titleModel = new MockLanguageModelV2({
       chunkDelayInMs: 500,
       initialDelayInMs: 1000,
       chunks: [
-        { id: '1', type: 'text-start' },
-        { id: '1', type: 'text-delta', delta: 'This is a test title' },
-        { id: '1', type: 'text-end' },
+        { id: "1", type: "text-start" },
+        { id: "1", type: "text-delta", delta: "This is a test title" },
+        { id: "1", type: "text-end" },
         {
-          type: 'finish',
-          finishReason: 'stop',
+          type: "finish",
+          finishReason: "stop",
           usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
         },
       ],
@@ -68,9 +68,9 @@ export const titleModel = new MockLanguageModelV2({
 export const artifactModel = new MockLanguageModelV2({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: 'stop',
+    finishReason: "stop",
     usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-    content: [{ type: 'text', text: 'Hello, world!' }],
+    content: [{ type: "text", text: "Hello, world!" }],
     warnings: [],
   }),
   doStream: async ({ prompt }) => ({

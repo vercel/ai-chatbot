@@ -1,23 +1,23 @@
-import { PreviewMessage, ThinkingMessage } from './message';
-import type { Vote } from '@/lib/db/schema';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
-import type { UIArtifact } from './artifact';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import { motion } from 'framer-motion';
-import { useMessages } from '@/hooks/use-messages';
-import type { ChatMessage } from '@/lib/types';
+import type { UseChatHelpers } from "@ai-sdk/react";
+import equal from "fast-deep-equal";
+import { motion } from "framer-motion";
+import { memo } from "react";
+import { useMessages } from "@/hooks/use-messages";
+import type { Vote } from "@/lib/db/schema";
+import type { ChatMessage } from "@/lib/types";
+import type { UIArtifact } from "./artifact";
+import { PreviewMessage, ThinkingMessage } from "./message";
 
-interface ArtifactMessagesProps {
+type ArtifactMessagesProps = {
   chatId: string;
-  status: UseChatHelpers<ChatMessage>['status'];
-  votes: Array<Vote> | undefined;
+  status: UseChatHelpers<ChatMessage>["status"];
+  votes: Vote[] | undefined;
   messages: ChatMessage[];
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
+  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
   isReadonly: boolean;
-  artifactStatus: UIArtifact['status'];
-}
+  artifactStatus: UIArtifact["status"];
+};
 
 function PureArtifactMessages({
   chatId,
@@ -35,45 +35,43 @@ function PureArtifactMessages({
     onViewportLeave,
     hasSentMessage,
   } = useMessages({
-    chatId,
     status,
   });
 
   return (
     <div
-      ref={messagesContainerRef}
       className="flex h-full flex-col items-center gap-4 overflow-y-scroll px-4 pt-20"
+      ref={messagesContainerRef}
     >
       {messages.map((message, index) => (
         <PreviewMessage
           chatId={chatId}
+          isLoading={status === "streaming" && index === messages.length - 1}
+          isReadonly={isReadonly}
           key={message.id}
           message={message}
-          isLoading={status === 'streaming' && index === messages.length - 1}
+          regenerate={regenerate}
+          requiresScrollPadding={
+            hasSentMessage && index === messages.length - 1
+          }
+          setMessages={setMessages}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
               : undefined
           }
-          setMessages={setMessages}
-          regenerate={regenerate}
-          isReadonly={isReadonly}
-          requiresScrollPadding={
-            hasSentMessage && index === messages.length - 1
-          }
-          isArtifactVisible={true}
         />
       ))}
 
-      {status === 'submitted' &&
+      {status === "submitted" &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+        messages.at(-1)?.role === "user" && <ThinkingMessage />}
 
       <motion.div
-        ref={messagesEndRef}
         className="min-h-[24px] min-w-[24px] shrink-0"
-        onViewportLeave={onViewportLeave}
         onViewportEnter={onViewportEnter}
+        onViewportLeave={onViewportLeave}
+        ref={messagesEndRef}
       />
     </div>
   );
@@ -81,18 +79,27 @@ function PureArtifactMessages({
 
 function areEqual(
   prevProps: ArtifactMessagesProps,
-  nextProps: ArtifactMessagesProps,
+  nextProps: ArtifactMessagesProps
 ) {
   if (
-    prevProps.artifactStatus === 'streaming' &&
-    nextProps.artifactStatus === 'streaming'
-  )
+    prevProps.artifactStatus === "streaming" &&
+    nextProps.artifactStatus === "streaming"
+  ) {
     return true;
+  }
 
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.status && nextProps.status) return false;
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-  if (!equal(prevProps.votes, nextProps.votes)) return false;
+  if (prevProps.status !== nextProps.status) {
+    return false;
+  }
+  if (prevProps.status && nextProps.status) {
+    return false;
+  }
+  if (prevProps.messages.length !== nextProps.messages.length) {
+    return false;
+  }
+  if (!equal(prevProps.votes, nextProps.votes)) {
+    return false;
+  }
 
   return true;
 }

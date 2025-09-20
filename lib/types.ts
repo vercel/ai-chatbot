@@ -1,15 +1,14 @@
-import { z } from 'zod';
-import type { getWeather } from './ai/tools/get-weather';
-import type { createDocument } from './ai/tools/create-document';
-import type { updateDocument } from './ai/tools/update-document';
-import type { requestSuggestions } from './ai/tools/request-suggestions';
-import type { InferUITool, UIMessage } from 'ai';
-import type { AppUsage } from './usage';
+import type { InferUITool, UIMessage } from "ai";
+import { z } from "zod";
+import type { ArtifactKind } from "@/components/artifact";
+import type { createDocument } from "./ai/tools/create-document";
+import type { getWeather } from "./ai/tools/get-weather";
+import type { requestSuggestions } from "./ai/tools/request-suggestions";
+import type { updateDocument } from "./ai/tools/update-document";
+import type { Suggestion } from "./db/schema";
+import type { AppUsage } from "./usage";
 
-import type { ArtifactKind } from '@/components/artifact';
-import type { Suggestion } from './db/schema';
-
-export type DataPart = { type: 'append-message'; message: string };
+export type DataPart = { type: "append-message"; message: string };
 
 export const messageMetadataSchema = z.object({
   createdAt: z.string(),
@@ -52,8 +51,8 @@ export type ChatMessage = UIMessage<
   ChatTools
 >;
 
-export interface Attachment {
+export type Attachment = {
   name: string;
   url: string;
   contentType: string;
-}
+};
