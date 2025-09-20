@@ -23,8 +23,8 @@
         /* Allowing console for debugging */
         "noConsole": "off",
 
+        /* Needed for generateUUID() */
         "noBitwiseOperators": "off",
-        "noDocumentCookie": "off",
         "noTsIgnore": "off"
       },
       "style": {
