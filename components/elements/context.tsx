@@ -16,9 +16,9 @@ export type ContextProps = ComponentProps<'button'> & {
   usage?: AppUsage;
 };
 
-const THOUSAND = 1000;
-const MILLION = 1_000_000;
-const BILLION = 1_000_000_000;
+const _THOUSAND = 1000;
+const _MILLION = 1_000_000;
+const _BILLION = 1_000_000_000;
 const PERCENT_MAX = 100;
 
 // Lucide CircleIcon geometry

@@ -52,7 +52,6 @@
       },
       "correctness": {
         "useExhaustiveDependencies": "off",
-        "noUnusedVariables": "off",
         "noUnusedFunctionParameters": "off",
         "noUnusedImports": "off"
       },
