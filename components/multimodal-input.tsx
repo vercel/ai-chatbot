@@ -182,7 +182,7 @@ function PureMultimodalInput({
         return {
           url,
           name: pathname,
-          contentType: contentType,
+          contentType,
         };
       }
       const { error } = await response.json();

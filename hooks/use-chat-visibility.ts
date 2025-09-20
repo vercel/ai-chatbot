@@ -40,7 +40,7 @@ export function useChatVisibility({
     mutate(unstable_serialize(getChatHistoryPaginationKey));
 
     updateChatVisibility({
-      chatId: chatId,
+      chatId,
       visibility: updatedVisibilityType,
     });
   };

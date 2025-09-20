@@ -27,8 +27,9 @@
         "noBitwiseOperators": "off"
       },
       "style": {
+        /* Allowing magic numbers */
         "noMagicNumbers": "off",
-        "useConsistentObjectDefinitions": "off",
+
         "useCollapsedElseIf": "off",
         "noNestedTernary": "off",
         "noParameterProperties": "off",

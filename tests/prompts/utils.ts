@@ -186,7 +186,7 @@ export const getResponseChunksByPrompt = (
         type: 'tool-input-end',
       },
       {
-        toolCallId: toolCallId,
+        toolCallId,
         type: 'tool-result',
         toolName: 'createDocument',
         result: {

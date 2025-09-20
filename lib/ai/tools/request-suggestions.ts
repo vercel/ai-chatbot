@@ -54,7 +54,7 @@ export const requestSuggestions = ({
           suggestedText: element.suggestedSentence,
           description: element.description,
           id: generateUUID(),
-          documentId: documentId,
+          documentId,
           isResolved: false,
         };
 
