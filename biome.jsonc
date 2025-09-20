@@ -51,8 +51,8 @@
         "useSimplifiedLogicExpression": "off"
       },
       "a11y": {
-        "noSvgWithoutTitle": "off",
-        "useSemanticElements": "off"
+        /* Needs more work to fix */
+        "noSvgWithoutTitle": "off"
       }
     }
   }
