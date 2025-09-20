@@ -72,7 +72,7 @@ export const {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
         token.type = user.type;
@@ -80,7 +80,7 @@ export const {
 
       return token;
     },
-    async session({ session, token }) {
+    session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;

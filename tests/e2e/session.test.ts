@@ -98,7 +98,7 @@ test.describe
 
     const testUser = generateRandomTestUser();
 
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(({ page }) => {
       authPage = new AuthPage(page);
     });
 
@@ -188,7 +188,7 @@ test.describe
 test.describe('Entitlements', () => {
   let chatPage: ChatPage;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(({ page }) => {
     chatPage = new ChatPage(page);
   });
 

@@ -73,7 +73,7 @@ export function PureMessageActions({
       <Action
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
-        onClick={async () => {
+        onClick={() => {
           const upvote = fetch('/api/vote', {
             method: 'PATCH',
             body: JSON.stringify({
@@ -120,7 +120,7 @@ export function PureMessageActions({
       <Action
         data-testid="message-downvote"
         disabled={vote && !vote.isUpvoted}
-        onClick={async () => {
+        onClick={() => {
           const downvote = fetch('/api/vote', {
             method: 'PATCH',
             body: JSON.stringify({

@@ -7,7 +7,6 @@
   "linter": {
     "rules": {
       "suspicious": {
-        "useAwait": "off",
         "noExplicitAny": "off",
         "noEmptyBlockStatements": "off",
         "noUnknownAtRules": "off",

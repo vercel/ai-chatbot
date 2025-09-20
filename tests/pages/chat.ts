@@ -221,7 +221,7 @@ export class ChatPage {
     await sidebarToggleButton.click();
   }
 
-  public async isScrolledToBottom(): Promise<boolean> {
+  public isScrolledToBottom(): Promise<boolean> {
     return this.scrollContainer.evaluate(
       (el) => Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 1,
     );

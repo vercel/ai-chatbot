@@ -102,7 +102,7 @@ export class ArtifactPage {
     };
   }
 
-  async closeArtifact() {
+  closeArtifact() {
     return this.page.getByTestId('artifact-close-button').click();
   }
 }
