@@ -8,6 +8,8 @@
     "rules": {
       "suspicious": {
         "noExplicitAny": "off",
+
+        /* Allow for Tailwind @ rules */
         "noUnknownAtRules": "off",
         "noConsole": "off",
         "noGlobalIsNan": "off",
