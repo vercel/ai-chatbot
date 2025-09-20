@@ -39,8 +39,7 @@
         "noUnnecessaryConditions": "off"
       },
       "performance": {
-        "noBarrelFile": "off",
-        "useTopLevelRegex": "off"
+        "noBarrelFile": "off"
       },
       "complexity": {
         /* Needs more work to fix */

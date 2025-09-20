@@ -3,6 +3,8 @@ import path from 'node:path';
 import { expect, type Page } from '@playwright/test';
 import { chatModels } from '@/lib/ai/models';
 
+const CHAT_ID_REGEX = /^http:\/\/localhost:3000\/chat\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 export class ChatPage {
   private readonly page: Page;
 
@@ -61,9 +63,7 @@ export class ChatPage {
   }
 
   async hasChatIdInUrl() {
-    await expect(this.page).toHaveURL(
-      /^http:\/\/localhost:3000\/chat\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
+    await expect(this.page).toHaveURL(CHAT_ID_REGEX);
   }
 
   async sendUserMessageFromSuggestion() {
