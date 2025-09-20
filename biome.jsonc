@@ -45,7 +45,6 @@
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": "off",
-        "noUselessFragments": "off",
         "noBannedTypes": "off",
         "noStaticOnlyClass": "off",
 
