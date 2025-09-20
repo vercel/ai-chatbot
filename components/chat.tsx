@@ -3,7 +3,6 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useSearchParams } from 'next/navigation';
-import type { Session } from 'next-auth';
 import { useEffect, useRef, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';

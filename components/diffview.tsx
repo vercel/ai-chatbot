@@ -9,7 +9,7 @@ import { schema } from 'prosemirror-schema-basic';
 import { addListNodes } from 'prosemirror-schema-list';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
 import { Streamdown } from 'streamdown';
 

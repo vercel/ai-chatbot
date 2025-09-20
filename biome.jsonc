@@ -51,8 +51,7 @@
         "useSimplifiedLogicExpression": "off"
       },
       "correctness": {
-        "useExhaustiveDependencies": "off",
-        "noUnusedImports": "off"
+        "useExhaustiveDependencies": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
