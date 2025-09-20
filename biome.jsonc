@@ -24,8 +24,7 @@
         "noConsole": "off",
 
         /* Needed for generateUUID() */
-        "noBitwiseOperators": "off",
-        "noTsIgnore": "off"
+        "noBitwiseOperators": "off"
       },
       "style": {
         "noMagicNumbers": "off",
