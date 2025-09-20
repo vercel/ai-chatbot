@@ -168,7 +168,7 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
                 <div className="flex justify-between items-center pt-1 text-xs">
                   <span className="text-muted-foreground">Total cost</span>
                   <div className="flex items-center gap-2 font-mono">
-                    <span className="text-right min-w-[4ch]"></span>
+                    <span className="text-right min-w-[4ch]" />
                     <span>
                       {!Number.isNaN(Number.parseFloat(usage.costUSD.totalUSD.toString())) 
                         ? `$${Number.parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`
