@@ -1,51 +1,52 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useActionState, useEffect, useState } from "react";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useActionState, useEffect, useState } from 'react';
+import { toast } from '@/components/toast';
 
-import { AuthForm } from "@/components/auth-form";
-import { SubmitButton } from "@/components/submit-button";
-import { toast } from "@/components/toast";
-import { type LoginActionState, login } from "../actions";
+import { AuthForm } from '@/components/auth-form';
+import { SubmitButton } from '@/components/submit-button';
+
+import { login, type LoginActionState } from '../actions';
+import { useSession } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
     {
-      status: "idle",
-    }
+      status: 'idle',
+    },
   );
 
   const { update: updateSession } = useSession();
 
   useEffect(() => {
-    if (state.status === "failed") {
+    if (state.status === 'failed') {
       toast({
-        type: "error",
-        description: "Invalid credentials!",
+        type: 'error',
+        description: 'Invalid credentials!',
       });
-    } else if (state.status === "invalid_data") {
+    } else if (state.status === 'invalid_data') {
       toast({
-        type: "error",
-        description: "Failed validating your submission!",
+        type: 'error',
+        description: 'Failed validating your submission!',
       });
-    } else if (state.status === "success") {
+    } else if (state.status === 'success') {
       setIsSuccessful(true);
       updateSession();
       router.refresh();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, router.refresh, updateSession]);
+  }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get("email") as string);
+    setEmail(formData.get('email') as string);
     formAction(formData);
   };
 
@@ -63,12 +64,12 @@ export default function Page() {
           <p className="mt-4 text-center text-gray-600 text-sm dark:text-zinc-400">
             {"Don't have an account? "}
             <Link
-              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
               href="/register"
+              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
             >
               Sign up
             </Link>
-            {" for free."}
+            {' for free.'}
           </p>
         </AuthForm>
       </div>

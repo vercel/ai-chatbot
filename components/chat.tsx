@@ -1,12 +1,28 @@
-"use client";
+'use client';
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { unstable_serialize } from "swr/infinite";
-import { ChatHeader } from "@/components/chat-header";
+import { DefaultChatTransport } from 'ai';
+import { useChat } from '@ai-sdk/react';
+import { useEffect, useState, useRef } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { ChatHeader } from '@/components/chat-header';
+import type { Vote } from '@/lib/db/schema';
+import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { Artifact } from './artifact';
+import { MultimodalInput } from './multimodal-input';
+import { Messages } from './messages';
+import type { VisibilityType } from './visibility-selector';
+import { useArtifactSelector } from '@/hooks/use-artifact';
+import { unstable_serialize } from 'swr/infinite';
+import { getChatHistoryPaginationKey } from './sidebar-history';
+import { toast } from './toast';
+import type { Session } from 'next-auth';
+import { useSearchParams } from 'next/navigation';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { useAutoResume } from '@/hooks/use-auto-resume';
+import { ChatSDKError } from '@/lib/errors';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import type { AppUsage } from '@/lib/usage';
+import { useDataStream } from './data-stream-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,22 +32,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useArtifactSelector } from "@/hooks/use-artifact";
-import { useAutoResume } from "@/hooks/use-auto-resume";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
-import type { Vote } from "@/lib/db/schema";
-import { ChatSDKError } from "@/lib/errors";
-import type { Attachment, ChatMessage } from "@/lib/types";
-import type { AppUsage } from "@/lib/usage";
-import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
-import { Artifact } from "./artifact";
-import { useDataStream } from "./data-stream-provider";
-import { Messages } from "./messages";
-import { MultimodalInput } from "./multimodal-input";
-import { getChatHistoryPaginationKey } from "./sidebar-history";
-import { toast } from "./toast";
-import type { VisibilityType } from "./visibility-selector";
+} from '@/components/ui/alert-dialog';
 
 export function Chat({
   id,
@@ -39,6 +40,7 @@ export function Chat({
   initialChatModel,
   initialVisibilityType,
   isReadonly,
+  session,
   autoResume,
   initialLastContext,
 }: {
@@ -47,6 +49,7 @@ export function Chat({
   initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
+  session: Session;
   autoResume: boolean;
   initialLastContext?: AppUsage;
 }) {
@@ -58,12 +61,12 @@ export function Chat({
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
 
-  const [input, setInput] = useState<string>("");
+  const [input, setInput] = useState<string>('');
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
-
+  
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
@@ -82,25 +85,23 @@ export function Chat({
     experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
-      api: "/api/chat",
+      api: '/api/chat',
       fetch: fetchWithErrorHandlers,
-      prepareSendMessagesRequest(request) {
+      prepareSendMessagesRequest({ messages, id, body }) {
         return {
           body: {
-            id: request.id,
-            message: request.messages.at(-1),
+            id,
+            message: messages.at(-1),
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
-            ...request.body,
+            ...body,
           },
         };
       },
     }),
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
-      if (dataPart.type === "data-usage") {
-        setUsage(dataPart.data);
-      }
+      if (dataPart.type === 'data-usage') setUsage(dataPart.data);
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -109,12 +110,12 @@ export function Chat({
       if (error instanceof ChatSDKError) {
         // Check if it's a credit card error
         if (
-          error.message?.includes("AI Gateway requires a valid credit card")
+          error.message?.includes('AI Gateway requires a valid credit card')
         ) {
           setShowCreditCardAlert(true);
         } else {
           toast({
-            type: "error",
+            type: 'error',
             description: error.message,
           });
         }
@@ -123,28 +124,28 @@ export function Chat({
   });
 
   const searchParams = useSearchParams();
-  const query = searchParams.get("query");
+  const query = searchParams.get('query');
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
   useEffect(() => {
     if (query && !hasAppendedQuery) {
       sendMessage({
-        role: "user" as const,
-        parts: [{ type: "text", text: query }],
+        role: 'user' as const,
+        parts: [{ type: 'text', text: query }],
       });
 
       setHasAppendedQuery(true);
-      window.history.replaceState({}, "", `/chat/${id}`);
+      window.history.replaceState({}, '', `/chat/${id}`);
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
 
-  const { data: votes } = useSWR<Vote[]>(
+  const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
-    fetcher
+    fetcher,
   );
 
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   useAutoResume({
@@ -159,38 +160,39 @@ export function Chat({
       <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
         <ChatHeader
           chatId={id}
-          isReadonly={isReadonly}
           selectedVisibilityType={initialVisibilityType}
+          isReadonly={isReadonly}
+          session={session}
         />
 
         <Messages
           chatId={id}
-          isArtifactVisible={isArtifactVisible}
-          isReadonly={isReadonly}
-          messages={messages}
-          regenerate={regenerate}
-          selectedModelId={initialChatModel}
-          setMessages={setMessages}
           status={status}
           votes={votes}
+          messages={messages}
+          setMessages={setMessages}
+          regenerate={regenerate}
+          isReadonly={isReadonly}
+          isArtifactVisible={isArtifactVisible}
+          selectedModelId={initialChatModel}
         />
 
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
           {!isReadonly && (
             <MultimodalInput
-              attachments={attachments}
               chatId={id}
               input={input}
-              messages={messages}
-              onModelChange={setCurrentModelId}
-              selectedModelId={currentModelId}
-              selectedVisibilityType={visibilityType}
-              sendMessage={sendMessage}
-              setAttachments={setAttachments}
               setInput={setInput}
-              setMessages={setMessages}
               status={status}
               stop={stop}
+              attachments={attachments}
+              setAttachments={setAttachments}
+              messages={messages}
+              setMessages={setMessages}
+              sendMessage={sendMessage}
+              selectedVisibilityType={visibilityType}
+              selectedModelId={currentModelId}
+              onModelChange={setCurrentModelId}
               usage={usage}
             />
           )}
@@ -198,33 +200,33 @@ export function Chat({
       </div>
 
       <Artifact
-        attachments={attachments}
         chatId={id}
         input={input}
-        isReadonly={isReadonly}
-        messages={messages}
-        regenerate={regenerate}
-        selectedModelId={currentModelId}
-        selectedVisibilityType={visibilityType}
-        sendMessage={sendMessage}
-        setAttachments={setAttachments}
         setInput={setInput}
-        setMessages={setMessages}
         status={status}
         stop={stop}
+        attachments={attachments}
+        setAttachments={setAttachments}
+        sendMessage={sendMessage}
+        messages={messages}
+        setMessages={setMessages}
+        regenerate={regenerate}
         votes={votes}
+        isReadonly={isReadonly}
+        selectedVisibilityType={visibilityType}
+        selectedModelId={currentModelId}
       />
 
       <AlertDialog
-        onOpenChange={setShowCreditCardAlert}
         open={showCreditCardAlert}
+        onOpenChange={setShowCreditCardAlert}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Activate AI Gateway</AlertDialogTitle>
             <AlertDialogDescription>
-              This application requires{" "}
-              {process.env.NODE_ENV === "production" ? "the owner" : "you"} to
+              This application requires{' '}
+              {process.env.NODE_ENV === 'production' ? 'the owner' : 'you'} to
               activate Vercel AI Gateway.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -233,10 +235,10 @@ export function Chat({
             <AlertDialogAction
               onClick={() => {
                 window.open(
-                  "https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card",
-                  "_blank"
+                  'https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card',
+                  '_blank',
                 );
-                window.location.href = "/";
+                window.location.href = '/';
               }}
             >
               Activate

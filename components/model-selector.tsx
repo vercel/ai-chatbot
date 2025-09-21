@@ -1,19 +1,21 @@
-"use client";
+'use client';
 
-import type { Session } from "next-auth";
-import { startTransition, useMemo, useOptimistic, useState } from "react";
-import { saveChatModelAsCookie } from "@/app/(chat)/actions";
-import { Button } from "@/components/ui/button";
+import { startTransition, useMemo, useOptimistic, useState } from 'react';
+
+import { saveChatModelAsCookie } from '@/app/(chat)/actions';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import { chatModels } from "@/lib/ai/models";
-import { cn } from "@/lib/utils";
-import { CheckCircleFillIcon, ChevronDownIcon } from "./icons";
+} from '@/components/ui/dropdown-menu';
+import { chatModels } from '@/lib/ai/models';
+import { cn } from '@/lib/utils';
+
+import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import type { Session } from 'next-auth';
 
 export function ModelSelector({
   session,
@@ -31,30 +33,30 @@ export function ModelSelector({
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
   const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id)
+    availableChatModelIds.includes(chatModel.id),
   );
 
   const selectedChatModel = useMemo(
     () =>
       availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId
+        (chatModel) => chatModel.id === optimisticModelId,
       ),
-    [optimisticModelId, availableChatModels]
+    [optimisticModelId, availableChatModels],
   );
 
   return (
-    <DropdownMenu onOpenChange={setOpen} open={open}>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         asChild
         className={cn(
-          "w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-          className
+          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+          className,
         )}
       >
         <Button
-          className="md:h-[34px] md:px-2"
           data-testid="model-selector"
           variant="outline"
+          className="md:h-[34px] md:px-2"
         >
           {selectedChatModel?.name}
           <ChevronDownIcon />
@@ -69,8 +71,6 @@ export function ModelSelector({
 
           return (
             <DropdownMenuItem
-              asChild
-              data-active={id === optimisticModelId}
               data-testid={`model-selector-item-${id}`}
               key={id}
               onSelect={() => {
@@ -81,14 +81,16 @@ export function ModelSelector({
                   saveChatModelAsCookie(id);
                 });
               }}
+              data-active={id === optimisticModelId}
+              asChild
             >
               <button
-                className="group/item flex w-full flex-row items-center justify-between gap-2 sm:gap-4"
                 type="button"
+                className="flex flex-row gap-2 justify-between items-center w-full group/item sm:gap-4"
               >
-                <div className="flex flex-col items-start gap-1">
+                <div className="flex flex-col gap-1 items-start">
                   <div className="text-sm sm:text-base">{chatModel.name}</div>
-                  <div className="line-clamp-2 text-muted-foreground text-xs">
+                  <div className="text-xs line-clamp-2 text-muted-foreground">
                     {chatModel.description}
                   </div>
                 </div>
