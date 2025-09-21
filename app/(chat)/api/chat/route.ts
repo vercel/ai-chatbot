@@ -294,6 +294,7 @@ export async function POST(request: Request) {
         }
       },
       onError: (error) => {
+        // Check for Vercel AI Gateway authentication errors
         if (
           error instanceof Error &&
           (error.message?.includes('AI Gateway authentication failed') ||
