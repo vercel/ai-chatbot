@@ -1,32 +1,34 @@
-import Image from "next/image";
-import type { Attachment } from "@/lib/types";
-import { Loader } from "./elements/loader";
-import { CrossSmallIcon } from "./icons";
-import { Button } from "./ui/button";
+import type { Attachment } from '@/lib/types';
+import { Loader } from './elements/loader';
+import { CrossSmallIcon } from './icons';
+import { Button } from './ui/button';
+import Image from 'next/image';
 
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
   onRemove,
+  onEdit,
 }: {
   attachment: Attachment;
   isUploading?: boolean;
   onRemove?: () => void;
+  onEdit?: () => void;
 }) => {
   const { name, url, contentType } = attachment;
 
   return (
     <div
-      className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
       data-testid="input-attachment-preview"
+      className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
     >
-      {contentType?.startsWith("image") ? (
+      {contentType?.startsWith('image') ? (
         <Image
-          alt={name ?? "An image attachment"}
-          className="size-full object-cover"
-          height={64}
           src={url}
+          alt={name ?? 'An image attachment'}
+          className="size-full object-cover"
           width={64}
+          height={64}
         />
       ) : (
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
@@ -42,10 +44,10 @@ export const PreviewAttachment = ({
 
       {onRemove && !isUploading && (
         <Button
-          className="absolute top-0.5 right-0.5 size-4 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={onRemove}
           size="sm"
           variant="destructive"
+          className="absolute top-0.5 right-0.5 size-4 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
         >
           <CrossSmallIcon size={8} />
         </Button>

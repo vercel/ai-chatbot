@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { toast as sonnerToast } from "sonner";
-import { cn } from "@/lib/utils";
-import { CheckCircleFillIcon, WarningIcon } from "./icons";
+import React, { useEffect, useRef, useState, type ReactNode } from 'react';
+import { toast as sonnerToast } from 'sonner';
+import { CheckCircleFillIcon, WarningIcon } from './icons';
+import { cn } from '@/lib/utils';
 
-const iconsByType: Record<"success" | "error", ReactNode> = {
+const iconsByType: Record<'success' | 'error', ReactNode> = {
   success: <CheckCircleFillIcon />,
   error: <WarningIcon />,
 };
 
-export function toast(props: Omit<ToastProps, "id">) {
+export function toast(props: Omit<ToastProps, 'id'>) {
   return sonnerToast.custom((id) => (
-    <Toast description={props.description} id={id} type={props.type} />
+    <Toast id={id} type={props.type} description={props.description} />
   ));
 }
 
@@ -24,9 +24,7 @@ function Toast(props: ToastProps) {
 
   useEffect(() => {
     const el = descriptionRef.current;
-    if (!el) {
-      return;
-    }
+    if (!el) return;
 
     const update = () => {
       const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight);
@@ -39,28 +37,28 @@ function Toast(props: ToastProps) {
     ro.observe(el);
 
     return () => ro.disconnect();
-  }, []);
+  }, [description]);
 
   return (
     <div className="flex toast-mobile:w-[356px] w-full justify-center">
       <div
-        className={cn(
-          "flex toast-mobile:w-fit w-full flex-row gap-3 rounded-lg bg-zinc-100 p-3",
-          multiLine ? "items-start" : "items-center"
-        )}
         data-testid="toast"
         key={id}
+        className={cn(
+          'flex toast-mobile:w-fit w-full flex-row gap-3 rounded-lg bg-zinc-100 p-3',
+          multiLine ? 'items-start' : 'items-center',
+        )}
       >
         <div
-          className={cn(
-            "data-[type=error]:text-red-600 data-[type=success]:text-green-600",
-            { "pt-1": multiLine }
-          )}
           data-type={type}
+          className={cn(
+            'data-[type=error]:text-red-600 data-[type=success]:text-green-600',
+            { 'pt-1': multiLine },
+          )}
         >
           {iconsByType[type]}
         </div>
-        <div className="text-sm text-zinc-950" ref={descriptionRef}>
+        <div ref={descriptionRef} className="text-sm text-zinc-950">
           {description}
         </div>
       </div>
@@ -68,8 +66,8 @@ function Toast(props: ToastProps) {
   );
 }
 
-type ToastProps = {
+interface ToastProps {
   id: string | number;
-  type: "success" | "error";
+  type: 'success' | 'error';
   description: string;
-};
+}
