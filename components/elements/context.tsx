@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
+import type { ComponentProps } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import type { ComponentProps } from 'react';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import type { AppUsage } from '@/lib/usage';
+} from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import type { AppUsage } from "@/lib/usage";
+import { cn } from "@/lib/utils";
 
-export type ContextProps = ComponentProps<'button'> & {
+export type ContextProps = ComponentProps<"button"> & {
   /** Optional full usage payload to enable breakdown view */
   usage?: AppUsage;
 };
 
-const THOUSAND = 1000;
-const MILLION = 1_000_000;
-const BILLION = 1_000_000_000;
+const _THOUSAND = 1000;
+const _MILLION = 1_000_000;
+const _BILLION = 1_000_000_000;
 const PERCENT_MAX = 100;
 
 // Lucide CircleIcon geometry
@@ -41,7 +41,7 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
       aria-label={`${percent.toFixed(2)}% of model context used`}
       height="28"
       role="img"
-      style={{ color: 'currentcolor' }}
+      style={{ color: "currentcolor" }}
       viewBox={`0 0 ${ICON_VIEWBOX} ${ICON_VIEWBOX}`}
       width="28"
     >
@@ -71,7 +71,6 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
   );
 };
 
-
 function InfoRow({
   label,
   tokens,
@@ -85,14 +84,16 @@ function InfoRow({
     <div className="flex items-center justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2 font-mono">
-        <span className="text-right min-w-[4ch]">
-          {tokens === undefined ? '—' : tokens.toLocaleString()}
+        <span className="min-w-[4ch] text-right">
+          {tokens === undefined ? "—" : tokens.toLocaleString()}
         </span>
-        {costText !== undefined && costText !== null && !isNaN(parseFloat(costText)) && (
-          <span className="text-muted-foreground">
-            ${parseFloat(costText).toFixed(6)}
-          </span>
-        )}
+        {costText !== undefined &&
+          costText !== null &&
+          !Number.isNaN(Number.parseFloat(costText)) && (
+            <span className="text-muted-foreground">
+              ${Number.parseFloat(costText).toFixed(6)}
+            </span>
+          )}
       </div>
     </div>
   );
@@ -104,16 +105,16 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
     usage?.context?.totalMax ??
     usage?.context?.combinedMax ??
     usage?.context?.inputMax;
-  const hasMax = typeof max === 'number' && Number.isFinite(max) && max > 0;
+  const hasMax = typeof max === "number" && Number.isFinite(max) && max > 0;
   const usedPercent = hasMax ? Math.min(100, (used / max) * 100) : 0;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            'inline-flex items-center gap-1 select-none rounded-md text-sm',
-            'cursor-pointer bg-background text-foreground',
-            className,
+            "inline-flex select-none items-center gap-1 rounded-md text-sm",
+            "cursor-pointer bg-background text-foreground",
+            className
           )}
           type="button"
           {...props}
@@ -124,7 +125,7 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
           <ContextIcon percent={usedPercent} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" side="top" className="w-fit p-3">
+      <DropdownMenuContent align="end" className="w-fit p-3" side="top">
         <div className="min-w-[240px] space-y-2">
           <div className="flex items-start justify-between text-sm">
             <span>{usedPercent.toFixed(1)}%</span>
@@ -138,42 +139,43 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
           <div className="mt-1 space-y-1">
             {usage?.cachedInputTokens && usage.cachedInputTokens > 0 && (
               <InfoRow
+                costText={usage?.costUSD?.cacheReadUSD?.toString()}
                 label="Cache Hits"
                 tokens={usage?.cachedInputTokens}
-                costText={usage?.costUSD?.cacheReadUSD?.toString()}
               />
             )}
             <InfoRow
+              costText={usage?.costUSD?.inputUSD?.toString()}
               label="Input"
               tokens={usage?.inputTokens}
-              costText={usage?.costUSD?.inputUSD?.toString()}
             />
             <InfoRow
+              costText={usage?.costUSD?.outputUSD?.toString()}
               label="Output"
               tokens={usage?.outputTokens}
-              costText={usage?.costUSD?.outputUSD?.toString()}
             />
             <InfoRow
+              costText={usage?.costUSD?.reasoningUSD?.toString()}
               label="Reasoning"
               tokens={
                 usage?.reasoningTokens && usage.reasoningTokens > 0
                   ? usage.reasoningTokens
                   : undefined
               }
-              costText={usage?.costUSD?.reasoningUSD?.toString()}
             />
             {usage?.costUSD?.totalUSD !== undefined && (
               <>
                 <Separator className="mt-1" />
-                <div className="flex justify-between items-center pt-1 text-xs">
+                <div className="flex items-center justify-between pt-1 text-xs">
                   <span className="text-muted-foreground">Total cost</span>
                   <div className="flex items-center gap-2 font-mono">
-                    <span className="text-right min-w-[4ch]"></span>
+                    <span className="min-w-[4ch] text-right" />
                     <span>
-                      {!isNaN(parseFloat(usage.costUSD.totalUSD.toString())) 
-                        ? `$${parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`
-                        : '—'
-                      }
+                      {Number.isNaN(
+                        Number.parseFloat(usage.costUSD.totalUSD.toString())
+                      )
+                        ? "—"
+                        : `$${Number.parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`}
                     </span>
                   </div>
                 </div>
