@@ -14,6 +14,7 @@ import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import { toast } from './toast';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
@@ -62,8 +63,7 @@ export function Chat({
 
   const [input, setInput] = useState<string>('');
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
-  const [showErrorAlert, setShowErrorAlert] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
   
@@ -108,8 +108,17 @@ export function Chat({
     },
     onError: (error) => {
       if (error instanceof ChatSDKError) {
-        setErrorMessage(error.message);
-        setShowErrorAlert(true);
+        // Check if it's a credit card error
+        if (
+          error.message?.includes('AI Gateway requires a valid credit card')
+        ) {
+          setShowCreditCardAlert(true);
+        } else {
+          toast({
+            type: 'error',
+            description: error.message,
+          });
+        }
       }
     },
   });
@@ -209,8 +218,8 @@ export function Chat({
       />
 
       <AlertDialog
-        open={showErrorAlert}
-        onOpenChange={setShowErrorAlert}
+        open={showCreditCardAlert}
+        onOpenChange={setShowCreditCardAlert}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
