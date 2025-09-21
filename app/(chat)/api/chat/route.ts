@@ -127,23 +127,9 @@ export async function POST(request: Request) {
     const chat = await getChatById({ id });
 
     if (!chat) {
-      let title = 'New Chat';
-      try {
-        const generatedTitle = await generateTitleFromUserMessage({
-          message,
-        });
-        title = generatedTitle;
-      } catch (titleError) {
-        if (
-          titleError instanceof Error &&
-          (titleError.message?.includes('AI Gateway authentication failed') ||
-          titleError.message?.includes('No authentication provided') ||
-          titleError.message?.includes('AI Gateway requires a valid credit card'))
-        ) {
-          throw titleError;
-        }
-        console.warn('Title generation failed, using default:', titleError);
-      }
+      const title = await generateTitleFromUserMessage({
+        message,
+      });
 
       await saveChat({
         id,
@@ -186,22 +172,6 @@ export async function POST(request: Request) {
     await createStreamId({ streamId, chatId: id });
 
     let finalMergedUsage: AppUsage | undefined;
-
-    try {
-      await myProvider.languageModel(selectedChatModel).doGenerate({
-        prompt: [{ role: 'user', content: [{ type: 'text', text: 'test' }] }],
-        maxOutputTokens: 1,
-      });
-    } catch (testError) {
-      if (
-        testError instanceof Error &&
-        (testError.message?.includes('AI Gateway authentication failed') ||
-        testError.message?.includes('No authentication provided') ||
-        testError.message?.includes('AI Gateway requires a valid credit card'))
-      ) {
-        throw testError;
-      }
-    }
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -293,16 +263,7 @@ export async function POST(request: Request) {
           }
         }
       },
-      onError: (error) => {
-        // Check for Vercel AI Gateway authentication errors
-        if (
-          error instanceof Error &&
-          (error.message?.includes('AI Gateway authentication failed') ||
-          error.message?.includes('No authentication provided') ||
-          error.message?.includes('AI Gateway requires a valid credit card'))
-        ) {
-          throw error;
-        }
+      onError: () => {
         return 'Oops, an error occurred!';
       },
     });
@@ -323,13 +284,12 @@ export async function POST(request: Request) {
       return error.toResponse();
     }
 
+    // Check for Vercel AI Gateway credit card error
     if (
       error instanceof Error &&
-      (error.message?.includes(
+      error.message?.includes(
         'AI Gateway requires a valid credit card on file to service requests',
-      ) ||
-      error.message?.includes('AI Gateway authentication failed') ||
-      error.message?.includes('No authentication provided'))
+      )
     ) {
       return new ChatSDKError('bad_request:activate_gateway').toResponse();
     }
