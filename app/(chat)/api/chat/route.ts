@@ -1,7 +1,6 @@
 import {
   convertToModelMessages,
   createUIMessageStream,
-  generateText,
   JsonToSseTransformStream,
   smoothStream,
   stepCountIs,
