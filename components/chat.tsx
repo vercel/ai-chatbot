@@ -110,9 +110,7 @@ export function Chat({
       if (error instanceof ChatSDKError) {
         // Check if it's a credit card error
         if (
-          error.message?.includes('AI Gateway requires a valid credit card') ||
-          error.message?.includes('AI Gateway authentication failed') ||
-          error.message?.includes('No authentication provided')
+          error.message?.includes('AI Gateway requires a valid credit card')
         ) {
           setShowCreditCardAlert(true);
         } else {
