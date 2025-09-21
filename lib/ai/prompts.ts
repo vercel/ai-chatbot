@@ -1,5 +1,5 @@
-import type { ArtifactKind } from '@/components/artifact';
-import type { Geo } from '@vercel/functions';
+import type { Geo } from "@vercel/functions";
+import type { ArtifactKind } from "@/components/artifact";
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -33,14 +33,14 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  "You are a friendly assistant! Keep your responses concise and helpful.";
 
-export interface RequestHints {
-  latitude: Geo['latitude'];
-  longitude: Geo['longitude'];
-  city: Geo['city'];
-  country: Geo['country'];
-}
+export type RequestHints = {
+  latitude: Geo["latitude"];
+  longitude: Geo["longitude"];
+  city: Geo["city"];
+  country: Geo["country"];
+};
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 About the origin of user's request:
@@ -59,11 +59,11 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === 'chat-model-reasoning') {
+  if (selectedChatModel === "chat-model-reasoning") {
     return `${regularPrompt}\n\n${requestPrompt}`;
-  } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
   }
+
+  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `
@@ -98,24 +98,17 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind,
-) =>
-  type === 'text'
-    ? `\
-Improve the following contents of the document based on the given prompt.
+  type: ArtifactKind
+) => {
+  let mediaType = "document";
 
-${currentContent}
-`
-    : type === 'code'
-      ? `\
-Improve the following code snippet based on the given prompt.
+  if (type === "code") {
+    mediaType = "code snippet";
+  } else if (type === "sheet") {
+    mediaType = "spreadsheet";
+  }
 
-${currentContent}
-`
-      : type === 'sheet'
-        ? `\
-Improve the following spreadsheet based on the given prompt.
+  return `Improve the following contents of the ${mediaType} based on the given prompt.
 
-${currentContent}
-`
-        : '';
+${currentContent}`;
+};

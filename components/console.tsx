@@ -1,6 +1,3 @@
-import { TerminalWindowIcon, CrossSmallIcon } from './icons';
-import { Loader } from './elements/loader';
-import { Button } from './ui/button';
 import {
   type Dispatch,
   type SetStateAction,
@@ -8,25 +5,28 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { cn } from '@/lib/utils';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+} from "react";
+import { useArtifactSelector } from "@/hooks/use-artifact";
+import { cn } from "@/lib/utils";
+import { Loader } from "./elements/loader";
+import { CrossSmallIcon, TerminalWindowIcon } from "./icons";
+import { Button } from "./ui/button";
 
-export interface ConsoleOutputContent {
-  type: 'text' | 'image';
+export type ConsoleOutputContent = {
+  type: "text" | "image";
   value: string;
-}
+};
 
-export interface ConsoleOutput {
+export type ConsoleOutput = {
   id: string;
-  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
-  contents: Array<ConsoleOutputContent>;
-}
+  status: "in_progress" | "loading_packages" | "completed" | "failed";
+  contents: ConsoleOutputContent[];
+};
 
-interface ConsoleProps {
-  consoleOutputs: Array<ConsoleOutput>;
-  setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
-}
+type ConsoleProps = {
+  consoleOutputs: ConsoleOutput[];
+  setConsoleOutputs: Dispatch<SetStateAction<ConsoleOutput[]>>;
+};
 
 export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);
@@ -55,21 +55,21 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         }
       }
     },
-    [isResizing],
+    [isResizing]
   );
 
   useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
     return () => {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
     };
   }, [resize, stopResizing]);
 
   useEffect(() => {
-    consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [consoleOutputs]);
+    consoleEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   useEffect(() => {
     if (!isArtifactVisible) {
@@ -80,19 +80,31 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   return consoleOutputs.length > 0 ? (
     <>
       <div
+        aria-label="Resize console"
+        aria-orientation="horizontal"
+        aria-valuemax={maxHeight}
+        aria-valuemin={minHeight}
+        aria-valuenow={height}
         className="fixed z-50 h-2 w-full cursor-ns-resize"
+        onKeyDown={(e) => {
+          if (e.key === "ArrowUp") {
+            setHeight((prev) => Math.min(prev + 10, maxHeight));
+          } else if (e.key === "ArrowDown") {
+            setHeight((prev) => Math.max(prev - 10, minHeight));
+          }
+        }}
         onMouseDown={startResizing}
-        style={{ bottom: height - 4 }}
         role="slider"
-        aria-valuenow={minHeight}
+        style={{ bottom: height - 4 }}
+        tabIndex={0}
       />
 
       <div
         className={cn(
-          'fixed bottom-0 z-40 flex w-full flex-col overflow-x-hidden overflow-y-scroll border-zinc-200 border-t bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900',
+          "fixed bottom-0 z-40 flex w-full flex-col overflow-x-hidden overflow-y-scroll border-zinc-200 border-t bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900",
           {
-            'select-none': isResizing,
-          },
+            "select-none": isResizing,
+          }
         )}
         style={{ height }}
       >
@@ -104,10 +116,10 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
             <div>Console</div>
           </div>
           <Button
-            variant="ghost"
             className="size-fit p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            size="icon"
             onClick={() => setConsoleOutputs([])}
+            size="icon"
+            variant="ghost"
           >
             <CrossSmallIcon />
           </Button>
@@ -116,57 +128,58 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         <div>
           {consoleOutputs.map((consoleOutput, index) => (
             <div
-              key={consoleOutput.id}
               className="flex flex-row border-zinc-200 border-b bg-zinc-50 px-4 py-2 font-mono text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              key={consoleOutput.id}
             >
               <div
-                className={cn('w-12 shrink-0', {
-                  'text-muted-foreground': [
-                    'in_progress',
-                    'loading_packages',
+                className={cn("w-12 shrink-0", {
+                  "text-muted-foreground": [
+                    "in_progress",
+                    "loading_packages",
                   ].includes(consoleOutput.status),
-                  'text-emerald-500': consoleOutput.status === 'completed',
-                  'text-red-400': consoleOutput.status === 'failed',
+                  "text-emerald-500": consoleOutput.status === "completed",
+                  "text-red-400": consoleOutput.status === "failed",
                 })}
               >
                 [{index + 1}]
               </div>
-              {['in_progress', 'loading_packages'].includes(
-                consoleOutput.status,
+              {["in_progress", "loading_packages"].includes(
+                consoleOutput.status
               ) ? (
                 <div className="flex flex-row gap-2">
                   <div className="mt-0.5 mb-auto size-fit self-center">
                     <Loader size={16} />
                   </div>
                   <div className="text-muted-foreground">
-                    {consoleOutput.status === 'in_progress'
-                      ? 'Initializing...'
-                      : consoleOutput.status === 'loading_packages'
+                    {consoleOutput.status === "in_progress"
+                      ? "Initializing..."
+                      : consoleOutput.status === "loading_packages"
                         ? consoleOutput.contents.map((content) =>
-                            content.type === 'text' ? content.value : null,
+                            content.type === "text" ? content.value : null
                           )
                         : null}
                   </div>
                 </div>
               ) : (
                 <div className="flex w-full flex-col gap-2 overflow-x-scroll text-zinc-900 dark:text-zinc-50">
-                  {consoleOutput.contents.map((content, index) =>
-                    content.type === 'image' ? (
-                      <picture key={`${consoleOutput.id}-${index}`}>
+                  {consoleOutput.contents.map((content, contentIndex) =>
+                    content.type === "image" ? (
+                      <picture key={`${consoleOutput.id}-${contentIndex}`}>
+                        {/** biome-ignore lint/nursery/useImageSize: "Generated image without explicit size" */}
                         <img
-                          src={content.value}
                           alt="output"
                           className="w-full max-w-(--breakpoint-toast-mobile) rounded-md"
+                          src={content.value}
                         />
                       </picture>
                     ) : (
                       <div
-                        key={`${consoleOutput.id}-${index}`}
                         className="w-full whitespace-pre-line break-words"
+                        key={`${consoleOutput.id}-${contentIndex}`}
                       >
                         {content.value}
                       </div>
-                    ),
+                    )
                   )}
                 </div>
               )}
