@@ -439,16 +439,10 @@ function PureModelSelectorCompact({
       <PromptInputModelSelectContent className="min-w-[260px] p-0">
         <div className="flex flex-col gap-px">
           {chatModels.map((model) => (
-            <SelectItem
-              className="px-3 py-2 text-xs"
-              key={model.id}
-              value={model.name}
-            >
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <div className="truncate font-medium text-xs">{model.name}</div>
-                <div className="truncate text-[10px] text-muted-foreground leading-tight">
-                  {model.description}
-                </div>
+            <SelectItem key={model.id} value={model.name}>
+              <div className="truncate font-medium text-xs">{model.name}</div>
+              <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
+                {model.description}
               </div>
             </SelectItem>
           ))}
