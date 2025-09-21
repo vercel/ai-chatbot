@@ -140,7 +140,7 @@ export async function POST(request: Request) {
           titleError.message?.includes('No authentication provided') ||
           titleError.message?.includes('AI Gateway requires a valid credit card'))
         ) {
-          return new ChatSDKError('bad_request:activate_gateway').toResponse();
+          throw titleError;
         }
         console.warn('Title generation failed, using default:', titleError);
       }
