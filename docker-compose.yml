@@ -1,0 +1,43 @@
+services:
+  app:
+    build: .
+    container_name: ai-chatbot
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET}
+      XAI_API_KEY: ${XAI_API_KEY}
+      BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN}
+      POSTGRES_URL: postgres://postgres:postgres@db:5432/ai_chatbot
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16-alpine
+    container_name: ai-chatbot-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_chatbot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8-alpine
+    container_name: ai-chatbot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+  node_modules:
