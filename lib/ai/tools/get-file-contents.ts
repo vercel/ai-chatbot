@@ -24,7 +24,9 @@ export const getFileContents = ({
       file_id: z
         .string()
         .min(1, 'file_id is required')
-        .describe('The vector store file ID returned when listing knowledge files.'),
+        .describe(
+          'The vector store file ID returned when listing knowledge files.',
+        ),
     }),
     execute: async ({ file_id }) => {
       if (!session?.user?.email) {

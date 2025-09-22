@@ -130,7 +130,10 @@ export async function POST(request: NextRequest) {
         .set({ agentId: newAgent.id, updatedAt: new Date() })
         .where(
           and(
-            eq(schema.agentVectorStoreFile.vectorStoreId, validatedData.vectorStoreId),
+            eq(
+              schema.agentVectorStoreFile.vectorStoreId,
+              validatedData.vectorStoreId,
+            ),
             eq(schema.agentVectorStoreFile.userId, dbUser.id),
           ),
         );

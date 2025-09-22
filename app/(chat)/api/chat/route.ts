@@ -227,8 +227,8 @@ export async function POST(request: Request) {
     let finalUsage: LanguageModelUsage | undefined;
 
     const resolvedVectorStoreId = agentSlug
-      ? agentContext?.agent?.vectorStoreId ?? undefined
-      : agentVectorStoreId ?? undefined;
+      ? (agentContext?.agent?.vectorStoreId ?? undefined)
+      : (agentVectorStoreId ?? undefined);
 
     const knowledgeFileMetadata = resolvedVectorStoreId
       ? await getVectorStoreFilesByUser({
@@ -247,7 +247,6 @@ export async function POST(request: Request) {
       execute: async ({ writer: dataStream }) => {
         // Build your tool set (the same set you pass to streamText)
         const tools: Record<string, any> = {
-
           requestSuggestions: requestSuggestions({
             session: aiToolsSession,
             dataStream,
@@ -345,8 +344,7 @@ export async function POST(request: Request) {
 
         const activeToolsForRun = availableToolIds.filter(
           (toolId) =>
-            requestedToolSet.has(toolId) ||
-            nonConfigurableToolIds.has(toolId),
+            requestedToolSet.has(toolId) || nonConfigurableToolIds.has(toolId),
         );
 
         const validated = await validateUIMessages({
@@ -390,8 +388,7 @@ export async function POST(request: Request) {
           : previewAgentContext
             ? {
                 agentPrompt: previewAgentContext.agentPrompt || '',
-                agentName:
-                  previewAgentContext.agentName || 'Preview Agent',
+                agentName: previewAgentContext.agentName || 'Preview Agent',
                 knowledgeFiles: knowledgeFileSummaries,
               }
             : knowledgeFileSummaries.length > 0

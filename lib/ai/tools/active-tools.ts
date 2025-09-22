@@ -20,7 +20,6 @@ export const TOOL_GROUPS: Array<ToolGroup> = [
         label: 'Web search',
         description: 'Use OpenAI web search results when relevant.',
       },
-
     ],
   },
   {

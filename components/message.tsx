@@ -256,7 +256,6 @@ const PurePreviewMessage = ({
                     );
                   }
 
-
                   if (type === 'tool-requestSuggestions') {
                     const { toolCallId, state } = part;
 

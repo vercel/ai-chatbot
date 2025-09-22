@@ -65,13 +65,10 @@ export async function POST(req: Request) {
         : { schema }),
     });
 
-    return new Response(
-      JSON.stringify({ result: response.object }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
+    return new Response(JSON.stringify({ result: response.object }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new Response(

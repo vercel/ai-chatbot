@@ -100,7 +100,9 @@ export const agentVectorStoreFile = pgTable(
   }),
 );
 
-export type AgentVectorStoreFile = InferSelectModel<typeof agentVectorStoreFile>;
+export type AgentVectorStoreFile = InferSelectModel<
+  typeof agentVectorStoreFile
+>;
 
 export const userAgent = pgTable(
   'UserAgent',

@@ -4,10 +4,7 @@ import { useRef, useState } from 'react';
 import type { Agent } from '@/lib/db/schema';
 import { AgentPreview } from '../../new/agent-preview';
 import { EditAgentHeader } from './edit-agent-header';
-import {
-  EditAgentForm,
-  type EditAgentFormHandle,
-} from './edit-agent-form';
+import { EditAgentForm, type EditAgentFormHandle } from './edit-agent-form';
 
 interface AuthUser {
   id: string;

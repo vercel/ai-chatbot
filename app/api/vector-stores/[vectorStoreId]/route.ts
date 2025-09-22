@@ -59,7 +59,10 @@ export async function GET(
       });
 
       if (!vectorStore) {
-        return NextResponse.json({ error: 'Vector store not found' }, { status: 404 });
+        return NextResponse.json(
+          { error: 'Vector store not found' },
+          { status: 404 },
+        );
       }
 
       // Verify ownership via metadata or database linkage
@@ -126,14 +129,13 @@ export async function GET(
 
         files.push({
           id: file.id,
-          name:
-            dbFileMap.get(file.id)?.fileName ??
-            inferredName ??
-            file.id,
+          name: dbFileMap.get(file.id)?.fileName ?? inferredName ?? file.id,
           status: file.status,
           usage_bytes: file.usage_bytes ?? 0,
           size:
-            dbFileMap.get(file.id)?.fileSizeBytes ?? file.usage_bytes ?? undefined,
+            dbFileMap.get(file.id)?.fileSizeBytes ??
+            file.usage_bytes ??
+            undefined,
           created_at: file.created_at,
           attributes,
         });
