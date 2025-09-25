@@ -1,14 +1,14 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps } from "react";
 
-import { type SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { type SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
 
-import { SidebarLeftIcon } from './icons';
-import { Button } from './ui/button';
+import { SidebarLeftIcon } from "./icons";
+import { Button } from "./ui/button";
 
 export function SidebarToggle({
   className,
@@ -27,7 +27,7 @@ export function SidebarToggle({
           <SidebarLeftIcon size={16} />
         </Button>
       </TooltipTrigger>
-      <TooltipContent align="start">Toggle Sidebar</TooltipContent>
+      <TooltipContent align="start">Переключить сайдбар</TooltipContent>
     </Tooltip>
   );
 }
