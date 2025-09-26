@@ -112,7 +112,6 @@ const PurePreviewMessage = ({
             {message.parts?.map((part, index) => {
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
-
               if (type === "reasoning" && part.text?.trim().length > 0) {
                 return (
                   <MessageReasoning
@@ -213,7 +212,7 @@ const PurePreviewMessage = ({
                       )}
                       {state === "output-available" && (
                         <ToolOutput
-                          output={<CreatePDFToolResult content={part.output} />}
+                          output={<CreatePDFToolResult content={part.output.structuredContent} />}
                           errorText={undefined}
                         />
                       )}

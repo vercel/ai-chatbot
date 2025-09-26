@@ -7,6 +7,7 @@ import {
   smoothStream,
   stepCountIs,
   streamText,
+  tool,
 } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
@@ -40,7 +41,6 @@ import type { ChatMessage } from "@/lib/types";
 import type { ChatModel } from "@/lib/ai/models";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { createPdf } from "@/lib/ai/tools/create-pdf";
 import { openai } from "@ai-sdk/openai";
 
 export const maxDuration = 60;
@@ -154,12 +154,12 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    // const httpTransport = new StreamableHTTPClientTransport(new URL('http://146.103.97.69:8765/mcp'));
-    // const httpClient = await experimental_createMCPClient({
-    //   transport: httpTransport,
-    // })
-    //
-    // const mcpTools = await httpClient.tools();
+    const httpTransport = new StreamableHTTPClientTransport(new URL('http://146.103.97.69:8765/mcp'));
+    const httpClient = await experimental_createMCPClient({
+      transport: httpTransport,
+    })
+
+    const mcpTools = await httpClient.tools();
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -172,12 +172,8 @@ export async function POST(request: Request) {
             selectedChatModel === "chat-model-reasoning"
               ? []
               : [
-                  // 'getWeather',
                   "web_search",
                   "createPdf",
-                  // 'createDocument',
-                  // 'updateDocument',
-                  // 'requestSuggestions',
                 ],
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
@@ -190,15 +186,11 @@ export async function POST(request: Request) {
                 country: "RU",
               },
             }),
-            // getWeather,
-            createPdf,
-            // createDocument: createDocument({ session, dataStream }),
-            // updateDocument: updateDocument({ session, dataStream }),
-            // requestSuggestions: requestSuggestions({
-            // session,
-            // dataStream,
-            // }),
-            // ...mcpTools,
+            createPdf: tool({
+              description: mcpTools["createPdf"].description,
+              inputSchema: mcpTools["createPdf"].inputSchema,
+              execute: mcpTools["createPdf"].execute,
+            }),
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,

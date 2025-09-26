@@ -15,6 +15,7 @@ import SdkPDFTemplate from "./pdf-templates/sdk-template";
 import { Button } from "./ui/button";
 import TemplateTable from "./pdf-templates/template-table";
 
+
 interface Props {
   content: z.infer<typeof PDFSchema>;
 }
@@ -38,7 +39,9 @@ const templateMap: Record<
 
 applyPlugin(jsPDF);
 
+
 const CreatePDFToolResult = ({ content }: Props) => {
+  console.log(content)
   const headerRef = useRef<HTMLDivElement | null>(null);
   const footerRef = useRef<HTMLDivElement | null>(null);
   const tableRef = useRef<HTMLTableElement | null>(null);
