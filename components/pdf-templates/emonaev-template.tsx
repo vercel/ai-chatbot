@@ -1,14 +1,14 @@
+import { TemplateProps } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
-import React, { ForwardedRef } from "react";
+import React from "react";
 
-interface Props {
-  headerRef: ForwardedRef<HTMLDivElement>;
-  footerRef: ForwardedRef<HTMLDivElement>;
-  sum: number;
-  children: React.ReactNode;
-}
-
-const EmonaevPDFTemplate = ({ headerRef, footerRef, sum, children }: Props) => {
+const EmonaevPDFTemplate = ({
+  headerRef,
+  footerRef,
+  sum,
+  children,
+  content,
+}: TemplateProps) => {
   // НДС ~ 20% «внутри» цены: НДС = sum - sum/1.2
   const nds = sum > 0 ? sum - sum / 1.2 : 0;
 
@@ -39,14 +39,17 @@ const EmonaevPDFTemplate = ({ headerRef, footerRef, sum, children }: Props) => {
 
         <div className="flex justify-end mt-4">
           <div className="whitespace-pre-wrap text-right max-w-[160px]">
-            Директору МКУ «УИТС г. Сургута» П.М. Зыкову
+            {content.receiver}
           </div>
         </div>
 
+        {/*
         <p className="mt-4 text-center">Уважаемый Павел Михайлович!</p>
+        */}
 
         <div className="text-left mt-4">
-          В ответ на Ваш запрос от 27.08.2025 № 11-11-1215/5.
+          В ответ на Ваш запрос от {content.customerRequestDate} №{" "}
+          {content.customerRequestNumber}.
         </div>
       </div>
 
@@ -73,15 +76,14 @@ const EmonaevPDFTemplate = ({ headerRef, footerRef, sum, children }: Props) => {
       >
         <div className="mt-3">
           <ol className="ml-6 list-none">
-            <li>1. Срок действия предложения: до 31.12.2025.</li>
             <li>
-              2. Срок поставки товара: в срок до 31.10.2025 (включительно).
+              1. Срок действия предложения: до {content.offerValidityPeriod}
             </li>
             <li>
-              3. Место поставки товара: 628408, Российская Федерация,
-              Ханты-Мансийский автономный округ – Югра, город Сургут, ул. 30 лет
-              Победы, дом 17, склад МКУ «УИТС г. Сургута».
+              2. Срок поставки товара: в срок до {content.deliveryPeriod}{" "}
+              (включительно).
             </li>
+            <li>3. Место поставки товара: {content.deliveryAddress}</li>
             <li>
               4. Цена включает в себя: стоимость Товара, расходы, связанные с
               доставкой, разгрузкой-погрузкой, размещением в местах хранения

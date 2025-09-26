@@ -1,14 +1,14 @@
+import { TemplateProps } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
-import React, { ForwardedRef } from "react";
+import React from "react";
 
-interface Props {
-  headerRef: ForwardedRef<HTMLDivElement>;
-  footerRef: ForwardedRef<HTMLDivElement>;
-  sum: number;
-  children: React.ReactNode;
-}
-
-const RemmarkPDFTemplate = ({ headerRef, footerRef, sum, children }: Props) => {
+const RemmarkPDFTemplate = ({
+  headerRef,
+  footerRef,
+  sum,
+  children,
+  content,
+}: TemplateProps) => {
   return (
     <div
       style={{ fontFamily: "Roboto" }}
@@ -53,10 +53,10 @@ const RemmarkPDFTemplate = ({ headerRef, footerRef, sum, children }: Props) => {
         <hr className="mt-4 border-t-2 border-black" />
         <div className="flex justify-between">
           <div>
-            <span>Исх. № 1157</span>
-            <span>От 01.09.2025</span>
+            <span>Исх. № {content.offerNumber}</span>
+            <span>От {content.offerDate}</span>
           </div>
-          <div>Кому: МКУ какое-то такое-то привет пока</div>
+          <div>Кому: {content.receiver}</div>
         </div>
         <h1 className="text-center text-base">Коммерческое предложение</h1>
       </div>
@@ -85,18 +85,18 @@ const RemmarkPDFTemplate = ({ headerRef, footerRef, sum, children }: Props) => {
           <p>
             Цены действительны на спецификацию в полном объеме. В случае ее
             изменения предложение может быть пересмотрено.
-            <br />В ответ на Ваш запрос от 27.08.2025г. № 11-11-1215/5
+            <br />В ответ на Ваш запрос от {content.customerRequestDate}г. №{" "}
+            {content.customerRequestNumber}
           </p>
           <ol className="mt-3 ml-6 list-none">
-            <li>1. Срок действия предложения: до 31.12.2025.</li>
             <li>
-              2. Срок поставки товара: в срок до 31.10.2025 (включительно).
+              1. Срок действия предложения: до {content.offerValidityPeriod}.
             </li>
             <li>
-              3. Место поставки товара: 628408, Российская Федерация,
-              Ханты-Мансийский автономный округ – Югра, город Сургут, ул. 30 лет
-              Победы, дом 17, склад МКУ «УИТС г. Сургута».
+              2. Срок поставки товара: в срок до {content.deliveryPeriod}{" "}
+              (включительно).
             </li>
+            <li>3. Место поставки товара: {content.deliveryAddress}</li>
             <li>
               4. Цена включает в себя: стоимость Товара, расходы, связанные с
               доставкой, разгрузкой-погрузкой, размещением в местах хранения

@@ -7,7 +7,8 @@ import type { InferUITool, UIMessage } from "ai";
 
 import type { ArtifactKind } from "@/components/artifact";
 import type { Suggestion } from "./db/schema";
-import { createPdf } from "./ai/tools/create-pdf";
+import { createPdf, PDFSchema } from "./ai/tools/create-pdf";
+import { ForwardedRef } from "react";
 
 export type DataPart = { type: "append-message"; message: string };
 
@@ -57,4 +58,12 @@ export interface Attachment {
   name: string;
   url: string;
   contentType: string;
+}
+
+export interface TemplateProps {
+  headerRef: ForwardedRef<HTMLDivElement>;
+  footerRef: ForwardedRef<HTMLDivElement>;
+  sum: number;
+  children: React.ReactNode;
+  content: z.infer<typeof PDFSchema>;
 }

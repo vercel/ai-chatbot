@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ForwardedRef, useRef } from "react";
+import React, { useRef } from "react";
 import jsPDF from "jspdf";
 import Roboto from "@/public/fonts/Roboto-Regular";
 import RobotoBold from "@/public/fonts/Roboto-Bold";
@@ -8,12 +8,13 @@ import RobotoItalic from "@/public/fonts/Roboto-Italic";
 import RobotoBoldItalic from "@/public/fonts/Roboto-BoldItalic";
 import { z } from "zod";
 import { PDFSchema } from "@/lib/ai/tools/create-pdf";
-import { applyPlugin, autoTable } from "jspdf-autotable";
+import { applyPlugin } from "jspdf-autotable";
 import EmonaevPDFTemplate from "./pdf-templates/emonaev-template";
 import RemmarkPDFTemplate from "./pdf-templates/remmark-template";
 import SdkPDFTemplate from "./pdf-templates/sdk-template";
 import { Button } from "./ui/button";
 import TemplateTable from "./pdf-templates/template-table";
+import { TemplateProps } from "@/lib/types";
 
 interface Props {
   content: z.infer<typeof PDFSchema>;
@@ -22,12 +23,7 @@ interface Props {
 const templateMap: Record<
   string,
   {
-    component: React.ComponentType<{
-      sum: number;
-      headerRef: ForwardedRef<HTMLDivElement>;
-      footerRef: ForwardedRef<HTMLDivElement>;
-      children: React.ReactNode;
-    }>;
+    component: React.ComponentType<TemplateProps>;
     tableOffset: number;
   }
 > = {
@@ -83,14 +79,14 @@ const CreatePDFToolResult = ({ content }: Props) => {
             showHead: "firstPage",
           });
 
-          // const lastPage = doc.getNumberOfPages();
-          // doc.setPage(lastPage);
-
           console.log(doc.lastAutoTable);
           doc.html(footerRef.current!, {
             y:
               doc.lastAutoTable.finalY +
-              doc.lastAutoTable.pageNumber * 205 +
+              (doc.lastAutoTable.pageNumber === 1
+                ? 0
+                : doc.lastAutoTable.pageNumber) *
+                205 +
               tableOffset,
             callback: function (doc) {
               doc.save(content.filename.split(".")[0]);
@@ -114,7 +110,12 @@ const CreatePDFToolResult = ({ content }: Props) => {
   return (
     <>
       <Button onClick={savePdf}>Скачать PDF</Button>
-      <Template headerRef={headerRef} footerRef={footerRef} sum={sum}>
+      <Template
+        headerRef={headerRef}
+        footerRef={footerRef}
+        sum={sum}
+        content={content}
+      >
         <TemplateTable products={content.products} ref={tableRef} />
       </Template>
     </>

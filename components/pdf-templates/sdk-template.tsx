@@ -1,15 +1,16 @@
-import React, { ForwardedRef } from "react";
+import React from "react";
 import { formatNumber } from "@/lib/utils";
+import { TemplateProps } from "@/lib/types";
 
-interface Props {
-  sum: number;
-  headerRef: ForwardedRef<HTMLDivElement>;
-  footerRef: ForwardedRef<HTMLDivElement>;
-  children: React.ReactNode;
-}
-
-const SdkPDFTemplate = ({ sum, headerRef, footerRef, children }: Props) => {
+const SdkPDFTemplate = ({
+  sum,
+  headerRef,
+  footerRef,
+  children,
+  content,
+}: TemplateProps) => {
   const nds = sum > 0 ? sum - sum / 1.2 : 0;
+  console.log(content);
 
   return (
     <div
@@ -62,8 +63,10 @@ const SdkPDFTemplate = ({ sum, headerRef, footerRef, children }: Props) => {
 
       {/* Intro line with outgoing number and recipient */}
       <div className="mt-1 flex justify-between">
-        <div>Исх. № 108 от 01/09/2025г.</div>
-        <div>МКУ «УИТС г. Сургута»</div>
+        <div>
+          Исх. № {content.offerNumber} от {content.offerDate}г.
+        </div>
+        <div>{content.receiver}</div>
       </div>
 
       <h1 className="text-center text-base mt-24 font-bold">
@@ -87,20 +90,20 @@ const SdkPDFTemplate = ({ sum, headerRef, footerRef, children }: Props) => {
 
         {/* Conditions block */}
         <div className="mt-3">
-          В ответ на Ваш запрос от 27.08.2025г. № 11-11-1215/5
+          В ответ на Ваш запрос от {content.customerRequestDate}г. №{" "}
+          {content.customerRequestNumber}
         </div>
         <div>
-          Срок действия предложения: до 31.12.2025. 2. Срок поставки товара: в
-          срок до 31.10.2025 (включительно). 3. Место поставки товара: 628408,
-          Российская Федерация, Ханты-Мансийский автономный округ – Югра, город
-          Сургут, ул. 30 лет Победы, дом 17, склад МКУ «УИТС г. Сургута». 4.
-          Цена включает в себя: стоимость Товара, расходы, связанные с
-          доставкой, разгрузкой-погрузкой, размещением в местах хранения
-          Заказчика, стоимость упаковки (тары), маркировки, страхование,
-          таможенные платежи (пошлины), НДС, другие установленные налоги, сборы
-          и иные расходы, связанные с исполнением Контракта. 5. Гарантийный срок
-          исчисляется с момента подписания документа о приемке и составляет 12
-          (двенадцать) месяцев.
+          Срок действия предложения: до {content.offerValidityPeriod}. 2. Срок
+          поставки товара: в срок до {content.deliveryPeriod} (включительно). 3.
+          Место поставки товара: {content.deliveryAddress} 4. Цена включает в
+          себя: стоимость Товара, расходы, связанные с доставкой,
+          разгрузкой-погрузкой, размещением в местах хранения Заказчика,
+          стоимость упаковки (тары), маркировки, страхование, таможенные платежи
+          (пошлины), НДС, другие установленные налоги, сборы и иные расходы,
+          связанные с исполнением Контракта. 5. Гарантийный срок исчисляется с
+          момента подписания документа о приемке и составляет 12 (двенадцать)
+          месяцев.
         </div>
       </div>
     </div>
