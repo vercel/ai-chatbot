@@ -128,6 +128,14 @@ export async function POST(request: Request) {
 
     const messagesFromDb = await getMessagesByChatId({ id });
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
+    const modelMessages = [...convertToModelMessages(uiMessages)];
+
+    const fileData = extractFileData(message);
+    if (fileData)
+      modelMessages.unshift({
+        role: "system",
+        content: `File content: ${fileData}`,
+      });
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -166,7 +174,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
+          messages: modelMessages,
           stopWhen: stepCountIs(5),
           experimental_activeTools:
             selectedChatModel === "chat-model-reasoning"
@@ -276,4 +284,18 @@ export async function DELETE(request: Request) {
   const deletedChat = await deleteChatById({ id });
 
   return Response.json(deletedChat, { status: 200 });
+}
+
+export function extractFileData(message: ChatMessage): ChatMessage {
+  const resultingParts = [];
+  for (const part of message.parts) {
+    if (part.mediaType === "text/plain")
+      resultingParts.push({
+        type: "system",
+        text: "File content is: 2 + 2 = 4",
+      });
+    else resultingParts.push(part);
+  }
+
+  return { ...message, parts: resultingParts };
 }
