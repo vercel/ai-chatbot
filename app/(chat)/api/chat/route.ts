@@ -127,10 +127,13 @@ export async function POST(request: Request) {
     }
 
     const messagesFromDb = await getMessagesByChatId({ id });
-    const uiMessages = [...convertToUIMessages(messagesFromDb), message];
+    const [filteredMessage, fileData] = await extractFileData(message);
+    const uiMessages = [
+      ...convertToUIMessages(messagesFromDb),
+      filteredMessage,
+    ];
     const modelMessages = [...convertToModelMessages(uiMessages)];
 
-    const fileData = extractFileData(message);
     if (fileData)
       modelMessages.unshift({
         role: "system",
@@ -150,9 +153,9 @@ export async function POST(request: Request) {
       messages: [
         {
           chatId: id,
-          id: message.id,
+          id: filteredMessage.id,
           role: "user",
-          parts: message.parts,
+          parts: filteredMessage.parts,
           attachments: [],
           createdAt: new Date(),
         },
@@ -286,16 +289,18 @@ export async function DELETE(request: Request) {
   return Response.json(deletedChat, { status: 200 });
 }
 
-export function extractFileData(message: ChatMessage): ChatMessage {
-  const resultingParts = [];
+export async function extractFileData(
+  message: ChatMessage,
+): Promise<[ChatMessage, string | null]> {
+  const filteredParts = [];
+  let fileContent = null;
   for (const part of message.parts) {
-    if (part.mediaType === "text/plain")
-      resultingParts.push({
-        type: "system",
-        text: "File content is: 2 + 2 = 4",
-      });
-    else resultingParts.push(part);
+    console.log(part);
+    if (part.type === "file" && part.mediaType === "text/plain") {
+      const file = await fetch(part.url);
+      fileContent = await file.text();
+    } else filteredParts.push(part);
   }
 
-  return { ...message, parts: resultingParts };
+  return [{ ...message, parts: filteredParts }, fileContent];
 }
