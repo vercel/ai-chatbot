@@ -1,8 +1,8 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
 
 import { AuthForm } from "@/components/auth-form";
@@ -15,6 +15,7 @@ export default function Page() {
 
   const [email, setEmail] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [hasShownToast, setHasShownToast] = useState(false);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
@@ -26,26 +27,35 @@ export default function Page() {
   const { update: updateSession } = useSession();
 
   useEffect(() => {
+    if (state.status === "idle" || hasShownToast) {
+      return;
+    }
+
     if (state.status === "failed") {
       toast({
         type: "error",
         description: "Invalid credentials!",
       });
+      setHasShownToast(true);
     } else if (state.status === "invalid_data") {
       toast({
         type: "error",
         description: "Failed validating your submission!",
       });
+      setHasShownToast(true);
     } else if (state.status === "success") {
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      setHasShownToast(true);
+      
+      updateSession().then(() => {
+        router.push("/");
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, router.refresh, updateSession]);
+  }, [state.status, router, updateSession, hasShownToast]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
+    setHasShownToast(false); // Reset toast state for new submission
     formAction(formData);
   };
 
