@@ -38,7 +38,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
-import { mastra } from '@/lib/mastra';
+// Mastra import removed - web automation now uses chatRoute
 
 export const maxDuration = 300; // 5 minutes for web automation tasks
 
@@ -151,35 +151,9 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    // Handle web automation model with Mastra agent
+    // Web automation model is now handled by Mastra chatRoute
     if (selectedChatModel === 'web-automation-model') {
-      const webAutomationAgent = mastra.getAgent('webAutomationAgent');
-      
-      // Convert UI messages to Mastra format
-      const mastraMessages = uiMessages.map((msg) => ({
-        role: msg.role,
-        content: msg.parts.map(part => part.type === 'text' ? part.text : '').join('\n')
-      }));
-
-      try {
-        const stream = await webAutomationAgent.streamVNext(mastraMessages, {
-          format: 'aisdk', // Enable AI SDK v5 compatibility
-          memory: {
-            thread: id, // Use the chat ID as the thread ID
-            resource: session.user.id, // Use the user ID as the resource ID
-          },
-          onStepFinish: (step: any) => {
-            // Log step details to help debug tool call visibility
-            console.log('Step finished:', JSON.stringify(step, null, 2));
-          }
-        });
-
-        // Return the stream as a UI message stream response
-        return stream.toUIMessageStreamResponse();
-      } catch (error) {
-        console.error('Error with Mastra web automation agent:', error);
-        return new ChatSDKError('internal_server_error:api').toResponse();
-      }
+      return new ChatSDKError('bad_request:api', 'Web automation model should use Mastra chatRoute').toResponse();
     }
 
     // Default handling for other models

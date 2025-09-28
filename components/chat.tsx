@@ -69,10 +69,14 @@ export function Chat({
     experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
-      api: '/api/chat',
+      api: initialChatModel === 'web-automation-model' ?
+        (process.env.NEXT_PUBLIC_MASTRA_SERVER_URL ?
+          `${process.env.NEXT_PUBLIC_MASTRA_SERVER_URL}/chat` :
+          'http://mastra-app:4112/chat') :
+        '/api/chat',
       fetch: fetchWithErrorHandlers,
-      prepareSendMessagesRequest({ messages, id, body }) {
-        return {
+      prepareSendMessagesRequest: initialChatModel !== 'web-automation-model' ?
+        ({ messages, id, body }) => ({
           body: {
             id,
             message: messages.at(-1),
@@ -80,8 +84,7 @@ export function Chat({
             selectedVisibilityType: visibilityType,
             ...body,
           },
-        };
-      },
+        }) : undefined,
     }),
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));

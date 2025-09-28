@@ -1,5 +1,7 @@
-// Import the built Mastra app from local client build
-import { ft as builtMastra } from '../../.mastra/output/mastra.mjs';
+// Use MastraClient to connect to the Mastra server
+import { MastraClient } from '@mastra/client-js';
 
-export const mastra = builtMastra;
+export const mastra = new MastraClient({
+  baseUrl: process.env.MASTRA_SERVER_URL || "http://localhost:4111",
+});
 export type { Agent } from '@mastra/core/agent';
