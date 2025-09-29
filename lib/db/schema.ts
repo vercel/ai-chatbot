@@ -171,3 +171,26 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// Stores Google OAuth credentials per user.
+export const googleCredential = pgTable(
+  "GoogleCredential",
+  {
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id),
+    provider: varchar("provider", { length: 32 }).notNull().default("google"),
+    accessToken: text("accessToken").notNull(),
+    refreshToken: text("refreshToken"),
+    scope: text("scope"),
+    tokenType: varchar("tokenType", { length: 32 }),
+    expiry: timestamp("expiry"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.userId, table.provider] }),
+  })
+);
+
+export type GoogleCredential = InferSelectModel<typeof googleCredential>;

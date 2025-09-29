@@ -31,6 +31,7 @@ import {
   type User,
   user,
   vote,
+  googleCredential,
 } from "./schema";
 import { generateHashedPassword } from "./utils";
 
@@ -557,6 +558,110 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to get stream ids by chat id"
+    );
+  }
+}
+
+// Google OAuth token storage
+export async function upsertGoogleTokens({
+  userId,
+  accessToken,
+  refreshToken,
+  scope,
+  tokenType,
+  expiry,
+}: {
+  userId: string;
+  accessToken: string;
+  refreshToken?: string | null;
+  scope?: string | null;
+  tokenType?: string | null;
+  expiry?: Date | null;
+}) {
+  try {
+    const existing = await db
+      .select()
+      .from(googleCredential)
+      .where(
+        and(
+          eq(googleCredential.userId, userId),
+          eq(googleCredential.provider, "google")
+        )
+      );
+
+    if (existing.length > 0) {
+      return await db
+        .update(googleCredential)
+        .set({
+          accessToken,
+          refreshToken: refreshToken ?? null,
+          scope: scope ?? null,
+          tokenType: tokenType ?? null,
+          expiry: expiry ?? null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(googleCredential.userId, userId),
+            eq(googleCredential.provider, "google")
+          )
+        );
+    }
+
+    return await db.insert(googleCredential).values({
+      userId,
+      provider: "google",
+      accessToken,
+      refreshToken: refreshToken ?? null,
+      scope: scope ?? null,
+      tokenType: tokenType ?? null,
+      expiry: expiry ?? null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to upsert Google tokens"
+    );
+  }
+}
+
+export async function getGoogleTokensByUserId(userId: string) {
+  try {
+    const rows = await db
+      .select()
+      .from(googleCredential)
+      .where(
+        and(
+          eq(googleCredential.userId, userId),
+          eq(googleCredential.provider, "google")
+        )
+      )
+      .limit(1);
+    return rows[0] ?? null;
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get Google tokens by user id"
+    );
+  }
+}
+
+export async function deleteGoogleTokensByUserId(userId: string) {
+  try {
+    return await db
+      .delete(googleCredential)
+      .where(
+        and(
+          eq(googleCredential.userId, userId),
+          eq(googleCredential.provider, "google")
+        )
+      );
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to delete Google tokens by user id"
     );
   }
 }
