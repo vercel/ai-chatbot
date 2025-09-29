@@ -1,4 +1,4 @@
-import { auth } from "@/app/(auth)/auth";
+import { withAuthApi } from "@/lib/auth/route-guards";
 import type { ArtifactKind } from "@/components/artifact";
 import {
   deleteDocumentsByIdAfterTimestamp,
@@ -7,7 +7,7 @@ import {
 } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
-export async function GET(request: Request) {
+export const GET = withAuthApi(async ({ request, session }) => {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
@@ -16,12 +16,6 @@ export async function GET(request: Request) {
       "bad_request:api",
       "Parameter id is missing"
     ).toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:document").toResponse();
   }
 
   const documents = await getDocumentsById({ id });
@@ -37,9 +31,11 @@ export async function GET(request: Request) {
   }
 
   return Response.json(documents, { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:document").toResponse(),
+});
 
-export async function POST(request: Request) {
+export const POST = withAuthApi(async ({ request, session }) => {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
@@ -50,11 +46,7 @@ export async function POST(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("not_found:document").toResponse();
-  }
+  // session guaranteed by wrapper
 
   const {
     content,
@@ -82,9 +74,11 @@ export async function POST(request: Request) {
   });
 
   return Response.json(document, { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:document").toResponse(),
+});
 
-export async function DELETE(request: Request) {
+export const DELETE = withAuthApi(async ({ request, session }) => {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
   const timestamp = searchParams.get("timestamp");
@@ -103,12 +97,6 @@ export async function DELETE(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:document").toResponse();
-  }
-
   const documents = await getDocumentsById({ id });
 
   const [document] = documents;
@@ -123,4 +111,6 @@ export async function DELETE(request: Request) {
   });
 
   return Response.json(documentsDeleted, { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:document").toResponse(),
+});

@@ -1,8 +1,8 @@
-import { auth } from "@/app/(auth)/auth";
+import { withAuthApi } from "@/lib/auth/route-guards";
 import { getChatById, getVotesByChatId, voteMessage } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
-export async function GET(request: Request) {
+export const GET = withAuthApi(async ({ request, session }) => {
   const { searchParams } = new URL(request.url);
   const chatId = searchParams.get("chatId");
 
@@ -11,12 +11,6 @@ export async function GET(request: Request) {
       "bad_request:api",
       "Parameter chatId is required."
     ).toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:vote").toResponse();
   }
 
   const chat = await getChatById({ id: chatId });
@@ -32,9 +26,11 @@ export async function GET(request: Request) {
   const votes = await getVotesByChatId({ id: chatId });
 
   return Response.json(votes, { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:vote").toResponse(),
+});
 
-export async function PATCH(request: Request) {
+export const PATCH = withAuthApi(async ({ request, session }) => {
   const {
     chatId,
     messageId,
@@ -47,12 +43,6 @@ export async function PATCH(request: Request) {
       "bad_request:api",
       "Parameters chatId, messageId, and type are required."
     ).toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:vote").toResponse();
   }
 
   const chat = await getChatById({ id: chatId });
@@ -72,4 +62,6 @@ export async function PATCH(request: Request) {
   });
 
   return new Response("Message voted", { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:vote").toResponse(),
+});

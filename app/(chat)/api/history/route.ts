@@ -1,10 +1,11 @@
 import type { NextRequest } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { withAuthApi } from "@/lib/auth/route-guards";
 import { getChatsByUserId } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
+export const GET = withAuthApi(async ({ request, session }) => {
+  const nextRequest = request as unknown as NextRequest;
+  const { searchParams } = nextRequest.nextUrl;
 
   const limit = Number.parseInt(searchParams.get("limit") || "10", 10);
   const startingAfter = searchParams.get("starting_after");
@@ -17,12 +18,6 @@ export async function GET(request: NextRequest) {
     ).toResponse();
   }
 
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:chat").toResponse();
-  }
-
   const chats = await getChatsByUserId({
     id: session.user.id,
     limit,
@@ -31,4 +26,6 @@ export async function GET(request: NextRequest) {
   });
 
   return Response.json(chats);
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:chat").toResponse(),
+});

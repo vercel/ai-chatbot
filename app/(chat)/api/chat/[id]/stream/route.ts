@@ -1,6 +1,6 @@
 import { createUIMessageStream, JsonToSseTransformStream } from "ai";
 import { differenceInSeconds } from "date-fns";
-import { auth } from "@/app/(auth)/auth";
+import { withAuthApi } from "@/lib/auth/route-guards";
 import {
   getChatById,
   getMessagesByChatId,
@@ -11,11 +11,8 @@ import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import { getStreamContext } from "../../route";
 
-export async function GET(
-  _: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: chatId } = await params;
+export const GET = withAuthApi(async ({ request, params, session }) => {
+  const { id: chatId } = await (params as { params: Promise<{ id: string }> })?.params;
 
   const streamContext = getStreamContext();
   const resumeRequestedAt = new Date();
@@ -26,12 +23,6 @@ export async function GET(
 
   if (!chatId) {
     return new ChatSDKError("bad_request:api").toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:chat").toResponse();
   }
 
   let chat: Chat | null;
@@ -110,4 +101,6 @@ export async function GET(
   }
 
   return new Response(stream, { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:chat").toResponse(),
+});

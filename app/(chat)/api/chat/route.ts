@@ -16,7 +16,7 @@ import {
 import type { ModelCatalog } from "tokenlens/core";
 import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
-import { auth, type UserType } from "@/app/(auth)/auth";
+import { type UserType } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
@@ -43,6 +43,7 @@ import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
+import { withAuthApi } from "@/lib/auth/route-guards";
 
 export const maxDuration = 60;
 
@@ -84,7 +85,7 @@ export function getStreamContext() {
   return globalStreamContext;
 }
 
-export async function POST(request: Request) {
+export const POST = withAuthApi(async ({ request, session }) => {
   let requestBody: PostRequestBody;
 
   try {
@@ -106,12 +107,6 @@ export async function POST(request: Request) {
       selectedChatModel: ChatModel["id"];
       selectedVisibilityType: VisibilityType;
     } = requestBody;
-
-    const session = await auth();
-
-    if (!session?.user) {
-      return new ChatSDKError("unauthorized:chat").toResponse();
-    }
 
     const userType: UserType = session.user.type;
 
@@ -305,20 +300,16 @@ export async function POST(request: Request) {
     console.error("Unhandled error in chat API:", error, { vercelId });
     return new ChatSDKError("offline:chat").toResponse();
   }
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:chat").toResponse(),
+});
 
-export async function DELETE(request: Request) {
+export const DELETE = withAuthApi(async ({ request, session }) => {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
     return new ChatSDKError("bad_request:api").toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:chat").toResponse();
   }
 
   const chat = await getChatById({ id });
@@ -330,4 +321,6 @@ export async function DELETE(request: Request) {
   const deletedChat = await deleteChatById({ id });
 
   return Response.json(deletedChat, { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:chat").toResponse(),
+});

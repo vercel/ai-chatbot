@@ -1,8 +1,8 @@
-import { auth } from "@/app/(auth)/auth";
+import { withAuthApi } from "@/lib/auth/route-guards";
 import { getSuggestionsByDocumentId } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
-export async function GET(request: Request) {
+export const GET = withAuthApi(async ({ request, session }) => {
   const { searchParams } = new URL(request.url);
   const documentId = searchParams.get("documentId");
 
@@ -11,12 +11,6 @@ export async function GET(request: Request) {
       "bad_request:api",
       "Parameter documentId is required."
     ).toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError("unauthorized:suggestions").toResponse();
   }
 
   const suggestions = await getSuggestionsByDocumentId({
@@ -34,4 +28,6 @@ export async function GET(request: Request) {
   }
 
   return Response.json(suggestions, { status: 200 });
-}
+}, {
+  onUnauthorized: () => new ChatSDKError("unauthorized:suggestions").toResponse(),
+});
