@@ -1,6 +1,6 @@
 import { auth } from '@/app/(auth)/auth';
 import type { NextRequest } from 'next/server';
-import { getChatsByUserId } from '@/lib/db/queries';
+import { getChatsByUserId, getMastraThreadsByUserId } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 
 export async function GET(request: NextRequest) {
@@ -23,12 +23,30 @@ export async function GET(request: NextRequest) {
     return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
-  const chats = await getChatsByUserId({
+  // Get chats from both the client's Chat table and Mastra's threads
+  const { chats: clientChats } = await getChatsByUserId({
     id: session.user.id,
     limit,
     startingAfter,
     endingBefore,
   });
 
-  return Response.json(chats);
+  const mastraThreads = await getMastraThreadsByUserId({
+    id: session.user.id,
+    limit,
+  });
+
+  // Merge and sort by most recent (updatedAt for Mastra threads, createdAt for client chats)
+  const allChats = [...clientChats, ...mastraThreads]
+    .sort((a, b) => {
+      const dateA = 'updatedAt' in a ? a.updatedAt : a.createdAt;
+      const dateB = 'updatedAt' in b ? b.updatedAt : b.createdAt;
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
+    })
+    .slice(0, limit);
+
+  return Response.json({
+    chats: allChats,
+    hasMore: false, // Simplified for now
+  });
 }
