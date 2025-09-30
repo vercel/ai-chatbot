@@ -427,7 +427,7 @@ function PureModelSelectorCompact({
       value={selectedModel?.name}
     >
       <Trigger asChild>
-        <Button variant="ghost" className="px-2">
+        <Button variant="ghost" className="h-8 px-2">
           <CpuIcon size={16} />
           <span className="hidden font-medium text-xs sm:block">
             {selectedModel?.name}
