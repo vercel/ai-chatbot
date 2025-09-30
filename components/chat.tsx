@@ -24,7 +24,7 @@ import type { Vote } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
-import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
+import { fetcher, fetchWithErrorHandlers, generateJSONSafeRandomNumber } from "@/lib/utils";
 import { Artifact } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
@@ -80,15 +80,23 @@ export function Chat({
     id,
     messages: initialMessages,
     experimental_throttle: 100,
-    generateId: generateUUID,
+    generateId: generateJSONSafeRandomNumber,
     transport: new DefaultChatTransport({
       api: "/api/chat",
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest(request) {
+        const lastMessage = request.messages.at(-1);
+        if (lastMessage) {
+          // This is a hack because this framework will fill in the id field with a random number
+          // which won't line up with the database id, so we need to set it to the actual id which should be sequential,
+          // which is the length of the messages array.
+          // TODO we should just create the schema so the "id" field is named "messageId" so this framework doesn't assign an id to the message
+          lastMessage.id = request.messages.length.toString();
+        }
         return {
           body: {
             id: request.id,
-            message: request.messages.at(-1),
+            message: lastMessage,
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
             ...request.body,

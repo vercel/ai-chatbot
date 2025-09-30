@@ -26,12 +26,11 @@ export async function GET(request: Request) {
 
   const documents = await getDocumentsById({ id });
 
-  const [document] = documents;
-
-  if (!document) {
+  if (!documents || documents.length === 0) {
     return new ChatSDKError("not_found:document").toResponse();
   }
-
+  
+  const [document] = documents;
   if (document.userId !== session.user.id) {
     return new ChatSDKError("forbidden:document").toResponse();
   }
@@ -74,7 +73,7 @@ export async function POST(request: Request) {
   }
 
   const document = await saveDocument({
-    id,
+    id, 
     content,
     title,
     kind,

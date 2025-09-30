@@ -39,6 +39,7 @@ type GroupedChats = {
 export type ChatHistory = {
   chats: Chat[];
   hasMore: boolean;
+  token: string;
 };
 
 const PAGE_SIZE = 20;
@@ -50,15 +51,13 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
 
   return chats.reduce(
     (groups, chat) => {
-      const chatDate = new Date(chat.createdAt);
-
-      if (isToday(chatDate)) {
+      if (isToday(chat.createdAt)) {
         groups.today.push(chat);
-      } else if (isYesterday(chatDate)) {
+      } else if (isYesterday(chat.createdAt)) {
         groups.yesterday.push(chat);
-      } else if (chatDate > oneWeekAgo) {
+      } else if (chat.createdAt > oneWeekAgo) {
         groups.lastWeek.push(chat);
-      } else if (chatDate > oneMonthAgo) {
+      } else if (chat.createdAt > oneMonthAgo) {
         groups.lastMonth.push(chat);
       } else {
         groups.older.push(chat);
@@ -80,21 +79,19 @@ export function getChatHistoryPaginationKey(
   pageIndex: number,
   previousPageData: ChatHistory
 ) {
-  if (previousPageData && previousPageData.hasMore === false) {
+  
+  if (previousPageData && previousPageData.token === null) {
+    // No more chats to load
     return null;
   }
-
+  
+  // First page
   if (pageIndex === 0) {
     return `/api/history?limit=${PAGE_SIZE}`;
   }
 
-  const firstChatFromPage = previousPageData.chats.at(-1);
-
-  if (!firstChatFromPage) {
-    return null;
-  }
-
-  return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
+  // Subsequent pages
+  return `/api/history?cursor=${encodeURIComponent(previousPageData.token)}`;
 }
 
 export function SidebarHistory({ user }: { user: User | undefined }) {

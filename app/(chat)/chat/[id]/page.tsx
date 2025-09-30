@@ -6,7 +6,7 @@ import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
-import { convertToUIMessages } from "@/lib/utils";
+import { convertZodMessagesToUI } from "@/lib/utils";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -28,16 +28,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       return notFound();
     }
 
-    if (session.user.id !== chat.userId) {
+    if (session.user.id !== chat.userId.toString()) {
       return notFound();
     }
   }
 
-  const messagesFromDb = await getMessagesByChatId({
-    id,
-  });
+  const {messages} = await getMessagesByChatId({ id });
 
-  const uiMessages = convertToUIMessages(messagesFromDb);
+  const uiMessages = convertZodMessagesToUI(messages);
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get("chat-model");
@@ -47,12 +45,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <>
         <Chat
           autoResume={true}
-          id={chat.id}
+          id={chat.id.toString()}
           initialChatModel={DEFAULT_CHAT_MODEL}
-          initialLastContext={chat.lastContext ?? undefined}
           initialMessages={uiMessages}
-          initialVisibilityType={chat.visibility}
-          isReadonly={session?.user?.id !== chat.userId}
+          initialVisibilityType={chat.visibility === "public" ? "public" : "private"}
+          isReadonly={session?.user?.id !== chat.userId.toString()}
         />
         <DataStreamHandler />
       </>
@@ -63,12 +60,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     <>
       <Chat
         autoResume={true}
-        id={chat.id}
+        id={chat.id.toString()}
         initialChatModel={chatModelFromCookie.value}
-        initialLastContext={chat.lastContext ?? undefined}
         initialMessages={uiMessages}
-        initialVisibilityType={chat.visibility}
-        isReadonly={session?.user?.id !== chat.userId}
+        initialVisibilityType={chat.visibility === "public" ? "public" : "private"}
+        isReadonly={session?.user?.id !== chat.userId.toString()}
       />
       <DataStreamHandler />
     </>

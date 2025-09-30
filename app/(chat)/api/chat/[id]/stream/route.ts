@@ -6,10 +6,11 @@ import {
   getMessagesByChatId,
   getStreamIdsByChatId,
 } from "@/lib/db/queries";
-import type { Chat } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import { getStreamContext } from "../../route";
+import { Visibility } from "@/lib/db/generated";
+import { Chat } from "@/lib/db/schema";
 
 export async function GET(
   _: Request,
@@ -34,7 +35,7 @@ export async function GET(
     return new ChatSDKError("unauthorized:chat").toResponse();
   }
 
-  let chat: Chat | null;
+  let chat: Chat | undefined;
 
   try {
     chat = await getChatById({ id: chatId });
@@ -56,7 +57,7 @@ export async function GET(
     return new ChatSDKError("not_found:stream").toResponse();
   }
 
-  const recentStreamId = streamIds.at(-1);
+  const recentStreamId = streamIds.at(-1)?.id.toString();
 
   if (!recentStreamId) {
     return new ChatSDKError("not_found:stream").toResponse();
@@ -76,8 +77,8 @@ export async function GET(
    * but the resumable stream has concluded at this point.
    */
   if (!stream) {
-    const messages = await getMessagesByChatId({ id: chatId });
-    const mostRecentMessage = messages.at(-1);
+    const chatMessages = await getMessagesByChatId({ id: chatId });
+    const mostRecentMessage = chatMessages.messages.at(-1);
 
     if (!mostRecentMessage) {
       return new Response(emptyDataStream, { status: 200 });
@@ -87,11 +88,12 @@ export async function GET(
       return new Response(emptyDataStream, { status: 200 });
     }
 
-    const messageCreatedAt = new Date(mostRecentMessage.createdAt);
+    const messageCreatedAt = new Date(Number(mostRecentMessage.createdAt));
 
     if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
       return new Response(emptyDataStream, { status: 200 });
     }
+
 
     const restoredStream = createUIMessageStream<ChatMessage>({
       execute: ({ writer }) => {

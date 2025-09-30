@@ -7,7 +7,7 @@ import { myProvider } from "@/lib/ai/providers";
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
-  updateChatVisiblityById,
+  updateChatVisibilityById,
 } from "@/lib/db/queries";
 
 export async function saveChatModelAsCookie(model: string) {
@@ -33,13 +33,8 @@ export async function generateTitleFromUserMessage({
   return title;
 }
 
-export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
-
-  await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chatId,
-    timestamp: message.createdAt,
-  });
+export async function deleteTrailingMessages({ chatId, messageId }: { chatId: string, messageId: string }) {
+  await deleteMessagesByChatIdAfterTimestamp({ chatId, messageId });
 }
 
 export async function updateChatVisibility({
@@ -49,5 +44,5 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  await updateChatVisiblityById({ chatId, visibility });
+  await updateChatVisibilityById({ chatId, visibility });
 }

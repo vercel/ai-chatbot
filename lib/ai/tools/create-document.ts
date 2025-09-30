@@ -6,7 +6,7 @@ import {
   documentHandlersByArtifactKind,
 } from "@/lib/artifacts/server";
 import type { ChatMessage } from "@/lib/types";
-import { generateUUID } from "@/lib/utils";
+import { generateJSONSafeRandomNumber } from "@/lib/utils";
 
 type CreateDocumentProps = {
   session: Session;
@@ -22,7 +22,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       kind: z.enum(artifactKinds),
     }),
     execute: async ({ title, kind }) => {
-      const id = generateUUID();
+      const id = generateJSONSafeRandomNumber();
 
       dataStream.write({
         type: "data-kind",

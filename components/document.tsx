@@ -55,15 +55,15 @@ function PureDocumentToolResult({
           height: rect.height,
         };
 
-        setArtifact({
+        setArtifact((currentArtifact) => ({
+          ...currentArtifact,
           documentId: result.id,
           kind: result.kind,
-          content: "",
           title: result.title,
           isVisible: true,
           status: "idle",
           boundingBox,
-        });
+        }));
       }}
       type="button"
     >

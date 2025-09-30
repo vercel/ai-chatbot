@@ -17,27 +17,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({
+  // Check if user is already authenticated
+  const token = await getToken({ 
     req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
+    secret: process.env.AUTH_SECRET || "development-secret-key-change-in-production"
   });
-
-  if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
-    );
+  
+  if (token) {
+    // User is authenticated, allow the request to proceed
+    return NextResponse.next();
   }
 
-  const isGuest = guestRegex.test(token?.email ?? "");
+  const redirectUrl = encodeURIComponent(request.url);
 
-  if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  return NextResponse.next();
+  // User is not authenticated, redirect to guest login
+  return NextResponse.redirect(
+    new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
+  );
 }
 
 export const config = {

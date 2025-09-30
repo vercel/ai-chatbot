@@ -6,6 +6,7 @@ import {
   smoothStream,
   stepCountIs,
   streamText,
+  type UIMessagePart,
 } from "ai";
 import { unstable_cache as cache } from "next/cache";
 import { after } from "next/server";
@@ -17,6 +18,7 @@ import type { ModelCatalog } from "tokenlens/core";
 import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
 import { auth, type UserType } from "@/app/(auth)/auth";
+import { mapUIMessagePartToZodFormat } from "@/lib/utils";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
@@ -38,9 +40,11 @@ import {
   updateChatLastContextById,
 } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, ChatTools, CustomUIDataTypes } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
-import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import {
+  convertZodMessagesToUI,
+} from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
@@ -115,12 +119,12 @@ export async function POST(request: Request) {
 
     const userType: UserType = session.user.type;
 
-    const messageCount = await getMessageCountByUserId({
+    const { count } = await getMessageCountByUserId({
       id: session.user.id,
       differenceInHours: 24,
     });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    if (count > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new ChatSDKError("rate_limit:chat").toResponse();
     }
 
@@ -136,48 +140,46 @@ export async function POST(request: Request) {
       });
 
       await saveChat({
-        id,
+        id: id,
         userId: session.user.id,
         title,
         visibility: selectedVisibilityType,
       });
     }
 
-    const messagesFromDb = await getMessagesByChatId({ id });
-    const uiMessages = [...convertToUIMessages(messagesFromDb), message];
-
     const { longitude, latitude, city, country } = geolocation(request);
-
-    const requestHints: RequestHints = {
-      longitude,
-      latitude,
-      city,
-      country,
-    };
 
     await saveMessages({
       messages: [
         {
           chatId: id,
-          id: message.id,
           role: "user",
-          parts: message.parts,
+          parts: message.parts.map(mapUIMessagePartToZodFormat),
           attachments: [],
-          createdAt: new Date(),
         },
       ],
     });
 
-    const streamId = generateUUID();
-    await createStreamId({ streamId, chatId: id });
+    const { messages } = await getMessagesByChatId({ id });
+    const uiMessages = [...convertZodMessagesToUI(messages)];
+
+    await createStreamId({ chatId: id });
 
     let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
-        const result = streamText({
+        const result =  streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({
+            selectedChatModel,
+            requestHints: {
+              longitude,
+              latitude,
+              city,
+              country,
+            },
+          }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
@@ -245,44 +247,41 @@ export async function POST(request: Request) {
           })
         );
       },
-      generateId: generateUUID,
+      generateId: () => {
+        // Get the last message id and increment it, this is a hack because this framework insists on assigning an id to the message
+        // and sending it back to the client without any fine grained control.
+        // There should only ever be one message sent down from the tool that needs to have an id.
+        return (BigInt(messages.at(-1)?.id ?? "0") + 1n).toString();
+      },
       onFinish: async ({ messages }) => {
         await saveMessages({
           messages: messages.map((currentMessage) => ({
             id: currentMessage.id,
-            role: currentMessage.role,
-            parts: currentMessage.parts,
-            createdAt: new Date(),
-            attachments: [],
             chatId: id,
+            role: currentMessage.role,
+            parts: currentMessage.parts.map((part) => mapUIMessagePartToZodFormat(part as UIMessagePart<CustomUIDataTypes, ChatTools>)),
+            attachments: [],
+            createdAt: new Date(),
+            createdAtVersion: "1",
           })),
         });
 
-        if (finalMergedUsage) {
-          try {
-            await updateChatLastContextById({
-              chatId: id,
-              context: finalMergedUsage,
-            });
-          } catch (err) {
-            console.warn("Unable to persist last usage for chat", id, err);
-          }
-        }
+        // TODO: Ryan implement this
+        // if (finalMergedUsage) {
+        //   try {
+        //     await updateChatLastContextById({
+        //       chatId: id,
+        //       context: finalMergedUsage,
+        //     });
+        //   } catch (err) {
+        //     console.warn("Unable to persist last usage for chat", id, err);
+        //   }
+        // }
       },
       onError: () => {
         return "Oops, an error occurred!";
       },
     });
-
-    // const streamContext = getStreamContext();
-
-    // if (streamContext) {
-    //   return new Response(
-    //     await streamContext.resumableStream(streamId, () =>
-    //       stream.pipeThrough(new JsonToSseTransformStream())
-    //     )
-    //   );
-    // }
 
     return new Response(stream.pipeThrough(new JsonToSseTransformStream()));
   } catch (error) {
@@ -327,7 +326,7 @@ export async function DELETE(request: Request) {
     return new ChatSDKError("forbidden:chat").toResponse();
   }
 
-  const deletedChat = await deleteChatById({ id });
+  await deleteChatById({ id });
 
-  return Response.json(deletedChat, { status: 200 });
+  return Response.json([1], { status: 200 });
 }

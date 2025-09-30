@@ -2,9 +2,8 @@ import { streamObject, tool, type UIMessageStreamWriter } from "ai";
 import type { Session } from "next-auth";
 import { z } from "zod";
 import { getDocumentById, saveSuggestions } from "@/lib/db/queries";
-import type { Suggestion } from "@/lib/db/schema";
+import { Suggestion } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
-import { generateUUID } from "@/lib/utils";
 import { myProvider } from "../providers";
 
 type RequestSuggestionsProps = {
@@ -32,11 +31,6 @@ export const requestSuggestions = ({
         };
       }
 
-      const suggestions: Omit<
-        Suggestion,
-        "userId" | "createdAt" | "documentCreatedAt"
-      >[] = [];
-
       const { elementStream } = streamObject({
         model: myProvider.languageModel("artifact-model"),
         system:
@@ -51,37 +45,32 @@ export const requestSuggestions = ({
       });
 
       for await (const element of elementStream) {
-        // @ts-expect-error todo: fix type
-        const suggestion: Suggestion = {
-          originalText: element.originalSentence,
-          suggestedText: element.suggestedSentence,
-          description: element.description,
-          id: generateUUID(),
-          documentId,
-          isResolved: false,
-        };
 
-        dataStream.write({
-          type: "data-suggestion",
-          data: suggestion,
-          transient: true,
-        });
-
-        suggestions.push(suggestion);
-      }
-
-      if (session.user?.id) {
+        if (!session.user?.id) {
+            continue;
+        }
+        
         const userId = session.user.id;
 
-        await saveSuggestions({
-          suggestions: suggestions.map((suggestion) => ({
-            ...suggestion,
-            userId,
-            createdAt: new Date(),
-            documentCreatedAt: document.createdAt,
-          })),
+        const [suggestion] = await saveSuggestions({
+            suggestions: [{
+                originalText: element.originalSentence,
+                suggestedText: element.suggestedSentence,
+                description: element.description,
+                userId: userId,
+                documentVersion: document.createdAt,
+                documentId: documentId,
+            }],
+        });    
+
+        dataStream.write({
+            type: "data-suggestion",
+            data: suggestion,
+            transient: true,
         });
+
       }
+
 
       return {
         id: documentId,

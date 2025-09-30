@@ -1,6 +1,8 @@
 import { auth } from "@/app/(auth)/auth";
+import { VoteSchema } from "@/lib/db/generated/stately_pb";
 import { getChatById, getVotesByChatId, voteMessage } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
+import { toJson } from "@bufbuild/protobuf";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -66,8 +68,8 @@ export async function PATCH(request: Request) {
   }
 
   await voteMessage({
-    chatId,
-    messageId,
+    chatId: chatId,
+    messageId: messageId,
     type,
   });
 

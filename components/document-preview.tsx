@@ -72,7 +72,7 @@ export function DocumentPreview({
     if (args) {
       return (
         <DocumentToolCall
-          args={{ title: args.title, kind: args.kind }}
+          args={{ title: args.title, kind: args.kind as ArtifactKind }}
           isReadonly={isReadonly}
           type="create"
         />
@@ -93,12 +93,13 @@ export function DocumentPreview({
           content: artifact.content,
           id: artifact.documentId,
           createdAt: new Date(),
-          userId: "noop",
+          userId: "0",
+          updatedAt: new Date(),
         }
       : null;
 
   if (!document) {
-    return <LoadingSkeleton artifactKind={artifact.kind} />;
+    return <LoadingSkeleton artifactKind={artifact.kind as ArtifactKind} />;
   }
 
   return (

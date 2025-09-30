@@ -153,6 +153,7 @@ const PurePreviewMessage = ({
                     <div className="size-8" />
                     <div className="min-w-0 flex-1">
                       <MessageEditor
+                        chatId={chatId}
                         key={message.id}
                         message={message}
                         regenerate={regenerate}
