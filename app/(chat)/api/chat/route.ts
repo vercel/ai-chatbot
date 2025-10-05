@@ -28,6 +28,7 @@ import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { semanticSearch } from "@/lib/ai/tools/semantic-search";
 import { viewFile } from "@/lib/ai/tools/view-file";
+import { extractFileToText } from "@/lib/files/extract";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -48,6 +49,8 @@ import { type PostRequestBody, postRequestBodySchema } from "./schema";
 import { withAuthApi } from "@/lib/auth/route-guards";
 
 export const maxDuration = 60;
+// Ensure Node runtime for server-side file parsing libs
+export const runtime = "nodejs";
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
@@ -85,6 +88,71 @@ export function getStreamContext() {
   }
 
   return globalStreamContext;
+}
+
+// Only pass through file parts that the selected model supports as vision inputs.
+// For others (e.g., PDF/DOCX/XLSX), coerce to a textual reference so models without
+// document ingestion support won't throw AI_UnsupportedFunctionalityError.
+const SUPPORTED_VISION_MIME = ["image/jpeg", "image/png"] as const;
+const SUPPORTED_DOC_MIME = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+] as const;
+
+async function enrichUIMessagesWithFileContent(
+  messages: ReturnType<typeof convertToUIMessages>,
+) {
+  const enriched = await Promise.all(
+    messages.map(async (m) => ({
+      ...m,
+      parts: await Promise.all(
+        m.parts.map(async (p: any) => {
+          if (p?.type === "file") {
+            if (SUPPORTED_VISION_MIME.includes(p.mediaType)) {
+              return p; // images passed through
+            }
+            if (SUPPORTED_DOC_MIME.includes(p.mediaType)) {
+              const name = typeof p.name === "string" ? p.name : "file";
+              const url = typeof p.url === "string" ? p.url : "";
+              try {
+                const content = await extractFileToText({
+                  url,
+                  mediaType: p.mediaType,
+                  maxChars: 20000,
+                } as any);
+                if (!content) {
+                  return {
+                    type: "text",
+                    text: `Attached file could not be extracted: ${name} (${p.mediaType}) - ${url}`,
+                  };
+                }
+                const header = `Attached file extracted: ${name} (${p.mediaType})`;
+                return { type: "text", text: `${header}\n\n${content}` };
+              } catch (err) {
+                const message = err instanceof Error ? err.message : String(err);
+                return {
+                  type: "text",
+                  text: `Attached file extraction failed: ${name} (${p.mediaType}) - ${url} | ${message}`,
+                };
+              }
+            }
+            // Unsupported file types become reference text
+            const name = typeof p.name === "string" ? p.name : "file";
+            const url = typeof p.url === "string" ? p.url : "";
+            return {
+              type: "text",
+              text: `Attached file (unsupported type ${p.mediaType}): ${name}${
+                url ? ` - ${url}` : ""
+              }`,
+            };
+          }
+          return p;
+        }),
+      ),
+    })),
+  );
+  return enriched;
 }
 
 export const POST = withAuthApi(async ({ request, session }) => {
@@ -171,11 +239,14 @@ export const POST = withAuthApi(async ({ request, session }) => {
     let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
-      execute: ({ writer: dataStream }) => {
+      execute: async ({ writer: dataStream }) => {
+        const enrichedMessages = await enrichUIMessagesWithFileContent(
+          uiMessages,
+        );
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
+          messages: convertToModelMessages(enrichedMessages),
           providerOptions:
             selectedChatModel === "chat-model-reasoning"
               ? { anthropic: { thinking: { type: "enabled", budgetTokens: 16000 } } }
