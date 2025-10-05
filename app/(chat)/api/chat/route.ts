@@ -98,6 +98,7 @@ const SUPPORTED_DOC_MIME = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
 ] as const;
 
 async function enrichUIMessagesWithFileContent(

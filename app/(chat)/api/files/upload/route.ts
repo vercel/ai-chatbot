@@ -13,6 +13,8 @@ const ACCEPTED_MIME_TYPES = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "text/csv", // .csv
+  "application/vnd.ms-excel", // some browsers label CSV this way
 ] as const;
 
 // Use Blob instead of File since File is not available in Node.js environment
@@ -25,7 +27,7 @@ const FileSchema = z.object({
     // Basic content-type check; further validated via magic bytes below
     .refine((file) => !file.type || ACCEPTED_MIME_TYPES.includes(file.type as any), {
       message:
-        "Unsupported file type. Allowed: JPEG, PNG, PDF, DOCX, XLSX",
+        "Unsupported file type. Allowed: JPEG, PNG, PDF, DOCX, XLSX, CSV",
     }),
 });
 
@@ -65,7 +67,7 @@ export const POST = withAuthApi(async ({ request }) => {
       return NextResponse.json(
         {
           error:
-            "Unsupported file content. Allowed: JPEG, PNG, PDF, DOCX, XLSX",
+            "Unsupported file content. Allowed: JPEG, PNG, PDF, DOCX, XLSX, CSV",
         },
         { status: 400 },
       );
