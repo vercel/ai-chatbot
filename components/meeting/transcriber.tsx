@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/toast";
 
 function formatDuration(ms: number) {
   const sec = Math.floor(ms / 1000);
@@ -26,12 +28,34 @@ export function MeetingTranscriberClient() {
 
   const transcriberRef = useRef<MeetingTranscriber | null>(null);
   const startTimeRef = useRef<number | null>(null);
+  const [driveConnected, setDriveConnected] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>("");
 
   useEffect(() => {
     transcriberRef.current = new MeetingTranscriber();
     return () => {
       transcriberRef.current?.stop();
     };
+  }, []);
+
+  useEffect(() => {
+    // Check Drive integration status
+    (async () => {
+      try {
+        const res = await fetch("/api/integrations/google/status");
+        if (!res.ok) return setDriveConnected(false);
+        const json = (await res.json()) as { connected?: boolean };
+        setDriveConnected(!!json?.connected);
+      } catch {
+        setDriveConnected(false);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    // Set a default title once on mount
+    const now = new Date();
+    setTitle(`Meeting Transcript ${now.toISOString()}`);
   }, []);
 
   useEffect(() => {
@@ -105,6 +129,36 @@ export function MeetingTranscriberClient() {
     a.click();
     URL.revokeObjectURL(url);
   }, [duration, fullText, mode]);
+
+  const onSaveToDrive = useCallback(async () => {
+    if (!fullText.trim()) {
+      toast({ type: "error", description: "No transcript to save" });
+      return;
+    }
+    if (!driveConnected) {
+      toast({ type: "error", description: "Connect Google Drive in Settings first" });
+      return;
+    }
+    const trimmedTitle = title.trim() || `Meeting Transcript ${new Date().toISOString()}`;
+    try {
+      const res = await fetch("/api/meetings/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: trimmedTitle, transcriptText: fullText, folderId: "warburg-demo/meetings" }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        const msg = json?.error || json?.details || "Failed to save to Drive";
+        toast({ type: "error", description: String(msg) });
+        return;
+      }
+      const json = (await res.json()) as { driveFileId: string };
+      toast({ type: "success", description: `Saved to Drive` });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ type: "error", description: msg });
+    }
+  }, [fullText, driveConnected, title]);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 md:px-8 space-y-6">
@@ -185,13 +239,28 @@ export function MeetingTranscriberClient() {
             )}
           </div>
           <Separator className="my-4" />
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={onDownload} disabled={isRecording}>
-              Download .md
-            </Button>
-            <Button variant="ghost" disabled title="Connect Google Drive to enable (coming soon)">
-              Save to Google Drive
-            </Button>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
+            <div className="flex w-full items-center gap-2 md:w-auto md:min-w-[320px]">
+              <Input
+                placeholder="Document title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                disabled={isRecording}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={onDownload} disabled={isRecording}>
+                Download .md
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={onSaveToDrive}
+                disabled={isRecording || !driveConnected}
+                title={driveConnected ? "" : "Connect Google Drive in Settings to enable"}
+              >
+                Save to Google Drive
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

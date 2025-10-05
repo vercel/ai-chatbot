@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
+import { toast } from "@/components/toast";
 
 type Status = {
   connected: boolean;
@@ -49,7 +50,26 @@ export default function GoogleDriveSettings() {
   async function indexAll() {
     setLoading(true);
     try {
-      await fetch("/api/drive/index/run", { method: "POST" });
+      const res = await fetch("/api/drive/index/job", { method: "POST" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg = err?.details || err?.message || "Failed to start indexing";
+        toast({ type: "error", description: String(msg) });
+        return;
+      }
+      const json = (await res.json().catch(() => null)) as
+        | { ok: true; attempted: number; indexed: number; skipped: number; unsupported: number; failed: number }
+        | null;
+      if (json && (json as any).ok) {
+        const { attempted, indexed, skipped, failed } = json;
+        toast({
+          type: "success",
+          description: `Indexing complete`,
+        });
+        console.log(`Indexing Complete • Attempted: ${attempted} • Indexed: ${indexed} • Skipped: ${skipped} • Failed: ${failed}`);
+      } else {
+        toast({ type: "success", description: "Indexing started" });
+      }
     } finally {
       setLoading(false);
     }

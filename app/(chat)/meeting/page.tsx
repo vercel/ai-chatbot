@@ -5,4 +5,3 @@ export default async function Page() {
   await ensurePageSession();
   return <MeetingTranscriberClient />;
 }
-
