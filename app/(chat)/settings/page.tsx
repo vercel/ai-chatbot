@@ -10,7 +10,7 @@ export default async function SettingsPage({
   const sp = (await searchParams) ?? {};
   const errParam = (sp.google_error ?? null) as string | null;
   return (
-    <main className="p-6 md:p-10 space-y-8 max-w-5xl">
+    <main className="mx-auto w-full max-w-5xl px-4 md:px-8 py-6 md:py-10 space-y-8">
       <header className="flex items-start justify-between gap-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Settings</h1>
