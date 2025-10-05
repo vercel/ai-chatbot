@@ -1,9 +1,5 @@
-import { gateway } from "@ai-sdk/gateway";
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { customProvider } from "ai";
 import { isTestEnvironment } from "../constants";
 
 export const myProvider = isTestEnvironment
@@ -25,12 +21,12 @@ export const myProvider = isTestEnvironment
     })()
   : customProvider({
       languageModels: {
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
-        "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
-          middleware: extractReasoningMiddleware({ tagName: "think" }),
-        }),
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
+        // Standard chat model → Claude Sonnet 4.5
+        "chat-model": anthropic("claude-sonnet-4-5"),
+        // Reasoning chat model uses same ID; thinking enabled per-request in route
+        "chat-model-reasoning": anthropic("claude-sonnet-4-5"),
+        // Lightweight models for titles and artifact helpers
+        "title-model": anthropic("claude-3-5-haiku-latest"),
+        "artifact-model": anthropic("claude-3-5-haiku-latest"),
       },
     });

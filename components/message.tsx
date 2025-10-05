@@ -267,6 +267,86 @@ const PurePreviewMessage = ({
               );
             }
 
+            if (type === "tool-semanticSearch") {
+              const { toolCallId, state } = part;
+              return (
+                <Tool defaultOpen={true} key={toolCallId}>
+                  <ToolHeader state={state} type="tool-semanticSearch" />
+                  <ToolContent>
+                    {state === "input-available" && <ToolInput input={part.input} />}
+                    {state === "output-available" && (
+                      <ToolOutput
+                        errorText={undefined}
+                        output={
+                          "error" in part.output ? (
+                            <div className="rounded border p-2 text-red-500">
+                              Error: {String(part.output.error)}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {(part.output.results || []).map(
+                                (r: { fileId: string; fileName: string }, idx: number) => (
+                                  <div key={`${toolCallId}-${idx}`} className="rounded border p-2">
+                                    <div className="font-medium">{r.fileName}</div>
+                                  </div>
+                                )
+                              )}
+                              {(!part.output.results || part.output.results.length === 0) && (
+                                <div className="text-muted-foreground text-sm">No results.</div>
+                              )}
+                            </div>
+                          )
+                        }
+                      />
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
+            if (type === "tool-viewFile") {
+              const { toolCallId, state } = part;
+              return (
+                <Tool defaultOpen={false} key={toolCallId}>
+                  <ToolHeader state={state} type="tool-viewFile" />
+                  <ToolContent>
+                    {state === "input-available" && <ToolInput input={part.input} />}
+                    {state === "output-available" && (
+                      <ToolOutput
+                        errorText={undefined}
+                        output={
+                          "error" in part.output ? (
+                            <div className="rounded border p-2 text-red-500">
+                              Error: {String(part.output.error)}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="font-medium">{part.output.fileName}</div>
+                              {(() => {
+                                const content: string = part.output.content ?? "";
+                                const lines = content.split(/\r?\n/);
+                                const maxLines = 5;
+                                const showLines = lines.slice(0, maxLines);
+                                const truncated = lines.length > maxLines;
+                                const preview = truncated
+                                  ? `${showLines.join("\n")}\n...`
+                                  : content;
+                                return (
+                                  <pre className="max-h-64 overflow-auto rounded border bg-muted p-2 text-xs whitespace-pre-wrap">
+                                    {preview}
+                                  </pre>
+                                );
+                              })()}
+                            </div>
+                          )
+                        }
+                      />
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
             return null;
           })}
 
