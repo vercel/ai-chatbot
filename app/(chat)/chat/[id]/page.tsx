@@ -1,65 +1,76 @@
-import { type Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
+import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 
-import { auth } from '@/auth'
-import { getChat, getMissingKeys } from '@/app/actions'
-import { Chat } from '@/components/chat'
-import { AI } from '@/lib/chat/actions'
-import { Session } from '@/lib/types'
+import { auth } from "@/app/(auth)/auth";
+import { Chat } from "@/components/chat";
+import { DataStreamHandler } from "@/components/data-stream-handler";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
+import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
+import { convertToUIMessages } from "@/lib/utils";
 
-export interface ChatPageProps {
-  params: {
-    id: string
-  }
-}
+export default async function Page(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { id } = params;
+  const chat = await getChatById({ id });
 
-export async function generateMetadata({
-  params
-}: ChatPageProps): Promise<Metadata> {
-  const session = await auth()
-
-  if (!session?.user) {
-    return {}
+  if (!chat) {
+    notFound();
   }
 
-  const chat = await getChat(params.id, session.user.id)
+  const session = await auth();
 
-  if (!chat || 'error' in chat) {
-    redirect('/')
-  } else {
-    return {
-      title: chat?.title.toString().slice(0, 50) ?? 'Chat'
-    }
-  }
-}
-
-export default async function ChatPage({ params }: ChatPageProps) {
-  const session = (await auth()) as Session
-  const missingKeys = await getMissingKeys()
-
-  if (!session?.user) {
-    redirect(`/login?next=/chat/${params.id}`)
+  if (!session) {
+    redirect("/api/auth/guest");
   }
 
-  const userId = session.user.id as string
-  const chat = await getChat(params.id, userId)
-
-  if (!chat || 'error' in chat) {
-    redirect('/')
-  } else {
-    if (chat?.userId !== session?.user?.id) {
-      notFound()
+  if (chat.visibility === "private") {
+    if (!session.user) {
+      return notFound();
     }
 
+    if (session.user.id !== chat.userId) {
+      return notFound();
+    }
+  }
+
+  const messagesFromDb = await getMessagesByChatId({
+    id,
+  });
+
+  const uiMessages = convertToUIMessages(messagesFromDb);
+
+  const cookieStore = await cookies();
+  const chatModelFromCookie = cookieStore.get("chat-model");
+
+  if (!chatModelFromCookie) {
     return (
-      <AI initialAIState={{ chatId: chat.id, messages: chat.messages }}>
+      <>
         <Chat
+          autoResume={true}
           id={chat.id}
-          session={session}
-          initialMessages={chat.messages}
-          missingKeys={missingKeys}
+          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialLastContext={chat.lastContext ?? undefined}
+          initialMessages={uiMessages}
+          initialVisibilityType={chat.visibility}
+          isReadonly={session?.user?.id !== chat.userId}
         />
-      </AI>
-    )
+        <DataStreamHandler />
+      </>
+    );
   }
+
+  return (
+    <>
+      <Chat
+        autoResume={true}
+        id={chat.id}
+        initialChatModel={chatModelFromCookie.value}
+        initialLastContext={chat.lastContext ?? undefined}
+        initialMessages={uiMessages}
+        initialVisibilityType={chat.visibility}
+        isReadonly={session?.user?.id !== chat.userId}
+      />
+      <DataStreamHandler />
+    </>
+  );
 }

@@ -1,22 +1,52 @@
-import { nanoid } from '@/lib/utils'
-import { Chat } from '@/components/chat'
-import { AI } from '@/lib/chat/actions'
-import { auth } from '@/auth'
-import { Session } from '@/lib/types'
-import { getMissingKeys } from '@/app/actions'
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { Chat } from "@/components/chat";
+import { DataStreamHandler } from "@/components/data-stream-handler";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
+import { generateUUID } from "@/lib/utils";
+import { auth } from "../(auth)/auth";
 
-export const metadata = {
-  title: 'Next.js AI Chatbot'
-}
+export default async function Page() {
+  const session = await auth();
 
-export default async function IndexPage() {
-  const id = nanoid()
-  const session = (await auth()) as Session
-  const missingKeys = await getMissingKeys()
+  if (!session) {
+    redirect("/api/auth/guest");
+  }
+
+  const id = generateUUID();
+
+  const cookieStore = await cookies();
+  const modelIdFromCookie = cookieStore.get("chat-model");
+
+  if (!modelIdFromCookie) {
+    return (
+      <>
+        <Chat
+          autoResume={false}
+          id={id}
+          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialMessages={[]}
+          initialVisibilityType="private"
+          isReadonly={false}
+          key={id}
+        />
+        <DataStreamHandler />
+      </>
+    );
+  }
 
   return (
-    <AI initialAIState={{ chatId: id, messages: [] }}>
-      <Chat id={id} session={session} missingKeys={missingKeys} />
-    </AI>
-  )
+    <>
+      <Chat
+        autoResume={false}
+        id={id}
+        initialChatModel={modelIdFromCookie.value}
+        initialMessages={[]}
+        initialVisibilityType="private"
+        isReadonly={false}
+        key={id}
+      />
+      <DataStreamHandler />
+    </>
+  );
 }

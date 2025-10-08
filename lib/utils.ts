@@ -1,134 +1,116 @@
-import { clsx, type ClassValue } from 'clsx'
-import { customAlphabet } from 'nanoid'
-import { twMerge } from 'tailwind-merge'
+import type {
+  CoreAssistantMessage,
+  CoreToolMessage,
+  UIMessage,
+  UIMessagePart,
+} from 'ai';
+import { type ClassValue, clsx } from 'clsx';
+import { formatISO } from 'date-fns';
+import { twMerge } from 'tailwind-merge';
+import type { DBMessage, Document } from '@/lib/db/schema';
+import { ChatSDKError, type ErrorCode } from './errors';
+import type { ChatMessage, ChatTools, CustomUIDataTypes } from './types';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-export const nanoid = customAlphabet(
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-  7
-) // 7-character random string
+export const fetcher = async (url: string) => {
+  const response = await fetch(url);
 
-export async function fetcher<JSON = any>(
-  input: RequestInfo,
-  init?: RequestInit
-): Promise<JSON> {
-  const res = await fetch(input, init)
+  if (!response.ok) {
+    const { code, cause } = await response.json();
+    throw new ChatSDKError(code as ErrorCode, cause);
+  }
 
-  if (!res.ok) {
-    const json = await res.json()
-    if (json.error) {
-      const error = new Error(json.error) as Error & {
-        status: number
-      }
-      error.status = res.status
-      throw error
-    } else {
-      throw new Error('An unexpected error occurred')
+  return response.json();
+};
+
+export async function fetchWithErrorHandlers(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) {
+  try {
+    const response = await fetch(input, init);
+
+    if (!response.ok) {
+      const { code, cause } = await response.json();
+      throw new ChatSDKError(code as ErrorCode, cause);
     }
-  }
 
-  return res.json()
-}
+    return response;
+  } catch (error: unknown) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new ChatSDKError('offline:chat');
+    }
 
-export function formatDate(input: string | number | Date): string {
-  const date = new Date(input)
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  })
-}
-
-export const formatNumber = (value: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(value)
-
-export const runAsyncFnWithoutBlocking = (
-  fn: (...args: any) => Promise<any>
-) => {
-  fn()
-}
-
-export const sleep = (ms: number) =>
-  new Promise(resolve => setTimeout(resolve, ms))
-
-export const getStringFromBuffer = (buffer: ArrayBuffer) =>
-  Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
-
-export enum ResultCode {
-  InvalidCredentials = 'INVALID_CREDENTIALS',
-  InvalidSubmission = 'INVALID_SUBMISSION',
-  UserAlreadyExists = 'USER_ALREADY_EXISTS',
-  UnknownError = 'UNKNOWN_ERROR',
-  UserCreated = 'USER_CREATED',
-  UserLoggedIn = 'USER_LOGGED_IN'
-}
-
-export const getMessageFromCode = (resultCode: string) => {
-  switch (resultCode) {
-    case ResultCode.InvalidCredentials:
-      return 'Invalid credentials!'
-    case ResultCode.InvalidSubmission:
-      return 'Invalid submission, please try again!'
-    case ResultCode.UserAlreadyExists:
-      return 'User already exists, please log in!'
-    case ResultCode.UserCreated:
-      return 'User created, welcome!'
-    case ResultCode.UnknownError:
-      return 'Something went wrong, please try again!'
-    case ResultCode.UserLoggedIn:
-      return 'Logged in!'
+    throw error;
   }
 }
 
-export function format(date: Date, formatString: string) {
-  const year = date.getFullYear()
-  const month = date.getMonth()
-  const day = date.getDate()
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec'
-  ]
-
-  return formatString
-    .replace('yyyy', year.toString())
-    .replace('yy', String(year).slice(-2))
-    .replace('LLL', monthNames[month])
-    .replace('MM', String(month + 1).padStart(2, '0'))
-    .replace('dd', String(day).padStart(2, '0'))
-    .replace('d', day.toString())
-    .replace('HH', hours)
-    .replace('mm', minutes)
-    .replace('ss', seconds)
+export function getLocalStorage(key: string) {
+  if (typeof window !== 'undefined') {
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  }
+  return [];
 }
 
-export function parseISO(dateString: string) {
-  return new Date(dateString)
+export function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }
 
-export function subMonths(date: Date, amount: number) {
-  const newDate: Date = new Date(date)
-  newDate.setMonth(newDate.getMonth() - amount)
-  return newDate
+type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
+type ResponseMessage = ResponseMessageWithoutId & { id: string };
+
+export function getMostRecentUserMessage(messages: UIMessage[]) {
+  const userMessages = messages.filter((message) => message.role === 'user');
+  return userMessages.at(-1);
+}
+
+export function getDocumentTimestampByIndex(
+  documents: Document[],
+  index: number,
+) {
+  if (!documents) { return new Date(); }
+  if (index > documents.length) { return new Date(); }
+
+  return documents[index].createdAt;
+}
+
+export function getTrailingMessageId({
+  messages,
+}: {
+  messages: ResponseMessage[];
+}): string | null {
+  const trailingMessage = messages.at(-1);
+
+  if (!trailingMessage) { return null; }
+
+  return trailingMessage.id;
+}
+
+export function sanitizeText(text: string) {
+  return text.replace('<has_function_call>', '');
+}
+
+export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
+  return messages.map((message) => ({
+    id: message.id,
+    role: message.role as 'user' | 'assistant' | 'system',
+    parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
+    metadata: {
+      createdAt: formatISO(message.createdAt),
+    },
+  }));
+}
+
+export function getTextFromMessage(message: ChatMessage): string {
+  return message.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
 }
