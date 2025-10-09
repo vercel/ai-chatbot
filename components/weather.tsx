@@ -4,6 +4,32 @@ import cx from "classnames";
 import { format, isWithinInterval } from "date-fns";
 import { useEffect, useState } from "react";
 
+const SunIcon = ({ size = 40 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="5" fill="currentColor" />
+    <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" strokeWidth="2" />
+    <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" strokeWidth="2" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" strokeWidth="2" />
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" strokeWidth="2" />
+    <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" strokeWidth="2" />
+    <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" strokeWidth="2" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" strokeWidth="2" />
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" strokeWidth="2" />
+  </svg>
+);
+
+const MoonIcon = ({ size = 40 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z" fill="currentColor" />
+  </svg>
+);
+
+const CloudIcon = ({ size = 24 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" stroke="currentColor" strokeWidth="2" fill="none" />
+  </svg>
+);
+
 type WeatherAtLocation = {
   latitude: number;
   longitude: number;
@@ -12,6 +38,7 @@ type WeatherAtLocation = {
   timezone: string;
   timezone_abbreviation: string;
   elevation: number;
+  cityName?: string;
   current_units: {
     time: string;
     interval: string;
@@ -233,12 +260,10 @@ export function Weather({
 
   const hoursToShow = isMobile ? 5 : 6;
 
-  // Find the index of the current time or the next closest time
   const currentTimeIndex = weatherAtLocation.hourly.time.findIndex(
     (time) => new Date(time) >= new Date(weatherAtLocation.current.time)
   );
 
-  // Slice the arrays to get the desired number of items
   const displayTimes = weatherAtLocation.hourly.time.slice(
     currentTimeIndex,
     currentTimeIndex + hoursToShow
@@ -248,63 +273,96 @@ export function Weather({
     currentTimeIndex + hoursToShow
   );
 
+  const location = weatherAtLocation.cityName || 
+    `${weatherAtLocation.latitude?.toFixed(1)}°, ${weatherAtLocation.longitude?.toFixed(1)}°`;
+
   return (
     <div
       className={cx(
-        "skeleton-bg flex max-w-[500px] flex-col gap-4 rounded-2xl p-4",
+        "relative flex w-full flex-col gap-6 rounded-3xl p-6 shadow-lg overflow-hidden backdrop-blur-sm",
         {
-          "bg-blue-400": isDay,
+          "bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600": isDay,
         },
         {
-          "bg-indigo-900": !isDay,
+          "bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900": !isDay,
         }
       )}
     >
-      <div className="flex flex-row items-center justify-between">
-        <div className="flex flex-row items-center gap-2">
-          <div
-            className={cx(
-              "skeleton-div size-10 rounded-full",
-              {
-                "bg-yellow-300": isDay,
-              },
-              {
-                "bg-indigo-100": !isDay,
-              }
-            )}
-          />
-          <div className="font-medium text-4xl text-blue-50">
-            {n(weatherAtLocation.current.temperature_2m)}
-            {weatherAtLocation.current_units.temperature_2m}
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
+      
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-white/80 text-sm font-medium">
+            {location}
+          </div>
+          <div className="text-white/60 text-xs">
+            {format(new Date(weatherAtLocation.current.time), "MMM d, h:mm a")}
           </div>
         </div>
 
-        <div className="text-blue-50">{`H:${n(currentHigh)}° L:${n(currentLow)}°`}</div>
-      </div>
-
-      <div className="flex flex-row justify-between">
-        {displayTimes.map((time, index) => (
-          <div className="flex flex-col items-center gap-1" key={time}>
-            <div className="text-blue-100 text-xs">
-              {format(new Date(time), "ha")}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className={cx("text-white/90", { "text-yellow-200": isDay, "text-blue-200": !isDay })}>
+              {isDay ? <SunIcon size={48} /> : <MoonIcon size={48} />}
             </div>
-            <div
-              className={cx(
-                "skeleton-div size-6 rounded-full",
-                {
-                  "bg-yellow-300": isDay,
-                },
-                {
-                  "bg-indigo-200": !isDay,
-                }
-              )}
-            />
-            <div className="text-blue-50 text-sm">
-              {n(displayTemperatures[index])}
-              {weatherAtLocation.hourly_units.temperature_2m}
+            <div className="text-white text-5xl font-light">
+              {n(weatherAtLocation.current.temperature_2m)}
+              <span className="text-2xl text-white/80">
+                {weatherAtLocation.current_units.temperature_2m}
+              </span>
             </div>
           </div>
-        ))}
+
+          <div className="text-right">
+            <div className="text-white/90 text-sm font-medium">
+              H: {n(currentHigh)}°
+            </div>
+            <div className="text-white/70 text-sm">
+              L: {n(currentLow)}°
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+          <div className="text-white/80 text-sm mb-3 font-medium">
+            Hourly Forecast
+          </div>
+          <div className="flex justify-between gap-2">
+            {displayTimes.map((time, index) => {
+              const hourTime = new Date(time);
+              const isCurrentHour = hourTime.getHours() === new Date().getHours();
+              
+              return (
+                <div 
+                  className={cx(
+                    "flex flex-col items-center gap-2 py-2 px-1 rounded-lg min-w-0 flex-1",
+                    {
+                      "bg-white/20": isCurrentHour,
+                    }
+                  )} 
+                  key={time}
+                >
+                  <div className="text-white/70 text-xs font-medium">
+                    {index === 0 ? "Now" : format(hourTime, "ha")}
+                  </div>
+                  
+                  <div className={cx("text-white/60", { "text-yellow-200": isDay, "text-blue-200": !isDay })}>
+                    <CloudIcon size={20} />
+                  </div>
+                  
+                  <div className="text-white text-sm font-medium">
+                    {n(displayTemperatures[index])}°
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex justify-between text-white/60 text-xs mt-4">
+          <div>Sunrise: {format(new Date(weatherAtLocation.daily.sunrise[0]), "h:mm a")}</div>
+          <div>Sunset: {format(new Date(weatherAtLocation.daily.sunset[0]), "h:mm a")}</div>
+        </div>
       </div>
     </div>
   );
