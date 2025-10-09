@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useActionState, useEffect, useState } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
 import { toast } from "@/components/toast";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useState } from "react";
 import { type RegisterActionState, register } from "../actions";
 
 export default function Page() {
@@ -14,6 +14,7 @@ export default function Page() {
 
   const [email, setEmail] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isShownToast, setIsShownToast] = useState(false);
 
   const [state, formAction] = useActionState<RegisterActionState, FormData>(
     register,
@@ -25,27 +26,36 @@ export default function Page() {
   const { update: updateSession } = useSession();
 
   useEffect(() => {
+    if (state.status === "idle" || isShownToast) {
+      return;
+    }
+
     if (state.status === "user_exists") {
       toast({ type: "error", description: "Account already exists!" });
+      setIsShownToast(true);
     } else if (state.status === "failed") {
       toast({ type: "error", description: "Failed to create account!" });
+      setIsShownToast(true);
     } else if (state.status === "invalid_data") {
       toast({
         type: "error",
         description: "Failed validating your submission!",
       });
+      setIsShownToast(true);
     } else if (state.status === "success") {
       toast({ type: "success", description: "Account created successfully!" });
-
+      setIsShownToast(true);
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      
+      updateSession().then(() => {
+        router.push("/");
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, router.refresh, updateSession]);
+  }, [state.status, router, updateSession, isShownToast]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
+    setIsShownToast(false); // Reset toast state for new submission
     formAction(formData);
   };
 
