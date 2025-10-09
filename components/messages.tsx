@@ -1,5 +1,6 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
+import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
 import { memo, useEffect } from "react";
 import { useMessages } from "@/hooks/use-messages";
@@ -90,10 +91,9 @@ function PureMessages({
             />
           ))}
 
-          {status === "submitted" &&
-            messages.length > 0 &&
-            messages.at(-1)?.role === "user" &&
-            selectedModelId !== "chat-model-reasoning" && <ThinkingMessage />}
+          <AnimatePresence mode="wait">
+            {status === "submitted" && <ThinkingMessage key="thinking" />}
+          </AnimatePresence>
 
           <div
             className="min-h-[24px] min-w-[24px] shrink-0"
