@@ -21,7 +21,7 @@ export async function generateTitleFromUserMessage({
   message: UIMessage;
 }) {
  
-  let userMessage = message.parts.filter((part) => part.type == "text").map((part) => part.text).join("\n");
+  let userMessage = message.parts.filter((part) => part.type === "text").map((part) => part.text).join("\n");
 
   const { text: title } = await generateText({
     model: myProvider.languageModel("title-model"),
