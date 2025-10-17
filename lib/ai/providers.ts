@@ -1,10 +1,15 @@
-import { gateway } from "@ai-sdk/gateway";
+import { createOpenAI } from "@ai-sdk/openai";
 import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
+
+// Use OpenAI for local development demo
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "demo-key",
+});
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -25,12 +30,12 @@ export const myProvider = isTestEnvironment
     })()
   : customProvider({
       languageModels: {
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
+        "chat-model": openai("gpt-4o"),
         "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
+          model: openai("gpt-4o"),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
+        "title-model": openai("gpt-4o-mini"),
+        "artifact-model": openai("gpt-4o"),
       },
     });
