@@ -70,39 +70,58 @@ const createInternalAIModel = (modelId: string) => {
   return {
     provider: "custom",
     modelId,
-    // Custom implementation cho AI SDK
-    async generateText({ messages, system, maxTokens, temperature, topP }) {
+    specificationVersion: "v2" as const,
+    supportedUrls: {} as Record<string, RegExp[]>,
+    
+    // Custom implementation cho AI SDK v2
+    async doGenerate(options: any) {
+      const { messages } = options;
       const result = await callInternalAI(messages);
       
       return {
-        text: result.content,
+        content: [{ type: "text" as const, text: result.content }],
+        finishReason: "stop" as const,
         usage: {
-          promptTokens: 0,
-          completionTokens: 0,
+          inputTokens: 0,
+          outputTokens: 0,
           totalTokens: 0,
         },
-        finishReason: "stop" as const,
+        warnings: [],
       };
     },
     
-    // Hỗ trợ streaming (nếu cần)
-    async *generateTextStream({ messages, system, maxTokens, temperature, topP }) {
+    // Hỗ trợ streaming
+    async doStream(options: any) {
+      const { messages } = options;
       const result = await callInternalAI(messages);
       
-      // Trả về response dưới dạng stream
-      yield {
-        type: "text-delta" as const,
-        textDelta: result.content,
-      };
-      
-      yield {
-        type: "finish" as const,
-        finishReason: "stop" as const,
-        usage: {
-          promptTokens: 0,
-          completionTokens: 0,
-          totalTokens: 0,
+      // Tạo ReadableStream
+      const stream = new ReadableStream({
+        start(controller) {
+          // Gửi text delta
+          controller.enqueue({
+            type: "text-delta" as const,
+            textDelta: result.content,
+          });
+          
+          // Gửi finish event
+          controller.enqueue({
+            type: "finish" as const,
+            finishReason: "stop" as const,
+            usage: {
+              inputTokens: 0,
+              outputTokens: 0,
+              totalTokens: 0,
+            },
+            warnings: [],
+          });
+          
+          controller.close();
         },
+      });
+      
+      return {
+        stream,
       };
     },
   };
