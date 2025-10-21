@@ -2,14 +2,15 @@
 
 ## Tổng quan
 
-Hệ thống hiện tại hỗ trợ 2 AI model chính với cấu hình server khác nhau:
+Hệ thống hiện tại hỗ trợ 3 AI model hoàn toàn khác nhau, mỗi model có cấu hình server riêng biệt:
 
-1. **NPO AI Agent** - AI agent chính cho Network Performance Optimization
-2. **NPO AI Reasoning** - AI agent với khả năng reasoning nâng cao cho các vấn đề phức tạp
+1. **NPO Yen** - AI model chuyên biệt cho Network Performance Optimization
+2. **CS AI** - AI model tổng quát cho Customer Service
+3. **CS Minh** - AI model cho Customer Service được phát triển bởi Minh
 
 ## Cấu hình Environment Variables
 
-### NPO AI Agent (chat-model)
+### NPO Yen (npo-yen-model)
 ```env
 INTERNAL_AI_SERVER_IP=10.196.5.134
 INTERNAL_AI_PORT=28001
@@ -18,20 +19,36 @@ INTERNAL_AI_USERNAME=aiteam1
 INTERNAL_AI_PASSWORD=AInow123@
 ```
 
-### NPO AI Reasoning (chat-model-reasoning)
+### CS AI (cs-ai-model)
 ```env
-INTERNAL_AI_REASONING_SERVER_IP=10.196.5.135
-INTERNAL_AI_REASONING_PORT=28002
-INTERNAL_AI_REASONING_ASSET_ID=71
+INTERNAL_AI_REASONING_SERVER_IP=10.196.5.134
+INTERNAL_AI_REASONING_PORT=28001
+INTERNAL_AI_REASONING_ASSET_ID=56
 INTERNAL_AI_REASONING_USERNAME=aiteam1
 INTERNAL_AI_REASONING_PASSWORD=AInow123@
 ```
 
+### CS Minh (cs-minh-model)
+```env
+INTERNAL_AI_SERVER_IP=10.196.5.134
+INTERNAL_AI_PORT=28001
+INTERNAL_AI_ASSET_ID=68
+INTERNAL_AI_USERNAME=aiteam1
+INTERNAL_AI_PASSWORD=AInow123@
+```
+
 ## Cách thay đổi cấu hình
 
-1. **Thay đổi server IP**: Cập nhật `INTERNAL_AI_SERVER_IP` hoặc `INTERNAL_AI_REASONING_SERVER_IP`
-2. **Thay đổi port**: Cập nhật `INTERNAL_AI_PORT` hoặc `INTERNAL_AI_REASONING_PORT`
-3. **Thay đổi asset ID**: Cập nhật `INTERNAL_AI_ASSET_ID` hoặc `INTERNAL_AI_REASONING_ASSET_ID`
+Mỗi model có thể được cấu hình độc lập:
+
+1. **NPO Yen Model**: Sử dụng `INTERNAL_AI_*` variables
+2. **CS AI Model**: Sử dụng `INTERNAL_AI_REASONING_*` variables  
+3. **CS Minh Model**: Sử dụng `INTERNAL_AI_*` variables (cùng server với NPO Yen nhưng khác Asset ID)
+
+### Thay đổi cấu hình cho từng model:
+- **Server IP**: Cập nhật biến tương ứng với model
+- **Port**: Cập nhật biến tương ứng với model
+- **Asset ID**: Cập nhật biến tương ứng với model
 
 ## Cấu trúc file
 
@@ -49,9 +66,16 @@ Hệ thống đã được cải thiện để xử lý các lỗi từ AI agent
 
 ## Testing
 
-Để test việc chuyển đổi model:
+Để test việc chuyển đổi giữa các AI model:
 
 1. Khởi động ứng dụng
-2. Chọn model từ dropdown
-3. Gửi message và kiểm tra response
-4. Kiểm tra console logs để debug nếu có lỗi
+2. Chọn AI model từ dropdown (NPO Yen, CS AI, hoặc CS Minh)
+3. Gửi message và kiểm tra response từ model đã chọn
+4. Mỗi model sẽ kết nối đến server/asset ID riêng biệt
+5. Kiểm tra console logs để debug nếu có lỗi
+
+## Lưu ý
+
+- Mỗi model là một AI model hoàn toàn khác nhau, không phải là mode của cùng một model
+- Mỗi model có thể có khả năng và chuyên môn khác nhau
+- Cấu hình server có thể khác nhau cho từng model

@@ -59,7 +59,7 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === "chat-model-reasoning") {
+  if (selectedChatModel === "cs-ai-model") {
     return `${regularPrompt}\n\n${requestPrompt}`;
   }
 

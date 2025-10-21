@@ -18,10 +18,9 @@ export const myProvider = isTestEnvironment
       } = require("./models.mock");
       return customProvider({
         languageModels: {
-          "chat-model": chatModel,
-          "chat-model-reasoning": reasoningModel,
-          "title-model": titleModel,
-          "artifact-model": artifactModel,
+          "npo-yen-model": chatModel,
+          "cs-ai-model": reasoningModel,
+          "cs-minh-model": titleModel,
         },
       });
     })()
