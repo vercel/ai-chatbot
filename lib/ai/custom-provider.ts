@@ -16,11 +16,32 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     // Lấy message cuối cùng từ user
     const lastUserMessage = messages.filter(msg => msg.role === "user").pop();
     if (lastUserMessage) {
-      userMessage = typeof lastUserMessage.content === 'string' 
-        ? lastUserMessage.content 
-        : lastUserMessage.content.map((part: any) => part.text || part).join(' ');
+      // Xử lý content dựa trên cấu trúc của AI SDK
+      if (typeof lastUserMessage.content === 'string') {
+        userMessage = lastUserMessage.content;
+      } else if (Array.isArray(lastUserMessage.content)) {
+        userMessage = lastUserMessage.content.map((part: any) => {
+          if (typeof part === 'string') return part;
+          if (part.text) return part.text;
+          if (part.content) return part.content;
+          return String(part);
+        }).join(' ');
+      } else if (lastUserMessage.parts && Array.isArray(lastUserMessage.parts)) {
+        userMessage = lastUserMessage.parts.map((part: any) => {
+          if (typeof part === 'string') return part;
+          if (part.text) return part.text;
+          if (part.content) return part.content;
+          return String(part);
+        }).join(' ');
+      }
     }
   }
+
+  console.log(`[${modelId}] Sending message to ${apiUrl}:`, {
+    userMessage,
+    sessionId: currentSessionId,
+    config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId }
+  });
 
   const payload = {
     sessionInfo: {
@@ -47,20 +68,34 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`AI Agent API error: ${response.status} ${response.statusText}`, errorText);
-      throw new Error(`AI Agent API error: ${response.status} ${response.statusText}`);
+      console.error(`[${modelId}] AI Agent API error: ${response.status} ${response.statusText}`, {
+        url: apiUrl,
+        errorText,
+        config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId }
+      });
+      throw new Error(`AI Agent API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log(`[${modelId}] AI Agent response:`, data);
     
     // Kiểm tra nếu response có lỗi
     if (data.code && data.code !== 0) {
-      console.error("AI Agent returned error:", data);
-      throw new Error(`AI Agent error: ${data.message || 'Unknown error'}`);
+      console.error(`[${modelId}] AI Agent returned error:`, data);
+      throw new Error(`AI Agent error (code ${data.code}): ${data.message || 'Unknown error'}`);
+    }
+
+    // Kiểm tra nếu không có content
+    if (!data.content) {
+      console.warn(`[${modelId}] No content in response:`, data);
+      return {
+        content: "No response content from AI agent",
+        sessionId: currentSessionId,
+      };
     }
 
     return {
-      content: data.content || "No response from AI agent",
+      content: data.content,
       sessionId: currentSessionId,
     };
   } catch (error) {
@@ -79,54 +114,66 @@ const createInternalAIModel = (modelId: string) => {
     
     // Custom implementation cho AI SDK v2
     async doGenerate(options: any) {
-      const { messages } = options;
-      const result = await callInternalAI(messages, modelId);
-      
-      return {
-        content: [{ type: "text" as const, text: result.content }],
-        finishReason: "stop" as const,
-        usage: {
-          inputTokens: 0,
-          outputTokens: 0,
-          totalTokens: 0,
-        },
-        warnings: [],
-      };
+      try {
+        const { messages } = options;
+        console.log(`[${modelId}] doGenerate called with messages:`, messages);
+        const result = await callInternalAI(messages, modelId);
+        
+        return {
+          content: [{ type: "text" as const, text: result.content }],
+          finishReason: "stop" as const,
+          usage: {
+            inputTokens: 0,
+            outputTokens: 0,
+            totalTokens: 0,
+          },
+          warnings: [],
+        };
+      } catch (error) {
+        console.error(`[${modelId}] doGenerate error:`, error);
+        throw error;
+      }
     },
     
     // Hỗ trợ streaming
     async doStream(options: any) {
-      const { messages } = options;
-      const result = await callInternalAI(messages, modelId);
-      
-      // Tạo ReadableStream
-      const stream = new ReadableStream({
-        start(controller) {
-          // Gửi text delta
-          controller.enqueue({
-            type: "text-delta" as const,
-            textDelta: result.content,
-          });
-          
-          // Gửi finish event
-          controller.enqueue({
-            type: "finish" as const,
-            finishReason: "stop" as const,
-            usage: {
-              inputTokens: 0,
-              outputTokens: 0,
-              totalTokens: 0,
-            },
-            warnings: [],
-          });
-          
-          controller.close();
-        },
-      });
-      
-      return {
-        stream,
-      };
+      try {
+        const { messages } = options;
+        console.log(`[${modelId}] doStream called with messages:`, messages);
+        const result = await callInternalAI(messages, modelId);
+        
+        // Tạo ReadableStream
+        const stream = new ReadableStream({
+          start(controller) {
+            // Gửi text delta
+            controller.enqueue({
+              type: "text-delta" as const,
+              textDelta: result.content,
+            });
+            
+            // Gửi finish event
+            controller.enqueue({
+              type: "finish" as const,
+              finishReason: "stop" as const,
+              usage: {
+                inputTokens: 0,
+                outputTokens: 0,
+                totalTokens: 0,
+              },
+              warnings: [],
+            });
+            
+            controller.close();
+          },
+        });
+        
+        return {
+          stream,
+        };
+      } catch (error) {
+        console.error(`[${modelId}] doStream error:`, error);
+        throw error;
+      }
     },
   };
 };
