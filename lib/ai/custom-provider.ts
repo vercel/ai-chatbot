@@ -1,5 +1,4 @@
 import { customProvider } from "ai";
-import { createCustomFetch } from "./fetch-agent";
 
 // Cấu hình AI Agent nội bộ
 const INTERNAL_AI_CONFIG = {
@@ -38,9 +37,11 @@ async function callInternalAI(messages: any[], sessionId?: string) {
   };
 
   try {
-    // Sử dụng custom fetch để bỏ qua SSL verification
-    const customFetch = createCustomFetch();
-    const response = await customFetch(apiUrl, {
+    // Set environment variable để bỏ qua SSL verification
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    
+    // Sử dụng fetch mặc định
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
