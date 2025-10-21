@@ -43,16 +43,13 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId }
   });
 
-  // Thử các format payload khác nhau
+  // Sử dụng format đã test thành công
   const payload = {
     sessionInfo: {
       sessionId: currentSessionId
     },
     contentType: "rich-text",
-    content: userMessage,
-    // Thêm một số field có thể cần thiết
-    timestamp: new Date().toISOString(),
-    modelId: modelId
+    content: userMessage
   };
 
   console.log(`[${modelId}] Request payload:`, JSON.stringify(payload, null, 2));
@@ -66,14 +63,9 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     // Set environment variable để bỏ qua SSL verification
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     
-    // Thử các format headers khác nhau
+    // Sử dụng headers đã test thành công
     const headers = {
       "Content-Type": "application/json",
-      "Accept": "application/json",
-      "User-Agent": "ZTE-NOC-AI-Chatbot/1.0",
-      // Thử Basic Auth thay vì custom headers
-      "Authorization": `Basic ${Buffer.from(`${config.username}:${config.password}`).toString('base64')}`,
-      // Giữ lại custom headers để test
       "username": config.username,
       "password": Buffer.from(config.password).toString('base64'),
     };
@@ -108,10 +100,10 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     const data = await response.json();
     console.log(`[${modelId}] AI Agent response:`, data);
     
-    // Kiểm tra nếu response có lỗi
-    if (data.code && data.code !== 0) {
-      console.error(`[${modelId}] AI Agent returned error:`, data);
-      throw new Error(`AI Agent error (code ${data.code}): ${data.message || 'Unknown error'}`);
+    // Kiểm tra nếu response có lỗi (format từ test results)
+    if (data.content && data.content.includes("Error 704002")) {
+      console.error(`[${modelId}] AI Agent returned error:`, data.content);
+      throw new Error(`AI Agent error: ${data.content}`);
     }
 
     // Kiểm tra nếu không có content
@@ -123,8 +115,12 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
       };
     }
 
+    // Trả về content đã được clean up
+    const cleanContent = data.content.trim();
+    console.log(`[${modelId}] Cleaned content:`, cleanContent);
+
     return {
-      content: data.content,
+      content: cleanContent,
       sessionId: currentSessionId,
     };
   } catch (error) {
