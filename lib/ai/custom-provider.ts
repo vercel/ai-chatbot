@@ -43,26 +43,47 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId }
   });
 
+  // Thử các format payload khác nhau
   const payload = {
     sessionInfo: {
       sessionId: currentSessionId
     },
     contentType: "rich-text",
-    content: userMessage
+    content: userMessage,
+    // Thêm một số field có thể cần thiết
+    timestamp: new Date().toISOString(),
+    modelId: modelId
   };
+
+  console.log(`[${modelId}] Request payload:`, JSON.stringify(payload, null, 2));
+
+  // Validate input
+  if (!userMessage || userMessage.trim() === '') {
+    throw new Error('User message is empty or invalid');
+  }
 
   try {
     // Set environment variable để bỏ qua SSL verification
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     
+    // Thử các format headers khác nhau
+    const headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "User-Agent": "ZTE-NOC-AI-Chatbot/1.0",
+      // Thử Basic Auth thay vì custom headers
+      "Authorization": `Basic ${Buffer.from(`${config.username}:${config.password}`).toString('base64')}`,
+      // Giữ lại custom headers để test
+      "username": config.username,
+      "password": Buffer.from(config.password).toString('base64'),
+    };
+
+    console.log(`[${modelId}] Request headers:`, headers);
+    
     // Sử dụng fetch mặc định
     const response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "username": config.username,
-        "password": Buffer.from(config.password).toString('base64'),
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 
@@ -71,8 +92,16 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
       console.error(`[${modelId}] AI Agent API error: ${response.status} ${response.statusText}`, {
         url: apiUrl,
         errorText,
+        requestPayload: payload,
+        requestHeaders: headers,
         config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId }
       });
+      
+      // Đặc biệt xử lý lỗi 400 để hiển thị chi tiết
+      if (response.status === 400) {
+        throw new Error(`Bad Request (400): ${errorText}. Check request format and parameters.`);
+      }
+      
       throw new Error(`AI Agent API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
