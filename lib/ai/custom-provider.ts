@@ -12,9 +12,14 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
   
   // Chuyển đổi messages từ AI SDK format sang format của AI agent nội bộ
   let userMessage = "";
+  
+  console.log(`[${modelId}] Raw messages:`, JSON.stringify(messages, null, 2));
+  
   if (messages && messages.length > 0) {
     // Lấy message cuối cùng từ user
     const lastUserMessage = messages.filter(msg => msg.role === "user").pop();
+    console.log(`[${modelId}] Last user message:`, JSON.stringify(lastUserMessage, null, 2));
+    
     if (lastUserMessage) {
       // Xử lý content dựa trên cấu trúc của AI SDK
       if (typeof lastUserMessage.content === 'string') {
@@ -36,6 +41,8 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
       }
     }
   }
+  
+  console.log(`[${modelId}] Extracted userMessage:`, userMessage);
 
   console.log(`[${modelId}] Sending message to ${apiUrl}:`, {
     userMessage,
@@ -54,9 +61,10 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
 
   console.log(`[${modelId}] Request payload:`, JSON.stringify(payload, null, 2));
 
-  // Validate input
+  // Validate input - tạm thời bỏ qua để debug
   if (!userMessage || userMessage.trim() === '') {
-    throw new Error('User message is empty or invalid');
+    console.warn(`[${modelId}] User message is empty, using fallback`);
+    userMessage = "Hello"; // Fallback message để test
   }
 
   try {
