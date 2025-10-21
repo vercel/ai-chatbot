@@ -9,7 +9,7 @@ const config = {
   port: process.env.INTERNAL_AI_PORT || "28001",
   assetId: process.env.INTERNAL_AI_ASSET_ID || "70",
   username: process.env.INTERNAL_AI_USERNAME || "aiteam1",
-  password: process.env.INTERNAL_AI_PASSWORD || "Z_tywg_2025",
+  password: process.env.INTERNAL_AI_PASSWORD || "AInow123@",
 };
 
 async function testInternalAI() {

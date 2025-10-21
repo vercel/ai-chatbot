@@ -6,7 +6,7 @@ const INTERNAL_AI_CONFIG = {
   port: process.env.INTERNAL_AI_PORT || "28001",
   assetId: process.env.INTERNAL_AI_ASSET_ID || "70",
   username: process.env.INTERNAL_AI_USERNAME || "aiteam1",
-  password: process.env.INTERNAL_AI_PASSWORD || "Z_tywg_2025",
+  password: process.env.INTERNAL_AI_PASSWORD || "AInow123@",
 };
 
 // Helper function để gọi API AI agent nội bộ
