@@ -10,12 +10,11 @@ export const chatModels: ChatModel[] = [
   {
     id: "chat-model",
     name: "NPO AI Agent",
-    description: "Internal AI agent specialized in Network Performance Optimization",
+    description: "Primary AI agent for Network Performance Optimization (Server: 10.196.5.134:28001)",
   },
   {
     id: "chat-model-reasoning",
     name: "NPO AI Reasoning",
-    description:
-      "Internal AI agent with advanced reasoning for complex telecom problems",
+    description: "Advanced reasoning AI agent for complex telecom problems (Server: 10.196.5.135:28002)",
   },
 ];

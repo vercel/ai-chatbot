@@ -1,17 +1,11 @@
 import { customProvider } from "ai";
-
-// Cấu hình AI Agent nội bộ
-const INTERNAL_AI_CONFIG = {
-  serverIP: process.env.INTERNAL_AI_SERVER_IP || "10.196.5.134",
-  port: process.env.INTERNAL_AI_PORT || "28001",
-  assetId: process.env.INTERNAL_AI_ASSET_ID || "70",
-  username: process.env.INTERNAL_AI_USERNAME || "aiteam1",
-  password: process.env.INTERNAL_AI_PASSWORD || "AInow123@",
-};
+import { getModelConfig } from "./model-configs";
 
 // Helper function để gọi API AI agent nội bộ
-async function callInternalAI(messages: any[], sessionId?: string) {
-  const apiUrl = `https://${INTERNAL_AI_CONFIG.serverIP}:${INTERNAL_AI_CONFIG.port}/api/ifactory-agent-run/v1/chat/api/${INTERNAL_AI_CONFIG.assetId}`;
+async function callInternalAI(messages: any[], modelId: string, sessionId?: string) {
+  const config = getModelConfig(modelId);
+
+  const apiUrl = `https://${config.serverIP}:${config.port}/api/ifactory-agent-run/v1/chat/api/${config.assetId}`;
   
   // Tạo session ID nếu chưa có
   const currentSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -45,17 +39,26 @@ async function callInternalAI(messages: any[], sessionId?: string) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "username": INTERNAL_AI_CONFIG.username,
-        "password": Buffer.from(INTERNAL_AI_CONFIG.password).toString('base64'),
+        "username": config.username,
+        "password": Buffer.from(config.password).toString('base64'),
       },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`AI Agent API error: ${response.status} ${response.statusText}`, errorText);
       throw new Error(`AI Agent API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    
+    // Kiểm tra nếu response có lỗi
+    if (data.code && data.code !== 0) {
+      console.error("AI Agent returned error:", data);
+      throw new Error(`AI Agent error: ${data.message || 'Unknown error'}`);
+    }
+
     return {
       content: data.content || "No response from AI agent",
       sessionId: currentSessionId,
@@ -77,7 +80,7 @@ const createInternalAIModel = (modelId: string) => {
     // Custom implementation cho AI SDK v2
     async doGenerate(options: any) {
       const { messages } = options;
-      const result = await callInternalAI(messages);
+      const result = await callInternalAI(messages, modelId);
       
       return {
         content: [{ type: "text" as const, text: result.content }],
@@ -94,7 +97,7 @@ const createInternalAIModel = (modelId: string) => {
     // Hỗ trợ streaming
     async doStream(options: any) {
       const { messages } = options;
-      const result = await callInternalAI(messages);
+      const result = await callInternalAI(messages, modelId);
       
       // Tạo ReadableStream
       const stream = new ReadableStream({
@@ -131,9 +134,9 @@ const createInternalAIModel = (modelId: string) => {
 // Tạo custom provider
 export const internalAIProvider = customProvider({
   languageModels: {
-    "chat-model": createInternalAIModel("internal-chat-model"),
-    "chat-model-reasoning": createInternalAIModel("internal-reasoning-model"),
-    "title-model": createInternalAIModel("internal-title-model"),
-    "artifact-model": createInternalAIModel("internal-artifact-model"),
+    "chat-model": createInternalAIModel("chat-model"),
+    "chat-model-reasoning": createInternalAIModel("chat-model-reasoning"),
+    "title-model": createInternalAIModel("title-model"),
+    "artifact-model": createInternalAIModel("artifact-model"),
   },
 });

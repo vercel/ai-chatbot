@@ -20,17 +20,26 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
-  const { text: title } = await generateText({
-    model: myProvider.languageModel("title-model"),
-    system: `\n
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
-    - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
-  });
+  try {
+    const { text: title } = await generateText({
+      model: myProvider.languageModel("title-model"),
+      system: `\n
+      - you will generate a short title based on the first message a user begins a conversation with
+      - ensure it is not more than 80 characters long
+      - the title should be a summary of the user's message
+      - do not use quotes or colons`,
+      prompt: JSON.stringify(message),
+    });
 
-  return title;
+    return title;
+  } catch (error) {
+    console.error("Error generating title:", error);
+    // Fallback title nếu không thể generate được
+    const userMessage = typeof message.content === 'string' 
+      ? message.content 
+      : message.content.map((part: any) => part.text || part).join(' ');
+    return userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
+  }
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
