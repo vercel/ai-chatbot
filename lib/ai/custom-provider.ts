@@ -1,4 +1,5 @@
 import { customProvider } from "ai";
+import { createCustomFetch } from "./fetch-agent";
 
 // Cấu hình AI Agent nội bộ
 const INTERNAL_AI_CONFIG = {
@@ -37,7 +38,9 @@ async function callInternalAI(messages: any[], sessionId?: string) {
   };
 
   try {
-    const response = await fetch(apiUrl, {
+    // Sử dụng custom fetch để bỏ qua SSL verification
+    const customFetch = createCustomFetch();
+    const response = await customFetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,9 +48,6 @@ async function callInternalAI(messages: any[], sessionId?: string) {
         "password": Buffer.from(INTERNAL_AI_CONFIG.password).toString('base64'),
       },
       body: JSON.stringify(payload),
-      // Bỏ qua SSL verification cho mạng nội bộ
-      // @ts-ignore
-      rejectUnauthorized: false,
     });
 
     if (!response.ok) {
@@ -81,7 +81,7 @@ const createInternalAIModel = (modelId: string) => {
           completionTokens: 0,
           totalTokens: 0,
         },
-        finishReason: "stop",
+        finishReason: "stop" as const,
       };
     },
     
@@ -91,13 +91,13 @@ const createInternalAIModel = (modelId: string) => {
       
       // Trả về response dưới dạng stream
       yield {
-        type: "text-delta",
+        type: "text-delta" as const,
         textDelta: result.content,
       };
       
       yield {
-        type: "finish",
-        finishReason: "stop",
+        type: "finish" as const,
+        finishReason: "stop" as const,
         usage: {
           promptTokens: 0,
           completionTokens: 0,

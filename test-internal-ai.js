@@ -2,7 +2,6 @@
 // Chạy: node test-internal-ai.js
 
 const https = require('https');
-const http = require('http');
 
 // Cấu hình AI Agent nội bộ (có thể override bằng environment variables)
 const config = {
@@ -25,17 +24,6 @@ async function testInternalAI() {
     content: "Hello, this is a test message from the chatbot application."
   };
 
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'username': config.username,
-      'password': Buffer.from(config.password).toString('base64'),
-    },
-    // Bỏ qua SSL verification cho mạng nội bộ
-    rejectUnauthorized: false
-  };
-
   console.log('🔍 Testing connection to internal AI agent...');
   console.log(`📍 URL: ${apiUrl}`);
   console.log(`👤 Username: ${config.username}`);
@@ -44,7 +32,7 @@ async function testInternalAI() {
   console.log('─'.repeat(50));
 
   try {
-    const response = await makeRequest(apiUrl, options, JSON.stringify(payload));
+    const response = await makeRequest(apiUrl, payload);
     
     if (response.statusCode === 200) {
       console.log('✅ Connection successful!');
@@ -61,19 +49,27 @@ async function testInternalAI() {
   }
 }
 
-function makeRequest(url, options, data) {
+function makeRequest(url, payload) {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
-    const requestOptions = {
+    const postData = JSON.stringify(payload);
+    
+    const options = {
       hostname: urlObj.hostname,
       port: urlObj.port,
       path: urlObj.pathname,
-      method: options.method,
-      headers: options.headers,
-      rejectUnauthorized: options.rejectUnauthorized
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData),
+        'username': config.username,
+        'password': Buffer.from(config.password).toString('base64'),
+      },
+      // Bỏ qua SSL verification cho mạng nội bộ
+      rejectUnauthorized: false
     };
 
-    const req = https.request(requestOptions, (res) => {
+    const req = https.request(options, (res) => {
       let responseData = '';
       
       res.on('data', (chunk) => {
@@ -100,7 +96,7 @@ function makeRequest(url, options, data) {
       reject(error);
     });
 
-    req.write(data);
+    req.write(postData);
     req.end();
   });
 }
