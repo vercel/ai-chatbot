@@ -8,31 +8,24 @@ export interface ModelConfig {
 }
 
 export const MODEL_CONFIGS: Record<string, ModelConfig> = {
-  "chat-model": {
+  "npo-yen-model": {
     serverIP: process.env.INTERNAL_AI_SERVER_IP || "10.196.5.134",
     port: process.env.INTERNAL_AI_PORT || "28001",
     assetId: process.env.INTERNAL_AI_ASSET_ID || "70",
     username: process.env.INTERNAL_AI_USERNAME || "aiteam1",
     password: process.env.INTERNAL_AI_PASSWORD || "AInow123@",
   },
-  "chat-model-reasoning": {
-    serverIP: process.env.INTERNAL_AI_REASONING_SERVER_IP || "10.196.5.135",
-    port: process.env.INTERNAL_AI_REASONING_PORT || "28002",
-    assetId: process.env.INTERNAL_AI_REASONING_ASSET_ID || "71",
+  "cs-ai-model": {
+    serverIP: process.env.INTERNAL_AI_REASONING_SERVER_IP || "10.196.5.134",
+    port: process.env.INTERNAL_AI_REASONING_PORT || "28001",
+    assetId: process.env.INTERNAL_AI_REASONING_ASSET_ID || "56",
     username: process.env.INTERNAL_AI_REASONING_USERNAME || "aiteam1",
     password: process.env.INTERNAL_AI_REASONING_PASSWORD || "AInow123@",
   },
-  "title-model": {
+  "cs-minh-model": {
     serverIP: process.env.INTERNAL_AI_SERVER_IP || "10.196.5.134",
     port: process.env.INTERNAL_AI_PORT || "28001",
-    assetId: process.env.INTERNAL_AI_ASSET_ID || "70",
-    username: process.env.INTERNAL_AI_USERNAME || "aiteam1",
-    password: process.env.INTERNAL_AI_PASSWORD || "AInow123@",
-  },
-  "artifact-model": {
-    serverIP: process.env.INTERNAL_AI_SERVER_IP || "10.196.5.134",
-    port: process.env.INTERNAL_AI_PORT || "28001",
-    assetId: process.env.INTERNAL_AI_ASSET_ID || "70",
+    assetId: process.env.INTERNAL_AI_ASSET_ID || "68",
     username: process.env.INTERNAL_AI_USERNAME || "aiteam1",
     password: process.env.INTERNAL_AI_PASSWORD || "AInow123@",
   },

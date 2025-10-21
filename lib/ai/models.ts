@@ -8,13 +8,18 @@ export type ChatModel = {
 
 export const chatModels: ChatModel[] = [
   {
-    id: "chat-model",
-    name: "NPO AI Agent",
-    description: "Primary AI agent for Network Performance Optimization (Server: 10.196.5.134:28001)",
+    id: "npo-yen-model",
+    name: "NPO Yen",
+    description: "Primary AI agent for Network Performance Optimization",
   },
   {
-    id: "chat-model-reasoning",
-    name: "NPO AI Reasoning",
-    description: "Advanced reasoning AI agent for complex telecom problems (Server: 10.196.5.135:28002)",
+    id: "cs-minh-model",
+    name: "CS Minh",
+    description: "AI agent for CS by Minh",
+  },
+  {
+    id: "cs-ai-model",
+    name: "CS AI",
+    description: "AI agent for CS",
   },
 ];

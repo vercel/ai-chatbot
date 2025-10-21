@@ -134,9 +134,8 @@ const createInternalAIModel = (modelId: string) => {
 // Tạo custom provider
 export const internalAIProvider = customProvider({
   languageModels: {
-    "chat-model": createInternalAIModel("chat-model"),
-    "chat-model-reasoning": createInternalAIModel("chat-model-reasoning"),
-    "title-model": createInternalAIModel("title-model"),
-    "artifact-model": createInternalAIModel("artifact-model"),
+    "npo-yen-model": createInternalAIModel("npo-yen-model"),
+    "cs-ai-model": createInternalAIModel("cs-ai-model"),
+    "cs-minh-model": createInternalAIModel("cs-minh-model"),
   },
 });
