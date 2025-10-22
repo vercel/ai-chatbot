@@ -177,6 +177,16 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     const cleanContent = data.content.trim();
     console.log(`[${modelId}] Cleaned content:`, cleanContent);
 
+    // Nếu đây là title generation, chỉ lấy dòng đầu tiên hoặc tóm tắt ngắn
+    if (cleanContent.length > 200) {
+      const titleContent = cleanContent.split('\n')[0].trim();
+      console.log(`[${modelId}] Extracted title:`, titleContent);
+      return {
+        content: titleContent,
+        sessionId: currentSessionId,
+      };
+    }
+
     return {
       content: cleanContent,
       sessionId: currentSessionId,
@@ -257,12 +267,12 @@ const createInternalAIModel = (modelId: string) => {
         
         console.log(`[${modelId}] Streaming result:`, result);
         
-        // Tạo ReadableStream với format đúng cho AI SDK
+        // Tạo ReadableStream với format đúng cho AI SDK v2
         const stream = new ReadableStream({
           start(controller) {
             console.log(`[${modelId}] Starting stream with content length:`, result.content.length);
             
-            // Gửi text delta
+            // Gửi text delta theo format của AI SDK v2
             controller.enqueue({
               type: "text-delta",
               textDelta: result.content,
@@ -275,11 +285,10 @@ const createInternalAIModel = (modelId: string) => {
               type: "finish",
               finishReason: "stop",
               usage: {
-                inputTokens: 0,
-                outputTokens: 0,
+                promptTokens: 0,
+                completionTokens: 0,
                 totalTokens: 0,
               },
-              warnings: [],
             });
             
             console.log(`[${modelId}] Sent finish event`);
@@ -289,6 +298,8 @@ const createInternalAIModel = (modelId: string) => {
         
         return {
           stream,
+          rawCall: { rawPrompt: messagesToUse, rawSettings: {} },
+          rawResponse: { headers: {} },
         };
       } catch (error) {
         console.error(`[${modelId}] doStream error:`, error);
