@@ -21,6 +21,11 @@ export async function generateTitleFromUserMessage({
   message: UIMessage;
 }) {
   try {
+    // Extract text content from message parts
+    const messageText = typeof message.parts === 'string' 
+      ? message.parts 
+      : message.parts.map((part: any) => part.text || part).join(' ');
+
     const { text: title } = await generateText({
       model: myProvider.languageModel("npo-yen-model"),
       system: `\n
@@ -28,7 +33,12 @@ export async function generateTitleFromUserMessage({
       - ensure it is not more than 80 characters long
       - the title should be a summary of the user's message
       - do not use quotes or colons`,
-      prompt: JSON.stringify(message),
+      messages: [
+        {
+          role: "user",
+          content: messageText
+        }
+      ],
     });
 
     return title;
