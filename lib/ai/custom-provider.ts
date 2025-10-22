@@ -4,6 +4,8 @@ import { getModelConfig } from "./model-configs";
 // Helper function để gọi API AI agent nội bộ
 async function callInternalAI(messages: any[], modelId: string, sessionId?: string) {
   const config = getModelConfig(modelId);
+  
+  console.log(`[${modelId}] Model config:`, config);
 
   const apiUrl = `https://${config.serverIP}:${config.port}/api/ifactory-agent-run/v1/chat/api/${config.assetId}`;
   
@@ -93,7 +95,7 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
   console.log(`[${modelId}] Sending message to ${apiUrl}:`, {
     userMessage,
     sessionId: currentSessionId,
-    config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId }
+    config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId, username: config.username, password: config.password }
   });
 
   // Sử dụng format đúng theo API documentation
@@ -114,7 +116,7 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     const headers = {
       "Content-Type": "application/json",
       "username": config.username,
-      "password": config.password,
+      "password": Buffer.from(config.password).toString('base64'),
     };
 
     console.log(`[${modelId}] Request headers:`, headers);
@@ -253,28 +255,44 @@ const createInternalAIModel = (modelId: string) => {
         
         const result = await callInternalAI(messagesToUse, modelId);
         
-        // Tạo ReadableStream
+        console.log(`[${modelId}] Streaming result:`, result);
+        
+        // Tạo ReadableStream với streaming content
         const stream = new ReadableStream({
           start(controller) {
-            // Gửi text delta
-            controller.enqueue({
-              type: "text-delta" as const,
-              textDelta: result.content,
-            });
+            // Chia content thành chunks nhỏ để simulate streaming
+            const content = result.content;
+            const chunkSize = 50; // Kích thước chunk
             
-            // Gửi finish event
-            controller.enqueue({
-              type: "finish" as const,
-              finishReason: "stop" as const,
-              usage: {
-                inputTokens: 0,
-                outputTokens: 0,
-                totalTokens: 0,
-              },
-              warnings: [],
-            });
+            let index = 0;
+            const sendChunk = () => {
+              if (index < content.length) {
+                const chunk = content.slice(index, index + chunkSize);
+                controller.enqueue({
+                  type: "text-delta" as const,
+                  textDelta: chunk,
+                });
+                index += chunkSize;
+                
+                // Delay nhỏ để simulate streaming
+                setTimeout(sendChunk, 50);
+              } else {
+                // Gửi finish event
+                controller.enqueue({
+                  type: "finish" as const,
+                  finishReason: "stop" as const,
+                  usage: {
+                    inputTokens: 0,
+                    outputTokens: 0,
+                    totalTokens: 0,
+                  },
+                  warnings: [],
+                });
+                controller.close();
+              }
+            };
             
-            controller.close();
+            sendChunk();
           },
         });
         
