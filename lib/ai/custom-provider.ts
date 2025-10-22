@@ -257,42 +257,33 @@ const createInternalAIModel = (modelId: string) => {
         
         console.log(`[${modelId}] Streaming result:`, result);
         
-        // Tạo ReadableStream với streaming content
+        // Tạo ReadableStream với format đúng cho AI SDK
         const stream = new ReadableStream({
           start(controller) {
-            // Chia content thành chunks nhỏ để simulate streaming
-            const content = result.content;
-            const chunkSize = 50; // Kích thước chunk
+            console.log(`[${modelId}] Starting stream with content length:`, result.content.length);
             
-            let index = 0;
-            const sendChunk = () => {
-              if (index < content.length) {
-                const chunk = content.slice(index, index + chunkSize);
-                controller.enqueue({
-                  type: "text-delta" as const,
-                  textDelta: chunk,
-                });
-                index += chunkSize;
-                
-                // Delay nhỏ để simulate streaming
-                setTimeout(sendChunk, 50);
-              } else {
-                // Gửi finish event
-                controller.enqueue({
-                  type: "finish" as const,
-                  finishReason: "stop" as const,
-                  usage: {
-                    inputTokens: 0,
-                    outputTokens: 0,
-                    totalTokens: 0,
-                  },
-                  warnings: [],
-                });
-                controller.close();
-              }
-            };
+            // Gửi text delta
+            controller.enqueue({
+              type: "text-delta",
+              textDelta: result.content,
+            });
             
-            sendChunk();
+            console.log(`[${modelId}] Sent text-delta`);
+            
+            // Gửi finish event
+            controller.enqueue({
+              type: "finish",
+              finishReason: "stop",
+              usage: {
+                inputTokens: 0,
+                outputTokens: 0,
+                totalTokens: 0,
+              },
+              warnings: [],
+            });
+            
+            console.log(`[${modelId}] Sent finish event`);
+            controller.close();
           },
         });
         

@@ -129,6 +129,7 @@ export async function POST(request: Request) {
     } else {
       const title = await generateTitleFromUserMessage({
         message,
+        selectedChatModel,
       });
 
       await saveChat({

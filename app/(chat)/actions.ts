@@ -17,8 +17,10 @@ export async function saveChatModelAsCookie(model: string) {
 
 export async function generateTitleFromUserMessage({
   message,
+  selectedChatModel,
 }: {
   message: UIMessage;
+  selectedChatModel: string;
 }) {
   try {
     // Extract text content from message parts
@@ -27,7 +29,7 @@ export async function generateTitleFromUserMessage({
       : message.parts.map((part: any) => part.text || part).join(' ');
 
     const { text: title } = await generateText({
-      model: myProvider.languageModel("npo-yen-model"),
+      model: myProvider.languageModel(selectedChatModel),
       system: `\n
       - you will generate a short title based on the first message a user begins a conversation with
       - ensure it is not more than 80 characters long

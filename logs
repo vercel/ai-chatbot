@@ -1,0 +1,968 @@
+PS D:\GitHub Repo\zte-noc-ai-chatbot> pnpm dev
+
+> zte-noc-chatbot@3.1.0 dev D:\GitHub Repo\zte-noc-ai-chatbot
+> next dev --turbo
+
+   ▲ Next.js 15.3.0-canary.31 (Turbopack)
+   - Local:        http://localhost:3000   
+   - Network:      http://10.32.144.40:3000
+   - Environments: .env.local
+   - Experiments (use with caution):       
+     ✓ ppr
+
+ ✓ Starting...
+ ✓ Compiled in 966ms
+ ✓ Ready in 3.7s
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 2.7s
+ GET /api/auth/session 200 in 4862ms
+ GET /api/history?limit=20 200 in 4862ms
+ ○ Compiling /_not-found/page ...
+ GET /api/auth/session 200 in 1148ms
+ ✓ Compiled /_not-found/page in 4.2s
+ GET /chat 404 in 4597ms
+ GET /api/history?limit=20 200 in 4640ms
+ GET /api/auth/session 200 in 472ms
+ GET /api/auth/session 200 in 261ms
+ GET /api/auth/session 200 in 345ms
+ GET /api/auth/session 200 in 305ms
+ GET /chat 404 in 212ms
+ ○ Compiling /favicon.ico ...
+ GET /api/auth/session 200 in 454ms
+ ✓ Compiled /favicon.ico in 892ms
+ GET /api/auth/session 200 in 322ms
+ GET /api/auth/session 200 in 271ms
+ GET /api/auth/session 200 in 255ms
+ GET /chat 404 in 204ms
+ GET /api/auth/session 200 in 389ms
+ GET /api/auth/session 200 in 300ms
+ ○ Compiling / ...
+ GET /api/auth/session 200 in 677ms
+ GET /api/auth/session 200 in 879ms
+ GET /api/auth/session 200 in 457ms
+ GET /api/auth/session 200 in 263ms
+ ✓ Compiled / in 20.1s
+ GET / 200 in 22628ms
+ GET /api/auth/session 200 in 797ms
+ GET /api/auth/session 200 in 680ms
+ GET /api/history?limit=20 200 in 1674ms
+ ○ Compiling /api/chat ...
+ ✓ Compiled /api/chat in 1649ms
+[npo-yen-model] doGenerate called with messages: undefined
+[npo-yen-model] doGenerate called with prompt: [
+  {
+    role: 'system',
+    content: '\n' +
+      '\n' +
+      '      - you will generate a short title based on the first message a user begins a conversation with\n' +
+      '      - ensure it is not more than 80 characters long\n' +
+      "      - the title should be a summary of the user's message\n" +
+      '      - do not use quotes or colons'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[npo-yen-model] Using messagesToUse: [
+  {
+    role: 'system',
+    content: '\n' +
+      '\n' +
+      '      - you will generate a short title based on the first message a user begins a conversation with\n' +
+      '      - ensure it is not more than 80 characters long\n' +
+      "      - the title should be a summary of the user's message\n" +
+      '      - do not use quotes or colons'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[npo-yen-model] doGenerate options: {
+  "prompt": [
+    {
+      "role": "system",
+      "content": "\n\n      - you will generate a short title based on the first message a user begins a conversation with\n      - ensure it is not more than 80 characters long\n      - the title should be a summary of the user's message\n      - do not use quotes or colons"
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "what is Wifi 5G used for?"
+        }
+      ]
+    }
+  ]
+}
+[npo-yen-model] Raw messages: [
+  {
+    "role": "system",
+    "content": "\n\n      - you will generate a short title based on the first message a user begins a conversation with\n      - ensure it is not more than 80 characters long\n      - the title should be a summary of the user's message\n      - do not use quotes or colons"
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "what is Wifi 5G used for?"
+      }
+    ]
+  }
+]
+[npo-yen-model] Messages type: object
+[npo-yen-model] Messages is array: true
+[npo-yen-model] Messages length: 2
+[npo-yen-model] All messages structure: [
+  {
+    index: 0,
+    role: 'system',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'string',
+    contentLength: 252
+  },
+  {
+    index: 1,
+    role: 'user',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'object',
+    contentLength: 1
+  }
+]
+[npo-yen-model] Last user message: {
+  "role": "user",
+  "content": [
+    {
+      "type": "text",
+      "text": "what is Wifi 5G used for?"
+    }
+  ]
+}
+[npo-yen-model] Extracted userMessage: what is Wifi 5G used for?
+[npo-yen-model] Sending message to https://10.196.5.134:28001/api/ifactory-agent-run/v1/chat/api/70: {
+  userMessage: 'what is Wifi 5G used for?',
+  sessionId: 'session_1761101979952_rmcjqy6r3',
+  config: { serverIP: '10.196.5.134', port: '28001', assetId: '70' }
+}
+[npo-yen-model] Request payload: {
+  "sessionInfo": {
+    "sessionId": "session_1761101979952_rmcjqy6r3"
+  },
+  "content": "what is Wifi 5G used for?"
+}
+[npo-yen-model] Request headers: {
+  'Content-Type': 'application/json',
+  username: 'aiteam1',
+  password: 'AInow123@'
+}
+(node:3636) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[npo-yen-model] Response status: 200
+[npo-yen-model] Response ok: true
+[npo-yen-model] AI Agent response: {
+  sessionInfo: { sessionId: 'session_1761101979952_rmcjqy6r3' },
+  contentType: 'rich-text',
+  content: 'User access to the system has failed. Please confirm whether the username and password are correct.'
+}
+[npo-yen-model] Cleaned content: User access to the system has failed. Please confirm whether the username and password are correct.
+[chat-route] messagesFromDb: []
+[chat-route] message: {
+  "id": "8a42474f-c19f-44b2-84cd-afbddd800f37",
+  "role": "user",
+  "parts": [
+    {
+      "type": "text",
+      "text": "what is Wifi 5G used for?"
+    }
+  ]
+}
+[chat-route] uiMessages: [
+  {
+    "id": "8a42474f-c19f-44b2-84cd-afbddd800f37",
+    "role": "user",
+    "parts": [
+      {
+        "type": "text",
+        "text": "what is Wifi 5G used for?"
+      }
+    ]
+  }
+]
+[chat-route] modelMessages: [
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "what is Wifi 5G used for?"
+      }
+    ]
+  }
+]
+[chat-route] selectedChatModel: cs-minh-model
+[chat-route] About to call streamText...
+[cs-minh-model] doStream called!
+[cs-minh-model] doStream called with messages: undefined
+[cs-minh-model] doStream called with prompt: [
+  {
+    role: 'system',
+    content: 'You are a friendly assistant! Keep your responses concise and helpful.\n' +
+      '\n' +
+      "About the origin of user's request:\n" +
+      '- lat: undefined\n' +
+      '- lon: undefined\n' +
+      '- city: undefined\n' +
+      '- country: undefined\n'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[cs-minh-model] Using messagesToUse: [
+  {
+    role: 'system',
+    content: 'You are a friendly assistant! Keep your responses concise and helpful.\n' +
+      '\n' +
+      "About the origin of user's request:\n" +
+      '- lat: undefined\n' +
+      '- lon: undefined\n' +
+      '- city: undefined\n' +
+      '- country: undefined\n'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[cs-minh-model] doStream options: {
+  "prompt": [
+    {
+      "role": "system",
+      "content": "You are a friendly assistant! Keep your responses concise and helpful.\n\nAbout the origin of user's request:\n- lat: undefined\n- lon: undefined\n- city: undefined\n- country: undefined\n"
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "what is Wifi 5G used for?"
+        }
+      ]
+    }
+  ],
+  "includeRawChunks": false
+}
+[cs-minh-model] Raw messages: [
+  {
+    "role": "system",
+    "content": "You are a friendly assistant! Keep your responses concise and helpful.\n\nAbout the origin of user's request:\n- lat: undefined\n- lon: undefined\n- city: undefined\n- country: undefined\n"
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "what is Wifi 5G used for?"
+      }
+    ]
+  }
+]
+[cs-minh-model] Messages type: object
+[cs-minh-model] Messages is array: true
+[cs-minh-model] Messages length: 2
+[cs-minh-model] All messages structure: [
+  {
+    index: 0,
+    role: 'system',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'string',
+    contentLength: 181
+  },
+  {
+    index: 1,
+    role: 'user',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'object',
+    contentLength: 1
+  }
+]
+[cs-minh-model] Last user message: {
+  "role": "user",
+  "content": [
+    {
+      "type": "text",
+      "text": "what is Wifi 5G used for?"
+    }
+  ]
+}
+[cs-minh-model] Extracted userMessage: what is Wifi 5G used for?
+[cs-minh-model] Sending message to https://10.196.5.134:28001/api/ifactory-agent-run/v1/chat/api/70: {
+  userMessage: 'what is Wifi 5G used for?',
+  sessionId: 'session_1761101982125_wrx7r8jvg',
+  config: { serverIP: '10.196.5.134', port: '28001', assetId: '70' }
+}
+[cs-minh-model] Request payload: {
+  "sessionInfo": {
+    "sessionId": "session_1761101982125_wrx7r8jvg"
+  },
+  "content": "what is Wifi 5G used for?"
+}
+[cs-minh-model] Request headers: {
+  'Content-Type': 'application/json',
+  username: 'aiteam1',
+  password: 'AInow123@'
+}
+[cs-minh-model] Response status: 200
+[cs-minh-model] Response ok: true
+[cs-minh-model] AI Agent response: {
+  contentType: 'rich-text',
+  content: 'User access to the system has failed. Please confirm whether the username and password are correct.'
+}
+[cs-minh-model] Cleaned content: User access to the system has failed. Please confirm whether the username and password are correct.
+ POST /api/chat 200 in 5777ms
+ ○ Compiling /api/vote ...
+ ✓ Compiled /api/vote in 954ms
+ GET /api/vote?chatId=93f6ee1f-c63f-4746-8264-8efab671a05d 200 in 2117ms
+ GET /api/auth/session 200 in 405ms
+ GET /api/auth/session 200 in 288ms
+ GET /api/history?limit=20 200 in 914ms
+ GET /api/vote?chatId=93f6ee1f-c63f-4746-8264-8efab671a05d 200 in 1435ms
+ GET /api/auth/session 200 in 368ms
+ GET /api/auth/session 200 in 232ms
+ GET /api/history?limit=20 200 in 836ms
+ GET /api/vote?chatId=93f6ee1f-c63f-4746-8264-8efab671a05d 200 in 1343ms
+Terminate batch job (Y/N)?
+y
+PS D:\GitHub Repo\zte-noc-ai-chatbot> pnpm dev
+
+> zte-noc-chatbot@3.1.0 dev D:\GitHub Repo\zte-noc-ai-chatbot
+> next dev --turbo
+
+   ▲ Next.js 15.3.0-canary.31 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.32.144.40:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ ppr
+
+ ✓ Starting...
+ ✓ Compiled in 1063ms
+ ✓ Ready in 3.9s
+ ○ Compiling /api/history ...
+ GET /api/history?limit=20 200 in 5449ms
+ GET /api/vote?chatId=93f6ee1f-c63f-4746-8264-8efab671a05d 200 in 5829ms
+ GET /api/history?limit=20 200 in 1223ms
+ GET /api/vote?chatId=93f6ee1f-c63f-4746-8264-8efab671a05d 200 in 1671ms
+ ✓ Compiled /api/history in 22.7s
+ GET / 200 in 22719ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ GET /api/history?limit=20 200 in 1593ms
+ ✓ Compiled /api/auth/[...nextauth] in 2.1s
+ GET /api/auth/session 200 in 4390ms
+ GET /api/auth/session 200 in 280ms
+ ○ Compiling /api/chat ...
+ ✓ Compiled /api/chat in 1616ms
+[npo-yen-model] doGenerate called with messages: undefined
+[npo-yen-model] doGenerate called with prompt: [
+  {
+    role: 'system',
+    content: '\n' +
+      '\n' +
+      '      - you will generate a short title based on the first message a user begins a conversation with\n' +
+      '      - ensure it is not more than 80 characters long\n' +
+      "      - the title should be a summary of the user's message\n" +
+      '      - do not use quotes or colons'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[npo-yen-model] Using messagesToUse: [
+  {
+    role: 'system',
+    content: '\n' +
+      '\n' +
+      '      - you will generate a short title based on the first message a user begins a conversation with\n' +
+      '      - ensure it is not more than 80 characters long\n' +
+      "      - the title should be a summary of the user's message\n" +
+      '      - do not use quotes or colons'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[npo-yen-model] doGenerate options: {
+  "prompt": [
+    {
+      "role": "system",
+      "content": "\n\n      - you will generate a short title based on the first message a user begins a conversation with\n      - ensure it is not more than 80 characters long\n      - the title should be a summary of the user's message\n      - do not use quotes or colons"
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "what is LTE?"
+        }
+      ]
+    }
+  ]
+}
+[npo-yen-model] Model config: {
+  serverIP: '10.196.5.134',
+  port: '28001',
+  assetId: '70',
+  username: 'aiteam1',
+  password: 'AInow123@'
+}
+[npo-yen-model] Raw messages: [
+  {
+    "role": "system",
+    "content": "\n\n      - you will generate a short title based on the first message a user begins a conversation with\n      - ensure it is not more than 80 characters long\n      - the title should be a summary of the user's message\n      - do not use quotes or colons"
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "what is LTE?"
+      }
+    ]
+  }
+]
+[npo-yen-model] Messages type: object
+[npo-yen-model] Messages is array: true
+[npo-yen-model] Messages length: 2
+[npo-yen-model] All messages structure: [
+  {
+    index: 0,
+    role: 'system',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'string',
+    contentLength: 252
+  },
+  {
+    index: 1,
+    role: 'user',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'object',
+    contentLength: 1
+  }
+]
+[npo-yen-model] Last user message: {
+  "role": "user",
+  "content": [
+    {
+      "type": "text",
+      "text": "what is LTE?"
+    }
+  ]
+}
+[npo-yen-model] Extracted userMessage: what is LTE?
+[npo-yen-model] Sending message to https://10.196.5.134:28001/api/ifactory-agent-run/v1/chat/api/70: {
+  userMessage: 'what is LTE?',
+  sessionId: 'session_1761102425042_kpr528rjr',
+  config: {
+    serverIP: '10.196.5.134',
+    port: '28001',
+    assetId: '70',
+    username: 'aiteam1',
+    password: 'AInow123@'
+  }
+}
+[npo-yen-model] Request payload: {
+  "sessionInfo": {
+    "sessionId": "session_1761102425042_kpr528rjr"
+  },
+  "content": "what is LTE?"
+}
+[npo-yen-model] Request headers: {
+  'Content-Type': 'application/json',
+  username: 'aiteam1',
+  password: 'QUlub3cxMjNA'
+}
+(node:104304) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ GET /api/auth/session 200 in 371ms
+ GET /api/auth/session 200 in 215ms
+ GET /api/history?limit=20 200 in 914ms
+ GET /api/auth/session 200 in 345ms
+ GET /api/auth/session 200 in 167ms
+ GET /api/history?limit=20 200 in 888ms
+[npo-yen-model] Response status: 200
+[npo-yen-model] Response ok: true
+[npo-yen-model] AI Agent response: {
+  sessionInfo: {
+    sessionId: 'session_1761102425042_kpr528rjr',
+    assistantIds: [ '70' ],
+    username: 'aiteam1'
+  },
+  contentType: 'rich-text',
+  content: '\n' +
+    '\n' +
+    '**Summary:**  \n' +
+    'LTE (Long-Term Evolution) is a 4G wireless communication standard designed to provide high-speed data connectivity, low latency, and improved spectral efficiency compared to 3G networks. It forms the foundation of modern mobile broadband and supports advanced services like VoLTE (Voice over LTE) and IoT (Internet of Things).  \n' +
+    '\n' +
+    '**Technical Explanation:**  \n' +
+    'LTE operates on licensed spectrum bands (e.g., 700 MHz, 1.8 GHz, 2.6 GHz) and employs key technologies such as Orthogonal Frequency Division Multiple Access (OFDMA) for downlink and Single-Carrier Frequency Division Multiple Access (SC-FDMA) for uplink. It utilizes MIMO (Multiple Input Multiple Output) antenna systems to enhance throughput and reliability. LTE is defined by 3GPP (3rd Generation Partnership Project) in Releases 8–16, with LTE-Advanced (LTE-A) introducing carrier aggregation, higher-order MIMO, and enhanced capacity.  \n' +
+    '\n' +
+    '**Practical Applications:**  \n' +
+    '- **Mobile Broadband:** Enables high-speed internet access (peak downlink speeds up to 100 Mbps, uplink up to 50 Mbps).  \n' +
+    '- **VoLTE:** Supports voice calls over IP networks with lower latency and higher quality than traditional circuit-switched voice.  \n' +
+    '- **IoT:** Facilitates low-power, wide-area (LPWA) connectivity via LTE-M and NB-IoT variants.  \n' +
+    '- **Network Slicing:** Provides isolated virtual networks for specific use cases (e.g., industrial automation, smart cities).  \n' +
+    '\n' +
+    '**Comparison with Related Technologies:**  \n' +
+    '- **3G (UMTS/HSPA):** LTE offers 10x higher data rates (10 Mbps vs. 1 Mbps) and lower latency (10–50 ms vs. 100–200 ms).  \n' +
+    '- **5G NR:** LTE serves as a foundation for 5G, but 5G introduces mmWave spectrum, massive MIMO, and ultra-low latency (<1 ms) for URLLC (Ultra-Reliable Low Latency Communication).  \n' +
+    '\n' +
+    '**Trade-offs:**  \n' +
+    '- **Coverage vs. Capacity:** LTE’s higher frequency bands (e.g., 2.6 GHz) offer greater capacity but shorter range compared to lower bands (e.g., 700 MHz).  \n' +
+    '- **Cost:** Deployment requires significant infrastructure investment (e.g., new base stations, fiber backhaul).  \n' +
+    '\n' +
+    '**Real-world Applications:**  \n' +
+    '- **Ericsson:** LTE networks support 4K video streaming and enterprise private networks.  \n' +
+    '- **Huawei:** LTE-A deployments in China achieve 1.2 Gbps peak rates via carrier aggregation.  \n' +
+    '- **Nokia:** LTE-based IoT solutions for smart metering and logistics tracking.  \n' +
+    '\n' +
+    '**Common Pitfalls:**  \n' +
+    '- **Interference Management:** Poorly planned frequency reuse can degrade performance in dense urban areas.  \n' +
+    '- **Handover Failures:** Inadequate neighbor cell configuration may cause call drops during mobility.  \n' +
+    '- **Backhaul Limitations:** Insufficient IP backhaul capacity can bottleneck LTE throughput.  \n' +
+    '\n' +
+    '**Best Practices:**  \n' +
+    '- Use **drive tests** and **OSS (Operations Support Systems)** to monitor KPIs like RSRP (Reference Signal Received Power), SINR (Signal-to-Interference-plus-Noise Ratio), and throughput.  \n' +    
+    '- Implement **load balancing** and **dynamic resource allocation** to optimize network utilization.  \n' +
+    '- Follow **3GPP TR 36.902** guidelines for LTE performance validation.  \n' +
+    '\n' +
+    'Source: Internal KB - LTE_Fundamentals - Link: [KB_Link]  \n' +
+    'Source: Internet - 3GPP TS 36.300 (LTE Architecture) - Link: [3GPP_Link]',
+  headFoldConfig: {
+    title: { label: '搜索完毕...(67.43s)', icon: '' },
+    isActive: false,
+    message: {
+      type: 'multi-modal',
+      from: 'ai',
+      changeType: 'append',
+      initData: [Array]
+    }
+  }
+}
+[npo-yen-model] Cleaned content: **Summary:**
+LTE (Long-Term Evolution) is a 4G wireless communication standard designed to provide high-speed data connectivity, low latency, and improved spectral efficiency compared to 3G networks. It forms the foundation of modern mobile broadband and supports advanced services like VoLTE (Voice over LTE) and IoT (Internet of Things).
+
+**Technical Explanation:**
+LTE operates on licensed spectrum bands (e.g., 700 MHz, 1.8 GHz, 2.6 GHz) and employs key technologies such as Orthogonal Frequency Division Multiple Access (OFDMA) for downlink and Single-Carrier Frequency Division Multiple Access (SC-FDMA) for uplink. It utilizes MIMO (Multiple Input Multiple Output) antenna systems to enhance throughput and reliability. LTE is defined by 3GPP (3rd Generation Partnership Project) in Releases 8–16, with LTE-Advanced (LTE-A) introducing carrier aggregation, higher-order MIMO, and enhanced capacity.
+
+**Practical Applications:**
+- **Mobile Broadband:** Enables high-speed internet access (peak downlink speeds up to 100 Mbps, uplink up to 50 Mbps).
+- **VoLTE:** Supports voice calls over IP networks with lower latency and higher quality than traditional circuit-switched voice.
+- **IoT:** Facilitates low-power, wide-area (LPWA) connectivity via LTE-M and NB-IoT variants.
+- **Network Slicing:** Provides isolated virtual networks for specific use cases (e.g., industrial automation, smart cities).
+
+**Comparison with Related Technologies:**
+- **3G (UMTS/HSPA):** LTE offers 10x higher data rates (10 Mbps vs. 1 Mbps) and lower latency (10–50 ms vs. 100–200 ms).
+- **5G NR:** LTE serves as a foundation for 5G, but 5G introduces mmWave spectrum, massive MIMO, and ultra-low latency (<1 ms) for URLLC (Ultra-Reliable Low Latency Communication).
+
+**Trade-offs:**
+- **Coverage vs. Capacity:** LTE’s higher frequency bands (e.g., 2.6 GHz) offer greater capacity but shorter range compared to lower bands (e.g., 700 MHz).
+- **Cost:** Deployment requires significant infrastructure investment (e.g., new base stations, fiber backhaul).
+
+**Real-world Applications:**
+- **Ericsson:** LTE networks support 4K video streaming and enterprise private networks.
+- **Huawei:** LTE-A deployments in China achieve 1.2 Gbps peak rates via carrier aggregation.
+- **Nokia:** LTE-based IoT solutions for smart metering and logistics tracking.
+
+**Common Pitfalls:**
+- **Interference Management:** Poorly planned frequency reuse can degrade performance in dense urban areas.
+- **Handover Failures:** Inadequate neighbor cell configuration may cause call drops during mobility.
+- **Backhaul Limitations:** Insufficient IP backhaul capacity can bottleneck LTE throughput.
+
+**Best Practices:**
+- Use **drive tests** and **OSS (Operations Support Systems)** to monitor KPIs like RSRP (Reference Signal Received Power), SINR (Signal-to-Interference-plus-Noise Ratio), and throughput.
+- Implement **load balancing** and **dynamic resource allocation** to optimize network utilization.
+- Follow **3GPP TR 36.902** guidelines for LTE performance validation.
+
+Source: Internal KB - LTE_Fundamentals - Link: [KB_Link]
+Source: Internet - 3GPP TS 36.300 (LTE Architecture) - Link: [3GPP_Link]
+ GET /api/auth/session 200 in 365ms
+ GET /api/auth/session 200 in 204ms
+ GET /api/history?limit=20 200 in 898ms
+[chat-route] messagesFromDb: []
+[chat-route] message: {
+  "id": "780f9f31-b2e8-4757-8fdf-358a17a4d736",
+  "role": "user",
+  "parts": [
+    {
+      "type": "text",
+      "text": "what is LTE?"
+    }
+  ]
+}
+[chat-route] uiMessages: [
+  {
+    "id": "780f9f31-b2e8-4757-8fdf-358a17a4d736",
+    "role": "user",
+    "parts": [
+      {
+        "type": "text",
+        "text": "what is LTE?"
+      }
+    ]
+  }
+]
+[chat-route] modelMessages: [
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "what is LTE?"
+      }
+    ]
+  }
+]
+[chat-route] selectedChatModel: cs-minh-model
+[chat-route] About to call streamText...
+[cs-minh-model] doStream called!
+[cs-minh-model] doStream called with messages: undefined
+[cs-minh-model] doStream called with prompt: [
+  {
+    role: 'system',
+    content: 'You are a friendly assistant! Keep your responses concise and helpful.\n' +
+      '\n' +
+      "About the origin of user's request:\n" +
+      '- lat: undefined\n' +
+      '- lon: undefined\n' +
+      '- city: undefined\n' +
+      '- country: undefined\n'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[cs-minh-model] Using messagesToUse: [
+  {
+    role: 'system',
+    content: 'You are a friendly assistant! Keep your responses concise and helpful.\n' +
+      '\n' +
+      "About the origin of user's request:\n" +
+      '- lat: undefined\n' +
+      '- lon: undefined\n' +
+      '- city: undefined\n' +
+      '- country: undefined\n'
+  },
+  { role: 'user', content: [ [Object] ], providerOptions: undefined }
+]
+[cs-minh-model] doStream options: {
+  "prompt": [
+    {
+      "role": "system",
+      "content": "You are a friendly assistant! Keep your responses concise and helpful.\n\nAbout the origin of user's request:\n- lat: undefined\n- lon: undefined\n- city: undefined\n- country: undefined\n"
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "what is LTE?"
+        }
+      ]
+    }
+  ],
+  "includeRawChunks": false
+}
+[cs-minh-model] Model config: {
+  serverIP: '10.196.5.134',
+  port: '28001',
+  assetId: '68',
+  username: 'aiteam1',
+  password: 'AInow123@'
+}
+[cs-minh-model] Raw messages: [
+  {
+    "role": "system",
+    "content": "You are a friendly assistant! Keep your responses concise and helpful.\n\nAbout the origin of user's request:\n- lat: undefined\n- lon: undefined\n- city: undefined\n- country: undefined\n"
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "what is LTE?"
+      }
+    ]
+  }
+]
+[cs-minh-model] Messages type: object
+[cs-minh-model] Messages is array: true
+[cs-minh-model] Messages length: 2
+[cs-minh-model] All messages structure: [
+  {
+    index: 0,
+    role: 'system',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'string',
+    contentLength: 181
+  },
+  {
+    index: 1,
+    role: 'user',
+    hasContent: true,
+    hasParts: false,
+    contentType: 'object',
+    contentLength: 1
+  }
+]
+[cs-minh-model] Last user message: {
+  "role": "user",
+  "content": [
+    {
+      "type": "text",
+      "text": "what is LTE?"
+    }
+  ]
+}
+[cs-minh-model] Extracted userMessage: what is LTE?
+[cs-minh-model] Sending message to https://10.196.5.134:28001/api/ifactory-agent-run/v1/chat/api/68: {
+  userMessage: 'what is LTE?',
+  sessionId: 'session_1761102494778_f9qkykxxw',
+  config: {
+    serverIP: '10.196.5.134',
+    port: '28001',
+    assetId: '68',
+    username: 'aiteam1',
+    password: 'AInow123@'
+  }
+}
+[cs-minh-model] Request payload: {
+  "sessionInfo": {
+    "sessionId": "session_1761102494778_f9qkykxxw"
+  },
+  "content": "what is LTE?"
+}
+[cs-minh-model] Request headers: {
+  'Content-Type': 'application/json',
+  username: 'aiteam1',
+  password: 'QUlub3cxMjNA'
+}
+ GET /api/auth/session 200 in 400ms
+ GET /api/auth/session 200 in 226ms
+ GET /api/history?limit=20 200 in 863ms
+[cs-minh-model] Response status: 200
+[cs-minh-model] Response ok: true
+[cs-minh-model] AI Agent response: {
+  sessionInfo: {
+    sessionId: 'session_1761102494778_f9qkykxxw',
+    assistantIds: [ '68' ],
+    username: 'aiteam1'
+  },
+  contentType: 'rich-text',
+  content: '\n' +
+    '\n' +
+    '### Summary  \n' +
+    '**LTE (Long-Term Evolution)** is a 4G wireless communication standard designed to provide high-speed data transfer, low latency, and improved network capacity compared to earlier 3G technologies. It serves as the foundation for modern mobile broadband, VoLTE (Voice over LTE), and other advanced services. LTE operates in both Frequency Division Duplex (FDD) and Time Division Duplex (TDD) modes, supporting a wide range of applications, including video streaming, online gaming, and IoT connectivity.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Key Features of LTE  \n' +
+    '1. **High Data Rates**:  \n' +
+    '   - Downlink speeds up to **1 Gbps** (theoretical peak) and uplink speeds up to **500 Mbps** (theoretical peak), depending on bandwidth and technology (e.g., LTE-Advanced).  \n' +
+    '   - Supports **carrier aggregation** to combine multiple frequency bands for increased throughput.  \n' +
+    '\n' +
+    '2. **Low Latency**:  \n' +
+    '   - Reduced latency compared to 3G (typically <10 ms for user-plane latency), enabling real-time applications like VoLTE and online gaming.  \n' +
+    '\n' +
+    '3. **Network Architecture**:  \n' +
+    '   - Based on **E-UTRAN (Evolved Universal Terrestrial Radio Access Network)**, with **eNodeB** (base stations) managing radio resources and connecting to the **EPC (Evolved Packet Core)** for IP-based data routing.  \n' +
+    '\n' +
+    '4. **Spectral Efficiency**:  \n' +
+    '   - Uses **OFDMA (Orthogonal Frequency Division Multiple Access)** for downlink and **SC-FDMA (Single-Carrier Frequency Division Multiple Access)** for uplink, optimizing spectrum usage.  \n' +    
+    '\n' +
+    '5. **Interoperability**:  \n' +
+    '   - Supports **VoLTE** for voice services over IP, eliminating the need for traditional circuit-switched networks.  \n' +
+    '   - Enables **SRVCC (Single Radio Voice Call Continuity)** for seamless handover between LTE and 2G/3G networks during voice calls.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Technical Context from Provided Information  \n' +
+    'The context includes **VoLTE signaling procedures** and **performance alarms** related to **Inter-RAT Handover Success Rate (HOSR)** between LTE and other radio access technologies (e.g., 2G/3G). LTE’s role in these scenarios involves:  \n' +
+    '- **Anchoring**: Maintaining a stable IP connection during handovers.  \n' +
+    '- **SRVCC/eSRVCC**: Ensuring voice continuity when switching from LTE to CS (Circuit-Switched) networks.  \n' +
+    '- **Performance Metrics**: Alarms like **MV_4G_LTE_IRAT_HOSR** indicate issues with handover success rates, often attributed to **external interference** (as noted in the context).  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Common Applications of LTE  \n' +
+    '- **Mobile Broadband**: High-speed internet access for smartphones, tablets, and IoT devices.  \n' +
+    '- **VoLTE Services**: Voice calls over IP, integrated with LTE networks.  \n' +
+    '- **Enterprise Solutions**: Industrial IoT, smart cities, and mission-critical communications.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Troubleshooting LTE Performance Issues (Contextual Example)  \n' +
+    'For alarms like **MV_4G_LTE_IRAT_HOSR** (e.g., 95.55% success rate crossing thresholds), root causes often include:  \n' +
+    '- **External Interference** (e.g., from nearby devices, environmental factors).  \n' +
+    '- **Configuration Errors** in handover parameters.  \n' +
+    '- **Network Congestion** or hardware faults.  \n' +
+    '\n' +
+    '**Mitigation Steps**:  \n' +
+    '1. Analyze interference sources (e.g., using spectrum scanners).  \n' +
+    '2. Verify handover configurations (e.g., A3 event thresholds).  \n' +
+    '3. Optimize cell parameters and ensure proper neighbor cell relationships.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Source  \n' +
+    'Source: Self-generated by AI Senior Engineer  \n' +
+    'Source: Greetings',
+  headFoldConfig: {
+    title: { label: '搜索完毕...(59.79s)', icon: '' },
+    isActive: false,
+    message: {
+      type: 'multi-modal',
+      from: 'ai',
+      changeType: 'append',
+      initData: [Array]
+    }
+  }
+}
+[cs-minh-model] Cleaned content: ### Summary
+**LTE (Long-Term Evolution)** is a 4G wireless communication standard designed to provide high-speed data transfer, low latency, and improved network capacity compared to earlier 3G technologies. It serves as the foundation for modern mobile broadband, VoLTE (Voice over LTE), and other advanced services. LTE operates in both Frequency Division Duplex (FDD) and Time Division Duplex (TDD) modes, supporting a wide range of applications, including video streaming, online gaming, and IoT connectivity.
+
+---
+
+### Key Features of LTE
+1. **High Data Rates**:
+   - Downlink speeds up to **1 Gbps** (theoretical peak) and uplink speeds up to **500 Mbps** (theoretical peak), depending on bandwidth and technology (e.g., LTE-Advanced).
+   - Supports **carrier aggregation** to combine multiple frequency bands for increased throughput.
+
+2. **Low Latency**:
+   - Reduced latency compared to 3G (typically <10 ms for user-plane latency), enabling real-time applications like VoLTE and online gaming.
+
+3. **Network Architecture**:
+   - Based on **E-UTRAN (Evolved Universal Terrestrial Radio Access Network)**, with **eNodeB** (base stations) managing radio resources and connecting to the **EPC (Evolved Packet Core)** for IP-based data routing.
+
+4. **Spectral Efficiency**:
+   - Uses **OFDMA (Orthogonal Frequency Division Multiple Access)** for downlink and **SC-FDMA (Single-Carrier Frequency Division Multiple Access)** for uplink, optimizing spectrum usage.
+
+5. **Interoperability**:
+   - Supports **VoLTE** for voice services over IP, eliminating the need for traditional circuit-switched networks.
+   - Enables **SRVCC (Single Radio Voice Call Continuity)** for seamless handover between LTE and 2G/3G networks during voice calls.
+
+---
+
+### Technical Context from Provided Information
+The context includes **VoLTE signaling procedures** and **performance alarms** related to **Inter-RAT Handover Success Rate (HOSR)** between LTE and other radio access technologies (e.g., 2G/3G). LTE’s role in these scenarios involves:
+- **Anchoring**: Maintaining a stable IP connection during handovers.
+- **SRVCC/eSRVCC**: Ensuring voice continuity when switching from LTE to CS (Circuit-Switched) networks.
+- **Performance Metrics**: Alarms like **MV_4G_LTE_IRAT_HOSR** indicate issues with handover success rates, often attributed to **external interference** (as noted in the context).
+
+---
+
+### Common Applications of LTE
+- **Mobile Broadband**: High-speed internet access for smartphones, tablets, and IoT devices.
+- **VoLTE Services**: Voice calls over IP, integrated with LTE networks.
+- **Enterprise Solutions**: Industrial IoT, smart cities, and mission-critical communications.
+
+---
+
+### Troubleshooting LTE Performance Issues (Contextual Example)
+For alarms like **MV_4G_LTE_IRAT_HOSR** (e.g., 95.55% success rate crossing thresholds), root causes often include:
+- **External Interference** (e.g., from nearby devices, environmental factors).
+- **Configuration Errors** in handover parameters.
+- **Network Congestion** or hardware faults.
+
+**Mitigation Steps**:
+1. Analyze interference sources (e.g., using spectrum scanners).
+2. Verify handover configurations (e.g., A3 event thresholds).
+3. Optimize cell parameters and ensure proper neighbor cell relationships.
+
+---
+
+### Source
+Source: Self-generated by AI Senior Engineer
+Source: Greetings
+[cs-minh-model] Streaming result: {
+  content: '### Summary  \n' +
+    '**LTE (Long-Term Evolution)** is a 4G wireless communication standard designed to provide high-speed data transfer, low latency, and improved network capacity compared to earlier 3G technologies. It serves as the foundation for modern mobile broadband, VoLTE (Voice over LTE), and other advanced services. LTE operates in both Frequency Division Duplex (FDD) and Time Division Duplex (TDD) modes, supporting a wide range of applications, including video streaming, online gaming, and IoT connectivity.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Key Features of LTE  \n' +
+    '1. **High Data Rates**:  \n' +
+    '   - Downlink speeds up to **1 Gbps** (theoretical peak) and uplink speeds up to **500 Mbps** (theoretical peak), depending on bandwidth and technology (e.g., LTE-Advanced).  \n' +
+    '   - Supports **carrier aggregation** to combine multiple frequency bands for increased throughput.  \n' +
+    '\n' +
+    '2. **Low Latency**:  \n' +
+    '   - Reduced latency compared to 3G (typically <10 ms for user-plane latency), enabling real-time applications like VoLTE and online gaming.  \n' +
+    '\n' +
+    '3. **Network Architecture**:  \n' +
+    '   - Based on **E-UTRAN (Evolved Universal Terrestrial Radio Access Network)**, with **eNodeB** (base stations) managing radio resources and connecting to the **EPC (Evolved Packet Core)** for IP-based data routing.  \n' +
+    '\n' +
+    '4. **Spectral Efficiency**:  \n' +
+    '   - Uses **OFDMA (Orthogonal Frequency Division Multiple Access)** for downlink and **SC-FDMA (Single-Carrier Frequency Division Multiple Access)** for uplink, optimizing spectrum usage.  \n' +    
+    '\n' +
+    '5. **Interoperability**:  \n' +
+    '   - Supports **VoLTE** for voice services over IP, eliminating the need for traditional circuit-switched networks.  \n' +
+    '   - Enables **SRVCC (Single Radio Voice Call Continuity)** for seamless handover between LTE and 2G/3G networks during voice calls.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Technical Context from Provided Information  \n' +
+    'The context includes **VoLTE signaling procedures** and **performance alarms** related to **Inter-RAT Handover Success Rate (HOSR)** between LTE and other radio access technologies (e.g., 2G/3G). LTE’s role in these scenarios involves:  \n' +
+    '- **Anchoring**: Maintaining a stable IP connection during handovers.  \n' +
+    '- **SRVCC/eSRVCC**: Ensuring voice continuity when switching from LTE to CS (Circuit-Switched) networks.  \n' +
+    '- **Performance Metrics**: Alarms like **MV_4G_LTE_IRAT_HOSR** indicate issues with handover success rates, often attributed to **external interference** (as noted in the context).  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Common Applications of LTE  \n' +
+    '- **Mobile Broadband**: High-speed internet access for smartphones, tablets, and IoT devices.  \n' +
+    '- **VoLTE Services**: Voice calls over IP, integrated with LTE networks.  \n' +
+    '- **Enterprise Solutions**: Industrial IoT, smart cities, and mission-critical communications.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Troubleshooting LTE Performance Issues (Contextual Example)  \n' +
+    'For alarms like **MV_4G_LTE_IRAT_HOSR** (e.g., 95.55% success rate crossing thresholds), root causes often include:  \n' +
+    '- **External Interference** (e.g., from nearby devices, environmental factors).  \n' +
+    '- **Configuration Errors** in handover parameters.  \n' +
+    '- **Network Congestion** or hardware faults.  \n' +
+    '\n' +
+    '**Mitigation Steps**:  \n' +
+    '1. Analyze interference sources (e.g., using spectrum scanners).  \n' +
+    '2. Verify handover configurations (e.g., A3 event thresholds).  \n' +
+    '3. Optimize cell parameters and ensure proper neighbor cell relationships.  \n' +
+    '\n' +
+    '---\n' +
+    '\n' +
+    '### Source  \n' +
+    'Source: Self-generated by AI Senior Engineer  \n' +
+    'Source: Greetings',
+  sessionId: 'session_1761102494778_f9qkykxxw'
+}
+TypeError: Invalid state: Controller is already closed
+    at Timeout.sendChunk [as _onTimeout] (file://D%3A/GitHub%20Repo/zte-noc-ai-chatbot/lib/ai/custom-provider.ts:271:27)
+  269 |               if (index < content.length) {
+  270 |                 const chunk = content.slice(index, index + chunkSize);
+> 271 |                 controller.enqueue({
+      |                           ^
+  272 |                   type: "text-delta" as const,
+  273 |                   textDelta: chunk,
+  274 |                 }); {
+  code: 'ERR_INVALID_STATE'
+}
+ ⨯ uncaughtException: TypeError: Invalid state: Controller is already closed
+    at Timeout.sendChunk [as _onTimeout] (file://D%3A/GitHub%20Repo/zte-noc-ai-chatbot/lib/ai/custom-provider.ts:271:27)
+  269 |               if (index < content.length) {
+  270 |                 const chunk = content.slice(index, index + chunkSize);
+> 271 |                 controller.enqueue({
+      |                           ^
+  272 |                   type: "text-delta" as const,
+  273 |                   textDelta: chunk,
+  274 |                 }); {
+  code: 'ERR_INVALID_STATE'
+}
+ ⨯ uncaughtException:  TypeError: Invalid state: Controller is already closed
+    at Timeout.sendChunk [as _onTimeout] (file://D%3A/GitHub%20Repo/zte-noc-ai-chatbot/lib/ai/custom-provider.ts:271:27)
+  269 |               if (index < content.length) {
+  270 |                 const chunk = content.slice(index, index + chunkSize);
+> 271 |                 controller.enqueue({
+      |                           ^
+  272 |                   type: "text-delta" as const,
+  273 |                   textDelta: chunk,
+  274 |                 }); {
+  code: 'ERR_INVALID_STATE'
+}
