@@ -66,8 +66,7 @@ export async function POST(req: Request) {
         })),
         { role: 'user', content: messageContent },
       ],
-      temperature: 0.7,
-      maxTokens: 150, // Keep responses short
+      // Keep responses short via system prompt instruction
     });
 
     return result.toDataStreamResponse();
