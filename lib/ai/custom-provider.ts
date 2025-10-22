@@ -264,15 +264,54 @@ const createInternalAIModel = (modelId: string) => {
           start(controller) {
             console.log(`[${modelId}] Starting stream with content length:`, result.content.length);
             
-            // Gửi text delta theo format của AI SDK v2
+            // Simulate streaming bằng cách chia response thành chunks nhỏ
+            const words = result.content.split(' ');
+            const streamId = `stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            
+            // Gửi text-start event
             controller.enqueue({
-              type: "text-delta",
-              id: `stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              delta: result.content,
+              type: "text-start",
+              id: streamId,
             });
             
-            console.log(`[${modelId}] Sent text-delta`);
-            controller.close();
+            let index = 0;
+            
+            const sendNextChunk = () => {
+              if (index < words.length) {
+                // Gửi từng chunk nhỏ với delta property
+                controller.enqueue({
+                  type: "text-delta",
+                  id: streamId,
+                  delta: words[index] + ' ',
+                });
+                
+                index++;
+                
+                // Gửi chunk tiếp theo sau 50ms để simulate streaming
+                setTimeout(sendNextChunk, 50);
+              } else {
+                // Gửi text-end event khi hoàn thành
+                controller.enqueue({
+                  type: "text-end",
+                  id: streamId,
+                });
+                
+                // Gửi finish event
+                controller.enqueue({
+                  type: "finish",
+                  finishReason: "stop",
+                  usage: {
+                    promptTokens: 0,
+                    completionTokens: 0,
+                    totalTokens: 0,
+                  },
+                });
+                controller.close();
+              }
+            };
+            
+            // Bắt đầu streaming
+            sendNextChunk();
           },
         });
         
