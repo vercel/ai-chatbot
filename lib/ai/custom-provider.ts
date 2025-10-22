@@ -177,15 +177,7 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     const cleanContent = data.content.trim();
     console.log(`[${modelId}] Cleaned content:`, cleanContent);
 
-    // Nếu đây là title generation, chỉ lấy dòng đầu tiên hoặc tóm tắt ngắn
-    if (cleanContent.length > 200) {
-      const titleContent = cleanContent.split('\n')[0].trim();
-      console.log(`[${modelId}] Extracted title:`, titleContent);
-      return {
-        content: titleContent,
-        sessionId: currentSessionId,
-      };
-    }
+    // Không cần extract title nữa vì đã sử dụng message text trực tiếp
 
     return {
       content: cleanContent,
@@ -298,8 +290,6 @@ const createInternalAIModel = (modelId: string) => {
         
         return {
           stream,
-          rawCall: { rawPrompt: messagesToUse, rawSettings: {} },
-          rawResponse: { headers: {} },
         };
       } catch (error) {
         console.error(`[${modelId}] doStream error:`, error);
