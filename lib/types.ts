@@ -2,7 +2,10 @@ export type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  createdAt?: string;
 };
+
+export type ChatStatus = "idle" | "streaming" | "error";
 
 import type { InferUITool, UIMessage } from "ai";
 import { z } from "zod";
