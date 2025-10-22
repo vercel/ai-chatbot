@@ -141,11 +141,7 @@ export async function POST(request: Request) {
     }
 
     const messagesFromDb = await getMessagesByChatId({ id });
-    console.log('[chat-route] messagesFromDb:', JSON.stringify(messagesFromDb, null, 2));
-    console.log('[chat-route] message:', JSON.stringify(message, null, 2));
-    
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
-    console.log('[chat-route] uiMessages:', JSON.stringify(uiMessages, null, 2));
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -177,9 +173,6 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const modelMessages = convertToModelMessages(uiMessages);
-        console.log('[chat-route] modelMessages:', JSON.stringify(modelMessages, null, 2));
-        console.log('[chat-route] selectedChatModel:', selectedChatModel);
-        console.log('[chat-route] About to call streamText...');
         
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),

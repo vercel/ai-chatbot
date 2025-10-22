@@ -28,12 +28,12 @@ export async function generateTitleFromUserMessage({
       ? message.parts 
       : message.parts.map((part: any) => part.text || part).join(' ');
 
-    // Sử dụng trực tiếp message text làm title, format lại
+    // message text for title, format
     const title = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
     return title;
   } catch (error) {
     console.error("Error generating title:", error);
-    // Fallback title nếu không thể generate được
+    // Fallback title if not possible to generate
     const userMessage = typeof message.parts === 'string' 
       ? message.parts 
       : message.parts.map((part: any) => part.text || part).join(' ');
