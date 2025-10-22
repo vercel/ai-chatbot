@@ -195,6 +195,15 @@ const createInternalAIModel = (modelId: string) => {
       try {
         const { messages } = options;
         console.log(`[${modelId}] doGenerate called with messages:`, messages);
+        
+        // Debug: Log options để hiểu structure
+        console.log(`[${modelId}] doGenerate options:`, JSON.stringify(options, null, 2));
+        
+        if (!messages) {
+          console.error(`[${modelId}] Messages is null or undefined in doGenerate`);
+          throw new Error("No messages provided to doGenerate");
+        }
+        
         const result = await callInternalAI(messages, modelId);
         
         return {
@@ -218,6 +227,15 @@ const createInternalAIModel = (modelId: string) => {
       try {
         const { messages } = options;
         console.log(`[${modelId}] doStream called with messages:`, messages);
+        
+        // Debug: Log options để hiểu structure
+        console.log(`[${modelId}] doStream options:`, JSON.stringify(options, null, 2));
+        
+        if (!messages) {
+          console.error(`[${modelId}] Messages is null or undefined in doStream`);
+          throw new Error("No messages provided to doStream");
+        }
+        
         const result = await callInternalAI(messages, modelId);
         
         // Tạo ReadableStream
