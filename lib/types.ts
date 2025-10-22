@@ -85,12 +85,15 @@ export type AuditItem = {
 
 // User management types
 export type PlatformRole = "platform_admin" | "user";
+export type UserRole = "Admin" | "Editor" | "Viewer";
 
 export type User = {
   id: string;
   name: string;
   email: string;
-  platformRole: PlatformRole; // Platform-level access (admin can manage everything, user is default)
+  platformRole?: PlatformRole; // Platform-level access (admin can manage everything, user is default)
+  role?: UserRole; // Legacy role field for invite dialog
+  access?: string; // Legacy access field for invite dialog
   lastActive: string;
   twinAssignments?: string[]; // Array of twin IDs this user has access to (via TwinPermission)
 };
