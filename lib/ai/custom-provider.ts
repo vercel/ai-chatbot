@@ -267,23 +267,11 @@ const createInternalAIModel = (modelId: string) => {
             // Gửi text delta theo format của AI SDK v2
             controller.enqueue({
               type: "text-delta",
-              textDelta: result.content,
+              id: `stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              delta: result.content,
             });
             
             console.log(`[${modelId}] Sent text-delta`);
-            
-            // Gửi finish event
-            controller.enqueue({
-              type: "finish",
-              finishReason: "stop",
-              usage: {
-                promptTokens: 0,
-                completionTokens: 0,
-                totalTokens: 0,
-              },
-            });
-            
-            console.log(`[${modelId}] Sent finish event`);
             controller.close();
           },
         });
