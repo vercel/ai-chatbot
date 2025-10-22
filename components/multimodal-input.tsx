@@ -4,6 +4,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
+import { MessageSquare, Mic, User, Volume2, VolumeX } from "lucide-react";
 import {
   type ChangeEvent,
   type Dispatch,
@@ -20,11 +21,15 @@ import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { SelectItem } from "@/components/ui/select";
+import type { DemoFlow } from "@/config/demoScript";
 import { chatModels } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
+import { runDemoFlow } from "@/lib/runDemoFlow";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
+import { useNameGuard } from "@/hooks/useNameGuard";
+import { DemoFlowsModal } from "./demo-flows-modal";
 import { Context } from "./elements/context";
 import {
   PromptInput,
@@ -40,12 +45,16 @@ import {
   ChevronDownIcon,
   CpuIcon,
   PaperclipIcon,
+  SparklesIcon,
   StopIcon,
 } from "./icons";
+import { PinChip } from "./pin-chip";
 import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
+
+type InputMode = "text" | "ptt" | "avatar";
 
 function PureMultimodalInput({
   chatId,
@@ -63,6 +72,8 @@ function PureMultimodalInput({
   selectedModelId,
   onModelChange,
   usage,
+  setAvatarState,
+  setAvatarText,
 }: {
   chatId: string;
   input: string;
@@ -79,9 +90,16 @@ function PureMultimodalInput({
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
   usage?: AppUsage;
+  setAvatarState?: (state: "idle" | "listening" | "thinking" | "speaking") => void;
+  setAvatarText?: (text?: string) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const [inputMode, setInputMode] = useState<InputMode>("text");
+  const [showDemoFlowsModal, setShowDemoFlowsModal] = useState(false);
+  const [selectedFlow, setSelectedFlow] = useState<DemoFlow | null>(null);
+  const [isPinned, setIsPinned] = useState(false);
+  const [muted, setMuted] = useState(false);
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -121,6 +139,17 @@ function PureMultimodalInput({
   useEffect(() => {
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        textareaRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
@@ -232,8 +261,126 @@ function PureMultimodalInput({
     [setAttachments, uploadFile]
   );
 
+  const { warning } = useNameGuard(input);
+
+  const handleFlowSelect = useCallback(
+    async (flow: DemoFlow) => {
+      setSelectedFlow(flow);
+      setIsPinned(false);
+
+      // If avatar state setters are available, use runDemoFlow
+      if (setAvatarState && setAvatarText) {
+        // PTT mode: show listening -> thinking transitions before flow
+        if (inputMode === "ptt") {
+          setAvatarState("listening");
+          await new Promise(resolve => setTimeout(resolve, 400));
+          setAvatarState("thinking");
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+
+        await runDemoFlow({
+          step: {
+            user: flow.userPrompt,
+            avatarText: flow.avatarResponse,
+            summary: flow.priorities,
+          },
+          setAvatarState,
+          setAvatarText,
+          appendMessages: (_msgs) => {
+            // Append messages to the input for now
+            setInput(flow.userPrompt);
+          },
+          onSummary: (_summary) => {
+            // Summary is already shown via selectedFlow.priorities
+          },
+          ttsEnabled: !muted,
+        });
+      } else {
+        // Fallback to previous behavior
+        setInput(flow.userPrompt);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("avatarSpeak", { detail: { flow } })
+          );
+        }
+      }
+    },
+    [setInput, setAvatarState, setAvatarText, inputMode, muted]
+  );
+
   return (
     <div className={cn("relative flex w-full flex-col gap-4", className)}>
+      {/* Composer Mode Toggle */}
+      <div className="flex items-center justify-center gap-1">
+        <button
+          className={cn(
+            "flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-sm transition-colors",
+            inputMode === "text"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          onClick={() => setInputMode("text")}
+          type="button"
+        >
+          <MessageSquare className="h-4 w-4" />
+          Text
+        </button>
+        <div className="h-4 w-px bg-border" />
+        <button
+          className={cn(
+            "flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-sm transition-colors",
+            inputMode === "ptt"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          onClick={() => setInputMode("ptt")}
+          type="button"
+        >
+          <Mic className="h-4 w-4" />
+          PTT
+        </button>
+        <div className="h-4 w-px bg-border" />
+        <button
+          className={cn(
+            "flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-sm transition-colors",
+            inputMode === "avatar"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          onClick={() => setInputMode("avatar")}
+          type="button"
+        >
+          <User className="h-4 w-4" />
+          Avatar
+        </button>
+      </div>
+
+      {/* Glen's Priorities */}
+      {selectedFlow && (
+        <div className="rounded-lg border bg-card p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="font-semibold text-sm">Glen's Priorities</h3>
+            <PinChip
+              onToggle={() => setIsPinned(!isPinned)}
+              pinned={isPinned}
+            />
+          </div>
+          <ul className="space-y-1.5 text-muted-foreground">
+            {selectedFlow.priorities.map((priority) => (
+              <li
+                className="flex items-start gap-2 text-sm"
+                key={priority}
+              >
+                <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-primary" />
+                <span className="min-w-0 break-words">
+                  {priority}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
@@ -315,6 +462,24 @@ function PureMultimodalInput({
         </div>
         <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
+            <Button
+              className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
+              onClick={() => setShowDemoFlowsModal(true)}
+              type="button"
+              variant="ghost"
+            >
+              <SparklesIcon size={14} />
+            </Button>
+            <Button
+              aria-pressed={muted}
+              className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
+              onClick={() => setMuted((prev) => !prev)}
+              title={muted ? "Unmute" : "Mute"}
+              type="button"
+              variant="ghost"
+            >
+              {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            </Button>
             <AttachmentsButton
               fileInputRef={fileInputRef}
               selectedModelId={selectedModelId}
@@ -339,6 +504,15 @@ function PureMultimodalInput({
           )}
         </PromptInputToolbar>
       </PromptInput>
+      {warning && (
+        <p className="mt-1 px-1 text-red-500 text-xs">{warning}</p>
+      )}
+
+      <DemoFlowsModal
+        onFlowSelect={handleFlowSelect}
+        onOpenChange={setShowDemoFlowsModal}
+        open={showDemoFlowsModal}
+      />
     </div>
   );
 }

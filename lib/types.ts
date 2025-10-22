@@ -1,3 +1,9 @@
+export type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+};
+
 import type { InferUITool, UIMessage } from "ai";
 import { z } from "zod";
 import type { ArtifactKind } from "@/components/artifact";
@@ -55,4 +61,47 @@ export type Attachment = {
   name: string;
   url: string;
   contentType: string;
+};
+
+// CMS types
+export type DocStatus = "Live" | "Pending";
+
+export type Doc = {
+  id: string;
+  title: string;
+  source: string;
+  updated?: string; // for approved docs
+  discovered?: string; // for pending docs
+  status: DocStatus;
+};
+
+export type AuditItem = {
+  id: string;
+  timestamp: string;
+  actor: string;
+  action: string;
+  target: string;
+};
+
+// User management types
+export type UserRole = "Admin" | "Editor" | "Viewer";
+
+export type User = {
+  id: string;
+  name: string;
+  email?: string;
+  role: UserRole;
+  access: string;
+  lastActive: string;
+};
+
+// Twins
+export type TwinStatus = "active" | "draft" | "placeholder";
+
+export type Twin = {
+  id: string;
+  name: string;
+  status: TwinStatus;
+  description?: string;
+  createdAt?: string;
 };

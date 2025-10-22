@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glen TTS Voice Quality Test</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 2.5rem;
+    }
+    
+    h1 {
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+    
+    .browser-info {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .browser-info strong {
+      color: #667eea;
+    }
+    
+    .section {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .section:last-child {
+      border-bottom: none;
+    }
+    
+    h2 {
+      color: #444;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+    
+    .control-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #555;
+      font-size: 0.95rem;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #e0e0e0;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #667eea;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: #5568d3;
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #667eea;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .value-display {
+      display: inline-block;
+      min-width: 50px;
+      text-align: right;
+      font-weight: 600;
+      color: #667eea;
+      font-size: 0.9rem;
+    }
+    
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      min-height: 120px;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    button {
+      flex: 1;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #666;
+    }
+    
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    .preset-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .preset-btn {
+      padding: 0.75rem;
+      background: #f8f9ff;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      color: #667eea;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .preset-btn:hover {
+      background: #667eea;
+      color: white;
+    }
+    
+    .status {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    .status.speaking {
+      background: #d1fae5;
+      color: #065f46;
+      border: 2px solid #10b981;
+    }
+    
+    .status.idle {
+      background: #f3f4f6;
+      color: #6b7280;
+      border: 2px solid #d1d5db;
+    }
+    
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .metric-card {
+      background: #f8f9ff;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .metric-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #667eea;
+    }
+    
+    .notes {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 1rem;
+      margin-top: 2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .notes h3 {
+      color: #f59e0b;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    .notes ul {
+      margin-left: 1.5rem;
+    }
+    
+    .notes li {
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎙️ Glen TTS Voice Quality Test</h1>
+    <p class="subtitle">Test and optimize Text-to-Speech parameters for Glen's avatar</p>
+    
+    <div class="browser-info">
+      <strong>🌐 Current Browser:</strong> <span id="browserInfo">Detecting...</span><br>
+      <strong>✅ Recommended:</strong> Google Chrome (best Web Speech API support)
+    </div>
+    
+    <!-- Voice Selection -->
+    <div class="section">
+      <h2>Voice Selection</h2>
+      <div class="control-group">
+        <label for="voiceSelect">Choose Voice:</label>
+        <select id="voiceSelect">
+          <option>Loading voices...</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- TTS Parameters -->
+    <div class="section">
+      <h2>TTS Parameters</h2>
+      
+      <div class="control-group">
+        <label for="rateSlider">
+          Rate (Speed): <span class="value-display" id="rateValue">1.0</span>
+        </label>
+        <input type="range" id="rateSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+        <small style="color: #666;">0.5 = Very Slow | 1.0 = Normal | 2.0 = Very Fast</small>
+      </div>
+      
+      <div class="control-group">
+        <label for="pitchSlider">
+          Pitch (Tone): <span class="value-display" id="pitchValue">1.0</span>
+        </label>
+        <input type="range" id="pitchSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+        <small style="color: #666;">0.5 = Very Low | 1.0 = Normal | 2.0 = Very High</small>
+      </div>
+      
+      <div class="control-group">
+        <label for="volumeSlider">
+          Volume: <span class="value-display" id="volumeValue">1.0</span>
+        </label>
+        <input type="range" id="volumeSlider" min="0" max="1.0" step="0.1" value="1.0">
+        <small style="color: #666;">0 = Muted | 1.0 = Maximum</small>
+      </div>
+      
+      <div class="preset-buttons">
+        <button class="preset-btn" onclick="applyPreset('default')">🎯 Default</button>
+        <button class="preset-btn" onclick="applyPreset('natural')">🗣️ Natural</button>
+        <button class="preset-btn" onclick="applyPreset('authoritative')">💼 Authoritative</button>
+        <button class="preset-btn" onclick="applyPreset('friendly')">😊 Friendly</button>
+      </div>
+    </div>
+    
+    <!-- Test Content -->
+    <div class="section">
+      <h2>Test Content</h2>
+      
+      <div class="preset-buttons">
+        <button class="preset-btn" onclick="loadPreset('oncology')">Oncology Meeting</button>
+        <button class="preset-btn" onclick="loadPreset('leadership')">Leadership Lesson</button>
+        <button class="preset-btn" onclick="loadPreset('combined')">Combined Test</button>
+      </div>
+      
+      <div class="control-group" style="margin-top: 1rem;">
+        <label for="textInput">Text to Speak:</label>
+        <textarea id="textInput" placeholder="Enter or select text to test...">Prepare for upcoming oncology meeting</textarea>
+      </div>
+      
+      <div class="button-group">
+        <button class="btn-primary" onclick="speak()">🔊 Speak</button>
+        <button class="btn-danger" onclick="stop()">⏹️ Stop</button>
+        <button class="btn-secondary" onclick="pause()">⏸️ Pause</button>
+        <button class="btn-secondary" onclick="resume()">▶️ Resume</button>
+      </div>
+      
+      <div id="status" class="status idle">Ready</div>
+    </div>
+    
+    <!-- Metrics -->
+    <div class="section">
+      <h2>Playback Metrics</h2>
+      <div class="metrics">
+        <div class="metric-card">
+          <div class="metric-label">Duration</div>
+          <div class="metric-value" id="duration">0s</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Characters</div>
+          <div class="metric-value" id="charCount">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Words</div>
+          <div class="metric-value" id="wordCount">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Est. WPM</div>
+          <div class="metric-value" id="wpm">0</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Notes -->
+    <div class="notes">
+      <h3>📝 Testing Guidelines</h3>
+      <ul>
+        <li><strong>Natural Rate:</strong> 0.9-1.1 sounds most natural for professional content</li>
+        <li><strong>Authority:</strong> Slightly lower pitch (0.9) + moderate pace (0.95) for gravitas</li>
+        <li><strong>Friendly:</strong> Normal-to-slightly higher pitch (1.0-1.1) + steady pace (1.0)</li>
+        <li><strong>Browser Support:</strong> Chrome/Edge provide best quality; Safari/Firefox may have limitations</li>
+        <li><strong>Voice Selection:</strong> Look for "Google" or "Microsoft" prefixed voices for best quality</li>
+        <li><strong>Natural Pauses:</strong> Add commas and periods to improve pacing</li>
+      </ul>
+    </div>
+  </div>
+  
+  <script>
+    // Demo content presets
+    const demoContent = {
+      oncology: "Prepare for upcoming oncology meeting. Remember to reaffirm the north star: better outcomes, lower friction, lower cost. Ask for one metric they'd proudly show a patient family in 90 days. Leave with an owner and date for a patient journey upgrade.",
+      
+      leadership: "Here's my biggest leadership lesson. Spotlight effort publicly. Remove one blocker daily. Ship small wins weekly. These simple practices compound into exceptional teams and breakthrough results.",
+      
+      combined: "Glen here. I'm your strategic partner. When you're preparing for an important oncology meeting, I help you focus on what matters: better outcomes, lower friction, lower cost. When you need leadership guidance, I share proven principles: spotlight effort, remove blockers, ship wins. I'm here to make you more effective, every single day."
+    };
+    
+    // TTS parameter presets
+    const presets = {
+      default: { rate: 1.0, pitch: 1.0, volume: 1.0 },
+      natural: { rate: 0.95, pitch: 0.95, volume: 1.0 },
+      authoritative: { rate: 0.9, pitch: 0.9, volume: 1.0 },
+      friendly: { rate: 1.0, pitch: 1.05, volume: 1.0 }
+    };
+    
+    let synth = window.speechSynthesis;
+    let voices = [];
+    let currentUtterance = null;
+    let startTime = 0;
+    
+    // Detect browser
+    function detectBrowser() {
+      const ua = navigator.userAgent;
+      let browserName = "Unknown";
+      
+      if (ua.indexOf("Chrome") > -1 && ua.indexOf("Edg") === -1) {
+        browserName = "Google Chrome ✅ (Recommended)";
+      } else if (ua.indexOf("Edg") > -1) {
+        browserName = "Microsoft Edge ✅ (Good)";
+      } else if (ua.indexOf("Safari") > -1) {
+        browserName = "Safari ⚠️ (Limited support)";
+      } else if (ua.indexOf("Firefox") > -1) {
+        browserName = "Firefox ⚠️ (Limited support)";
+      }
+      
+      document.getElementById('browserInfo').textContent = browserName;
+    }
+    
+    // Load voices
+    function loadVoices() {
+      voices = synth.getVoices();
+      
+      if (voices.length === 0) {
+        setTimeout(loadVoices, 100);
+        return;
+      }
+      
+      const voiceSelect = document.getElementById('voiceSelect');
+      voiceSelect.innerHTML = '';
+      
+      // Sort voices: English first, then by quality indicators
+      const sortedVoices = voices
+        .filter(voice => voice.lang.startsWith('en'))
+        .sort((a, b) => {
+          // Prefer Google/Microsoft voices
+          const aQuality = (a.name.includes('Google') || a.name.includes('Microsoft')) ? 1 : 0;
+          const bQuality = (b.name.includes('Google') || b.name.includes('Microsoft')) ? 1 : 0;
+          return bQuality - aQuality;
+        });
+      
+      sortedVoices.forEach((voice, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        
+        // Mark recommended voices
+        if (voice.name.includes('Google') || voice.name.includes('Microsoft')) {
+          option.textContent += ' ⭐';
+        }
+        
+        voiceSelect.appendChild(option);
+      });
+      
+      // Auto-select a good default voice
+      const defaultVoice = sortedVoices.findIndex(v => 
+        v.name.includes('Google') && v.lang === 'en-US'
+      );
+      if (defaultVoice !== -1) {
+        voiceSelect.selectedIndex = defaultVoice;
+      }
+    }
+    
+    // Update slider values
+    document.getElementById('rateSlider').addEventListener('input', (e) => {
+      document.getElementById('rateValue').textContent = e.target.value;
+    });
+    
+    document.getElementById('pitchSlider').addEventListener('input', (e) => {
+      document.getElementById('pitchValue').textContent = e.target.value;
+    });
+    
+    document.getElementById('volumeSlider').addEventListener('input', (e) => {
+      document.getElementById('volumeValue').textContent = e.target.value;
+    });
+    
+    // Update metrics on text change
+    document.getElementById('textInput').addEventListener('input', updateMetrics);
+    
+    function updateMetrics() {
+      const text = document.getElementById('textInput').value;
+      const chars = text.length;
+      const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+      
+      document.getElementById('charCount').textContent = chars;
+      document.getElementById('wordCount').textContent = words;
+    }
+    
+    // Load content preset
+    function loadPreset(preset) {
+      document.getElementById('textInput').value = demoContent[preset];
+      updateMetrics();
+    }
+    
+    // Apply parameter preset
+    function applyPreset(preset) {
+      const params = presets[preset];
+      
+      document.getElementById('rateSlider').value = params.rate;
+      document.getElementById('rateValue').textContent = params.rate;
+      
+      document.getElementById('pitchSlider').value = params.pitch;
+      document.getElementById('pitchValue').textContent = params.pitch;
+      
+      document.getElementById('volumeSlider').value = params.volume;
+      document.getElementById('volumeValue').textContent = params.volume;
+    }
+    
+    // Speak function
+    function speak() {
+      const text = document.getElementById('textInput').value;
+      if (!text.trim()) return;
+      
+      // Cancel any ongoing speech
+      synth.cancel();
+      
+      // Create utterance
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      
+      // Get selected voice
+      const voiceSelect = document.getElementById('voiceSelect');
+      const selectedVoice = voices.filter(v => v.lang.startsWith('en'))[voiceSelect.value];
+      if (selectedVoice) {
+        currentUtterance.voice = selectedVoice;
+      }
+      
+      // Apply parameters
+      currentUtterance.rate = parseFloat(document.getElementById('rateSlider').value);
+      currentUtterance.pitch = parseFloat(document.getElementById('pitchSlider').value);
+      currentUtterance.volume = parseFloat(document.getElementById('volumeSlider').value);
+      
+      // Event handlers
+      currentUtterance.onstart = () => {
+        startTime = Date.now();
+        document.getElementById('status').className = 'status speaking';
+        document.getElementById('status').textContent = '🔊 Speaking...';
+      };
+      
+      currentUtterance.onend = () => {
+        const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+        const words = parseInt(document.getElementById('wordCount').textContent);
+        const wpm = Math.round((words / parseFloat(duration)) * 60);
+        
+        document.getElementById('duration').textContent = duration + 's';
+        document.getElementById('wpm').textContent = wpm;
+        document.getElementById('status').className = 'status idle';
+        document.getElementById('status').textContent = `✅ Complete (${duration}s, ~${wpm} WPM)`;
+      };
+      
+      currentUtterance.onerror = (e) => {
+        document.getElementById('status').className = 'status idle';
+        document.getElementById('status').textContent = '❌ Error: ' + e.error;
+      };
+      
+      // Speak
+      synth.speak(currentUtterance);
+    }
+    
+    function stop() {
+      synth.cancel();
+      document.getElementById('status').className = 'status idle';
+      document.getElementById('status').textContent = 'Stopped';
+    }
+    
+    function pause() {
+      synth.pause();
+      document.getElementById('status').className = 'status idle';
+      document.getElementById('status').textContent = '⏸️ Paused';
+    }
+    
+    function resume() {
+      synth.resume();
+      document.getElementById('status').className = 'status speaking';
+      document.getElementById('status').textContent = '🔊 Speaking...';
+    }
+    
+    // Initialize
+    detectBrowser();
+    loadVoices();
+    updateMetrics();
+    
+    // Chrome requires waiting for voices to load
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
+    }
+  </script>
+</body>
+</html>
+

@@ -12,78 +12,106 @@
 
 /* define design tokens (light mode) */
 :root {
+  /* Glen AI color tokens */
+  --teal: hsl(180 65% 40%);
+  --primary-dark: hsl(180 70% 30%); /* darker teal */
+  --blue-green: hsl(175 55% 45%);
+  --ink: hsl(220 15% 20%);
+  --muted-text: hsl(220 10% 50%);
+  --surface: hsl(0 0% 98%);
+  --surface-alt: hsl(220 15% 96%);
+
+  /* Accent colors */
+  --accent-cyan: hsl(195 70% 60%);
+  --accent-indigo: hsl(245 60% 70%);
+
+  /* Semantic mappings */
   --background: hsl(0 0% 100%);
-  --foreground: hsl(240 10% 3.9%);
+  --foreground: var(--ink);
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(240 10% 3.9%);
+  --card-foreground: var(--ink);
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(240 10% 3.9%);
-  --primary: hsl(240 5.9% 10%);
-  --primary-foreground: hsl(0 0% 98%);
-  --secondary: hsl(240 4.8% 95.9%);
-  --secondary-foreground: hsl(240 5.9% 10%);
-  --muted: hsl(240 4.8% 95.9%);
-  --muted-foreground: hsl(240 3.8% 46.1%);
-  --accent: hsl(240 4.8% 95.9%);
-  --accent-foreground: hsl(240 5.9% 10%);
+  --popover-foreground: var(--ink);
+  --primary: var(--teal);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: var(--surface-alt);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-alt);
+  --muted-foreground: var(--muted-text);
+  --accent: var(--surface-alt);
+  --accent-foreground: var(--ink);
   --destructive: hsl(0 84.2% 60.2%);
   --destructive-foreground: hsl(0 0% 98%);
-  --border: hsl(240 5.9% 90%);
-  --input: hsl(240 5.9% 90%);
-  --ring: hsl(240 10% 3.9%);
+  --border: hsl(220 15% 90%);
+  --input: hsl(220 15% 90%);
+  --ring: var(--teal);
   --chart-1: hsl(12 76% 61%);
   --chart-2: hsl(173 58% 39%);
   --chart-3: hsl(197 37% 24%);
   --chart-4: hsl(43 74% 66%);
   --chart-5: hsl(27 87% 67%);
-  --sidebar-background: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(240 5.9% 10%);
-  --sidebar-primary-foreground: hsl(0 0% 98%);
-  --sidebar-accent: hsl(240 4.8% 95.9%);
-  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-background: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--teal);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: var(--surface-alt);
+  --sidebar-accent-foreground: var(--ink);
   --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --sidebar-ring: var(--teal);
   /* border radius unit */
   --radius: 0.5rem;
-  --sidebar: hsl(0 0% 98%);
+  --sidebar: var(--surface);
 }
 
 /* define design tokens (dark mode) */
 .dark {
-  --background: hsl(240 10% 3.9%);
-  --foreground: hsl(0 0% 98%);
-  --card: hsl(240 10% 3.9%);
-  --card-foreground: hsl(0 0% 98%);
-  --popover: hsl(240 10% 3.9%);
-  --popover-foreground: hsl(0 0% 98%);
-  --primary: hsl(0 0% 98%);
-  --primary-foreground: hsl(240 5.9% 10%);
-  --secondary: hsl(240 3.7% 15.9%);
-  --secondary-foreground: hsl(0 0% 98%);
-  --muted: hsl(240 3.7% 15.9%);
-  --muted-foreground: hsl(240 5% 64.9%);
-  --accent: hsl(240 3.7% 15.9%);
-  --accent-foreground: hsl(0 0% 98%);
+  /* Glen AI color tokens - dark mode */
+  --teal: hsl(180 60% 55%);
+  --primary-dark: hsl(180 65% 45%); /* slightly darker than light teal */
+  --blue-green: hsl(175 50% 60%);
+  --ink: hsl(220 15% 95%);
+  --muted-text: hsl(220 10% 65%);
+  --surface: hsl(220 15% 12%);
+  --surface-alt: hsl(220 15% 15%);
+
+  /* Accent colors */
+  --accent-cyan: hsl(195 70% 60%);
+  --accent-indigo: hsl(245 60% 70%);
+
+  /* Semantic mappings */
+  --background: hsl(220 15% 10%);
+  --foreground: var(--ink);
+  --card: hsl(220 15% 12%);
+  --card-foreground: var(--ink);
+  --popover: hsl(220 15% 12%);
+  --popover-foreground: var(--ink);
+  --primary: var(--teal);
+  --primary-foreground: hsl(220 15% 10%);
+  --secondary: var(--surface-alt);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-alt);
+  --muted-foreground: var(--muted-text);
+  --accent: var(--surface-alt);
+  --accent-foreground: var(--ink);
   --destructive: hsl(0 62.8% 30.6%);
   --destructive-foreground: hsl(0 0% 98%);
-  --border: hsl(240 3.7% 15.9%);
-  --input: hsl(240 3.7% 15.9%);
-  --ring: hsl(240 4.9% 83.9%);
+  --border: hsl(220 15% 20%);
+  --input: hsl(220 15% 20%);
+  --ring: var(--teal);
   --chart-1: hsl(220 70% 50%);
   --chart-2: hsl(160 60% 45%);
   --chart-3: hsl(30 80% 55%);
   --chart-4: hsl(280 65% 60%);
   --chart-5: hsl(340 75% 55%);
-  --sidebar-background: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-background: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--teal);
+  --sidebar-primary-foreground: hsl(220 15% 10%);
+  --sidebar-accent: var(--surface-alt);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: hsl(220 15% 20%);
+  --sidebar-ring: var(--teal);
+  --sidebar: var(--surface);
 }
 
 /* define theme */
@@ -200,10 +228,12 @@
     @apply bg-background text-foreground;
     overflow-x: hidden;
     position: relative;
+    line-height: 1.6;
   }
 
   html {
     overflow-x: hidden;
+    line-height: 1.6;
   }
 }
 
@@ -314,4 +344,36 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes glenPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-glenPulse {
+  animation: glenPulse 1200ms ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.mask-circle {
+  mask-image: radial-gradient(circle, black 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle, black 60%, transparent 100%);
 }

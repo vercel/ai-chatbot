@@ -26,6 +26,7 @@ import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "./artifact";
+import { AvatarDock } from "@/components/avatar/AvatarDock";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
@@ -63,6 +64,9 @@ export function Chat({
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
+  // Avatar state for demo flows (will be used when AvatarDock is rendered)
+  const [avatarState, setAvatarState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
+  const [avatarText, setAvatarText] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
@@ -187,6 +191,8 @@ export function Chat({
               selectedVisibilityType={visibilityType}
               sendMessage={sendMessage}
               setAttachments={setAttachments}
+              setAvatarState={setAvatarState}
+              setAvatarText={setAvatarText}
               setInput={setInput}
               setMessages={setMessages}
               status={status}
@@ -244,6 +250,8 @@ export function Chat({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AvatarDock state={avatarState} text={avatarText} />
     </>
   );
 }
