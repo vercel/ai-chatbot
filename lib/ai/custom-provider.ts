@@ -114,7 +114,7 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     const headers = {
       "Content-Type": "application/json",
       "username": config.username,
-      "password": Buffer.from(config.password).toString('base64'),
+      "password": config.password,
     };
 
     console.log(`[${modelId}] Request headers:`, headers);
@@ -125,6 +125,9 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
       headers,
       body: JSON.stringify(payload),
     });
+
+    console.log(`[${modelId}] Response status:`, response.status);
+    console.log(`[${modelId}] Response ok:`, response.ok);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -230,6 +233,8 @@ const createInternalAIModel = (modelId: string) => {
     // Hỗ trợ streaming
     async doStream(options: any) {
       try {
+        console.log(`[${modelId}] doStream called!`);
+        
         // AI SDK v2 sử dụng 'prompt' thay vì 'messages'
         const { messages, prompt } = options;
         const messagesToUse = messages || prompt;
