@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       // Keep responses short via system prompt instruction
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error('Glen chat error:', error);
     return new Response(JSON.stringify({ error: String(error) }), {
