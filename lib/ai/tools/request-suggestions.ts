@@ -62,7 +62,12 @@ export const requestSuggestions = ({
 
         dataStream.write({
           type: "data-suggestion",
-          data: suggestion,
+          data: {
+            ...suggestion,
+            createdAt: new Date(),
+            userId: session.user?.id || "",
+            documentCreatedAt: document.createdAt,
+          } as Suggestion,
           transient: true,
         });
 
