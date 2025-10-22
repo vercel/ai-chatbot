@@ -59,11 +59,8 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === "cs-ai-model") {
-    return `${regularPrompt}\n\n${requestPrompt}`;
-  }
-
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  // Simplified prompt for all models - no artifacts or tools
+  return `${regularPrompt}\n\n${requestPrompt}`;
 };
 
 export const codePrompt = `

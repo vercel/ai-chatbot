@@ -193,18 +193,23 @@ const createInternalAIModel = (modelId: string) => {
     // Custom implementation cho AI SDK v2
     async doGenerate(options: any) {
       try {
-        const { messages } = options;
+        // AI SDK v2 sử dụng 'prompt' thay vì 'messages'
+        const { messages, prompt } = options;
+        const messagesToUse = messages || prompt;
+        
         console.log(`[${modelId}] doGenerate called with messages:`, messages);
+        console.log(`[${modelId}] doGenerate called with prompt:`, prompt);
+        console.log(`[${modelId}] Using messagesToUse:`, messagesToUse);
         
         // Debug: Log options để hiểu structure
         console.log(`[${modelId}] doGenerate options:`, JSON.stringify(options, null, 2));
         
-        if (!messages) {
-          console.error(`[${modelId}] Messages is null or undefined in doGenerate`);
-          throw new Error("No messages provided to doGenerate");
+        if (!messagesToUse) {
+          console.error(`[${modelId}] Both messages and prompt are null/undefined in doGenerate`);
+          throw new Error("No messages or prompt provided to doGenerate");
         }
         
-        const result = await callInternalAI(messages, modelId);
+        const result = await callInternalAI(messagesToUse, modelId);
         
         return {
           content: [{ type: "text" as const, text: result.content }],
@@ -225,18 +230,23 @@ const createInternalAIModel = (modelId: string) => {
     // Hỗ trợ streaming
     async doStream(options: any) {
       try {
-        const { messages } = options;
+        // AI SDK v2 sử dụng 'prompt' thay vì 'messages'
+        const { messages, prompt } = options;
+        const messagesToUse = messages || prompt;
+        
         console.log(`[${modelId}] doStream called with messages:`, messages);
+        console.log(`[${modelId}] doStream called with prompt:`, prompt);
+        console.log(`[${modelId}] Using messagesToUse:`, messagesToUse);
         
         // Debug: Log options để hiểu structure
         console.log(`[${modelId}] doStream options:`, JSON.stringify(options, null, 2));
         
-        if (!messages) {
-          console.error(`[${modelId}] Messages is null or undefined in doStream`);
-          throw new Error("No messages provided to doStream");
+        if (!messagesToUse) {
+          console.error(`[${modelId}] Both messages and prompt are null/undefined in doStream`);
+          throw new Error("No messages or prompt provided to doStream");
         }
         
-        const result = await callInternalAI(messages, modelId);
+        const result = await callInternalAI(messagesToUse, modelId);
         
         // Tạo ReadableStream
         const stream = new ReadableStream({
