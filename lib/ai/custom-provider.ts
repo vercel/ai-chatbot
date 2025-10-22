@@ -96,12 +96,11 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     config: { serverIP: config.serverIP, port: config.port, assetId: config.assetId }
   });
 
-  // Sử dụng format đã test thành công
+  // Sử dụng format đúng theo API documentation
   const payload = {
     sessionInfo: {
       sessionId: currentSessionId
     },
-    contentType: "rich-text",
     content: userMessage
   };
 
