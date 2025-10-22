@@ -14,7 +14,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  outputFileTracing: true,
 };
 
 export default nextConfig;
