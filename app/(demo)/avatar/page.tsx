@@ -529,11 +529,7 @@ export default function AvatarExperiencePage() {
           >
             {callState === "idle" ? (
               <>
-                {mode === "avatar" ? (
-                  <Video className="mr-2 h-5 w-5" />
-                ) : (
-                  <Mic className="mr-2 h-5 w-5" />
-                )}
+                <Mic className="mr-2 h-5 w-5" />
                 Connect
               </>
             ) : (
