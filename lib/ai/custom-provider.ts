@@ -14,35 +14,81 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
   let userMessage = "";
   
   console.log(`[${modelId}] Raw messages:`, JSON.stringify(messages, null, 2));
+  console.log(`[${modelId}] Messages type:`, typeof messages);
+  console.log(`[${modelId}] Messages is array:`, Array.isArray(messages));
+  console.log(`[${modelId}] Messages length:`, messages?.length);
   
-  if (messages && messages.length > 0) {
-    // Lấy message cuối cùng từ user
-    const lastUserMessage = messages.filter(msg => msg.role === "user").pop();
-    console.log(`[${modelId}] Last user message:`, JSON.stringify(lastUserMessage, null, 2));
-    
-    if (lastUserMessage) {
-      // Xử lý content dựa trên cấu trúc của AI SDK
-      if (typeof lastUserMessage.content === 'string') {
-        userMessage = lastUserMessage.content;
-      } else if (Array.isArray(lastUserMessage.content)) {
-        userMessage = lastUserMessage.content.map((part: any) => {
-          if (typeof part === 'string') return part;
-          if (part.text) return part.text;
-          if (part.content) return part.content;
-          return String(part);
-        }).join(' ');
-      } else if (lastUserMessage.parts && Array.isArray(lastUserMessage.parts)) {
-        userMessage = lastUserMessage.parts.map((part: any) => {
-          if (typeof part === 'string') return part;
-          if (part.text) return part.text;
-          if (part.content) return part.content;
-          return String(part);
-        }).join(' ');
-      }
-    }
+  // Kiểm tra và xử lý messages
+  if (!messages) {
+    console.error(`[${modelId}] Messages is null or undefined`);
+    throw new Error("No messages provided to AI model");
+  }
+  
+  if (!Array.isArray(messages)) {
+    console.error(`[${modelId}] Messages is not an array:`, typeof messages);
+    throw new Error("Messages must be an array");
+  }
+  
+  if (messages.length === 0) {
+    console.error(`[${modelId}] Messages array is empty`);
+    throw new Error("Messages array is empty");
+  }
+  
+  // Debug: Log tất cả messages để hiểu structure
+  console.log(`[${modelId}] All messages structure:`, messages.map((msg, index) => ({
+    index,
+    role: msg.role,
+    hasContent: 'content' in msg,
+    hasParts: 'parts' in msg,
+    contentType: typeof msg.content,
+    contentLength: Array.isArray(msg.content) ? msg.content.length : (msg.content ? String(msg.content).length : 0)
+  })));
+  
+  // Lấy message cuối cùng từ user
+  const lastUserMessage = messages.filter(msg => msg.role === "user").pop();
+  console.log(`[${modelId}] Last user message:`, JSON.stringify(lastUserMessage, null, 2));
+  
+  if (!lastUserMessage) {
+    console.error(`[${modelId}] No user message found in messages`);
+    throw new Error("No user message found in conversation");
+  }
+  
+  // Xử lý content dựa trên cấu trúc của AI SDK
+  if (typeof lastUserMessage.content === 'string') {
+    userMessage = lastUserMessage.content;
+  } else if (Array.isArray(lastUserMessage.content)) {
+    userMessage = lastUserMessage.content.map((part: any) => {
+      if (typeof part === 'string') return part;
+      if (part.text) return part.text;
+      if (part.content) return part.content;
+      return String(part);
+    }).join(' ');
+  } else if (lastUserMessage.parts && Array.isArray(lastUserMessage.parts)) {
+    userMessage = lastUserMessage.parts.map((part: any) => {
+      if (typeof part === 'string') return part;
+      if (part.text) return part.text;
+      if (part.content) return part.content;
+      return String(part);
+    }).join(' ');
+  } else if (lastUserMessage.text) {
+    // Fallback: nếu có property text trực tiếp
+    userMessage = lastUserMessage.text;
+  } else if (lastUserMessage.message) {
+    // Fallback: nếu có property message trực tiếp
+    userMessage = lastUserMessage.message;
+  } else {
+    console.error(`[${modelId}] Unknown message content structure:`, lastUserMessage);
+    console.error(`[${modelId}] Available properties:`, Object.keys(lastUserMessage));
+    throw new Error("Unknown message content structure");
   }
   
   console.log(`[${modelId}] Extracted userMessage:`, userMessage);
+  
+  // Validate user message
+  if (!userMessage || userMessage.trim() === '') {
+    console.error(`[${modelId}] User message is empty after extraction`);
+    throw new Error("User message cannot be empty");
+  }
 
   console.log(`[${modelId}] Sending message to ${apiUrl}:`, {
     userMessage,
@@ -60,12 +106,6 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
   };
 
   console.log(`[${modelId}] Request payload:`, JSON.stringify(payload, null, 2));
-
-  // Validate input - tạm thời bỏ qua để debug
-  if (!userMessage || userMessage.trim() === '') {
-    console.warn(`[${modelId}] User message is empty, using fallback`);
-    userMessage = "Hello"; // Fallback message để test
-  }
 
   try {
     // Set environment variable để bỏ qua SSL verification
@@ -112,6 +152,12 @@ async function callInternalAI(messages: any[], modelId: string, sessionId?: stri
     if (data.content && data.content.includes("Error 704002")) {
       console.error(`[${modelId}] AI Agent returned error:`, data.content);
       throw new Error(`AI Agent error: ${data.content}`);
+    }
+
+    // Kiểm tra nếu response có lỗi từ API (format: {'code': -1, 'message': '...'})
+    if (data.content && data.content.includes("'code': -1")) {
+      console.error(`[${modelId}] AI Agent returned API error:`, data.content);
+      throw new Error(`AI Agent API error: ${data.content}`);
     }
 
     // Kiểm tra nếu không có content
