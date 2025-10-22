@@ -29,13 +29,6 @@ Create a `.env.local` file with required environment variables:
 # Database
 DATABASE_URL="your_database_url"
 
-# AI Models
-INTERNAL_AI_SERVER_IP="10.196.5.134"
-INTERNAL_AI_PORT="28001"
-INTERNAL_AI_ASSET_ID="70"
-INTERNAL_AI_USERNAME="aiteam1"
-INTERNAL_AI_PASSWORD="AInow123@"
-
 # Auth
 AUTH_SECRET="your_auth_secret"
 ```
