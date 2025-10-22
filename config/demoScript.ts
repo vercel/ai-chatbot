@@ -172,6 +172,58 @@ export const shipWins: DemoFlow = {
   ],
 };
 
+export const healthcarePhilosophy: DemoFlow = {
+  id: 'healthcare-philosophy',
+  title: 'Healthcare Philosophy',
+  description: 'Core beliefs about healthcare transformation',
+  avatarResponse: "Healthcare should work for people, not systems. My philosophy is simple: lower costs, better outcomes, less friction. Every decision should make care more accessible, more transparent, and more human. At Livongo and now Transcarent, we've proven that when you put the patient first—truly first—everyone wins. Employers save money, people get healthier, and clinicians can focus on care instead of paperwork.",
+  userPrompt: "Tell me about your healthcare philosophy",
+  priorities: [
+    'Put patients first: lower costs, better outcomes, less friction',
+    'Make care accessible, transparent, and human',
+    'Align incentives so everyone wins',
+  ],
+};
+
+export const priorities2025: DemoFlow = {
+  id: 'priorities-2025',
+  title: '2025 Priorities',
+  description: 'Strategic priorities for the year ahead',
+  avatarResponse: "For 2025, we're focused on three things at Transcarent: scaling our Surgery and Cancer Centers of Excellence, proving AI can deliver personalized care at scale, and expanding employer partnerships that share our mission. The healthcare system is broken, but we're building the alternative. We're not waiting for permission—we're shipping solutions people can use today.",
+  userPrompt: "What are your priorities for 2025?",
+  priorities: [
+    'Scale Centers of Excellence for Surgery and Cancer',
+    'Prove AI-driven personalized care works at scale',
+    'Expand employer partnerships aligned with our mission',
+  ],
+};
+
+export const aiHealthcare: DemoFlow = {
+  id: 'ai-healthcare',
+  title: 'AI in Healthcare',
+  description: 'Vision for AI-powered healthcare',
+  avatarResponse: "AI is the unlock for personalized healthcare at scale. Today, every patient gets the same generic advice. With AI, we can deliver the right care, to the right person, at the right time—based on their data, their history, their life. At Transcarent, we're using AI to guide people through complex medical decisions, surface better provider options, and predict health issues before they become crises. But AI without empathy is just automation. The human touch still matters.",
+  userPrompt: "How do you think about AI in healthcare?",
+  priorities: [
+    'AI enables personalized care at scale',
+    'Use it to guide decisions, surface options, predict issues',
+    'Always pair AI with human empathy',
+  ],
+};
+
+export const entrepreneurAdvice: DemoFlow = {
+  id: 'entrepreneur-advice',
+  title: 'Entrepreneur Advice',
+  description: 'Guidance for startup founders',
+  avatarResponse: "Start with a problem that pisses you off personally. Build something you'd use yourself. Move fast, but listen obsessively—your users will tell you what's broken if you pay attention. At Livongo, we talked to hundreds of diabetics before writing a line of code. And remember: raise enough money to have a real shot, but not so much that you lose the hunger. Stay close to the pain, ship often, and don't confuse activity with progress.",
+  userPrompt: "What advice do you have for entrepreneurs?",
+  priorities: [
+    'Solve a problem that pisses you off',
+    'Listen obsessively to users before building',
+    'Stay close to the pain, ship often, measure progress',
+  ],
+};
+
 export const allDemoFlows: Record<string, DemoFlow> = {
   'prep-oncology': prepOncology,
   'leadership-lesson': leadershipLesson,
@@ -184,5 +236,9 @@ export const allDemoFlows: Record<string, DemoFlow> = {
   'spotlight-how': spotlightHow,
   'remove-blocker': removeBlocker,
   'ship-wins': shipWins,
+  'healthcare-philosophy': healthcarePhilosophy,
+  'priorities-2025': priorities2025,
+  'ai-healthcare': aiHealthcare,
+  'entrepreneur-advice': entrepreneurAdvice,
 };
 

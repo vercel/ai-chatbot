@@ -1,4 +1,8 @@
+"use client";
+
+import { Suspense } from "react";
 import CmsTabs from "@/components/CmsTabs";
+import { ContentSkeleton } from "@/components/LoadingSkeleton";
 import { APPROVED_DOCS, PENDING_DOCS } from "@/lib/mockData";
 
 export default function CMSPage() {
@@ -11,7 +15,9 @@ export default function CMSPage() {
         </p>
       </div>
 
-      <CmsTabs approvedDocs={APPROVED_DOCS} pendingDocs={PENDING_DOCS} />
+      <Suspense fallback={<ContentSkeleton />}>
+        <CmsTabs approvedDocs={APPROVED_DOCS} pendingDocs={PENDING_DOCS} />
+      </Suspense>
     </div>
   );
 }

@@ -26,14 +26,14 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden">
+      <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden py-16 md:py-32">
         {/* Background Video */}
         <div className="-z-10 absolute inset-0">
-          <VideoLoop blur={16} mask="rounded" src="/videos/placeholder.mp4" />
+          <VideoLoop blur={12} mask="rounded" src="/videos/placeholder.mp4" showGlen={false} />
         </div>
 
-        {/* Gradient Overlay */}
-        <div className="-z-10 absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+        {/* Overlay */}
+        <div className="-z-10 absolute inset-0 bg-black/60" />
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-4xl px-6 text-center">
@@ -44,7 +44,7 @@ export default function LandingPage() {
             {copy.landing.heroSub}
           </p>
           <Link href="/chat">
-            <Button className="mt-8 text-base" size="lg" type="button">
+            <Button className="mt-8 text-base" size="xl" type="button">
               {copy.landing.cta}
               <ArrowRight aria-hidden="true" className="ml-2 h-5 w-5" />
             </Button>

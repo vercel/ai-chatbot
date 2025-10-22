@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { User } from "@/lib/types";
+import { TWINS } from "@/lib/mockData";
 import InviteUserDialog from "./InviteUserDialog";
 
 type UsersTableProps = {
@@ -27,17 +28,12 @@ export default function UsersTable({ initialUsers }: UsersTableProps) {
     setDialogOpen(false);
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case "Admin":
-        return "default";
-      case "Editor":
-        return "secondary";
-      case "Viewer":
-        return "outline";
-      default:
-        return "secondary";
-    }
+  const getTwinNames = (twinIds?: string[]) => {
+    if (!twinIds || twinIds.length === 0) return "No twins assigned";
+    const twinNames = twinIds
+      .map((id) => TWINS.find((t) => t.id === id)?.name)
+      .filter(Boolean);
+    return twinNames.length > 0 ? twinNames.join(", ") : "No twins assigned";
   };
 
   return (
@@ -60,8 +56,8 @@ export default function UsersTable({ initialUsers }: UsersTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Access</TableHead>
+              <TableHead>Platform Role</TableHead>
+              <TableHead>Twin Assignments</TableHead>
               <TableHead>Last Active</TableHead>
             </TableRow>
           </TableHeader>
@@ -71,20 +67,26 @@ export default function UsersTable({ initialUsers }: UsersTableProps) {
                 <TableCell>
                   <div>
                     <div className="font-medium">{user.name}</div>
-                    {user.email && (
-                      <div className="text-muted-foreground text-xs">
-                        {user.email}
-                      </div>
-                    )}
+                    <div className="text-muted-foreground text-xs">
+                      {user.email}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
-                    {user.role}
+                  <Badge
+                    variant={
+                      user.platformRole === "platform_admin" ? "default" : "outline"
+                    }
+                  >
+                    {user.platformRole === "platform_admin"
+                      ? "Platform Admin"
+                      : "User"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {user.access}
+                  <div className="max-w-xs truncate">
+                    {getTwinNames(user.twinAssignments)}
+                  </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {user.lastActive}

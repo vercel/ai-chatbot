@@ -5,7 +5,7 @@ export const INITIAL_MESSAGES: Message[] = [
     id: "1",
     role: "assistant",
     content:
-      "Hi, I'm Glen AI. I reflect Glen Tullman's leadership voice and strategic priorities. What would you like to discuss?",
+      "Welcome! I'm Glen AI, a digital twin that reflects Glen Tullman's leadership voice, strategic priorities, and decades of healthcare innovation experience. I'm here to help you understand his philosophy on healthcare transformation, entrepreneurship, and building outcome-driven solutions. Feel free to ask me anything about healthcare strategy, leadership principles, or the future of health technology.",
   },
 ];
 
@@ -109,33 +109,33 @@ export const USERS: User[] = [
     id: "u1",
     name: "Zach M.",
     email: "zach@example.com",
-    role: "Admin",
-    access: "All",
+    platformRole: "platform_admin",
     lastActive: "2h ago",
+    twinAssignments: ["t1"], // Has platform admin + assigned to Glen AI
   },
   {
     id: "u2",
     name: "Natalie M.",
     email: "natalie@example.com",
-    role: "Editor",
-    access: "CMS only",
+    platformRole: "user",
     lastActive: "Yesterday",
+    twinAssignments: ["t1"], // Only has access to Glen AI
   },
   {
     id: "u3",
     name: "Andrew W.",
     email: "andrew@example.com",
-    role: "Viewer",
-    access: "Chat",
+    platformRole: "user",
     lastActive: "Just now",
+    twinAssignments: [], // No twin access yet
   },
   {
     id: "u4",
     name: "Sarah K.",
     email: "sarah@example.com",
-    role: "Editor",
-    access: "CMS + Chat",
+    platformRole: "user",
     lastActive: "1 week ago",
+    twinAssignments: ["t1"], // Has access to Glen AI
   },
 ];
 

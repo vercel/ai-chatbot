@@ -52,6 +52,14 @@ export default function CreateTwinDialog({
       status: "draft",
       description: description.trim() || undefined,
       createdAt: new Date().toISOString().split("T")[0],
+      primarySource: primarySource || undefined,
+      trainingStatus: "not_started",
+      capabilities: {
+        text: true,
+        voice: false,
+        avatar: false,
+      },
+      knowledgeSources: [],
     };
 
     onCreate(newTwin);

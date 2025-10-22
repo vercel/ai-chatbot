@@ -1,29 +1,53 @@
-import ChatBoxSimple from "@/components/ChatBoxSimple";
+"use client";
+
+import { useState, useEffect } from "react";
+import { ChatContainer } from "@/components/chat/ChatContainer";
+import { ChatModeToggle } from "@/components/chat/ChatModeToggle";
+import { AvatarDock } from "@/components/avatar";
 import ContextDrawer from "@/components/ContextDrawer";
-import VideoLoop from "@/components/VideoLoop";
-import { ABOUT_TEXT, INITIAL_MESSAGES, MEMORY_ITEMS } from "@/lib/mockData";
+import { ABOUT_TEXT, INITIAL_MESSAGES } from "@/lib/mockData";
+import { useSession } from "@/lib/contexts/SessionContext";
+import { mockConversations } from "@/lib/mockConversations";
 
 export default function ChatPage() {
-  return (
-    <div className="h-full">
-      <div className="grid h-full gap-6 lg:grid-cols-[280px,1fr]">
-        {/* Avatar column (hidden on small screens) */}
-        <div className="hidden flex-col gap-4 lg:flex">
-          <div className="aspect-square w-full">
-            <VideoLoop blur={14} mask="circle" />
-          </div>
-          <ContextDrawer about={ABOUT_TEXT} memory={MEMORY_ITEMS} />
-        </div>
+  const [avatarState, setAvatarState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
+  const [avatarText, setAvatarText] = useState<string | undefined>();
+  const [chatMode, setChatMode] = useState<"text" | "voice">("text");
+  const [key, setKey] = useState(0);
+  const { currentSessionId } = useSession();
 
-        {/* Chat column */}
-        <div className="flex flex-col">
-          <div className="mb-4 flex items-center justify-between lg:hidden">
-            <h1 className="font-semibold text-2xl">Chat</h1>
-            <ContextDrawer about={ABOUT_TEXT} memory={MEMORY_ITEMS} />
-          </div>
-          <ChatBoxSimple initialMessages={INITIAL_MESSAGES} />
-        </div>
+  // Load conversation for current session
+  const initialMessages = mockConversations[currentSessionId] || INITIAL_MESSAGES;
+
+  // Force remount when session changes
+  useEffect(() => {
+    setKey(prev => prev + 1);
+  }, [currentSessionId]);
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Header with mode toggle and context */}
+      <div className="flex h-16 items-center justify-between border-b px-4 md:px-6">
+        <ChatModeToggle mode={chatMode} onModeChange={setChatMode} />
+        <h1 className="font-semibold text-xl">Message Glen AI</h1>
+        <ContextDrawer about={ABOUT_TEXT} />
       </div>
+
+      {/* Chat container - full height with fixed input */}
+      <div className="flex-1 overflow-hidden">
+        <ChatContainer
+          key={key}
+          initialMessages={initialMessages}
+          enableVoiceDemo={chatMode === "voice"}
+          onAvatarStateChange={setAvatarState}
+          onAvatarTextChange={setAvatarText}
+        />
+      </div>
+
+      {/* Avatar Dock for voice demo - only show in voice mode */}
+      {chatMode === "voice" && (
+        <AvatarDock state={avatarState} text={avatarText} />
+      )}
     </div>
   );
 }

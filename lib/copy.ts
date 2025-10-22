@@ -32,7 +32,12 @@ export const copy = {
       {
         label: "Chat",
         href: "/chat",
-        description: "Conversational interface with context memory",
+        description: "Clean chat interface with voice simulation",
+      },
+      {
+        label: "Avatar Experience",
+        href: "/avatar",
+        description: "Full multimodal chat (text, voice, video)",
       },
       {
         label: "CMS",

@@ -13,8 +13,18 @@ export async function middleware(request: NextRequest) {
     return new Response("pong", { status: 200 });
   }
 
-  // Allow public access to landing page
+  // Allow public access to landing page and demo routes
   if (pathname === "/") {
+    return NextResponse.next();
+  }
+
+  // Allow public access to demo routes
+  if (pathname.startsWith("/demo/")) {
+    return NextResponse.next();
+  }
+
+  // Allow public access to avatar experience
+  if (pathname.startsWith("/avatar-experience")) {
     return NextResponse.next();
   }
 

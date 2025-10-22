@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import type { RefObject } from "react";
+import { cn } from "@/lib/utils";
 
 export function FullScreenOrb({
   state = "idle",
@@ -13,6 +13,7 @@ export function FullScreenOrb({
   showAvatar = false,
   videoRef,
   isConnected = false,
+  preferPhoto = false,
 }: {
   state?: "idle" | "listening" | "thinking" | "speaking";
   text?: string;
@@ -21,6 +22,7 @@ export function FullScreenOrb({
   showAvatar?: boolean;
   videoRef?: RefObject<HTMLVideoElement>;
   isConnected?: boolean;
+  preferPhoto?: boolean;
 }) {
   const getStateClasses = () => {
     const baseClasses =
@@ -30,15 +32,12 @@ export function FullScreenOrb({
       case "listening":
         return cn(
           baseClasses,
-          "ring-2 ring-primary animate-pulse shadow-lg shadow-primary/30"
+          "animate-pulse shadow-md shadow-primary/30 ring-2 ring-primary"
         );
       case "thinking":
-        return cn(baseClasses, "shadow-lg shadow-primary/20");
+        return cn(baseClasses, "shadow-md shadow-primary/20");
       case "speaking":
-        return cn(
-          baseClasses,
-          "shadow-2xl shadow-primary/40 animate-glenPulse"
-        );
+        return cn(baseClasses, "animate-glenPulse shadow-lg shadow-primary/40");
       default:
         return cn(baseClasses, "shadow-md shadow-primary/10");
     }
@@ -46,8 +45,12 @@ export function FullScreenOrb({
 
   const getResponsiveSize = () => {
     if (typeof window !== "undefined") {
-      if (window.innerWidth < 640) return Math.min(size * 0.7, 280);
-      if (window.innerWidth < 1024) return Math.min(size * 0.8, 320);
+      if (window.innerWidth < 640) {
+        return Math.min(size * 0.7, 280);
+      }
+      if (window.innerWidth < 1024) {
+        return Math.min(size * 0.8, 320);
+      }
     }
     return size;
   };
@@ -60,18 +63,18 @@ export function FullScreenOrb({
       <AnimatePresence mode="wait">
         {text && state === "speaking" && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            className="absolute bottom-full z-30 mb-8 max-w-[90vw] sm:max-w-lg"
             exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3 }}
-            className="absolute bottom-full mb-8 max-w-[90vw] sm:max-w-lg z-30"
           >
-            <div className="relative rounded-xl bg-card p-4 shadow-lg border border-border/50 backdrop-blur-sm max-h-[50vh] overflow-y-auto">
-              <p className="text-sm sm:text-base text-card-foreground leading-relaxed">
+            <div className="relative max-h-[50vh] overflow-y-auto rounded-xl border border-border/50 bg-card p-4 shadow-lg backdrop-blur-sm">
+              <p className="text-card-foreground text-sm leading-relaxed sm:text-base">
                 {text}
               </p>
               {/* Arrow pointing down */}
-              <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 rotate-45 bg-card border-r border-b border-border/50" />
+              <div className="-translate-x-1/2 -bottom-2 absolute left-1/2 h-4 w-4 rotate-45 border-border/50 border-r border-b bg-card" />
             </div>
           </motion.div>
         )}
@@ -79,16 +82,6 @@ export function FullScreenOrb({
 
       {/* Main Orb */}
       <motion.div
-        className={getStateClasses()}
-        style={{
-          width: orbSize,
-          height: orbSize,
-          // Enhanced styling for speaking state
-          ...(state === "speaking" && {
-            boxShadow:
-              "0 0 60px var(--primary), 0 0 120px var(--primary), 0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-          }),
-        }}
         animate={
           state === "speaking"
             ? {
@@ -100,37 +93,47 @@ export function FullScreenOrb({
                 ],
               }
             : state === "idle"
-            ? {
-                scale: [1, 1.02, 1],
-              }
-            : {}
+              ? {
+                  scale: [1, 1.02, 1],
+                }
+              : {}
         }
+        aria-label={`Avatar state: ${state}`}
+        aria-live="polite"
+        className={getStateClasses()}
+        style={{
+          width: orbSize,
+          height: orbSize,
+          // Enhanced styling for speaking state
+          ...(state === "speaking" && {
+            boxShadow:
+              "0 0 60px var(--primary), 0 0 120px var(--primary), 0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+          }),
+        }}
         transition={
           state === "speaking"
             ? {
                 rotate: {
                   duration: 10,
-                  repeat: Infinity,
+                  repeat: Number.POSITIVE_INFINITY,
                   ease: "linear",
                 },
                 background: {
                   duration: 3,
-                  repeat: Infinity,
+                  repeat: Number.POSITIVE_INFINITY,
                   ease: "easeInOut",
                 },
               }
             : state === "idle"
-            ? {
-                scale: {
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                },
-              }
-            : {}
+              ? {
+                  scale: {
+                    duration: 3,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  },
+                }
+              : {}
         }
-        aria-live="polite"
-        aria-label={`Avatar state: ${state}`}
       >
         {/* Inner glow effect */}
         <div
@@ -140,64 +143,64 @@ export function FullScreenOrb({
           }}
         />
 
-        {/* HeyGen Video Stream - shown when connected */}
-        {showAvatar && isConnected && videoRef && (
+        {/* HeyGen Video Stream - shown when connected unless preferPhoto */}
+        {showAvatar && isConnected && videoRef && !preferPhoto && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="relative rounded-full overflow-hidden"
+            className="relative overflow-hidden rounded-full"
+            initial={{ opacity: 0, scale: 0.8 }}
             style={{
               width: orbSize * 0.85,
               height: orbSize * 0.85,
             }}
+            transition={{ duration: 0.5 }}
           >
             <video
-              ref={videoRef}
               autoPlay
+              className="h-full w-full object-cover"
               playsInline
-              className="w-full h-full object-cover"
+              ref={videoRef}
             >
               <track kind="captions" />
             </video>
           </motion.div>
         )}
 
-        {/* Glen's Avatar Photo - shown when idle/not connected in avatar mode */}
-        {showAvatar && !isConnected && state === "idle" && (
+        {/* Glen's Avatar Photo - shown when preferPhoto or when idle/not connected */}
+        {showAvatar && (preferPhoto || (!isConnected && state === "idle")) && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="relative rounded-full overflow-hidden"
+            className="relative overflow-hidden rounded-full"
+            initial={{ opacity: 0, scale: 0.8 }}
             style={{
               width: orbSize * 0.85,
               height: orbSize * 0.85,
             }}
+            transition={{ duration: 0.5 }}
           >
             <Image
-              src="/Glen-Tullman2.jpg"
               alt="Glen Tullman"
-              fill
               className="object-cover"
+              fill
               priority
+              src="/Glen-Tullman2.jpg"
             />
           </motion.div>
         )}
 
         {/* Thinking dots */}
         {state === "thinking" && (
-          <div className="flex gap-2 items-center justify-center">
-            {[0, 120, 240].map((delay, i) => (
+          <div className="flex items-center justify-center gap-2">
+            {[0, 120, 240].map((delay) => (
               <motion.div
-                key={i}
-                className="size-3 rounded-full bg-primary-foreground"
                 animate={{
                   y: [-8, 0, -8],
                 }}
+                className="size-3 rounded-full bg-primary-foreground"
+                key={delay}
                 transition={{
                   duration: 0.6,
-                  repeat: Infinity,
+                  repeat: Number.POSITIVE_INFINITY,
                   delay: delay / 1000,
                   ease: "easeInOut",
                 }}

@@ -52,11 +52,13 @@ const DEFAULT_CONFIG: StartAvatarRequest = {
 interface InteractiveAvatarProps {
   suggestedQuestion: string | null;
   setSelectedSuggestedQuestion: (question: string | null) => void;
+  onSessionStart?: () => void;
 }
 
 function InteractiveAvatar({
   suggestedQuestion,
   setSelectedSuggestedQuestion,
+  onSessionStart,
 }: InteractiveAvatarProps) {
   const { initAvatar, startAvatar, stopAvatar, sessionState, stream } =
     useStreamingAvatarSession();
@@ -92,13 +94,18 @@ function InteractiveAvatar({
 
   const StartAvatarButton = () => {
     return (
-      <div className="flex flex-col items-center justify-center w-full h-full bg-card text-zinc-400">
-        <div className="text-lg font-medium mb-4 text-foreground">
-          Click Start to begin avatar session
+      <div className="flex flex-col items-center justify-center w-full h-full bg-card gap-8">
+        <div className="relative w-48 h-48 rounded-full overflow-hidden">
+          <img
+            src="/images/glen-avatar.png"
+            alt="Glen Tullman"
+            className="w-full h-full object-cover"
+          />
         </div>
         <Button
           variant="default"
           size="lg"
+          className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg rounded-full"
           onClick={() => {
             setSelectedSuggestedQuestion(null);
             startSessionV2(true);
@@ -150,6 +157,11 @@ function InteractiveAvatar({
       });
 
       await startAvatar(DEFAULT_CONFIG);
+
+      // Notify parent that session has started
+      if (onSessionStart) {
+        onSessionStart();
+      }
 
       if (suggestedQuestion) {
         setTimeout(async () => {
@@ -224,20 +236,23 @@ function InteractiveAvatar({
   );
 }
 
-interface InteractiveAvatarProps {
+interface InteractiveAvatarWrapperProps {
   setSelectedSuggestedQuestion: (question: string | null) => void;
   suggestedQuestion: string | null;
+  onSessionStart?: () => void;
 }
 
 export default function InteractiveAvatarWrapper({
   suggestedQuestion,
   setSelectedSuggestedQuestion,
-}: InteractiveAvatarProps) {
+  onSessionStart,
+}: InteractiveAvatarWrapperProps) {
   return (
     <StreamingAvatarProvider>
       <InteractiveAvatar
         suggestedQuestion={suggestedQuestion}
         setSelectedSuggestedQuestion={setSelectedSuggestedQuestion}
+        onSessionStart={onSessionStart}
       />
     </StreamingAvatarProvider>
   );

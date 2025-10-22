@@ -84,19 +84,32 @@ export type AuditItem = {
 };
 
 // User management types
-export type UserRole = "Admin" | "Editor" | "Viewer";
+export type PlatformRole = "platform_admin" | "user";
 
 export type User = {
   id: string;
   name: string;
-  email?: string;
-  role: UserRole;
-  access: string;
+  email: string;
+  platformRole: PlatformRole; // Platform-level access (admin can manage everything, user is default)
   lastActive: string;
+  twinAssignments?: string[]; // Array of twin IDs this user has access to (via TwinPermission)
 };
 
 // Twins
 export type TwinStatus = "active" | "draft" | "placeholder";
+
+export type TrainingStatus = "not_started" | "in_progress" | "complete";
+
+export type TwinCapabilities = {
+  text: boolean;
+  voice: boolean;
+  avatar: boolean;
+};
+
+export type TwinPermission = {
+  userId: string;
+  role: "owner" | "editor" | "viewer"; // owner: full control, editor: can modify, viewer: read-only
+};
 
 export type Twin = {
   id: string;
@@ -104,4 +117,12 @@ export type Twin = {
   status: TwinStatus;
   description?: string;
   createdAt?: string;
+  knowledgeSources?: string[]; // Doc IDs from knowledge base
+  capabilities?: TwinCapabilities;
+  trainingStatus?: TrainingStatus;
+  avatarId?: string; // HeyGen avatar ID
+  voiceId?: string; // Voice model ID
+  primarySource?: string; // Initial knowledge source type
+  permissions?: TwinPermission[]; // Users who can access/edit this twin
+  ownerId?: string; // Primary owner user ID
 };

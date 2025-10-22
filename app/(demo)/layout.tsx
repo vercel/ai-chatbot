@@ -1,14 +1,17 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import RouteTransition from "@/components/RouteTransition";
-import SidebarNav from "@/components/SidebarNav";
+import DemoLayoutClient from "@/components/DemoLayoutClient";
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | Glen AI",
+    default: "Demo | Glen AI",
+  },
+  description: "Glen AI prototype - healthcare leadership AI twin",
+};
 
 export default function DemoLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex h-screen">
-      <SidebarNav />
-      <main className="flex-1 overflow-auto p-6">
-        <RouteTransition>{children}</RouteTransition>
-      </main>
-    </div>
-  );
+  return <DemoLayoutClient>{children}</DemoLayoutClient>;
 }

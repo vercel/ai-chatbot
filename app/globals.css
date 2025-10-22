@@ -25,6 +25,12 @@
   --accent-cyan: hsl(195 70% 60%);
   --accent-indigo: hsl(245 60% 70%);
 
+  /* Transcarent-inspired colors */
+  --transcarent-blue: hsl(245 60% 55%);
+  --transcarent-blue-dark: hsl(245 60% 48%);
+  --transcarent-gold: hsl(30 80% 65%);
+  --transcarent-gold-dark: hsl(30 80% 58%);
+
   /* Semantic mappings */
   --background: hsl(0 0% 100%);
   --foreground: var(--ink);
@@ -77,6 +83,12 @@
   /* Accent colors */
   --accent-cyan: hsl(195 70% 60%);
   --accent-indigo: hsl(245 60% 70%);
+
+  /* Transcarent-inspired colors - dark mode */
+  --transcarent-blue: hsl(245 60% 60%);
+  --transcarent-blue-dark: hsl(245 60% 52%);
+  --transcarent-gold: hsl(30 80% 65%);
+  --transcarent-gold-dark: hsl(30 80% 58%);
 
   /* Semantic mappings */
   --background: hsl(220 15% 10%);

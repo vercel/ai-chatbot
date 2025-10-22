@@ -72,6 +72,12 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <a
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:shadow focus:outline-none focus:ring-2 focus:ring-ring"
+          href="#content"
+        >
+          Skip to content
+        </a>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -79,7 +85,9 @@ export default function RootLayout({
           enableSystem
         >
           <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>
+            <main id="content">{children}</main>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

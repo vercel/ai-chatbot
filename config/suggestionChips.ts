@@ -1,6 +1,28 @@
 import { SuggestionChip } from '@/components/SuggestionChips';
 
 export const suggestionChips: SuggestionChip[] = [
+  // Onboarding
+  {
+    id: 'healthcare-philosophy',
+    text: "Tell me about your healthcare philosophy",
+    category: 'leadership'
+  },
+  {
+    id: 'priorities-2025',
+    text: "What are your priorities for 2025?",
+    category: 'strategy'
+  },
+  {
+    id: 'ai-healthcare',
+    text: "How do you think about AI in healthcare?",
+    category: 'strategy'
+  },
+  {
+    id: 'entrepreneur-advice',
+    text: "What advice do you have for entrepreneurs?",
+    category: 'leadership'
+  },
+
   // Leadership
   {
     id: 'never-codified',

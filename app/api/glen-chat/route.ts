@@ -33,10 +33,12 @@ Rules:
 - If asked about personal life, redirect to professional insights
 `;
 
+import { logger } from '@/lib/logger';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log('Received body:', JSON.stringify(body, null, 2));
+    logger.debug('Received body:', JSON.stringify(body, null, 2));
 
     const { messages = [], history = [] } = body;
 
@@ -46,11 +48,11 @@ export async function POST(req: Request) {
       ? latestMessage.parts.map((p: any) => p.text).join('')
       : latestMessage?.content || '';
 
-    console.log('Extracted message content:', messageContent);
-    console.log('History length:', history.length);
+    logger.debug('Extracted message content:', messageContent);
+    logger.debug('History length:', history.length);
 
     if (!messageContent) {
-      console.error('No message content found');
+      logger.error('No message content found');
       return new Response('No message content provided', { status: 400 });
     }
 

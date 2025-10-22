@@ -51,8 +51,7 @@ export const requestSuggestions = ({
       });
 
       for await (const element of elementStream) {
-        // @ts-expect-error todo: fix type
-        const suggestion: Suggestion = {
+        const suggestion: Omit<Suggestion, "documentCreatedAt" | "userId" | "createdAt"> = {
           originalText: element.originalSentence,
           suggestedText: element.suggestedSentence,
           description: element.description,
