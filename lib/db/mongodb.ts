@@ -40,7 +40,7 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    if (cached) {
+    if (cached && MONGODB_URI) {
       cached.promise = mongoose.connect(MONGODB_URI, opts);
     }
   }

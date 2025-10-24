@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/noUnusedImports: <explanation> */
 import "server-only";
 
 import type { ArtifactKind } from "@/components/artifact";
@@ -13,7 +12,6 @@ import {
   type Document,
   DocumentModel,
   MessageModel,
-  type Stream,
   StreamModel,
   type Suggestion,
   SuggestionModel,
@@ -153,7 +151,9 @@ export async function getChatsByUserId({
           `Chat with id ${startingAfter} not found`
         );
       }
-      query = query.where({ createdAt: { $lt: selectedChat.createdAt } });
+      query = query.where({
+        createdAt: { $lt: (selectedChat as any).createdAt },
+      });
     } else if (endingBefore) {
       // Find the chat to end before
       const selectedChat = await ChatModel.findOne({ id: endingBefore }).lean();
@@ -163,7 +163,9 @@ export async function getChatsByUserId({
           `Chat with id ${endingBefore} not found`
         );
       }
-      query = query.where({ createdAt: { $gt: selectedChat.createdAt } });
+      query = query.where({
+        createdAt: { $gt: (selectedChat as any).createdAt },
+      });
     }
 
     const chats = await query
