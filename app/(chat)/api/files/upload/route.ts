@@ -72,11 +72,17 @@ export async function POST(request: Request) {
         addRandomSuffix: true,
       });
 
-      return NextResponse.json({ url: result.url, pathname: result.pathname, contentType: result.contentType });
+      return NextResponse.json({
+        url: result.url,
+        pathname: result.pathname,
+        contentType: result.contentType,
+      });
     } catch (error) {
       // Provide error message during development for easier debugging
       const message =
-        error instanceof Error ? error.message : "Upload failed due to unknown error";
+        error instanceof Error
+          ? error.message
+          : "Upload failed due to unknown error";
       if (process.env.NODE_ENV === "development") {
         console.error("Upload error:", error);
       }
@@ -86,7 +92,8 @@ export async function POST(request: Request) {
     if (process.env.NODE_ENV === "development") {
       console.error("Failed to process upload request:", error);
     }
-    const message = error instanceof Error ? error.message : "Failed to process request";
+    const message =
+      error instanceof Error ? error.message : "Failed to process request";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
