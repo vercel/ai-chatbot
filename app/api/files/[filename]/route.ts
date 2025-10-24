@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { exists, getFileStream } from "@/lib/storage/local";
 
-export function GET(
+export async function GET(
   _request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    const { filename } = params;
+    const { filename } = await params;
 
     // Security check: prevent directory traversal
     if (
