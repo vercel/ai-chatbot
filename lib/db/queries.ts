@@ -487,6 +487,27 @@ export async function createStreamId({
   }
 }
 
+export async function getStreamIdsByChatId({
+  chatId,
+}: {
+  chatId: string;
+}): Promise<string[]> {
+  try {
+    await ensureConnection();
+    const streams = await StreamModel.find({ chatId })
+      .sort({ createdAt: 1 })
+      .select("id")
+      .lean();
+
+    return streams.map((stream) => stream.id);
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get stream IDs by chat ID"
+    );
+  }
+}
+
 // Suggestion-related functions (keeping for compatibility)
 export async function saveSuggestions({
   suggestions,
