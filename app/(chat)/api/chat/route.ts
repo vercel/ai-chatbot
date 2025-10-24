@@ -121,8 +121,11 @@ export async function POST(request: Request) {
     });
 
     // Skip rate limiting in development mode
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    if (!isDevelopment && messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    const isDevelopment = process.env.NODE_ENV === "development";
+    if (
+      !isDevelopment &&
+      messageCount > entitlementsByUserType[userType].maxMessagesPerDay
+    ) {
       return new ChatSDKError("rate_limit:chat").toResponse();
     }
 
