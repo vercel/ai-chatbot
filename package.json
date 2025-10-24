@@ -46,6 +46,7 @@
     "clsx": "^2.1.1",
     "codemirror": "^6.0.1",
     "date-fns": "^4.1.0",
+    "dd-trace": "^5.73.0",
     "diff-match-patch": "^1.0.5",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.34.0",

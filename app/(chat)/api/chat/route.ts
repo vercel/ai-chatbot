@@ -200,7 +200,7 @@ export async function POST(request: Request) {
             }),
           },
           experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
+            isEnabled: true,
             functionId: "stream-text",
           },
           onFinish: async ({ usage }) => {
