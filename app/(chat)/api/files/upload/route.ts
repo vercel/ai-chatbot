@@ -5,15 +5,24 @@ import { auth } from "@/app/(auth)/auth";
 import { upload } from "@/lib/storage/local";
 
 // Use Blob instead of File since File is not available in Node.js environment
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "text/plain",
+];
+
 const FileSchema = z.object({
   file: z
     .instanceof(Blob)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: "File size should be less than 5MB",
+    .refine((file) => file.size <= 8 * 1024 * 1024, {
+      message: "File size should be less than 8MB",
     })
     // Update the file type based on the kind of files you want to accept
-    .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
-      message: "File type should be JPEG or PNG",
+    .refine((file) => ALLOWED_TYPES.includes(file.type), {
+      message: `File type should be one of: ${ALLOWED_TYPES.join(", ")}`,
     }),
 });
 
@@ -30,14 +39,16 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as Blob;
+    const fileBlob = formData.get("file");
 
-    if (!file) {
+    if (!fileBlob) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const validatedFile = FileSchema.safeParse({ file });
+    // Some runtimes will provide a File object (with name), others only a Blob.
+    const file = fileBlob as Blob;
 
+    const validatedFile = FileSchema.safeParse({ file });
     if (!validatedFile.success) {
       const errorMessage = validatedFile.error.errors
         .map((error) => error.message)
@@ -46,8 +57,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    // Get filename from formData since Blob doesn't have name property
-    const filename = (formData.get("file") as File).name;
+    // Try to read filename; fallback to a generated one
+    let filename = "upload";
+    try {
+      const maybeFile = fileBlob as File;
+      filename = maybeFile.name || filename;
+    } catch (_) {
+      // ignore and use fallback
+    }
 
     try {
       const result = await upload(filename, file, {
@@ -55,14 +72,21 @@ export async function POST(request: Request) {
         addRandomSuffix: true,
       });
 
-      return NextResponse.json({ url: result.url });
-    } catch (_error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      return NextResponse.json({ url: result.url, pathname: result.pathname, contentType: result.contentType });
+    } catch (error) {
+      // Provide error message during development for easier debugging
+      const message =
+        error instanceof Error ? error.message : "Upload failed due to unknown error";
+      if (process.env.NODE_ENV === "development") {
+        console.error("Upload error:", error);
+      }
+      return NextResponse.json({ error: message }, { status: 500 });
     }
-  } catch (_error) {
-    return NextResponse.json(
-      { error: "Failed to process request" },
-      { status: 500 }
-    );
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to process upload request:", error);
+    }
+    const message = error instanceof Error ? error.message : "Failed to process request";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

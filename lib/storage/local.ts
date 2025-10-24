@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
+import { Readable } from "node:stream";
 import { generateUUID } from "../utils";
 
 // Configuration
@@ -77,9 +78,10 @@ export async function upload(
       );
     }
 
-    // Write file
-    const writeStream = createWriteStream(filePath);
-    await pipeline(Buffer.from(buffer), writeStream);
+  // Write file using a Readable so pipeline receives a stream
+  const writeStream = createWriteStream(filePath);
+  const readable = Readable.from(buffer);
+  await pipeline(readable, writeStream);
 
     // Return result
     const result: FileUploadResult = {
