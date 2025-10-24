@@ -1,4 +1,5 @@
 import equal from "fast-deep-equal";
+import { Copy, PencilLine, ThumbsDown, ThumbsUp } from "lucide-react";
 import { memo } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
@@ -6,7 +7,6 @@ import { useCopyToClipboard } from "usehooks-ts";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { Action, Actions } from "./elements/actions";
-import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
 
 export function PureMessageActions({
   chatId,
@@ -55,11 +55,11 @@ export function PureMessageActions({
               onClick={() => setMode("edit")}
               tooltip="Edit"
             >
-              <PencilEditIcon />
+              <PencilLine />
             </Action>
           )}
           <Action onClick={handleCopy} tooltip="Copy">
-            <CopyIcon />
+            <Copy />
           </Action>
         </div>
       </Actions>
@@ -69,7 +69,7 @@ export function PureMessageActions({
   return (
     <Actions className="-ml-0.5">
       <Action onClick={handleCopy} tooltip="Copy">
-        <CopyIcon />
+        <Copy />
       </Action>
 
       <Action
@@ -118,7 +118,7 @@ export function PureMessageActions({
         }}
         tooltip="Upvote Response"
       >
-        <ThumbUpIcon />
+        <ThumbsUp />
       </Action>
 
       <Action
@@ -167,7 +167,7 @@ export function PureMessageActions({
         }}
         tooltip="Downvote Response"
       >
-        <ThumbDownIcon />
+        <ThumbsDown />
       </Action>
     </Actions>
   );
