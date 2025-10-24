@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Attachment } from "@/lib/types";
 import { Loader } from "./elements/loader";
 import { CrossSmallIcon } from "./icons";
@@ -17,16 +16,17 @@ export const PreviewAttachment = ({
 
   return (
     <div
-      className="group relative size-28 overflow-hidden rounded-lg border bg-muted"
+      className="group relative size-64 overflow-hidden rounded-lg border bg-muted"
       data-testid="input-attachment-preview"
     >
       {contentType?.startsWith("image") ? (
-        <Image
+        // biome-ignore lint/nursery/useImageSize: "We want original quality without optimization"
+        // biome-ignore lint/performance/noImgElement: "Using img to avoid Next.js optimization"
+        <img
           alt={name ?? "An image attachment"}
           className="size-full object-cover"
-          height={64}
+          loading="lazy"
           src={url}
-          width={64}
         />
       ) : (
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs" />

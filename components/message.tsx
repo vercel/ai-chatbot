@@ -71,19 +71,18 @@ const PurePreviewMessage = ({
               (p) => p.type === "text" && p.text?.trim()
             ),
             "min-h-96": message.role === "assistant" && requiresScrollPadding,
-            "w-full":
-              (message.role === "assistant" &&
-                message.parts?.some(
-                  (p) => p.type === "text" && p.text?.trim()
-                )) ||
-              mode === "edit",
-            "max-w-[calc(100%-2.5rem)] sm:max-w-[min(fit-content,80%)]":
+            "w-full items-start":
+              message.role === "assistant" || mode === "edit",
+            "max-w-[calc(100%-2.5rem)] items-end sm:max-w-[min(fit-content,80%)]":
               message.role === "user" && mode !== "edit",
           })}
         >
           {attachmentsFromMessage.length > 0 && (
             <div
-              className="flex flex-row justify-end gap-2"
+              className={cn("flex flex-row gap-2", {
+                "justify-end": message.role === "user",
+                "justify-start": message.role === "assistant",
+              })}
               data-testid={"message-attachments"}
             >
               {attachmentsFromMessage.map((attachment) => (
@@ -116,12 +115,18 @@ const PurePreviewMessage = ({
             if (type === "text") {
               if (mode === "view") {
                 return (
-                  <div key={key}>
+                  <div
+                    className={cn({
+                      "flex justify-end": message.role === "user",
+                      "flex justify-start": message.role === "assistant",
+                    })}
+                    key={key}
+                  >
                     <MessageContent
                       className={cn({
-                        "w-fit break-words rounded-2xl px-3 py-2 text-right text-white":
+                        "w-fit max-w-xs break-words rounded-2xl px-3 py-2 text-right text-white sm:max-w-md":
                           message.role === "user",
-                        "bg-transparent px-0 py-0 text-left":
+                        "w-full bg-transparent px-0 py-0 text-left":
                           message.role === "assistant",
                       })}
                       data-testid="message-content"

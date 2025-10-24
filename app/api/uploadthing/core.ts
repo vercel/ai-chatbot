@@ -15,11 +15,11 @@ export const ourFileRouter = {
   // Define as many FileRoutes as you like, each with a unique routeSlug
   imageUploader: f({
     image: {
-      maxFileSize: "8MB",
+      maxFileSize: "32MB",
       maxFileCount: 1,
     },
     pdf: {
-      maxFileSize: "8MB",
+      maxFileSize: "16MB",
       maxFileCount: 1,
     },
     text: {

@@ -22,8 +22,8 @@ const ALLOWED_TYPES = [
 const FileSchema = z.object({
   file: z
     .instanceof(Blob)
-    .refine((file) => file.size <= 8 * 1024 * 1024, {
-      message: "File size should be less than 8MB",
+    .refine((file) => file.size <= 32 * 1024 * 1024, {
+      message: "File size should be less than 32MB",
     })
     // Update the file type based on the kind of files you want to accept
     .refine((file) => ALLOWED_TYPES.includes(file.type), {
