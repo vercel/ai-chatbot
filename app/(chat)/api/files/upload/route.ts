@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
+import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
-import { upload } from "@/lib/storage/local";
+
+// Initialize UTApi with explicit token from environment
+const utapi = new UTApi({
+  token: process.env.UPLOADTHING_TOKEN,
+});
 
 // Use Blob instead of File since File is not available in Node.js environment
 const ALLOWED_TYPES = [
@@ -67,16 +72,27 @@ export async function POST(request: Request) {
     }
 
     try {
-      const result = await upload(filename, file, {
-        contentType: file.type,
-        addRandomSuffix: true,
+      // Create a File object for UploadThing
+      const uploadFile = new File([file], filename, {
+        type: file.type,
       });
 
-      return NextResponse.json({
-        url: result.url,
-        pathname: result.pathname,
-        contentType: result.contentType,
-      });
+      // Upload to UploadThing
+      const response = await utapi.uploadFiles([uploadFile]);
+
+      if (response[0]?.data) {
+        const uploadedFile = response[0].data;
+        return NextResponse.json({
+          url: uploadedFile.url,
+          pathname: uploadedFile.name,
+          contentType: file.type,
+          key: uploadedFile.key,
+        });
+      }
+
+      // Handle upload error
+      const error = response[0]?.error;
+      throw new Error(error?.message || "Upload failed");
     } catch (error) {
       // Provide error message during development for easier debugging
       const message =

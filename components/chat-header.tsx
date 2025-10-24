@@ -1,7 +1,6 @@
 "use client";
 
 import { SquarePen } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { useWindowSize } from "usehooks-ts";
