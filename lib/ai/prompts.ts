@@ -183,31 +183,37 @@ Rules:
   /**
    * System prompt for creative writing and brainstorming
    */
-  creative: "You are a creative writing assistant. Help with storytelling, ideation, and creative problem-solving. Be imaginative while maintaining practical value. Encourage exploration of ideas and provide constructive feedback.",
+  creative:
+    "You are a creative writing assistant. Help with storytelling, ideation, and creative problem-solving. Be imaginative while maintaining practical value. Encourage exploration of ideas and provide constructive feedback.",
 };
 
 // Web search augmentation: appended when search context is provided
-export const WEB_SEARCH_GUIDANCE = "\n\nWEB SEARCH GUIDANCE:\n- When web results are provided, use them to ensure factual accuracy.\n- Synthesize information, do not just list links.\n- Cite sources inline using bracketed numbers like [1], [2], etc., referring to the provided results.\n- If results conflict, note the discrepancy and prefer official or recent sources.\n- If no relevant results, proceed with best knowledge and say web results were inconclusive.";
+export const WEB_SEARCH_GUIDANCE =
+  "\n\nWEB SEARCH GUIDANCE:\n- When web results are provided, use them to ensure factual accuracy.\n- Synthesize information, do not just list links.\n- Cite sources inline using bracketed numbers like [1], [2], etc., referring to the provided results.\n- If results conflict, note the discrepancy and prefer official or recent sources.\n- If no relevant results, proceed with best knowledge and say web results were inconclusive.";
 
 /**
  * Configuration for different response styles
  */
 export const RESPONSE_STYLES = {
-  concise: 'Keep responses brief and to the point while maintaining helpfulness.',
-  normal: 'Provide balanced responses with examples and next steps.',
-  detailed: 'Give comprehensive explanations with examples, edge cases, and thorough coverage.',
+  concise:
+    "Keep responses brief and to the point while maintaining helpfulness.",
+  normal: "Provide balanced responses with examples and next steps.",
+  detailed:
+    "Give comprehensive explanations with examples, edge cases, and thorough coverage.",
 };
 
 /**
  * Get the appropriate system prompt based on context
  */
-export function getSystemPrompt(context: 'default' | 'title' | 'code' | 'creative' = 'default'): string {
+export function getSystemPrompt(
+  context: "default" | "title" | "code" | "creative" = "default"
+): string {
   switch (context) {
-    case 'title':
+    case "title":
       return SPECIALIZED_PROMPTS.titleGeneration;
-    case 'code':
+    case "code":
       return SPECIALIZED_PROMPTS.codeAnalysis;
-    case 'creative':
+    case "creative":
       return SPECIALIZED_PROMPTS.creative;
     default:
       return NEO_AI_SYSTEM_PROMPT;
@@ -218,8 +224,8 @@ export function getSystemPrompt(context: 'default' | 'title' | 'code' | 'creativ
  * Apply response style modifier to system prompt
  */
 export function getStyledSystemPrompt(
-  style: keyof typeof RESPONSE_STYLES = 'normal',
-  context: 'default' | 'title' | 'code' | 'creative' = 'default'
+  style: keyof typeof RESPONSE_STYLES = "normal",
+  context: "default" | "title" | "code" | "creative" = "default"
 ): string {
   const basePrompt = getSystemPrompt(context);
   const styleModifier = RESPONSE_STYLES[style];
