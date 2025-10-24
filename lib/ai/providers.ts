@@ -1,10 +1,22 @@
-import { gateway } from "@ai-sdk/gateway";
+import { createMistral } from "@ai-sdk/mistral";
 import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
+
+// Configure Mistral client with API key
+const mistral = createMistral({
+  apiKey: process.env.MISTRAL_API_KEY,
+});
+
+// Add validation for API key in development
+if (!isTestEnvironment && !process.env.MISTRAL_API_KEY) {
+  console.warn(
+    "⚠️  MISTRAL_API_KEY is not configured. Please add your Mistral API key to .env.local"
+  );
+}
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -25,12 +37,12 @@ export const myProvider = isTestEnvironment
     })()
   : customProvider({
       languageModels: {
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
+        "chat-model": mistral("mistral-large-latest"),
         "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
+          model: mistral("mistral-large-latest"),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
+        "title-model": mistral("mistral-small-latest"),
+        "artifact-model": mistral("codestral-latest"),
       },
     });

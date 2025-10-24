@@ -61,17 +61,11 @@ const PurePreviewMessage = ({
       initial={{ opacity: 0 }}
     >
       <div
-        className={cn("flex w-full items-start gap-2 md:gap-3", {
+        className={cn("flex w-full items-start", {
           "justify-end": message.role === "user" && mode !== "edit",
           "justify-start": message.role === "assistant",
         })}
       >
-        {message.role === "assistant" && (
-          <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
-            <SparklesIcon size={14} />
-          </div>
-        )}
-
         <div
           className={cn("flex flex-col", {
             "gap-2 md:gap-4": message.parts?.some(
@@ -322,18 +316,11 @@ export const ThinkingMessage = () => {
       initial={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="flex items-start justify-start gap-3">
-        <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
-          <SparklesIcon size={14} />
-        </div>
-
+      <div className="flex items-start justify-start">
         <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">
-            Thinking...
-          </div>
+          <div className="p-0 text-muted-foreground text-sm">Thinking...</div>
         </div>
       </div>
     </motion.div>
   );
 };
-

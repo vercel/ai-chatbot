@@ -120,7 +120,9 @@ export async function POST(request: Request) {
       differenceInHours: 24,
     });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    // Skip rate limiting in development mode
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (!isDevelopment && messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new ChatSDKError("rate_limit:chat").toResponse();
     }
 
@@ -292,14 +294,13 @@ export async function POST(request: Request) {
       return error.toResponse();
     }
 
-    // Check for Vercel AI Gateway credit card error
+    // Check for Mistral API errors
     if (
       error instanceof Error &&
-      error.message?.includes(
-        "AI Gateway requires a valid credit card on file to service requests"
-      )
+      (error.message?.includes("401") ||
+        error.message?.includes("unauthorized"))
     ) {
-      return new ChatSDKError("bad_request:activate_gateway").toResponse();
+      return new ChatSDKError("unauthorized:auth").toResponse();
     }
 
     console.error("Unhandled error in chat API:", error, { vercelId });
