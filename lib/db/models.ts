@@ -207,11 +207,70 @@ export const SuggestionModel =
 export const StreamModel =
   mongoose.models.Stream || mongoose.model<IStream>("Stream", streamSchema);
 
-// Legacy types for compatibility (match the original Drizzle schema exports)
-export type User = IUser;
-export type Chat = IChat;
-export type DBMessage = IMessage;
-export type Vote = IVote;
-export type Document = IDocument;
-export type Suggestion = ISuggestion;
-export type Stream = IStream;
+// Plain data types for SWR usage (without Mongoose methods)
+export type User = {
+  _id: string;
+  id: string;
+  email: string;
+  password?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type Chat = {
+  _id: string;
+  id: string;
+  createdAt: Date;
+  title: string;
+  userId: string;
+  visibility: "public" | "private";
+  lastContext?: AppUsage | null;
+  updatedAt: Date;
+};
+
+export type DBMessage = {
+  _id: string;
+  id: string;
+  chatId: string;
+  role: string;
+  parts: any;
+  attachments: any;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type Vote = {
+  _id: string;
+  chatId: string;
+  messageId: string;
+  isUpvoted: boolean;
+};
+
+export type Document = {
+  _id: string;
+  id: string;
+  createdAt: Date;
+  title: string;
+  content?: string;
+  kind: "text" | "code" | "image" | "sheet";
+  userId: string;
+};
+
+export type Suggestion = {
+  _id: string;
+  id: string;
+  documentId: string;
+  documentCreatedAt: Date;
+  originalText: string;
+  suggestedText: string;
+  description?: string;
+  isResolved: boolean;
+  userId: string;
+  createdAt: Date;
+};
+
+export type Stream = {
+  _id: string;
+  id: string;
+  externalId: string;
+};

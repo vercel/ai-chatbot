@@ -1,9 +1,10 @@
 import { config } from "dotenv";
-import connectDB from "./mongodb";
 
 config({
   path: ".env.local",
 });
+
+import connectDB from "./mongodb";
 
 const runMigrate = async () => {
   if (!process.env.MONGODB_URI) {

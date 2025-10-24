@@ -88,6 +88,7 @@ export function DocumentPreview({
     ? previewDocument
     : artifact.status === "streaming"
       ? {
+          _id: artifact.documentId,
           title: artifact.title,
           kind: artifact.kind,
           content: artifact.content,

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/useTrimStartEnd: <explanation> */
 import "server-only";
 
 import type { ArtifactKind } from "@/components/artifact";
@@ -202,8 +203,22 @@ export async function getChatById({
 }): Promise<Chat | null> {
   try {
     await ensureConnection();
-    const chat = await ChatModel.findOne({ id }).lean();
-    return chat as unknown as Chat | null;
+    const chat = (await ChatModel.findOne({
+      id,
+    }).lean()) as unknown as Chat | null;
+    if (!chat) {
+      return null;
+    }
+
+    return {
+      id: chat.id,
+      createdAt: chat.createdAt,
+      title: chat.title,
+      userId: chat.userId,
+      visibility: chat.visibility,
+      lastContext: chat.lastContext,
+      updatedAt: chat.updatedAt,
+    } as Chat;
   } catch (_error) {
     throw new ChatSDKError("bad_request:database", "Failed to get chat by id");
   }
@@ -418,7 +433,18 @@ export async function saveDocument({
     });
 
     const savedDoc = await newDocument.save();
-    return [savedDoc.toObject() as Document];
+    const plainDoc = savedDoc.toObject();
+    return [
+      {
+        _id: plainDoc._id.toString(),
+        id: plainDoc.id,
+        createdAt: plainDoc.createdAt,
+        title: plainDoc.title,
+        content: plainDoc.content,
+        kind: plainDoc.kind,
+        userId: plainDoc.userId,
+      },
+    ];
   } catch (_error) {
     throw new ChatSDKError("bad_request:database", "Failed to save document");
   }
@@ -434,7 +460,16 @@ export async function getDocumentsById({
     const documents = await DocumentModel.find({ id })
       .sort({ createdAt: -1 })
       .lean();
-    return documents as unknown as Document[];
+    return (documents as any[]).map((doc: any) => ({
+      _id: doc._id?.toString?.() ?? String(doc._id ?? ""),
+      id: doc.id,
+      createdAt: doc.createdAt,
+      title: doc.title,
+      content: doc.content,
+      kind: doc.kind,
+      userId: doc.userId,
+      updatedAt: doc.updatedAt,
+    }));
   } catch (_error) {
     throw new ChatSDKError(
       "bad_request:database",
@@ -594,7 +629,11 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   }
 }
 
-export async function getDocumentById({ id }: { id: string }) {
+export async function getDocumentById({
+  id,
+}: {
+  id: string;
+}): Promise<Document | null> {
   try {
     await ensureConnection();
 
@@ -603,7 +642,22 @@ export async function getDocumentById({ id }: { id: string }) {
       .sort({ createdAt: -1 })
       .lean();
 
-    return selectedDocument;
+    if (!selectedDocument) {
+      return null;
+    }
+
+    const doc: any = selectedDocument;
+
+    return {
+      _id: doc._id?.toString?.() ?? String(doc._id ?? ""),
+      id: doc.id,
+      createdAt: doc.createdAt,
+      title: doc.title,
+      content: doc.content,
+      kind: doc.kind,
+      userId: doc.userId,
+      updatedAt: doc.updatedAt,
+    } as unknown as Document;
   } catch (error) {
     console.error("Failed to get document by id:", error);
     throw new ChatSDKError(
