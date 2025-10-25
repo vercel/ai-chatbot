@@ -9,6 +9,7 @@ async function geocodeCity(
       `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
     );
 
+    // biome-ignore lint/style/useBlockStatements: <explanation>
     if (!response.ok) return null;
 
     const data = await response.json();

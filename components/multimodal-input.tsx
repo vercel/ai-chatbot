@@ -43,7 +43,6 @@ import {
   StopIcon,
 } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
-import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
 
@@ -85,7 +84,12 @@ function PureMultimodalInput({
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "44px";
+      // Reset height to auto to get the correct scrollHeight
+      textareaRef.current.style.height = "auto";
+      // Set height based on content, with min and max constraints
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const newHeight = Math.min(Math.max(scrollHeight, 44), 200);
+      textareaRef.current.style.height = `${newHeight}px`;
     }
   }, []);
 
@@ -93,7 +97,7 @@ function PureMultimodalInput({
     if (textareaRef.current) {
       adjustHeight();
     }
-  }, [adjustHeight]);
+  }, [adjustHeight, input]);
 
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -124,6 +128,8 @@ function PureMultimodalInput({
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
+    // Adjust height after a brief delay to ensure DOM is updated
+    requestAnimationFrame(adjustHeight);
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -234,16 +240,6 @@ function PureMultimodalInput({
 
   return (
     <div className={cn("relative flex w-full flex-col gap-4", className)}>
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          <SuggestedActions
-            chatId={chatId}
-            selectedVisibilityType={selectedVisibilityType}
-            sendMessage={sendMessage}
-          />
-        )}
-
       <input
         className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
         multiple
@@ -300,9 +296,9 @@ function PureMultimodalInput({
         <div className="flex flex-row items-start gap-1 sm:gap-2">
           <PromptInputTextarea
             autoFocus
-            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
+            className="grow resize-none border-0! border-none! bg-transparent p-2 text-base outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
             data-testid="multimodal-input"
-            disableAutoResize={true}
+            disableAutoResize={false}
             maxHeight={200}
             minHeight={44}
             onChange={handleInput}
@@ -320,23 +316,25 @@ function PureMultimodalInput({
               selectedModelId={selectedModelId}
               status={status}
             />
+          </PromptInputTools>
+
+          <div className="flex items-center gap-1">
             <ModelSelectorCompact
               onModelChange={onModelChange}
               selectedModelId={selectedModelId}
             />
-          </PromptInputTools>
-
-          {status === "submitted" ? (
-            <StopButton setMessages={setMessages} stop={stop} />
-          ) : (
-            <PromptInputSubmit
-              className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-              disabled={!input.trim() || uploadQueue.length > 0}
-              status={status}
-            >
-              <ArrowUpIcon size={14} />
-            </PromptInputSubmit>
-          )}
+            {status === "submitted" ? (
+              <StopButton setMessages={setMessages} stop={stop} />
+            ) : (
+              <PromptInputSubmit
+                className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+                disabled={!input.trim() || uploadQueue.length > 0}
+                status={status}
+              >
+                <ArrowUpIcon size={14} />
+              </PromptInputSubmit>
+            )}
+          </div>
         </PromptInputToolbar>
       </PromptInput>
     </div>

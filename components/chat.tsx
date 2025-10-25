@@ -21,6 +21,7 @@ import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { getChatHistoryPaginationKey } from "./sidebar-history";
+import { SuggestedActions } from "./suggested-actions";
 import { toast } from "./toast";
 
 export function Chat({
@@ -136,38 +137,134 @@ export function Chat({
       <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
         <ChatHeader />
 
-        <Messages
-          chatId={id}
-          isArtifactVisible={isArtifactVisible}
-          isReadonly={isReadonly}
-          messages={messages}
-          regenerate={regenerate}
-          selectedModelId={initialChatModel}
-          setMessages={setMessages}
-          status={status}
-          votes={votes}
-        />
+        {messages.length === 0 ? (
+          // Welcome state - different layout for mobile vs desktop
+          <>
+            {/* Mobile Layout */}
+            <div className="md:hidden flex-1 flex flex-col">
+              {/* Centered greeting */}
+              <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+                <div className="font-semibold text-2xl mb-2">
+                  Hello there!
+                </div>
+                <div className="text-xl text-zinc-500 mb-8">
+                  How can I help you today?
+                </div>
+                
+                {attachments.length === 0 && (
+                  <div className="w-full max-w-3xl px-4">
+                    <SuggestedActions
+                      chatId={id}
+                      selectedVisibilityType={visibilityType}
+                      sendMessage={sendMessage}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Bottom input for mobile */}
+              {!isReadonly && (
+                <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-3xl gap-2 border-t-0 bg-background p-2 mb-2">
+                  <MultimodalInput
+                    attachments={attachments}
+                    chatId={id}
+                    input={input}
+                    messages={messages}
+                    onModelChange={setCurrentModelId}
+                    selectedModelId={currentModelId}
+                    selectedVisibilityType={visibilityType}
+                    sendMessage={sendMessage}
+                    setAttachments={setAttachments}
+                    setInput={setInput}
+                    setMessages={setMessages}
+                    status={status}
+                    stop={stop}
+                    usage={usage}
+                  />
+                </div>
+              )}
+            </div>
 
-        <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background pr-2 pb-3 pl-1 md:pr-4 md:pb-4 md:pl-2">
-          {!isReadonly && (
-            <MultimodalInput
-              attachments={attachments}
+            {/* Desktop Layout */}
+            <div className="hidden md:flex flex-1 flex-col items-center justify-center px-4">
+              <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center px-4 text-center">
+                <div className="font-semibold text-2xl md:text-3xl mb-2">
+                  Hello there!
+                </div>
+                <div className="text-xl text-zinc-500 md:text-2xl mb-8">
+                  How can I help you today?
+                </div>
+                
+                {!isReadonly && (
+                  <div className="w-full max-w-3xl">
+                    <MultimodalInput
+                      attachments={attachments}
+                      chatId={id}
+                      input={input}
+                      messages={messages}
+                      onModelChange={setCurrentModelId}
+                      selectedModelId={currentModelId}
+                      selectedVisibilityType={visibilityType}
+                      sendMessage={sendMessage}
+                      setAttachments={setAttachments}
+                      setInput={setInput}
+                      setMessages={setMessages}
+                      status={status}
+                      stop={stop}
+                      usage={usage}
+                    />
+                    
+                    {attachments.length === 0 && (
+                      <div className="mt-6">
+                        <SuggestedActions
+                          chatId={id}
+                          selectedVisibilityType={visibilityType}
+                          sendMessage={sendMessage}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          // Chat state with messages and bottom input
+          <>
+            <Messages
               chatId={id}
-              input={input}
+              isArtifactVisible={isArtifactVisible}
+              isReadonly={isReadonly}
               messages={messages}
-              onModelChange={setCurrentModelId}
-              selectedModelId={currentModelId}
-              selectedVisibilityType={visibilityType}
-              sendMessage={sendMessage}
-              setAttachments={setAttachments}
-              setInput={setInput}
+              regenerate={regenerate}
+              selectedModelId={initialChatModel}
               setMessages={setMessages}
               status={status}
-              stop={stop}
-              usage={usage}
+              votes={votes}
             />
-          )}
-        </div>
+
+            <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-3xl gap-2 border-t-0 bg-background p-2 mb-2">
+              {!isReadonly && (
+                <MultimodalInput
+                  attachments={attachments}
+                  chatId={id}
+                  input={input}
+                  messages={messages}
+                  onModelChange={setCurrentModelId}
+                  selectedModelId={currentModelId}
+                  selectedVisibilityType={visibilityType}
+                  sendMessage={sendMessage}
+                  setAttachments={setAttachments}
+                  setInput={setInput}
+                  setMessages={setMessages}
+                  status={status}
+                  stop={stop}
+                  usage={usage}
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <Artifact
