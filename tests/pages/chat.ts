@@ -107,7 +107,7 @@ export class ChatPage {
   }
 
   async chooseModelFromSelector(chatModelId: string) {
-    const chatModel = chatModels.find(
+    const chatModel = chatModels().find(
       (currentChatModel) => currentChatModel.id === chatModelId
     );
 

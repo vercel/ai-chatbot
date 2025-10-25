@@ -18,6 +18,17 @@ export default async function Page() {
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("chat-model");
 
+  // Migrate old model IDs to new ones
+  function migrateModelId(modelId: string): string {
+    const migrations: Record<string, string> = {
+      "mistral-large-latest": "mistral-large-2407",
+      "mistral-small-latest": "mistral-small-2409", 
+      "codestral-latest": "codestral-2405"
+    };
+    
+    return migrations[modelId] || modelId;
+  }
+
   if (!modelIdFromCookie) {
     return (
       <>
@@ -34,12 +45,14 @@ export default async function Page() {
     );
   }
 
+  const migratedModelId = migrateModelId(modelIdFromCookie.value);
+
   return (
     <>
       <Chat
         autoResume={false}
         id={id}
-        initialChatModel={modelIdFromCookie.value}
+        initialChatModel={migratedModelId}
         initialMessages={[]}
         isReadonly={false}
         key={id}

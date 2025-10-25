@@ -9,6 +9,7 @@ import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
+import { ArtifactTrigger } from "./artifact-trigger";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
 import {
@@ -199,8 +200,7 @@ const PurePreviewMessage = ({
               }
 
               return (
-                <DocumentPreview
-                  isReadonly={isReadonly}
+                <ArtifactTrigger
                   key={toolCallId}
                   result={part.output}
                 />
@@ -222,13 +222,10 @@ const PurePreviewMessage = ({
               }
 
               return (
-                <div className="relative" key={toolCallId}>
-                  <DocumentPreview
-                    args={{ ...part.output, isUpdate: true }}
-                    isReadonly={isReadonly}
-                    result={part.output}
-                  />
-                </div>
+                <ArtifactTrigger
+                  key={toolCallId}
+                  result={part.output}
+                />
               );
             }
 

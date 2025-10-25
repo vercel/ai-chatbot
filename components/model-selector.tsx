@@ -30,7 +30,7 @@ export function ModelSelector({
   const userType = session.user.type;
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
-  const availableChatModels = chatModels.filter((chatModel) =>
+  const availableChatModels = chatModels().filter((chatModel) =>
     availableChatModelIds.includes(chatModel.id)
   );
 

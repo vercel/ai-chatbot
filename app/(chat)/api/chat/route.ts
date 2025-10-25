@@ -186,11 +186,14 @@ export async function POST(request: Request) {
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
-              ? []
+            (selectedChatModel === "chat-model-reasoning" || selectedChatModel.includes("reasoning"))
+              ? [
+                  "createDocument",
+                  "updateDocument",
+                ]
               : [
                   "getWeather",
-                  "createDocument",
+                  "createDocument", 
                   "updateDocument",
                   "requestSuggestions",
                 ],

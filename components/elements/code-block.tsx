@@ -24,16 +24,23 @@ export type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   language: string;
   showLineNumbers?: boolean;
   children?: ReactNode;
+  title?: string;
+  showLanguage?: boolean;
 };
 
 export const CodeBlock = ({
   code,
   language,
   showLineNumbers = false,
+  title,
+  showLanguage = true,
   className,
   children,
   ...props
-}: CodeBlockProps) => (
+}: CodeBlockProps) => {
+  const displayTitle = title || (showLanguage ? language : undefined);
+  
+  return (
   <CodeBlockContext.Provider value={{ code }}>
     <div
       className={cn(
@@ -42,6 +49,20 @@ export const CodeBlock = ({
       )}
       {...props}
     >
+      {displayTitle && (
+        <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              {displayTitle}
+            </span>
+          </div>
+          {children && (
+            <div className="flex items-center gap-2">
+              {children}
+            </div>
+          )}
+        </div>
+      )}
       <div className="relative">
         <SyntaxHighlighter
           className="overflow-hidden dark:hidden"
@@ -55,8 +76,9 @@ export const CodeBlock = ({
             background: "hsl(var(--background))",
             color: "hsl(var(--foreground))",
             overflowX: "auto",
-            overflowWrap: "break-word",
-            wordBreak: "break-all",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            overflowWrap: "anywhere",
           }}
           language={language}
           lineNumberStyle={{
@@ -81,8 +103,9 @@ export const CodeBlock = ({
             background: "hsl(var(--background))",
             color: "hsl(var(--foreground))",
             overflowX: "auto",
-            overflowWrap: "break-word",
-            wordBreak: "break-all",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            overflowWrap: "anywhere",
           }}
           language={language}
           lineNumberStyle={{
@@ -95,7 +118,7 @@ export const CodeBlock = ({
         >
           {code}
         </SyntaxHighlighter>
-        {children && (
+        {!displayTitle && children && (
           <div className="absolute top-2 right-2 flex items-center gap-2">
             {children}
           </div>
@@ -103,7 +126,8 @@ export const CodeBlock = ({
       </div>
     </div>
   </CodeBlockContext.Provider>
-);
+  );
+};
 
 export type CodeBlockCopyButtonProps = ComponentProps<typeof Button> & {
   onCopy?: () => void;
