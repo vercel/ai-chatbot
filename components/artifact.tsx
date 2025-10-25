@@ -92,7 +92,9 @@ function PureArtifact({
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Document[]>(
-    artifact.documentId !== "init" && artifact.status !== "streaming"
+    artifact.documentId !== "init" && 
+    !artifact.documentId.startsWith("local-") && 
+    artifact.status !== "streaming"
       ? `/api/document?id=${artifact.documentId}`
       : null,
     fetcher
@@ -252,7 +254,7 @@ function PureArtifact({
   }
 
   useEffect(() => {
-    if (artifact.documentId !== "init" && artifactDefinition.initialize) {
+    if (artifact.documentId !== "init" && !artifact.documentId.startsWith("local-") && artifactDefinition.initialize) {
       artifactDefinition.initialize({
         documentId: artifact.documentId,
         setMetadata,

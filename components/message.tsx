@@ -2,14 +2,67 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
-import { ArtifactTrigger } from "./artifact-trigger";
+import { useArtifact } from "@/hooks/use-artifact";
+
+const ArtifactTrigger = ({ result }: { result: any }) => {
+  const { setArtifact } = useArtifact();
+
+  useEffect(() => {
+    if (!result) return;
+
+    // If result looks like an error object
+    if (result && typeof result === "object" && "error" in result) {
+      return;
+    }
+
+    // If result contains a document-like shape, prepare the artifact but keep it hidden
+    if (result && typeof result === "object" && result.id) {
+      setArtifact({
+        title: result.title || "Document",
+        documentId: result.id,
+        kind: result.kind || "text",
+        content: result.content || "",
+        isVisible: false, // Keep hidden until user clicks "Run Code"
+        status: "idle",
+        boundingBox: {
+          top: 0,
+          left: 0,
+          width: 400,
+          height: 300,
+        },
+      });
+    }
+  }, [result, setArtifact]);
+
+  if (!result) return null;
+
+  // If result looks like an error object
+  if (result && typeof result === "object" && "error" in result) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50">
+        Error: {String((result as any).error)}
+      </div>
+    );
+  }
+
+  // Show a clean message that an artifact was prepared
+  return (
+    <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-700 dark:bg-blue-950/50">
+      <div className="font-medium">Document Created</div>
+      <div className="text-sm opacity-80">
+        {result?.title ? `"${result.title}"` : "A new document"} has been prepared. 
+        {result?.kind === "code" && " Click 'Run Code' on any code block to view it."}
+      </div>
+    </div>
+  );
+};
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
 import {
@@ -72,7 +125,7 @@ const PurePreviewMessage = ({
               (p) => p.type === "text" && p.text?.trim()
             ),
             "min-h-96": message.role === "assistant" && requiresScrollPadding,
-            "w-full items-start":
+            "w-full max-w-full items-start overflow-hidden":
               message.role === "assistant" || mode === "edit",
             "max-w-[calc(100%-2.5rem)] items-end sm:max-w-[min(fit-content,80%)]":
               message.role === "user" && mode !== "edit",
@@ -127,7 +180,7 @@ const PurePreviewMessage = ({
                       className={cn({
                         "w-fit max-w-xs break-words rounded-2xl px-3 py-2 text-right text-white sm:max-w-md":
                           message.role === "user",
-                        "w-full bg-transparent px-0 py-0 text-left":
+                        "w-full bg-transparent px-0 py-0 text-left max-w-none overflow-hidden break-words":
                           message.role === "assistant",
                       })}
                       data-testid="message-content"

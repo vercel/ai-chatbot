@@ -200,10 +200,19 @@
     @apply bg-background text-foreground;
     overflow-x: hidden;
     position: relative;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   html {
     overflow-x: hidden;
+  }
+  
+  /* Ensure all text content respects container boundaries */
+  p, div, span, li, td, th {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 }
 
