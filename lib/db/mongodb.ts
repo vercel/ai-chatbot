@@ -8,10 +8,7 @@ if (!MONGODB_URI) {
   );
 }
 
-console.log(
-  "🔗 Connecting to MongoDB with URI:",
-  `${MONGODB_URI.substring(0, 30)}...`
-);
+
 
 // Global type for mongoose cache
 declare global {

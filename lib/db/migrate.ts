@@ -11,7 +11,7 @@ const runMigrate = async () => {
     throw new Error("MONGODB_URI is not defined");
   }
 
-  console.log("⏳ Connecting to MongoDB and ensuring collections...");
+  
 
   const start = Date.now();
 

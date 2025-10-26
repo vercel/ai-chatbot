@@ -11,7 +11,7 @@ import type { Suggestion } from "@/lib/db/schema";
 type EditorProps = {
   content: string;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
-  status: "streaming" | "idle";
+  status: "streaming" | "idle" | "preparing" | "ready";
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Suggestion[];

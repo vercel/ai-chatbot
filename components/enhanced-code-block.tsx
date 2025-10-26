@@ -62,6 +62,9 @@ const EnhancedCodeBlock = memo(({
     return `local-code-${Math.abs(hash)}-${language}`;
   }, [code, language]);
 
+  const isPython = language === "python";
+  const isCurrentlyActive = artifact.documentId === documentId && artifact.isVisible;
+
   const handleRunCode = useCallback(() => {
     if (language === "python") {
       // Check if this is the same code block currently showing
@@ -74,14 +77,15 @@ const EnhancedCodeBlock = memo(({
           isVisible: false,
         }));
       } else {
-        // Show or create the artifact for this specific code block
+        // Always create/show the artifact for this specific code block when user clicks
+        // This is now the ONLY way artifacts get created - user-initiated
         setArtifact({
           title: `Python Code • ${getLanguageDisplayName(language)}`,
           documentId: documentId,
           kind: "code",
           content: code,
           isVisible: true,
-          status: "idle",
+          status: "idle", // Start in idle state, will become active when executed
           boundingBox: {
             top: 0,
             left: 0,
@@ -93,8 +97,8 @@ const EnhancedCodeBlock = memo(({
     }
   }, [code, language, documentId, artifact.documentId, artifact.isVisible, setArtifact]);
 
-  const isPython = language === "python";
-  const isCurrentlyActive = artifact.documentId === documentId && artifact.isVisible;
+  // Simple button state: either showing this code or not
+  const buttonState = isCurrentlyActive ? "active" : "default";
 
   return (
     <CodeBlock
@@ -108,11 +112,15 @@ const EnhancedCodeBlock = memo(({
           <Button
             onClick={handleRunCode}
             size="sm"
-            variant={isCurrentlyActive ? "default" : "ghost"}
-            className="h-7 px-2 text-xs"
+            variant={buttonState === "active" ? "default" : "ghost"}
+            className={`h-7 px-2 text-xs ${
+              buttonState === "active"
+                ? "bg-blue-600 text-white hover:bg-blue-700" :
+              ""
+            }`}
           >
             <PlayIcon size={12} className="mr-1" />
-            {isCurrentlyActive ? "Hide Code" : "Run Code"}
+            {buttonState === "active" ? "Hide Code" : "Run Code"}
           </Button>
         )}
         <CodeBlockCopyButton className="h-7 w-7" />

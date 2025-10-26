@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, SquarePen } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
@@ -109,7 +109,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               type="button"
               variant="ghost"
             >
-              <PlusIcon />
+              <SquarePen />
               New Chat
             </Button>
             <Button

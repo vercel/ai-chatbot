@@ -196,9 +196,9 @@
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
     position: relative;
     word-wrap: break-word;
     overflow-wrap: break-word;

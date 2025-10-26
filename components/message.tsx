@@ -8,39 +8,9 @@ import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
-import { DocumentPreview } from "./document-preview";
 import { useArtifact } from "@/hooks/use-artifact";
 
 const ArtifactTrigger = ({ result }: { result: any }) => {
-  const { setArtifact } = useArtifact();
-
-  useEffect(() => {
-    if (!result) return;
-
-    // If result looks like an error object
-    if (result && typeof result === "object" && "error" in result) {
-      return;
-    }
-
-    // If result contains a document-like shape, prepare the artifact but keep it hidden
-    if (result && typeof result === "object" && result.id) {
-      setArtifact({
-        title: result.title || "Document",
-        documentId: result.id,
-        kind: result.kind || "text",
-        content: result.content || "",
-        isVisible: false, // Keep hidden until user clicks "Run Code"
-        status: "idle",
-        boundingBox: {
-          top: 0,
-          left: 0,
-          width: 400,
-          height: 300,
-        },
-      });
-    }
-  }, [result, setArtifact]);
-
   if (!result) return null;
 
   // If result looks like an error object
@@ -52,16 +22,8 @@ const ArtifactTrigger = ({ result }: { result: any }) => {
     );
   }
 
-  // Show a clean message that an artifact was prepared
-  return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-700 dark:bg-blue-950/50">
-      <div className="font-medium">Document Created</div>
-      <div className="text-sm opacity-80">
-        {result?.title ? `"${result.title}"` : "A new document"} has been prepared. 
-        {result?.kind === "code" && " Click 'Run Code' on any code block to view it."}
-      </div>
-    </div>
-  );
+  // No automatic document display - artifacts are now purely user-controlled via "Run Code"
+  return null;
 };
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
@@ -180,7 +142,7 @@ const PurePreviewMessage = ({
                       className={cn({
                         "w-fit max-w-xs break-words rounded-2xl px-3 py-2 text-right text-white sm:max-w-md":
                           message.role === "user",
-                        "w-full bg-transparent px-0 py-0 text-left max-w-none overflow-hidden break-words":
+                        "w-full bg-transparent px-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
                           message.role === "assistant",
                       })}
                       data-testid="message-content"

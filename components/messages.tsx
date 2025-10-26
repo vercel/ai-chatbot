@@ -1,4 +1,5 @@
-/** biome-ignore-all lint/correctness/noUnusedFunctionParameters: <explanation> */
+/** biome-ignore-all lint/correctness/noUnusedFunctionParameters: <      <Conversation className="mx-auto flex min-w-0 w-full max-w-full md:max-w-[640px] lg:max-w-3xl flex-col gap-4 md:gap-6 overflow-x-hidden">
+        <ConversationContent className="flex flex-col gap-2 md:gap-4 px-3 md:px-4 py-4 overflow-x-hidden">planation> */
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { AnimatePresence } from "framer-motion";
@@ -61,12 +62,12 @@ function PureMessages({
 
   return (
     <div
-      className="overscroll-behavior-contain -webkit-overflow-scrolling-touch flex-1 touch-pan-y overflow-y-scroll"
+      className="overscroll-behavior-contain -webkit-overflow-scrolling-touch flex-1 touch-pan-y overflow-y-scroll overflow-x-hidden"
       ref={messagesContainerRef}
       style={{ overflowAnchor: "none" }}
     >
-      <Conversation className="mx-auto flex min-w-0 max-w-3xl flex-col gap-4 md:gap-6">
-        <ConversationContent className="flex flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
+      <Conversation className="mx-auto flex min-w-0 max-w-3xl flex-col gap-4 md:gap-6 overflow-x-hidden">
+        <ConversationContent className="flex flex-col gap-2 md:gap-6 px-3 md:px-4 py-4 overflow-x-hidden">
           {messages.map((message, index) => (
             <PreviewMessage
               chatId={chatId}

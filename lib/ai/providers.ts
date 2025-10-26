@@ -39,21 +39,21 @@ function createLanguageModels() {
   const availableModels = getCachedAvailableModels();
   const languageModels: Record<string, any> = {};
   
-  console.log("🔧 Available models for provider creation:", availableModels.map(m => `${m.id} (${m.provider})`));
+  
   
   availableModels.forEach(model => {
     try {
       if (model.provider === "mistral" && providers.mistral) {
         languageModels[model.id] = providers.mistral(model.id);
-        console.log(`✅ Created Mistral model: ${model.id}`);
+        
       } else if (model.provider === "google" && providers.google) {
         languageModels[model.id] = providers.google(model.id);
-        console.log(`✅ Created Google model: ${model.id}`);
+        
       } else {
-        console.warn(`⚠️  Skipping model ${model.id} - provider ${model.provider} not available`);
+        
       }
     } catch (error) {
-      console.error(`❌ Failed to create model ${model.id}:`, error);
+      
     }
   });
   
@@ -66,11 +66,11 @@ function createLanguageModels() {
         middleware: extractReasoningMiddleware({ tagName: "think" }),
       });
     } catch (error) {
-      console.error("❌ Failed to create reasoning model:", error);
+      
     }
   }
   
-  console.log(`🏁 Final language models created:`, Object.keys(languageModels));
+  
   return languageModels;
 }
 
@@ -144,7 +144,7 @@ function createProvider() {
       ...requiredModels,
     };
     
-    console.log(`🎯 Provider created with models:`, Object.keys(finalModels));
+    
     
     _providerCache = customProvider({
       languageModels: finalModels,

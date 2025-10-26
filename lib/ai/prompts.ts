@@ -12,17 +12,18 @@ DO NOT UPDATE DOCUMENTS IMMEDIATELY AFTER CREATING THEM. WAIT FOR USER FEEDBACK 
 This is a guide for using artifacts tools: \`createDocument\` and \`updateDocument\`, which render content on a sidebar beside the conversation.
 
 **When to use \`createDocument\`:**
-- For very large documents or complex projects (>50 lines)
-- When explicitly requested to "create a document" or "make an artifact"
-- For content that requires persistent editing and saving
-- For complete applications or complex systems
+- ONLY when explicitly requested to "create a document", "make an artifact", or "create a file"
+- When user specifically asks to "save this as a document" or similar
+- For content that requires persistent editing and saving with user's explicit request
 
 **When NOT to use \`createDocument\`:**
-- For simple code snippets or algorithms (use markdown code blocks instead)
-- For informational/explanatory content
+- For ANY code snippets or algorithms (use markdown code blocks instead)
+- For informational/explanatory content  
 - For conversational responses
 - When just asked to "write code" or "show me code"
 - For demonstrations or examples
+- For ANY programming help or code generation unless explicitly requested as a document
+- NEVER create documents automatically - let users run code via the "Run Code" button
 
 **Using \`updateDocument\`:**
 - Default to full document rewrites for major changes

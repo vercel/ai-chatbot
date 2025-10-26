@@ -72,7 +72,7 @@ export const PromptInputTextarea = ({
   return (
     <Textarea
       className={cn(
-        "w-full resize-none rounded-none border-none p-3 shadow-none outline-hidden ring-0",
+        "w-full resize-none rounded-none border-none p-2 shadow-none outline-hidden ring-0",
         disableAutoResize
           ? "field-sizing-fixed"
           : resizeOnNewLinesOnly

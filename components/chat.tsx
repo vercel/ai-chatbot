@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
@@ -21,6 +21,7 @@ import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { getChatHistoryPaginationKey } from "./sidebar-history";
+import { StreamingErrorBoundary } from "./streaming-error-boundary";
 import { SuggestedActions } from "./suggested-actions";
 import { toast } from "./toast";
 
@@ -42,16 +43,31 @@ export function Chat({
   const visibilityType = "public";
 
   const { mutate } = useSWRConfig();
-  const { setDataStream } = useDataStream();
+  const { setDataStream, clearDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
+
+  // Cleanup function to prevent memory leaks
+  const cleanup = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    clearDataStream();
+  }, [clearDataStream]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return cleanup;
+  }, [cleanup]);
 
   const {
     messages,
@@ -70,6 +86,9 @@ export function Chat({
       api: "/api/chat",
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest(request) {
+        // Store abort controller for cleanup
+        abortControllerRef.current = new AbortController();
+        
         return {
           body: {
             id: request.id,
@@ -78,25 +97,58 @@ export function Chat({
             selectedVisibilityType: visibilityType,
             ...request.body,
           },
+          options: {
+            signal: abortControllerRef.current.signal,
+          },
         };
       },
     }),
     onData: (dataPart) => {
-      setDataStream((ds) => (ds ? [...ds, dataPart] : []));
-      if (dataPart.type === "data-usage") {
-        setUsage(dataPart.data);
+      try {
+        setDataStream((ds) => {
+          const newStream = ds ? [...ds, dataPart] : [dataPart];
+          // Prevent memory leaks by limiting stream size
+          return newStream.length > 500 ? newStream.slice(-250) : newStream;
+        });
+        
+        if (dataPart.type === "data-usage") {
+          setUsage(dataPart.data);
+        }
+      } catch (error) {
+        console.error("Error processing data stream:", error);
       }
     },
     onFinish: () => {
-      mutate(unstable_serialize(getChatHistoryPaginationKey));
+      try {
+        abortControllerRef.current = null; // Clear controller on finish
+        mutate(unstable_serialize(getChatHistoryPaginationKey));
+      } catch (error) {
+        console.error("Error in onFinish:", error);
+      }
     },
     onError: (error) => {
+      console.error("Chat error:", error);
+      
+      // Clear abort controller on error
+      abortControllerRef.current = null;
+      
       if (error instanceof ChatSDKError) {
         toast({
           type: "error",
           description: error.message,
         });
+      } else if (error.name !== 'AbortError') {
+        // Don't show toast for aborted requests
+        toast({
+          type: "error",
+          description: "An error occurred during streaming. Please try again.",
+        });
       }
+      
+      // Clear problematic data stream on error
+      setTimeout(() => {
+        clearDataStream();
+      }, 1000);
     },
   });
 
@@ -124,6 +176,16 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+
+  // Enhanced stop function with cleanup
+  const enhancedStop = useCallback(async () => {
+    try {
+      await stop();
+      cleanup();
+    } catch (error) {
+      console.error("Error stopping stream:", error);
+    }
+  }, [stop, cleanup]);
 
   useAutoResume({
     autoResume,
@@ -164,7 +226,7 @@ export function Chat({
               
               {/* Bottom input for mobile */}
               {!isReadonly && (
-                <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-3xl gap-2 border-t-0 bg-background p-2 mb-2">
+                <div className="sticky bottom-0 z-1 mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background px-3 py-2 mb-2">
                   <MultimodalInput
                     attachments={attachments}
                     chatId={id}
@@ -178,7 +240,7 @@ export function Chat({
                     setInput={setInput}
                     setMessages={setMessages}
                     status={status}
-                    stop={stop}
+                    stop={enhancedStop}
                     usage={usage}
                   />
                 </div>
@@ -187,7 +249,7 @@ export function Chat({
 
             {/* Desktop Layout */}
             <div className="hidden md:flex flex-1 flex-col items-center justify-center px-4">
-              <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center px-4 text-center">
+              <div className="mx-auto flex w-full max-w-full md:max-w-[640px] lg:max-w-3xl flex-col items-center justify-center px-4 text-center">
                 <div className="font-semibold text-2xl md:text-3xl mb-2">
                   Hello there!
                 </div>
@@ -196,7 +258,7 @@ export function Chat({
                 </div>
                 
                 {!isReadonly && (
-                  <div className="w-full max-w-3xl">
+                  <div className="w-full max-w-full md:max-w-[640px] lg:max-w-3xl">
                     <MultimodalInput
                       attachments={attachments}
                       chatId={id}
@@ -210,7 +272,7 @@ export function Chat({
                       setInput={setInput}
                       setMessages={setMessages}
                       status={status}
-                      stop={stop}
+                      stop={enhancedStop}
                       usage={usage}
                     />
                     
@@ -231,19 +293,27 @@ export function Chat({
         ) : (
           // Chat state with messages and bottom input
           <>
-            <Messages
-              chatId={id}
-              isArtifactVisible={isArtifactVisible}
-              isReadonly={isReadonly}
-              messages={messages}
-              regenerate={regenerate}
-              selectedModelId={initialChatModel}
-              setMessages={setMessages}
-              status={status}
-              votes={votes}
-            />
+            <StreamingErrorBoundary
+              onError={(error, errorInfo) => {
+                console.error("Messages component error:", error, errorInfo);
+                // Force cleanup on component error
+                cleanup();
+              }}
+            >
+              <Messages
+                chatId={id}
+                isArtifactVisible={isArtifactVisible}
+                isReadonly={isReadonly}
+                messages={messages}
+                regenerate={regenerate}
+                selectedModelId={initialChatModel}
+                setMessages={setMessages}
+                status={status}
+                votes={votes}
+              />
+            </StreamingErrorBoundary>
 
-            <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-3xl gap-2 border-t-0 bg-background p-2 mb-2">
+            <div className="sticky bottom-0 z-1 mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background px-3 md:px-4 py-2 mb-2">
               {!isReadonly && (
                 <MultimodalInput
                   attachments={attachments}
@@ -258,7 +328,7 @@ export function Chat({
                   setInput={setInput}
                   setMessages={setMessages}
                   status={status}
-                  stop={stop}
+                  stop={enhancedStop}
                   usage={usage}
                 />
               )}
@@ -281,7 +351,7 @@ export function Chat({
         setInput={setInput}
         setMessages={setMessages}
         status={status}
-        stop={stop}
+        stop={enhancedStop}
         votes={votes}
       />
     </>
