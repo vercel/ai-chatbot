@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/nursery/useSortedClasses: <explanation> */
 "use client";
 
 import { CheckIcon, CopyIcon } from "lucide-react";
@@ -39,93 +40,91 @@ export const CodeBlock = ({
   ...props
 }: CodeBlockProps) => {
   const displayTitle = title || (showLanguage ? language : undefined);
-  
+
   return (
-  <CodeBlockContext.Provider value={{ code }}>
-    <div
-      className={cn(
-        "relative w-full overflow-hidden rounded-md border bg-background text-foreground",
-        className
-      )}
-      {...props}
-    >
-      {displayTitle && (
-        <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">
-              {displayTitle}
-            </span>
-          </div>
-          {children && (
+    <CodeBlockContext.Provider value={{ code }}>
+      <div
+        className={cn(
+          "relative w-[375px] lg:min-w-3xl overflow-hidden rounded-md border bg-background text-foreground shrink-0",
+          className
+        )}
+        {...props}
+      >
+        {displayTitle && (
+          <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
             <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                {displayTitle}
+              </span>
+            </div>
+            {children && (
+              <div className="flex items-center gap-2">{children}</div>
+            )}
+          </div>
+        )}
+        <div className="relative overflow-x-auto min-w-0 w-full max-w-full">
+          <SyntaxHighlighter
+            className="dark:hidden !min-w-0 !max-w-full"
+            codeTagProps={{
+              className: "font-mono text-sm",
+            }}
+            customStyle={{
+              margin: 0,
+              padding: "1rem",
+              fontSize: "0.875rem",
+              background: "hsl(var(--background))",
+              color: "hsl(var(--foreground))",
+              whiteSpace: "pre",
+              minWidth: 0,
+              maxWidth: "100%",
+              width: "max-content",
+            }}
+            language={language}
+            lineNumberStyle={{
+              color: "hsl(var(--muted-foreground))",
+              paddingRight: "1rem",
+              minWidth: "2.5rem",
+            }}
+            showLineNumbers={showLineNumbers}
+            style={oneLight}
+          >
+            {code}
+          </SyntaxHighlighter>
+          <SyntaxHighlighter
+            className="hidden dark:block !min-w-0 !max-w-full"
+            codeTagProps={{
+              className: "font-mono text-sm",
+            }}
+            customStyle={{
+              margin: 0,
+              padding: "1rem",
+              fontSize: "0.875rem",
+              background: "hsl(var(--background))",
+              color: "hsl(var(--foreground))",
+              whiteSpace: "pre",
+              minWidth: 0,
+              maxWidth: "100%",
+              width: "max-content",
+            }}
+            language={language}
+            lineNumberStyle={{
+              color: "hsl(var(--muted-foreground))",
+              paddingRight: "1rem",
+              minWidth: "2.5rem",
+            }}
+            showLineNumbers={showLineNumbers}
+            style={oneDark}
+          >
+            {code}
+          </SyntaxHighlighter>
+          {!displayTitle && children && (
+            <div className="absolute top-2 right-2 flex items-center gap-2">
               {children}
             </div>
           )}
         </div>
-      )}
-      <div className="relative">
-        <SyntaxHighlighter
-          className="overflow-hidden dark:hidden"
-          codeTagProps={{
-            className: "font-mono text-sm",
-          }}
-          customStyle={{
-            margin: 0,
-            padding: "1rem",
-            fontSize: "0.875rem",
-            background: "hsl(var(--background))",
-            color: "hsl(var(--foreground))",
-            overflowX: "auto",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            overflowWrap: "anywhere",
-          }}
-          language={language}
-          lineNumberStyle={{
-            color: "hsl(var(--muted-foreground))",
-            paddingRight: "1rem",
-            minWidth: "2.5rem",
-          }}
-          showLineNumbers={showLineNumbers}
-          style={oneLight}
-        >
-          {code}
-        </SyntaxHighlighter>
-        <SyntaxHighlighter
-          className="hidden overflow-hidden dark:block"
-          codeTagProps={{
-            className: "font-mono text-sm",
-          }}
-          customStyle={{
-            margin: 0,
-            padding: "1rem",
-            fontSize: "0.875rem",
-            background: "hsl(var(--background))",
-            color: "hsl(var(--foreground))",
-            overflowX: "auto",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            overflowWrap: "anywhere",
-          }}
-          language={language}
-          lineNumberStyle={{
-            color: "hsl(var(--muted-foreground))",
-            paddingRight: "1rem",
-            minWidth: "2.5rem",
-          }}
-          showLineNumbers={showLineNumbers}
-          style={oneDark}
-        >
-          {code}
-        </SyntaxHighlighter>
-        {!displayTitle && children && (
-          <div className="absolute top-2 right-2 flex items-center gap-2">
-            {children}
-          </div>
-        )}
       </div>
-    </div>
-  </CodeBlockContext.Provider>
+    </CodeBlockContext.Provider>
   );
 };
 

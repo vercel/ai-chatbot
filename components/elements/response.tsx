@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/nursery/noShadow: <explanation> */
 "use client";
 
 import { type ComponentProps, memo } from "react";
@@ -18,7 +19,7 @@ export const Response = memo(
           const code = codeElement.children;
           const className = codeElement.className || "";
           const language = className.replace("language-", "") || "text";
-          
+
           return (
             <EnhancedCodeBlock
               code={code}
@@ -27,7 +28,7 @@ export const Response = memo(
             />
           );
         }
-        
+
         // Fallback for non-code pre elements
         return <pre {...preProps}>{children}</pre>;
       },
@@ -36,7 +37,7 @@ export const Response = memo(
     return (
       <Streamdown
         className={cn(
-          "size-full max-w-full overflow-hidden [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_code]:whitespace-pre-wrap [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:w-full [&_p]:break-words [&_p]:overflow-wrap-anywhere [&_li]:break-words [&_li]:overflow-wrap-anywhere [&_*]:max-w-full",
+          "size-full max-w-full overflow-hidden [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_code]:whitespace-pre-wrap [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-visible [&_p]:break-words [&_p]:overflow-wrap-anywhere [&_li]:break-words [&_li]:overflow-wrap-anywhere [&_*]:max-w-full",
           className
         )}
         components={customComponents}

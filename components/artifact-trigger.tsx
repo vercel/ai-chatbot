@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/nursery/useConsistentTypeDefinitions: <explanation> */
 "use client";
 
 import { useEffect } from "react";

@@ -133,8 +133,8 @@ const PurePreviewMessage = ({
                 return (
                   <div
                     className={cn({
-                      "flex justify-end": message.role === "user",
-                      "flex justify-start": message.role === "assistant",
+                      "flex justify-end min-w-0": message.role === "user",
+                      "flex justify-start min-w-[340px]": message.role === "assistant",
                     })}
                     key={key}
                   >
@@ -142,7 +142,7 @@ const PurePreviewMessage = ({
                       className={cn({
                         "w-fit max-w-xs break-words rounded-2xl px-3 py-2 text-right text-white sm:max-w-md":
                           message.role === "user",
-                        "w-full bg-transparent px-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
+                        "w-full min-w-0 bg-transparent px-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
                           message.role === "assistant",
                       })}
                       data-testid="message-content"

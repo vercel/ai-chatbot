@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/correctness/noUnusedFunctionParameters: <      <Conversation className="mx-auto flex min-w-0 w-full max-w-full md:max-w-[640px] lg:max-w-3xl flex-col gap-4 md:gap-6 overflow-x-hidden">
         <ConversationContent className="flex flex-col gap-2 md:gap-4 px-3 md:px-4 py-4 overflow-x-hidden">planation> */
+/** biome-ignore-all lint/nursery/useSortedClasses: <explanation> */
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { AnimatePresence } from "framer-motion";
@@ -66,8 +67,8 @@ function PureMessages({
       ref={messagesContainerRef}
       style={{ overflowAnchor: "none" }}
     >
-      <Conversation className="mx-auto flex min-w-0 max-w-3xl flex-col gap-4 md:gap-6 overflow-x-hidden">
-        <ConversationContent className="flex flex-col gap-2 md:gap-6 px-3 md:px-4 py-4 overflow-x-hidden">
+      <Conversation className="mx-auto flex min-w-0 w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl flex-col gap-4 md:gap-6 overflow-x-hidden">
+        <ConversationContent className="flex flex-col gap-2 md:gap-2 py-2 overflow-x-hidden">
           {messages.map((message, index) => (
             <PreviewMessage
               chatId={chatId}

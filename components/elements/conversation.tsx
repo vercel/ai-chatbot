@@ -31,7 +31,7 @@ export const ConversationContent = ({
   children,
   ...props
 }: ConversationContentProps) => (
-  <article className="w-full">
+  <article className="w-full min-w-0">
     <StickToBottom.Content className={cn("", className)} {...props}>
       {children}
     </StickToBottom.Content>

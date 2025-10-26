@@ -214,6 +214,17 @@
     overflow-wrap: break-word;
     hyphens: auto;
   }
+
+  /* Force code blocks to respect container width */
+  pre {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+  
+  pre > code {
+    max-width: 100% !important;
+    display: inline-block !important;
+  }
 }
 
 .skeleton {

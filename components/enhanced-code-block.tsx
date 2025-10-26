@@ -101,31 +101,33 @@ const EnhancedCodeBlock = memo(({
   const buttonState = isCurrentlyActive ? "active" : "default";
 
   return (
-    <CodeBlock
-      code={code}
-      language={language}
-      title={getLanguageDisplayName(language)}
-      showLineNumbers={showLineNumbers}
-    >
-      <div className="flex items-center gap-1">
-        {isPython && (
-          <Button
-            onClick={handleRunCode}
-            size="sm"
-            variant={buttonState === "active" ? "default" : "ghost"}
-            className={`h-7 px-2 text-xs ${
-              buttonState === "active"
-                ? "bg-blue-600 text-white hover:bg-blue-700" :
-              ""
-            }`}
-          >
-            <PlayIcon size={12} className="mr-1" />
-            {buttonState === "active" ? "Hide Code" : "Run Code"}
-          </Button>
-        )}
-        <CodeBlockCopyButton className="h-7 w-7" />
-      </div>
-    </CodeBlock>
+    <div className="w-full min-w-0 max-w-full overflow-hidden">
+      <CodeBlock
+        code={code}
+        language={language}
+        title={getLanguageDisplayName(language)}
+        showLineNumbers={showLineNumbers}
+      >
+        <div className="flex items-center gap-1">
+          {isPython && (
+            <Button
+              onClick={handleRunCode}
+              size="sm"
+              variant={buttonState === "active" ? "default" : "ghost"}
+              className={`h-7 px-2 text-xs ${
+                buttonState === "active"
+                  ? "bg-blue-600 text-white hover:bg-blue-700" :
+                ""
+              }`}
+            >
+              <PlayIcon size={12} className="mr-1" />
+              {buttonState === "active" ? "Hide Code" : "Run Code"}
+            </Button>
+          )}
+          <CodeBlockCopyButton className="h-7 w-7" />
+        </div>
+      </CodeBlock>
+    </div>
   );
 });
 

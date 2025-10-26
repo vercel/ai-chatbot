@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/nursery/useSortedClasses: <explanation> */
 "use client";
 
 import { useChat } from "@ai-sdk/react";
@@ -88,7 +89,7 @@ export function Chat({
       prepareSendMessagesRequest(request) {
         // Store abort controller for cleanup
         abortControllerRef.current = new AbortController();
-        
+
         return {
           body: {
             id: request.id,
@@ -110,7 +111,7 @@ export function Chat({
           // Prevent memory leaks by limiting stream size
           return newStream.length > 500 ? newStream.slice(-250) : newStream;
         });
-        
+
         if (dataPart.type === "data-usage") {
           setUsage(dataPart.data);
         }
@@ -128,23 +129,23 @@ export function Chat({
     },
     onError: (error) => {
       console.error("Chat error:", error);
-      
+
       // Clear abort controller on error
       abortControllerRef.current = null;
-      
+
       if (error instanceof ChatSDKError) {
         toast({
           type: "error",
           description: error.message,
         });
-      } else if (error.name !== 'AbortError') {
+      } else if (error.name !== "AbortError") {
         // Don't show toast for aborted requests
         toast({
           type: "error",
           description: "An error occurred during streaming. Please try again.",
         });
       }
-      
+
       // Clear problematic data stream on error
       setTimeout(() => {
         clearDataStream();
@@ -206,13 +207,11 @@ export function Chat({
             <div className="md:hidden flex-1 flex flex-col">
               {/* Centered greeting */}
               <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
-                <div className="font-semibold text-2xl mb-2">
-                  Hello there!
-                </div>
+                <div className="font-semibold text-2xl mb-2">Hello there!</div>
                 <div className="text-xl text-zinc-500 mb-8">
                   How can I help you today?
                 </div>
-                
+
                 {attachments.length === 0 && (
                   <div className="w-full max-w-3xl px-4">
                     <SuggestedActions
@@ -223,10 +222,10 @@ export function Chat({
                   </div>
                 )}
               </div>
-              
+
               {/* Bottom input for mobile */}
               {!isReadonly && (
-                <div className="sticky bottom-0 z-1 mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background px-3 py-2 mb-2">
+                <div className="sticky bottom-0 z-1 mx-auto w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background mb-2">
                   <MultimodalInput
                     attachments={attachments}
                     chatId={id}
@@ -249,16 +248,16 @@ export function Chat({
 
             {/* Desktop Layout */}
             <div className="hidden md:flex flex-1 flex-col items-center justify-center px-4">
-              <div className="mx-auto flex w-full max-w-full md:max-w-[640px] lg:max-w-3xl flex-col items-center justify-center px-4 text-center">
+              <div className="mx-auto flex w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl flex-col items-center justify-center px-4 text-center">
                 <div className="font-semibold text-2xl md:text-3xl mb-2">
                   Hello there!
                 </div>
                 <div className="text-xl text-zinc-500 md:text-2xl mb-8">
                   How can I help you today?
                 </div>
-                
+
                 {!isReadonly && (
-                  <div className="w-full max-w-full md:max-w-[640px] lg:max-w-3xl">
+                  <div className="w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl">
                     <MultimodalInput
                       attachments={attachments}
                       chatId={id}
@@ -275,7 +274,7 @@ export function Chat({
                       stop={enhancedStop}
                       usage={usage}
                     />
-                    
+
                     {attachments.length === 0 && (
                       <div className="mt-6">
                         <SuggestedActions
@@ -313,7 +312,7 @@ export function Chat({
               />
             </StreamingErrorBoundary>
 
-            <div className="sticky bottom-0 z-1 mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background px-3 md:px-4 py-2 mb-2">
+            <div className="sticky bottom-0 z-1 mx-auto w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background mb-2">
               {!isReadonly && (
                 <MultimodalInput
                   attachments={attachments}

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/nursery/useSortedClasses: <explanation> */
 import type { UIMessage } from "ai";
 import type { ComponentProps, HTMLAttributes } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,7 +29,7 @@ export const MessageContent = ({
 }: MessageContentProps) => (
   <div
     className={cn(
-      "flex flex-col gap-1 overflow-hidden rounded-lg px-4 py-3 text-foreground text-base",
+      "flex flex-col gap-1 overflow-hidden rounded-lg px-4 py-3 text-foreground text-base min-w-0",
       "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground",
       "group-[.is-assistant]:bg-secondary group-[.is-assistant]:text-foreground",
       "is-user:dark",

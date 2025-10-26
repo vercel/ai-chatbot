@@ -23,10 +23,11 @@ if (process.env.MISTRAL_API_KEY) {
   );
 }
 
-// Configure Google client if API key is available  
+// Configure Google client if API key is available
 if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY) {
   providers.google = createGoogleGenerativeAI({
-    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY,
+    apiKey:
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY,
   });
 } else if (!isTestEnvironment) {
   console.warn(
@@ -38,25 +39,18 @@ if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY) {
 function createLanguageModels() {
   const availableModels = getCachedAvailableModels();
   const languageModels: Record<string, any> = {};
-  
-  
-  
-  availableModels.forEach(model => {
+
+  availableModels.forEach((model) => {
     try {
       if (model.provider === "mistral" && providers.mistral) {
         languageModels[model.id] = providers.mistral(model.id);
-        
       } else if (model.provider === "google" && providers.google) {
         languageModels[model.id] = providers.google(model.id);
-        
       } else {
-        
       }
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   });
-  
+
   // Add special models for specific purposes
   if (providers.mistral) {
     try {
@@ -65,12 +59,9 @@ function createLanguageModels() {
         model: providers.mistral("mistral-large-2407"),
         middleware: extractReasoningMiddleware({ tagName: "think" }),
       });
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   }
-  
-  
+
   return languageModels;
 }
 
@@ -78,11 +69,11 @@ function createLanguageModels() {
 function getDefaultModels() {
   const defaults = {
     chat: "mistral-large-2407",
-    title: "open-mistral-7b", 
+    title: "open-mistral-7b",
     artifact: "codestral-latest",
-    reasoning: "mistral-large-reasoning"
+    reasoning: "mistral-large-reasoning",
   };
-  
+
   // If Mistral is not available, fall back to Google
   if (!providers.mistral && providers.google) {
     defaults.chat = "gemini-1.5-pro";
@@ -90,7 +81,7 @@ function getDefaultModels() {
     defaults.artifact = "gemini-1.5-pro";
     defaults.reasoning = "gemini-1.5-pro";
   }
-  
+
   return defaults;
 }
 
@@ -109,7 +100,7 @@ function createProvider() {
       reasoningModel,
       titleModel,
     } = require("./models.mock");
-    
+
     _providerCache = customProvider({
       languageModels: {
         "mistral-large-latest": chatModel,
@@ -121,16 +112,17 @@ function createProvider() {
   } else {
     const languageModels = createLanguageModels();
     const defaults = getDefaultModels();
-    
+
     // Ensure we have the required default models
     const requiredModels: Record<string, any> = {};
-    
+
     // Map old model IDs to new dynamic IDs for backward compatibility
     if (languageModels[defaults.chat]) {
       requiredModels["chat-model"] = languageModels[defaults.chat];
     }
     if (languageModels[defaults.reasoning]) {
-      requiredModels["chat-model-reasoning"] = languageModels[defaults.reasoning];
+      requiredModels["chat-model-reasoning"] =
+        languageModels[defaults.reasoning];
     }
     if (languageModels[defaults.title]) {
       requiredModels["title-model"] = languageModels[defaults.title];
@@ -138,19 +130,17 @@ function createProvider() {
     if (languageModels[defaults.artifact]) {
       requiredModels["artifact-model"] = languageModels[defaults.artifact];
     }
-    
+
     const finalModels = {
       ...languageModels,
       ...requiredModels,
     };
-    
-    
-    
+
     _providerCache = customProvider({
       languageModels: finalModels,
     });
   }
-  
+
   return _providerCache;
 }
 
