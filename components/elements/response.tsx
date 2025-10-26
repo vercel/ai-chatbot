@@ -37,7 +37,7 @@ export const Response = memo(
     return (
       <Streamdown
         className={cn(
-          "size-full max-w-full overflow-hidden [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_code]:whitespace-pre-wrap [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-visible [&_p]:break-words [&_p]:overflow-wrap-anywhere [&_li]:break-words [&_li]:overflow-wrap-anywhere [&_*]:max-w-full",
+          "size-full max-w-full overflow-hidden [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_code]:whitespace-pre-wrap [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-visible [&_p]:break-words [&_p]:overflow-wrap-anywhere [&_li]:break-words [&_li]:overflow-wrap-anywhere [&_*]:max-w-full [&_ol]:pl-6 [&_ol]:ml-2 [&_ul]:pl-6 [&_ol]:list-decimal [&_ul]:list-disc [&_p]:text-inherit",
           className
         )}
         components={customComponents}

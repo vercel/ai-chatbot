@@ -24,6 +24,7 @@ import { ArtifactActions } from "./artifact-actions";
 import { ArtifactCloseButton } from "./artifact-close-button";
 import { ArtifactMessages } from "./artifact-messages";
 import { MultimodalInput } from "./multimodal-input";
+import { ResizablePanel } from "./resizable-panel";
 import { Toolbar } from "./toolbar";
 import { useSidebar } from "./ui/sidebar";
 import { VersionFooter } from "./version-footer";
@@ -230,6 +231,7 @@ function PureArtifact({
   };
 
   const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+  const [chatPanelWidth, setChatPanelWidth] = useState(400);
 
   /*
    * NOTE: if there are no documents, or if
@@ -288,32 +290,37 @@ function PureArtifact({
           )}
 
           {!isMobile && (
-            <motion.div
-              animate={{
-                opacity: 1,
-                x: 0,
-                scale: 1,
-                transition: {
-                  delay: 0.1,
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                },
+            <ResizablePanel
+              defaultWidth={400}
+              minWidth={300}
+              maxWidth={800}
+              className="bg-muted dark:bg-background"
+              onWidthChange={(width) => {
+                setChatPanelWidth(width);
               }}
-              className="relative h-dvh w-[400px] shrink-0 bg-muted dark:bg-background"
-              exit={{
-                opacity: 0,
-                x: 0,
-                scale: 1,
-                transition: { duration: 0 },
-              }}
-              initial={{ opacity: 0, x: 10, scale: 1 }}
             >
+              <motion.div
+                animate={{
+                  opacity: 1,
+                  transition: {
+                    delay: 0.1,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                  },
+                }}
+                className="relative h-dvh w-full"
+                exit={{
+                  opacity: 0,
+                  transition: { duration: 0 },
+                }}
+                initial={{ opacity: 0 }}
+              >
               <AnimatePresence>
                 {!isCurrentVersion && (
                   <motion.div
                     animate={{ opacity: 1 }}
-                    className="absolute top-0 left-0 z-50 h-dvh w-[400px] bg-zinc-900/50"
+                    className="absolute top-0 left-0 z-50 h-dvh w-full bg-zinc-900/50"
                     exit={{ opacity: 0 }}
                     initial={{ opacity: 0 }}
                   />
@@ -350,7 +357,8 @@ function PureArtifact({
                   />
                 </div>
               </div>
-            </motion.div>
+              </motion.div>
+            </ResizablePanel>
           )}
 
           <motion.div
@@ -373,12 +381,12 @@ function PureArtifact({
                   }
                 : {
                     opacity: 1,
-                    x: 400,
+                    x: chatPanelWidth,
                     y: 0,
                     height: windowHeight,
                     width: windowWidth
-                      ? windowWidth - 400
-                      : "calc(100dvw-400px)",
+                      ? windowWidth - chatPanelWidth
+                      : `calc(100dvw-${chatPanelWidth}px)`,
                     borderRadius: 0,
                     transition: {
                       delay: 0,

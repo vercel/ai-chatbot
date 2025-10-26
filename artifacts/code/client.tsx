@@ -123,7 +123,7 @@ export const codeArtifact = new Artifact<"code", Metadata>({
         setMetadata((metadata) => ({
           ...metadata,
           outputs: [
-            ...metadata.outputs,
+            ...(metadata?.outputs || []),
             {
               id: runId,
               contents: [],
@@ -154,7 +154,7 @@ export const codeArtifact = new Artifact<"code", Metadata>({
               setMetadata((metadata) => ({
                 ...metadata,
                 outputs: [
-                  ...metadata.outputs.filter((output) => output.id !== runId),
+                  ...(metadata?.outputs || []).filter((output) => output.id !== runId),
                   {
                     id: runId,
                     contents: [{ type: "text", value: message }],
@@ -185,7 +185,7 @@ export const codeArtifact = new Artifact<"code", Metadata>({
           setMetadata((metadata) => ({
             ...metadata,
             outputs: [
-              ...metadata.outputs.filter((output) => output.id !== runId),
+              ...(metadata?.outputs || []).filter((output) => output.id !== runId),
               {
                 id: runId,
                 contents: outputContent,
@@ -197,7 +197,7 @@ export const codeArtifact = new Artifact<"code", Metadata>({
           setMetadata((metadata) => ({
             ...metadata,
             outputs: [
-              ...metadata.outputs.filter((output) => output.id !== runId),
+              ...(metadata?.outputs || []).filter((output) => output.id !== runId),
               {
                 id: runId,
                 contents: [{ type: "text", value: error.message }],
