@@ -140,7 +140,7 @@ const PurePreviewMessage = ({
                   >
                     <MessageContent
                       className={cn({
-                        "w-fit max-w-xs break-words rounded-2xl px-3 py-2 text-right text-white sm:max-w-md":
+                        "inline-block max-w-[85%] sm:max-w-md lg:max-w-lg rounded-2xl px-3 py-2 text-left text-white":
                           message.role === "user",
                         "w-full min-w-0 bg-transparent pr-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
                           message.role === "assistant",
