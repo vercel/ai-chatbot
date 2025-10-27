@@ -63,6 +63,11 @@ export interface IMessage extends MongoDocument {
   attachments: any;
   createdAt: Date;
   updatedAt: Date;
+  // Versioning fields
+  versionGroupId?: string; // Groups different versions of the same logical message
+  versionNumber?: number; // 1, 2, 3, etc.
+  isCurrentVersion?: boolean; // Only one version per group should be current
+  parentVersionId?: string; // References the previous version
 }
 
 const messageSchema = new Schema<IMessage>(
@@ -73,11 +78,20 @@ const messageSchema = new Schema<IMessage>(
     parts: { type: Schema.Types.Mixed, required: true },
     attachments: { type: Schema.Types.Mixed, required: true },
     createdAt: { type: Date, required: true },
+    // Versioning fields
+    versionGroupId: { type: String, ref: "Message" }, // Groups versions together
+    versionNumber: { type: Number, default: 1 },
+    isCurrentVersion: { type: Boolean, default: true },
+    parentVersionId: { type: String, ref: "Message" }, // Previous version reference
   },
   {
     timestamps: true,
   }
 );
+
+// Add compound index for efficient version queries
+messageSchema.index({ versionGroupId: 1, versionNumber: 1 });
+messageSchema.index({ chatId: 1, versionGroupId: 1, isCurrentVersion: 1 });
 
 // Vote Interface and Schema
 export interface IVote extends MongoDocument {
@@ -237,6 +251,11 @@ export type DBMessage = {
   attachments: any;
   createdAt: Date;
   updatedAt: Date;
+  // Versioning fields
+  versionGroupId?: string;
+  versionNumber?: number;
+  isCurrentVersion?: boolean;
+  parentVersionId?: string;
 };
 
 export type Vote = {

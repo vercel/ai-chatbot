@@ -33,6 +33,7 @@ export function Chat({
   isReadonly,
   autoResume,
   initialLastContext,
+  userId,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -40,6 +41,7 @@ export function Chat({
   isReadonly: boolean;
   autoResume: boolean;
   initialLastContext?: AppUsage;
+  userId: string;
 }) {
   const visibilityType = "public";
 
@@ -309,6 +311,7 @@ export function Chat({
                 setMessages={setMessages}
                 status={status}
                 votes={votes}
+                userId={userId}
               />
             </StreamingErrorBoundary>
 

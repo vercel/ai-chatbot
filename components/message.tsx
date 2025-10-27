@@ -37,6 +37,7 @@ import {
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
+import { MessageVersionNavigator } from "./message-version-navigator";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
 
@@ -49,6 +50,7 @@ const PurePreviewMessage = ({
   regenerate,
   isReadonly,
   requiresScrollPadding,
+  userId,
 }: {
   chatId: string;
   message: ChatMessage;
@@ -58,6 +60,7 @@ const PurePreviewMessage = ({
   regenerate: UseChatHelpers<ChatMessage>["regenerate"];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
+  userId: string;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
@@ -172,6 +175,8 @@ const PurePreviewMessage = ({
                         regenerate={regenerate}
                         setMessages={setMessages}
                         setMode={setMode}
+                        chatId={chatId}
+                        userId={userId}
                       />
                     </div>
                   </div>
@@ -281,14 +286,25 @@ const PurePreviewMessage = ({
           })}
 
           {!isReadonly && (
-            <MessageActions
-              chatId={chatId}
-              isLoading={isLoading}
-              key={`action-${message.id}`}
-              message={message}
-              setMode={setMode}
-              vote={vote}
-            />
+            <>
+              <MessageActions
+                chatId={chatId}
+                isLoading={isLoading}
+                key={`action-${message.id}`}
+                message={message}
+                setMode={setMode}
+                vote={vote}
+              />
+              {message.role === "user" && (
+                <MessageVersionNavigator
+                  chatId={chatId}
+                  key={`version-${message.id}`}
+                  message={message}
+                  regenerate={regenerate}
+                  setMessages={setMessages}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

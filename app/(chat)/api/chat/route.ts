@@ -35,6 +35,7 @@ import {
   getMessagesByChatId,
   saveChat,
   saveMessages,
+  saveOrUpdateMessage,
   updateChatLastContextById,
 } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
@@ -160,17 +161,13 @@ export async function POST(request: Request) {
       country,
     };
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: message.id,
-          role: "user",
-          parts: message.parts,
-          attachments: [],
-          createdAt: new Date(),
-        },
-      ],
+    await saveOrUpdateMessage({
+      chatId: id,
+      id: message.id,
+      role: "user",
+      parts: message.parts,
+      attachments: [],
+      createdAt: new Date(),
     });
 
     const streamId = generateUUID();

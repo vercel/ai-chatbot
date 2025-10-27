@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { deleteTrailingMessages } from "@/app/(chat)/actions";
+import { deleteTrailingMessages, createNewMessageVersion } from "@/app/(chat)/actions";
 import type { ChatMessage } from "@/lib/types";
 import { getTextFromMessage } from "@/lib/utils";
 import { Button } from "./ui/button";
@@ -20,6 +20,8 @@ export type MessageEditorProps = {
   setMode: Dispatch<SetStateAction<"view" | "edit">>;
   setMessages: UseChatHelpers<ChatMessage>["setMessages"];
   regenerate: UseChatHelpers<ChatMessage>["regenerate"];
+  chatId: string;
+  userId: string;
 };
 
 export function MessageEditor({
@@ -27,6 +29,8 @@ export function MessageEditor({
   setMode,
   setMessages,
   regenerate,
+  chatId,
+  userId,
 }: MessageEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -80,27 +84,62 @@ export function MessageEditor({
           onClick={async () => {
             setIsSubmitting(true);
 
-            await deleteTrailingMessages({
-              id: message.id,
-            });
+            try {
+              // Create new message version instead of updating
+              const newVersion = await createNewMessageVersion({
+                originalMessageId: message.id,
+                newContent: draftContent,
+                chatId,
+                userId,
+              });
 
-            setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
+              // Update the UI with the new version
+              setMessages((messages) => {
+                const index = messages.findIndex((m) => m.id === message.id);
 
-              if (index !== -1) {
-                const updatedMessage: ChatMessage = {
-                  ...message,
-                  parts: [{ type: "text", text: draftContent }],
-                };
+                if (index !== -1) {
+                  const updatedMessage: ChatMessage = {
+                    ...message,
+                    id: newVersion.id,
+                    parts: [{ type: "text", text: draftContent }],
+                  };
 
-                return [...messages.slice(0, index), updatedMessage];
-              }
+                  // Remove all messages after this one (AI responses will be regenerated)
+                  return [...messages.slice(0, index), updatedMessage];
+                }
 
-              return messages;
-            });
+                return messages;
+              });
 
-            setMode("view");
-            regenerate();
+              setMode("view");
+              regenerate();
+            } catch (error) {
+              console.error("Failed to create message version:", error);
+              // Fallback to old behavior if versioning fails
+              await deleteTrailingMessages({
+                id: message.id,
+              });
+
+              setMessages((messages) => {
+                const index = messages.findIndex((m) => m.id === message.id);
+
+                if (index !== -1) {
+                  const updatedMessage: ChatMessage = {
+                    ...message,
+                    parts: [{ type: "text", text: draftContent }],
+                  };
+
+                  return [...messages.slice(0, index), updatedMessage];
+                }
+
+                return messages;
+              });
+
+              setMode("view");
+              regenerate();
+            } finally {
+              setIsSubmitting(false);
+            }
           }}
           variant="default"
         >

@@ -252,10 +252,9 @@ export async function getMessagesByChatId({
 }): Promise<DBMessage[]> {
   try {
     await ensureConnection();
-    const messages = await MessageModel.find({ chatId: id })
-      .sort({ createdAt: 1 })
-      .lean();
-    return messages as unknown as DBMessage[];
+    
+    // Get only current versions or messages without versioning
+    return await getMessagesWithCurrentVersions({ chatId: id });
   } catch (_error) {
     throw new ChatSDKError(
       "bad_request:database",
@@ -298,6 +297,85 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to delete messages after timestamp"
+    );
+  }
+}
+
+export async function deleteMessagesByChatIdFromTimestamp({
+  chatId,
+  timestamp,
+}: {
+  chatId: string;
+  timestamp: Date;
+}): Promise<void> {
+  try {
+    await ensureConnection();
+    await MessageModel.deleteMany({
+      chatId,
+      createdAt: { $gte: timestamp },
+    });
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to delete messages from timestamp"
+    );
+  }
+}
+
+export async function updateMessageById({
+  id,
+  parts,
+}: {
+  id: string;
+  parts: any;
+}): Promise<void> {
+  try {
+    await ensureConnection();
+    await MessageModel.findOneAndUpdate(
+      { id },
+      { parts, updatedAt: new Date() }
+    );
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to update message"
+    );
+  }
+}
+
+export async function saveOrUpdateMessage({
+  chatId,
+  id,
+  role,
+  parts,
+  attachments,
+  createdAt,
+}: {
+  chatId: string;
+  id: string;
+  role: string;
+  parts: any;
+  attachments: any;
+  createdAt: Date;
+}): Promise<void> {
+  try {
+    await ensureConnection();
+    await MessageModel.findOneAndUpdate(
+      { id },
+      {
+        chatId,
+        role,
+        parts,
+        attachments,
+        createdAt,
+        updatedAt: new Date(),
+      },
+      { upsert: true }
+    );
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to save or update message"
     );
   }
 }
@@ -663,6 +741,250 @@ export async function getDocumentById({
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to get document by id"
+    );
+  }
+}
+
+// Message Versioning Functions
+
+export async function createMessageVersion({
+  originalMessageId,
+  newMessageId,
+  chatId,
+  role,
+  parts,
+  attachments,
+  userId,
+}: {
+  originalMessageId: string;
+  newMessageId: string;
+  chatId: string;
+  role: string;
+  parts: any;
+  attachments: any;
+  userId: string;
+}): Promise<DBMessage> {
+  try {
+    await ensureConnection();
+
+    console.log("Creating message version for:", originalMessageId);
+
+    // Get the original message to find its version group
+    const originalMessage = await MessageModel.findOne({ id: originalMessageId });
+    
+    if (!originalMessage) {
+      console.error("Original message not found:", originalMessageId);
+      throw new ChatSDKError(
+        "bad_request:database",
+        `Original message not found: ${originalMessageId}`
+      );
+    }
+
+    console.log("Found original message:", originalMessage.id, "versionGroupId:", originalMessage.versionGroupId);
+
+    // Use existing versionGroupId or create new one if original doesn't have versioning
+    const versionGroupId = originalMessage.versionGroupId || originalMessage.id;
+    console.log("Using versionGroupId:", versionGroupId);
+    
+    // Get the highest version number for this group
+    const lastVersion = await MessageModel.findOne({ versionGroupId })
+      .sort({ versionNumber: -1 })
+      .lean() as any;
+    
+    console.log("Last version found:", lastVersion?.versionNumber);
+    const newVersionNumber = (lastVersion?.versionNumber || 0) + 1;
+    console.log("New version number:", newVersionNumber);
+
+    // Mark all existing versions as not current
+    const updateResult = await MessageModel.updateMany(
+      { versionGroupId },
+      { isCurrentVersion: false }
+    );
+    console.log("Updated existing versions:", updateResult.modifiedCount);
+
+    // If original message doesn't have versioning, update it
+    if (!originalMessage.versionGroupId) {
+      const originalUpdateResult = await MessageModel.updateOne(
+        { id: originalMessageId },
+        {
+          versionGroupId,
+          versionNumber: 1,
+          isCurrentVersion: false
+        }
+      );
+      console.log("Updated original message with versioning:", originalUpdateResult.modifiedCount);
+    }
+
+    // Create the new version
+    const newMessage = new MessageModel({
+      id: newMessageId,
+      chatId,
+      role,
+      parts,
+      attachments,
+      createdAt: new Date(),
+      versionGroupId,
+      versionNumber: newVersionNumber,
+      isCurrentVersion: true,
+      parentVersionId: originalMessageId,
+    });
+
+    console.log("Saving new message version:", newMessageId);
+    const savedMessage = await newMessage.save();
+    console.log("Successfully saved new message version");
+
+    return {
+      _id: savedMessage._id?.toString?.() ?? String(savedMessage._id ?? ""),
+      id: savedMessage.id,
+      chatId: savedMessage.chatId,
+      role: savedMessage.role,
+      parts: savedMessage.parts,
+      attachments: savedMessage.attachments,
+      createdAt: savedMessage.createdAt,
+      updatedAt: savedMessage.updatedAt,
+      versionGroupId: savedMessage.versionGroupId,
+      versionNumber: savedMessage.versionNumber,
+      isCurrentVersion: savedMessage.isCurrentVersion,
+      parentVersionId: savedMessage.parentVersionId,
+    } as unknown as DBMessage;
+  } catch (error) {
+    console.error("Failed to create message version:", error);
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError(
+      "bad_request:database",
+      `Failed to create message version: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+export async function getMessageVersions({
+  versionGroupId,
+}: {
+  versionGroupId: string;
+}): Promise<DBMessage[]> {
+  try {
+    await ensureConnection();
+
+    const versions = await MessageModel.find({ versionGroupId })
+      .sort({ versionNumber: 1 })
+      .lean();
+
+    return versions.map((message: any) => ({
+      _id: message._id?.toString?.() ?? String(message._id ?? ""),
+      id: message.id,
+      chatId: message.chatId,
+      role: message.role,
+      parts: message.parts,
+      attachments: message.attachments,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt,
+      versionGroupId: message.versionGroupId,
+      versionNumber: message.versionNumber,
+      isCurrentVersion: message.isCurrentVersion,
+      parentVersionId: message.parentVersionId,
+    })) as unknown as DBMessage[];
+  } catch (error) {
+    console.error("Failed to get message versions:", error);
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get message versions"
+    );
+  }
+}
+
+export async function switchToMessageVersion({
+  versionGroupId,
+  targetVersionNumber,
+}: {
+  versionGroupId: string;
+  targetVersionNumber: number;
+}): Promise<DBMessage | null> {
+  try {
+    await ensureConnection();
+
+    // Mark all versions as not current
+    await MessageModel.updateMany(
+      { versionGroupId },
+      { isCurrentVersion: false }
+    );
+
+    // Mark target version as current
+    const updatedMessage = await MessageModel.findOneAndUpdate(
+      { versionGroupId, versionNumber: targetVersionNumber },
+      { isCurrentVersion: true },
+      { new: true }
+    );
+
+    if (!updatedMessage) {
+      return null;
+    }
+
+    return {
+      _id: updatedMessage._id?.toString?.() ?? String(updatedMessage._id ?? ""),
+      id: updatedMessage.id,
+      chatId: updatedMessage.chatId,
+      role: updatedMessage.role,
+      parts: updatedMessage.parts,
+      attachments: updatedMessage.attachments,
+      createdAt: updatedMessage.createdAt,
+      updatedAt: updatedMessage.updatedAt,
+      versionGroupId: updatedMessage.versionGroupId,
+      versionNumber: updatedMessage.versionNumber,
+      isCurrentVersion: updatedMessage.isCurrentVersion,
+      parentVersionId: updatedMessage.parentVersionId,
+    } as unknown as DBMessage;
+  } catch (error) {
+    console.error("Failed to switch message version:", error);
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to switch message version"
+    );
+  }
+}
+
+export async function getMessagesWithCurrentVersions({
+  chatId,
+}: {
+  chatId: string;
+}): Promise<DBMessage[]> {
+  try {
+    await ensureConnection();
+
+    // Get all messages that are either:
+    // 1. Current versions (isCurrentVersion: true)
+    // 2. Don't have versioning (versionGroupId is null/undefined)
+    const messages = await MessageModel.find({
+      chatId,
+      $or: [
+        { isCurrentVersion: true },
+        { versionGroupId: { $exists: false } },
+        { versionGroupId: null }
+      ]
+    })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    return messages.map((message: any) => ({
+      _id: message._id?.toString?.() ?? String(message._id ?? ""),
+      id: message.id,
+      chatId: message.chatId,
+      role: message.role,
+      parts: message.parts,
+      attachments: message.attachments,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt,
+      versionGroupId: message.versionGroupId,
+      versionNumber: message.versionNumber,
+      isCurrentVersion: message.isCurrentVersion,
+      parentVersionId: message.parentVersionId,
+    })) as unknown as DBMessage[];
+  } catch (error) {
+    console.error("Failed to get messages with current versions:", error);
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get messages with current versions"
     );
   }
 }

@@ -39,6 +39,7 @@ export default async function Page() {
           initialMessages={[]}
           isReadonly={false}
           key={id}
+          userId={session.user?.id || ""}
         />
         <DataStreamHandler />
       </>
@@ -56,6 +57,7 @@ export default async function Page() {
         initialMessages={[]}
         isReadonly={false}
         key={id}
+        userId={session.user?.id || ""}
       />
       <DataStreamHandler />
     </>
