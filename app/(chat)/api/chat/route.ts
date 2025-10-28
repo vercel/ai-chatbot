@@ -260,6 +260,7 @@ export async function POST(request: Request) {
             createdAt: new Date(),
             attachments: [],
             chatId: id,
+            userId: session.user.id, // Add userId for new versioning system
           })),
         });
 

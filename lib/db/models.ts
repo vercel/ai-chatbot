@@ -53,45 +53,70 @@ const chatSchema = new Schema<IChat>(
   }
 );
 
-// Message Interface and Schema
+// Message Interface and Schema (denormalized for fast reads)
 export interface IMessage extends MongoDocument {
   _id: string;
   id: string;
   chatId: string;
+  userId: string;
   role: string;
-  parts: any;
+  latestVersionId?: string; // Points to MessageVersion._id
+  latestContent: any; // Denormalized latest content (parts)
+  latestPlainText?: string; // For full-text search
   attachments: any;
   createdAt: Date;
   updatedAt: Date;
-  // Versioning fields
-  versionGroupId?: string; // Groups different versions of the same logical message
-  versionNumber?: number; // 1, 2, 3, etc.
-  isCurrentVersion?: boolean; // Only one version per group should be current
-  parentVersionId?: string; // References the previous version
 }
 
 const messageSchema = new Schema<IMessage>(
   {
     id: { type: String, unique: true, required: true },
     chatId: { type: String, required: true, ref: "Chat" },
+    userId: { type: String, required: true, ref: "User" },
     role: { type: String, required: true },
-    parts: { type: Schema.Types.Mixed, required: true },
+    latestVersionId: { type: String, ref: "MessageVersion" },
+    latestContent: { type: Schema.Types.Mixed, required: true }, // Denormalized
+    latestPlainText: { type: String }, // For search
     attachments: { type: Schema.Types.Mixed, required: true },
     createdAt: { type: Date, required: true },
-    // Versioning fields
-    versionGroupId: { type: String, ref: "Message" }, // Groups versions together
-    versionNumber: { type: Number, default: 1 },
-    isCurrentVersion: { type: Boolean, default: true },
-    parentVersionId: { type: String, ref: "Message" }, // Previous version reference
   },
   {
     timestamps: true,
   }
 );
 
-// Add compound index for efficient version queries
-messageSchema.index({ versionGroupId: 1, versionNumber: 1 });
-messageSchema.index({ chatId: 1, versionGroupId: 1, isCurrentVersion: 1 });
+// MessageVersion Interface and Schema (append-only history)
+export interface IMessageVersion extends MongoDocument {
+  _id: string;
+  messageId: string; // References Message.id
+  versionNumber: number; // 1, 2, 3, etc.
+  authorId: string; // Who made this edit
+  content: any; // Rich content (parts)
+  plainText?: string; // For search/indexing
+  editReason?: string; // Optional reason for edit
+  metadata?: any; // Embeddings, tokens, etc.
+  createdAt: Date;
+}
+
+const messageVersionSchema = new Schema<IMessageVersion>(
+  {
+    messageId: { type: String, required: true, ref: "Message" },
+    versionNumber: { type: Number, required: true },
+    authorId: { type: String, required: true, ref: "User" },
+    content: { type: Schema.Types.Mixed, required: true },
+    plainText: { type: String },
+    editReason: { type: String },
+    metadata: { type: Schema.Types.Mixed, default: {} },
+    createdAt: { type: Date, required: true, default: Date.now },
+  },
+  {
+    timestamps: false, // We manage createdAt manually
+  }
+);
+
+// Indexes for efficient version queries
+messageVersionSchema.index({ messageId: 1, versionNumber: -1 }); // Fast lookup for latest
+messageVersionSchema.index({ messageId: 1, versionNumber: 1 }, { unique: true }); // Unique constraint
 
 // Vote Interface and Schema
 export interface IVote extends MongoDocument {
@@ -210,6 +235,8 @@ export const ChatModel =
   mongoose.models.Chat || mongoose.model<IChat>("Chat", chatSchema);
 export const MessageModel =
   mongoose.models.Message || mongoose.model<IMessage>("Message", messageSchema);
+export const MessageVersionModel =
+  mongoose.models.MessageVersion || mongoose.model<IMessageVersion>("MessageVersion", messageVersionSchema);
 export const VoteModel =
   mongoose.models.Vote || mongoose.model<IVote>("Vote", voteSchema);
 export const DocumentModel =
@@ -246,16 +273,26 @@ export type DBMessage = {
   _id: string;
   id: string;
   chatId: string;
+  userId: string;
   role: string;
-  parts: any;
+  latestVersionId?: string;
+  latestContent: any; // Denormalized latest content
+  latestPlainText?: string;
   attachments: any;
   createdAt: Date;
   updatedAt: Date;
-  // Versioning fields
-  versionGroupId?: string;
-  versionNumber?: number;
-  isCurrentVersion?: boolean;
-  parentVersionId?: string;
+};
+
+export type MessageVersion = {
+  _id: string;
+  messageId: string;
+  versionNumber: number;
+  authorId: string;
+  content: any;
+  plainText?: string;
+  editReason?: string;
+  metadata?: any;
+  createdAt: Date;
 };
 
 export type Vote = {

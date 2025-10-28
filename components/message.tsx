@@ -37,7 +37,7 @@ import {
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
-import { MessageVersionNavigator } from "./message-version-navigator";
+import { MessageVersionSwitcher } from "./message-version-switcher";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
 
@@ -296,12 +296,19 @@ const PurePreviewMessage = ({
                 vote={vote}
               />
               {message.role === "user" && (
-                <MessageVersionNavigator
-                  chatId={chatId}
+                <MessageVersionSwitcher
                   key={`version-${message.id}`}
                   message={message}
-                  regenerate={regenerate}
-                  setMessages={setMessages}
+                  onVersionSwitch={(newContent) => {
+                    // Update the message content optimistically
+                    setMessages(prevMessages => 
+                      prevMessages.map(m => 
+                        m.id === message.id 
+                          ? { ...m, parts: newContent }
+                          : m
+                      )
+                    );
+                  }}
                 />
               )}
             </>

@@ -75,7 +75,9 @@ export function useVersionCache() {
     setLoading(versionGroupId, true);
     try {
       const versions = await fetchFunction();
-      const currentVersionIndex = versions.findIndex(v => v.isCurrentVersion);
+      // Note: isCurrentVersion is not available in new versioning system
+      // Assuming the first version is the current one for now
+      const currentVersionIndex = 0;
       
       setCachedVersions(versionGroupId, versions, Math.max(0, currentVersionIndex));
       

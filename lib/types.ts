@@ -49,7 +49,10 @@ export type ChatMessage = UIMessage<
   MessageMetadata,
   CustomUIDataTypes,
   ChatTools
->;
+> & {
+  latestVersionId?: string;
+  userId?: string;
+};
 
 export type Attachment = {
   name: string;

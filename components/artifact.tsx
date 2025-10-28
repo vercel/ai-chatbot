@@ -69,6 +69,7 @@ function PureArtifact({
   isReadonly,
   selectedVisibilityType,
   selectedModelId,
+  userId,
 }: {
   chatId: string;
   input: string;
@@ -85,6 +86,7 @@ function PureArtifact({
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   selectedModelId: string;
+  userId: string;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -336,6 +338,7 @@ function PureArtifact({
                   regenerate={regenerate}
                   setMessages={setMessages}
                   status={status}
+                  userId={userId}
                   votes={votes}
                 />
 

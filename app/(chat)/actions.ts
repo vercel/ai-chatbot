@@ -5,12 +5,9 @@ import { cookies } from "next/headers";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { myProvider } from "@/lib/ai/providers";
 import {
-  createMessageVersion,
   deleteMessagesByChatIdAfterTimestamp,
   deleteMessagesByChatIdFromTimestamp,
   getMessageById,
-  getMessageVersions,
-  switchToMessageVersion,
   updateChatVisiblityById,
 } from "@/lib/db/queries";
 
@@ -72,45 +69,154 @@ export async function createNewMessageVersion({
   chatId: string;
   userId: string;
 }) {
-  const messages = await getMessageById({ id: originalMessageId });
-  const originalMessage = messages[0];
-  
-  if (!originalMessage) {
-    throw new Error("Original message not found");
-  }
-
-  // Generate new message ID
+  // Use the old versioning system from queries.ts
+  const { createMessageVersion } = await import("@/lib/db/queries");
   const { generateUUID } = await import("@/lib/utils");
+  
   const newMessageId = generateUUID();
-
-  // First, create new version of the user message
-  const newVersion = await createMessageVersion({
+  
+  const result = await createMessageVersion({
     originalMessageId,
     newMessageId,
     chatId,
-    role: originalMessage.role,
+    role: "user", // User message
     parts: [{ type: "text", text: newContent }],
-    attachments: originalMessage.attachments || [],
+    attachments: [],
     userId,
   });
 
-  // Then delete all AI responses after the original message timestamp
-  await deleteMessagesByChatIdAfterTimestamp({
-    chatId,
-    timestamp: originalMessage.createdAt,
-  });
+  // Delete AI responses after the original message timestamp
+  const messages = await getMessageById({ id: originalMessageId });
+  const originalMessage = messages[0];
+  
+  if (originalMessage) {
+    await deleteMessagesByChatIdAfterTimestamp({
+      chatId,
+      timestamp: originalMessage.createdAt,
+    });
+  }
 
-  return newVersion;
+  return result;
 }
 
+// Old versioning system actions
 export async function getMessageVersionsAction({
-  versionGroupId,
+  messageId,
+  limit = 50,
+  offset = 0,
 }: {
-  versionGroupId: string;
+  messageId: string;
+  limit?: number;
+  offset?: number;
 }) {
-  return await getMessageVersions({ versionGroupId });
+  const { getMessageVersions, getMessageById } = await import("@/lib/db/queries");
+  try {
+    // First, find the message to get its versionGroupId
+    const messages = await getMessageById({ id: messageId });
+    if (messages.length === 0) {
+      return [];
+    }
+    
+    const message = messages[0] as any;
+    // Use versionGroupId if available, otherwise use the messageId itself
+    const versionGroupId = message.versionGroupId || messageId;
+    
+    return await getMessageVersions({ versionGroupId });
+  } catch (error) {
+    console.error("Failed to get message versions:", error);
+    return [];
+  }
 }
 
+export async function editMessageAction({
+  messageId,
+  authorId,
+  newContent,
+  editReason,
+  clientLatestVersion,
+}: {
+  messageId: string;
+  authorId: string;
+  newContent: any;
+  editReason?: string;
+  clientLatestVersion?: number;
+}) {
+  const { createMessageVersion } = await import("@/lib/db/queries");
+  const { generateUUID } = await import("@/lib/utils");
+  
+  try {
+    // Get the original message to find chatId
+    const messages = await getMessageById({ id: messageId });
+    const originalMessage = messages[0];
+    
+    if (!originalMessage) {
+      return {
+        success: false,
+        message: "Original message not found",
+      };
+    }
+
+    const newMessageId = generateUUID();
+    const result = await createMessageVersion({
+      originalMessageId: messageId,
+      newMessageId,
+      chatId: originalMessage.chatId,
+      role: originalMessage.role,
+      parts: newContent,
+      attachments: originalMessage.attachments || [],
+      userId: authorId,
+    });
+
+    return {
+      success: true,
+      message: "Message edited successfully",
+      version: result,
+    };
+  } catch (error) {
+    console.error("Failed to edit message:", error);
+    return {
+      success: false,
+      message: "Failed to edit message. Please try again.",
+    };
+  }
+}
+
+export async function switchToVersionAction({
+  messageId,
+  versionNumber,
+}: {
+  messageId: string;
+  versionNumber: number;
+}) {
+  const { switchToMessageVersion } = await import("@/lib/db/queries");
+  try {
+    // Use messageId as versionGroupId for the old system
+    const version = await switchToMessageVersion({ 
+      versionGroupId: messageId, 
+      targetVersionNumber: versionNumber 
+    });
+    
+    if (!version) {
+      return {
+        success: false,
+        message: "Version not found",
+      };
+    }
+
+    return {
+      success: true,
+      version,
+    };
+  } catch (error) {
+    console.error("Failed to switch to version:", error);
+    return {
+      success: false,
+      message: "Failed to switch version. Please try again.",
+    };
+  }
+}
+
+// Legacy function kept for compatibility - uses old system
 export async function switchMessageVersionAction({
   versionGroupId,
   targetVersionNumber,
@@ -120,38 +226,9 @@ export async function switchMessageVersionAction({
   targetVersionNumber: number;
   chatId: string;
 }) {
-  // First, get the target version to find when it was created
-  const versions = await getMessageVersions({ versionGroupId });
-  const targetVersion = versions.find(v => v.versionNumber === targetVersionNumber);
-  
-  if (!targetVersion) {
-    throw new Error("Target version not found");
-  }
-
-  // Delete all AI messages after this version's timestamp
-  await deleteMessagesByChatIdAfterTimestamp({
-    chatId,
-    timestamp: targetVersion.createdAt,
+  const { switchToMessageVersion } = await import("@/lib/db/queries");
+  return await switchToMessageVersion({
+    versionGroupId,
+    targetVersionNumber,
   });
-
-  // Switch to the target version
-  return await switchToMessageVersion({ versionGroupId, targetVersionNumber });
-}
-
-export async function checkMessageVersions({
-  messageId,
-}: {
-  messageId: string;
-}) {
-  console.log("Checking versions for message:", messageId);
-  
-  // Check if this message has versions using it as version group ID
-  const directVersions = await getMessageVersions({ versionGroupId: messageId });
-  console.log("Direct versions:", directVersions.length);
-  
-  return {
-    messageId,
-    directVersions: directVersions.length,
-    versions: directVersions
-  };
 }

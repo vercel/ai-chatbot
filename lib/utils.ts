@@ -101,10 +101,13 @@ export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
   return messages.map((message) => ({
     id: message.id,
     role: message.role as 'user' | 'assistant' | 'system',
-    parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
+    parts: (message.latestContent || (message as any).parts) as UIMessagePart<CustomUIDataTypes, ChatTools>[],
     metadata: {
       createdAt: formatISO(message.createdAt),
     },
+    // Include versioning info for the new system
+    latestVersionId: message.latestVersionId,
+    userId: message.userId,
   }));
 }
 

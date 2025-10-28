@@ -234,14 +234,35 @@ export async function saveMessages({
     parts: any;
     attachments: any;
     createdAt: Date;
+    userId?: string;
   }>;
 }): Promise<void> {
   try {
     await ensureConnection();
-    const messageDocuments = messages.map((msg) => new MessageModel(msg));
-    await MessageModel.insertMany(messageDocuments);
-  } catch (_error) {
-    throw new ChatSDKError("bad_request:database", "Failed to save messages");
+    
+    // Use the existing message model directly (no versioning for new messages)
+    for (const msg of messages) {
+      await MessageModel.findOneAndUpdate(
+        { id: msg.id },
+        {
+          chatId: msg.chatId,
+          role: msg.role,
+          parts: msg.parts,
+          attachments: msg.attachments,
+          createdAt: msg.createdAt,
+          updatedAt: new Date(),
+        },
+        { upsert: true }
+      );
+    }
+  } catch (error) {
+    console.error("Failed to save messages:", error);
+    console.error("Error details:", {
+      name: (error as any)?.name,
+      message: (error as any)?.message,
+      stack: (error as any)?.stack,
+    });
+    throw new ChatSDKError("bad_request:database", `Failed to save messages: ${(error as any)?.message || 'Unknown error'}`);
   }
 }
 
@@ -253,7 +274,7 @@ export async function getMessagesByChatId({
   try {
     await ensureConnection();
     
-    // Get only current versions or messages without versioning
+    // Use the existing versioning system to get current versions
     return await getMessagesWithCurrentVersions({ chatId: id });
   } catch (_error) {
     throw new ChatSDKError(
@@ -804,23 +825,45 @@ export async function createMessageVersion({
 
     // If original message doesn't have versioning, update it
     if (!originalMessage.versionGroupId) {
+      const originalContent = originalMessage.latestContent || originalMessage.parts;
       const originalUpdateResult = await MessageModel.updateOne(
         { id: originalMessageId },
         {
           versionGroupId,
           versionNumber: 1,
-          isCurrentVersion: false
+          isCurrentVersion: false,
+          // Ensure required fields are set
+          userId: originalMessage.userId || userId, // Use existing or provided userId
+          latestContent: originalContent, // Use existing or parts
+          latestPlainText: originalMessage.latestPlainText || extractPlainText(originalContent), // Extract if missing
         }
       );
       console.log("Updated original message with versioning:", originalUpdateResult.modifiedCount);
     }
 
+    // Extract plain text from parts for search
+    const extractPlainText = (parts: any): string => {
+      if (!parts) return "";
+      if (Array.isArray(parts)) {
+        return parts
+          .filter(part => part.type === "text")
+          .map(part => part.text || "")
+          .join(" ")
+          .trim();
+      }
+      if (typeof parts === "string") return parts;
+      return "";
+    };
+
     // Create the new version
     const newMessage = new MessageModel({
       id: newMessageId,
       chatId,
+      userId, // Add required userId field
       role,
       parts,
+      latestContent: parts, // Add required latestContent field
+      latestPlainText: extractPlainText(parts), // Extract plain text for search
       attachments,
       createdAt: new Date(),
       versionGroupId,

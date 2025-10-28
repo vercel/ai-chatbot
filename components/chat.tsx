@@ -353,6 +353,7 @@ export function Chat({
         setInput={setInput}
         setMessages={setMessages}
         status={status}
+        userId={userId}
         stop={enhancedStop}
         votes={votes}
       />

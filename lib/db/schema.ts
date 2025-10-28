@@ -3,6 +3,7 @@ export type {
   Chat,
   DBMessage,
   Document,
+  MessageVersion,
   Stream,
   Suggestion,
   User,
