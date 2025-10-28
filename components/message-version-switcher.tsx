@@ -19,7 +19,7 @@ function simpleDiffWords(oldText: string, newText: string) {
   return result;
 }
 import type { ChatMessage } from "@/lib/types";
-import type { MessageVersion } from "@/lib/db/schema";
+import type { DBMessage } from "@/lib/db/schema";
 import { Button } from "./ui/button";
 import { 
   DropdownMenu, 
@@ -37,34 +37,47 @@ import { toast } from "./toast";
 interface MessageVersionSwitcherProps {
   message: ChatMessage;
   onVersionSwitch?: (newContent: any) => void;
+  onAssistantSwitch?: (assistant: any | null) => void;
+  onRegenerateAfterSwitch?: () => void;
 }
 
 export function MessageVersionSwitcher({ 
   message, 
-  onVersionSwitch 
+  onVersionSwitch,
+  onAssistantSwitch,
+  onRegenerateAfterSwitch
 }: MessageVersionSwitcherProps) {
-  const [versions, setVersions] = useState<MessageVersion[]>([]);
-  const [selectedVersion, setSelectedVersion] = useState<MessageVersion | null>(null);
+  const [versions, setVersions] = useState<DBMessage[]>([]);
+  const [selectedVersion, setSelectedVersion] = useState<DBMessage | null>(null);
   const [currentVersionNumber, setCurrentVersionNumber] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
 
-  // Load versions on mount
+  // Load versions on mount and when message id changes
   useEffect(() => {
     async function loadVersions() {
       if (!message.id) return;
 
+      console.log("Loading versions for message:", message.id);
+      console.log("Message parts changed, reloading versions...");
       try {
         const messageVersions = await getMessageVersionsAction({ 
           messageId: message.id 
         });
         
-        if (messageVersions.length > 1) {
-          setVersions(messageVersions);
-          // Find the latest version (should be the first one due to sorting)
-          const latest = messageVersions[0];
-          setSelectedVersion(latest);
-          setCurrentVersionNumber(latest.versionNumber);
+        console.log("Found versions:", messageVersions.length, messageVersions);
+        
+  if (messageVersions.length > 1) {
+    setVersions(messageVersions);
+    // Prefer the isCurrentVersion flag if present, else take first (latest)
+    const current = messageVersions.find(v => v.isCurrentVersion) || messageVersions[0];
+    setSelectedVersion(current);
+    setCurrentVersionNumber(current.versionNumber || 1);
+          console.log("Version switcher will show for", messageVersions.length, "versions");
+    console.log("Current version number:", current.versionNumber, "Current version:", current);
+        } else {
+          console.log("Not enough versions to show switcher:", messageVersions.length);
+          console.log("Available versions:", messageVersions);
         }
       } catch (error) {
         console.error("Failed to load versions:", error);
@@ -95,8 +108,16 @@ export function MessageVersionSwitcher({
         
         // Notify parent component about the version switch
         if (onVersionSwitch) {
-          onVersionSwitch(result.version.content);
+          onVersionSwitch(result.version.parts || result.version.latestContent || result.version.content);
         }
+
+        // Update the assistant message in the UI if available
+        if (onAssistantSwitch) {
+          onAssistantSwitch(result.assistant || null);
+        }
+
+        // Note: AI response for this version should be retrieved from cache/DB
+        // No need to regenerate - each version should have its own cached response
 
         toast({
           type: "success",
@@ -123,8 +144,8 @@ export function MessageVersionSwitcher({
     if (!selectedVersion || !versions.length) return null;
 
     // Compare current selected version with the latest version
-    const latestVersion = versions[0];
-    if (selectedVersion.versionNumber === latestVersion.versionNumber) {
+  const latestVersion = versions.find(v => v.isCurrentVersion) || versions[0];
+    if ((selectedVersion.versionNumber || 1) === (latestVersion.versionNumber || 1)) {
       return (
         <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
           This is the latest version.
@@ -132,8 +153,8 @@ export function MessageVersionSwitcher({
       );
     }
 
-    const oldText = getPlainTextFromContent(latestVersion.content);
-    const newText = getPlainTextFromContent(selectedVersion.content);
+    const oldText = getPlainTextFromContent(latestVersion.latestContent || latestVersion.content);
+    const newText = getPlainTextFromContent(selectedVersion.latestContent || selectedVersion.content);
     const diffs = simpleDiffWords(oldText || "", newText || "");
 
     return (
@@ -185,13 +206,13 @@ export function MessageVersionSwitcher({
         <DropdownMenuContent align="start" className="w-64">
           {versions.map((version) => (
             <DropdownMenuItem
-              key={version.versionNumber}
-              onClick={() => handleVersionSelect(version.versionNumber)}
+              key={version.versionNumber || version.id}
+              onClick={() => handleVersionSelect(version.versionNumber || 1)}
               className="flex items-start gap-2 p-3"
             >
               <div className="flex-shrink-0">
                 <div className={`w-2 h-2 rounded-full mt-1 ${
-                  version.versionNumber === currentVersionNumber 
+                  (version.versionNumber || 1) === currentVersionNumber 
                     ? "bg-blue-500" 
                     : "bg-gray-300"
                 }`} />
@@ -199,9 +220,9 @@ export function MessageVersionSwitcher({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm">
-                    Version {version.versionNumber}
+                    Version {version.versionNumber || 1}
                   </span>
-                  {version.versionNumber === versions[0].versionNumber && (
+                  {(version.versionNumber || 1) === (versions[0].versionNumber || 1) && (
                     <Badge variant="default" className="text-xs">Latest</Badge>
                   )}
                 </div>

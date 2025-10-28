@@ -161,13 +161,19 @@ export async function POST(request: Request) {
       country,
     };
 
-    await saveOrUpdateMessage({
-      chatId: id,
-      id: message.id,
-      role: "user",
-      parts: message.parts,
-      attachments: [],
-      createdAt: new Date(),
+    // Persist the user message with denormalized latestContent + userId to satisfy schema
+    await saveMessages({
+      messages: [
+        {
+          chatId: id,
+          id: message.id,
+          role: "user",
+          parts: message.parts,
+          attachments: [],
+          createdAt: new Date(),
+          userId: session.user.id,
+        },
+      ],
     });
 
     const streamId = generateUUID();
@@ -275,7 +281,8 @@ export async function POST(request: Request) {
           }
         }
       },
-      onError: () => {
+      onError: (err) => {
+        console.error("Chat pipeline error:", err);
         return "Oops, an error occurred!";
       },
     });

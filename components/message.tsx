@@ -309,6 +309,28 @@ const PurePreviewMessage = ({
                       )
                     );
                   }}
+                  onAssistantSwitch={(assistant) => {
+                    if (!assistant) return;
+                    // Replace the assistant message immediately following this user message
+                    setMessages(prev => {
+                      const idx = prev.findIndex(m => m.id === message.id);
+                      if (idx === -1) return prev;
+                      const next = [...prev];
+                      const following = next[idx + 1];
+                      if (following && following.role === "assistant") {
+                        next[idx + 1] = {
+                          ...following,
+                          id: assistant.id,
+                          parts: assistant.parts,
+                        } as any;
+                      }
+                      return next;
+                    });
+                  }}
+                  onRegenerateAfterSwitch={() => {
+                    // Trigger regeneration from this message onwards
+                    regenerate();
+                  }}
                 />
               )}
             </>

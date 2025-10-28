@@ -247,7 +247,11 @@ export async function saveMessages({
         {
           chatId: msg.chatId,
           role: msg.role,
+          // Keep both parts (legacy) and latestContent (denormalized)
           parts: msg.parts,
+          latestContent: msg.parts,
+          // Persist userId when available to satisfy schema and future queries
+          ...(msg.userId ? { userId: msg.userId } : {}),
           attachments: msg.attachments,
           createdAt: msg.createdAt,
           updatedAt: new Date(),
@@ -301,6 +305,47 @@ export async function getMessageById({
   }
 }
 
+// Find the first assistant message that follows a specific user message
+export async function getAssistantMessageForUserVersion({
+  messageId,
+}: {
+  messageId: string;
+}): Promise<DBMessage | null> {
+  try {
+    await ensureConnection();
+
+    const userMsg = await MessageModel.findOne({ id: messageId }).lean();
+    if (!userMsg) return null;
+
+    // Find the next assistant message after this user's createdAt
+    const assistant = await MessageModel.findOne({
+      chatId: (userMsg as any).chatId,
+      role: "assistant",
+      createdAt: { $gt: (userMsg as any).createdAt },
+    })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    if (!assistant) return null;
+
+    const a: any = assistant;
+    return {
+      _id: a._id?.toString?.() ?? String(a._id ?? ""),
+      id: a.id,
+      chatId: a.chatId,
+      role: a.role,
+      parts: a.latestContent || a.parts,
+      latestContent: a.latestContent || a.parts,
+      attachments: a.attachments,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+    } as unknown as DBMessage;
+  } catch (error) {
+    console.error("Failed to get assistant for user version:", error);
+    return null;
+  }
+}
+
 export async function deleteMessagesByChatIdAfterTimestamp({
   chatId,
   timestamp,
@@ -318,6 +363,29 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to delete messages after timestamp"
+    );
+  }
+}
+
+// New: delete only assistant messages created after a timestamp (avoid deleting new user versions)
+export async function deleteAssistantMessagesByChatIdAfterTimestamp({
+  chatId,
+  timestamp,
+}: {
+  chatId: string;
+  timestamp: Date;
+}): Promise<void> {
+  try {
+    await ensureConnection();
+    await MessageModel.deleteMany({
+      chatId,
+      role: "assistant",
+      createdAt: { $gt: timestamp },
+    });
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to delete assistant messages after timestamp"
     );
   }
 }
@@ -776,6 +844,7 @@ export async function createMessageVersion({
   parts,
   attachments,
   userId,
+  aiResponseId, // Optional: If we already have the AI response
 }: {
   originalMessageId: string;
   newMessageId: string;
@@ -784,9 +853,24 @@ export async function createMessageVersion({
   parts: any;
   attachments: any;
   userId: string;
+  aiResponseId?: string; // Store reference to AI response
 }): Promise<DBMessage> {
   try {
     await ensureConnection();
+
+    // Extract plain text from parts for search
+    const extractPlainText = (parts: any): string => {
+      if (!parts) return "";
+      if (Array.isArray(parts)) {
+        return parts
+          .filter(part => part.type === "text")
+          .map(part => part.text || "")
+          .join(" ")
+          .trim();
+      }
+      if (typeof parts === "string") return parts;
+      return "";
+    };
 
     console.log("Creating message version for:", originalMessageId);
 
@@ -807,24 +891,11 @@ export async function createMessageVersion({
     const versionGroupId = originalMessage.versionGroupId || originalMessage.id;
     console.log("Using versionGroupId:", versionGroupId);
     
-    // Get the highest version number for this group
-    const lastVersion = await MessageModel.findOne({ versionGroupId })
-      .sort({ versionNumber: -1 })
-      .lean() as any;
+    let newVersionNumber: number;
     
-    console.log("Last version found:", lastVersion?.versionNumber);
-    const newVersionNumber = (lastVersion?.versionNumber || 0) + 1;
-    console.log("New version number:", newVersionNumber);
-
-    // Mark all existing versions as not current
-    const updateResult = await MessageModel.updateMany(
-      { versionGroupId },
-      { isCurrentVersion: false }
-    );
-    console.log("Updated existing versions:", updateResult.modifiedCount);
-
-    // If original message doesn't have versioning, update it
+    // If original message doesn't have versioning, this is the first edit
     if (!originalMessage.versionGroupId) {
+      // Update original message to be version 1
       const originalContent = originalMessage.latestContent || originalMessage.parts;
       const originalUpdateResult = await MessageModel.updateOne(
         { id: originalMessageId },
@@ -839,21 +910,27 @@ export async function createMessageVersion({
         }
       );
       console.log("Updated original message with versioning:", originalUpdateResult.modifiedCount);
+      
+      // New message will be version 2
+      newVersionNumber = 2;
+      console.log("First edit: Original becomes version 1, new becomes version", newVersionNumber);
+    } else {
+      // Get the highest version number for this group
+      const lastVersion = await MessageModel.findOne({ versionGroupId })
+        .sort({ versionNumber: -1 })
+        .lean() as any;
+      
+      console.log("Last version found:", lastVersion?.versionNumber);
+      newVersionNumber = (lastVersion?.versionNumber || 1) + 1;
+      console.log("Subsequent edit: New version number:", newVersionNumber);
     }
 
-    // Extract plain text from parts for search
-    const extractPlainText = (parts: any): string => {
-      if (!parts) return "";
-      if (Array.isArray(parts)) {
-        return parts
-          .filter(part => part.type === "text")
-          .map(part => part.text || "")
-          .join(" ")
-          .trim();
-      }
-      if (typeof parts === "string") return parts;
-      return "";
-    };
+    // Mark all existing versions as not current
+    const updateResult = await MessageModel.updateMany(
+      { versionGroupId },
+      { isCurrentVersion: false }
+    );
+    console.log("Updated existing versions:", updateResult.modifiedCount);
 
     // Create the new version
     const newMessage = new MessageModel({
@@ -910,8 +987,9 @@ export async function getMessageVersions({
   try {
     await ensureConnection();
 
+    // Return latest first to match UI expectations
     const versions = await MessageModel.find({ versionGroupId })
-      .sort({ versionNumber: 1 })
+      .sort({ versionNumber: -1 })
       .lean();
 
     return versions.map((message: any) => ({
@@ -969,7 +1047,8 @@ export async function switchToMessageVersion({
       id: updatedMessage.id,
       chatId: updatedMessage.chatId,
       role: updatedMessage.role,
-      parts: updatedMessage.parts,
+      parts: updatedMessage.latestContent || updatedMessage.parts, // Use latestContent as parts
+      latestContent: updatedMessage.latestContent || updatedMessage.parts, // Keep both for compatibility
       attachments: updatedMessage.attachments,
       createdAt: updatedMessage.createdAt,
       updatedAt: updatedMessage.updatedAt,

@@ -64,6 +64,11 @@ export interface IMessage extends MongoDocument {
   latestContent: any; // Denormalized latest content (parts)
   latestPlainText?: string; // For full-text search
   attachments: any;
+  // Versioning (legacy, for UI switching)
+  versionGroupId?: string;
+  versionNumber?: number;
+  isCurrentVersion?: boolean;
+  parentVersionId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -78,12 +83,20 @@ const messageSchema = new Schema<IMessage>(
     latestContent: { type: Schema.Types.Mixed, required: true }, // Denormalized
     latestPlainText: { type: String }, // For search
     attachments: { type: Schema.Types.Mixed, required: true },
+    // Versioning (legacy, for UI switching)
+    versionGroupId: { type: String },
+    versionNumber: { type: Number },
+    isCurrentVersion: { type: Boolean, default: false },
+    parentVersionId: { type: String },
     createdAt: { type: Date, required: true },
   },
   {
     timestamps: true,
   }
 );
+
+// Indexes to support version queries
+messageSchema.index({ versionGroupId: 1, versionNumber: -1 });
 
 // MessageVersion Interface and Schema (append-only history)
 export interface IMessageVersion extends MongoDocument {
@@ -281,6 +294,18 @@ export type DBMessage = {
   attachments: any;
   createdAt: Date;
   updatedAt: Date;
+  // Old versioning system fields
+  versionGroupId?: string;
+  versionNumber?: number;
+  isCurrentVersion?: boolean;
+  parentVersionId?: string;
+  // Conversation branching
+  conversationBranchId?: string; // Links user message with its AI response
+  followingMessageId?: string; // ID of the AI message that followed this user message
+  // For compatibility with component expectations
+  content?: any; // Alias for latestContent
+  parts?: any; // For AI compatibility
+  editReason?: string;
 };
 
 export type MessageVersion = {

@@ -85,17 +85,6 @@ export async function createNewMessageVersion({
     userId,
   });
 
-  // Delete AI responses after the original message timestamp
-  const messages = await getMessageById({ id: originalMessageId });
-  const originalMessage = messages[0];
-  
-  if (originalMessage) {
-    await deleteMessagesByChatIdAfterTimestamp({
-      chatId,
-      timestamp: originalMessage.createdAt,
-    });
-  }
-
   return result;
 }
 
@@ -111,17 +100,26 @@ export async function getMessageVersionsAction({
 }) {
   const { getMessageVersions, getMessageById } = await import("@/lib/db/queries");
   try {
+    console.log("getMessageVersionsAction: Looking for versions of message:", messageId);
+    
     // First, find the message to get its versionGroupId
     const messages = await getMessageById({ id: messageId });
+    console.log("getMessageVersionsAction: Found messages:", messages.length, messages);
+    
     if (messages.length === 0) {
+      console.log("getMessageVersionsAction: No message found with id:", messageId);
       return [];
     }
     
     const message = messages[0] as any;
     // Use versionGroupId if available, otherwise use the messageId itself
     const versionGroupId = message.versionGroupId || messageId;
+    console.log("getMessageVersionsAction: Using versionGroupId:", versionGroupId, "from message:", message);
     
-    return await getMessageVersions({ versionGroupId });
+    const versions = await getMessageVersions({ versionGroupId });
+    console.log("getMessageVersionsAction: Found versions:", versions.length, versions);
+    
+    return versions;
   } catch (error) {
     console.error("Failed to get message versions:", error);
     return [];
@@ -188,11 +186,23 @@ export async function switchToVersionAction({
   messageId: string;
   versionNumber: number;
 }) {
-  const { switchToMessageVersion } = await import("@/lib/db/queries");
+  const { switchToMessageVersion, getMessageById, getAssistantMessageForUserVersion } = await import("@/lib/db/queries");
   try {
-    // Use messageId as versionGroupId for the old system
-    const version = await switchToMessageVersion({ 
-      versionGroupId: messageId, 
+    // First, find the message to get its versionGroupId
+    const messages = await getMessageById({ id: messageId });
+    if (messages.length === 0) {
+      return {
+        success: false,
+        message: "Message not found",
+      };
+    }
+    
+    const message = messages[0] as any;
+    // Use versionGroupId if available, otherwise use the messageId itself
+    const versionGroupId = message.versionGroupId || messageId;
+    
+  const version = await switchToMessageVersion({ 
+      versionGroupId, 
       targetVersionNumber: versionNumber 
     });
     
@@ -203,9 +213,13 @@ export async function switchToVersionAction({
       };
     }
 
+    // Retrieve the assistant response that followed this user version
+    const assistant = await getAssistantMessageForUserVersion({ messageId: version.id });
+
     return {
       success: true,
       version,
+      assistant,
     };
   } catch (error) {
     console.error("Failed to switch to version:", error);

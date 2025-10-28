@@ -72,17 +72,17 @@ export function getAvailableModels(): ChatModel[] {
 export function getAvailableModelsFromAPI(): ChatModel[] {
   try {
     const models = getCachedAvailableModels();
-    console.log("🔍 getCachedAvailableModels returned:", models.length, "models:", models.map(m => m.id));
+    
     
     if (models.length > 0) {
-      console.log("✅ Using dynamically fetched models");
+      
       return models;
     } else {
-      console.warn("⚠️ No models from API, using fallback models");
+      
       return FALLBACK_MODELS;
     }
   } catch (error) {
-    console.error("❌ Failed to fetch models from API, using fallback:", error);
+    
     return FALLBACK_MODELS;
   }
 }
