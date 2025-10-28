@@ -210,9 +210,9 @@
   
   /* Ensure all text content respects container boundaries */
   p, div, span, li, td, th {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    hyphens: manual;
   }
 
   /* Force code blocks to respect container width */
@@ -224,6 +224,17 @@
   pre > code {
     max-width: 100% !important;
     display: inline-block !important;
+  }
+}
+
+/* Prevent over-aggressive wrapping inside user chat bubbles */
+@layer components {
+  .user-bubble, .user-bubble * {
+  overflow: visible !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: manual !important;
+    text-wrap: wrap;
   }
 }
 
