@@ -1,0 +1,12 @@
+2025-10-28 09:56:39,581 [INFO] - Configurando o WebDriver...
+2025-10-28 09:56:39,581 [INFO] - ====== WebDriver manager ======
+2025-10-28 09:56:39,691 [INFO] - Get LATEST chromedriver version for google-chrome
+2025-10-28 09:56:39,785 [INFO] - Get LATEST chromedriver version for google-chrome
+2025-10-28 09:56:39,883 [INFO] - Driver [/home/jules/.wdm/drivers/chromedriver/linux64/141.0.7390.122/chromedriver-linux64/chromedriver] found in cache
+2025-10-28 09:56:40,210 [INFO] - WebDriver configurado com sucesso.
+2025-10-28 09:56:40,210 [INFO] - Iniciando busca pelo número: +5511999999999
+2025-10-28 09:56:41,068 [INFO] - Página de identificação carregada. Inserindo número.
+2025-10-28 09:56:41,277 [INFO] - Formulário enviado. Aguardando resultado...
+2025-10-28 09:56:56,744 [ERROR] - Elemento do perfil não encontrado. A página pode ter mudado ou um CAPTCHA foi acionado.
+2025-10-28 09:56:56,784 [INFO] - Screenshot de depuração salvo em: debug_screenshot.png
+2025-10-28 09:56:56,785 [INFO] - Fechando o WebDriver.
