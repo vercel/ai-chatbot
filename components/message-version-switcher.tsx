@@ -81,27 +81,29 @@ export function MessageVersionSwitcher({
   };
 
   return (
-    <div className="flex items-center gap-1">
+  <div className="flex items-center gap-0.5 overflow-visible">
       <Action
         variant="ghost"
         size="sm"
+        className="p-0 h-7 w-6 rounded-sm"
         tooltip="Previous version"
         disabled={!hasPrev || isLoading}
         onClick={() => handleVersionSelect((currentVersionNumber || 1) - 1)}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-3 w-3" />
       </Action>
-      <span className="text-xs tabular-nums h-9 flex items-center px-1">
+      <span className="text-xs tabular-nums h-7 leading-none flex items-center px-0">
         {currentVersionNumber}/{total}
       </span>
       <Action
         variant="ghost"
         size="sm"
+        className="p-0 h-7 w-6 rounded-sm"
         tooltip="Next version"
         disabled={!hasNext || isLoading}
         onClick={() => handleVersionSelect((currentVersionNumber || 1) + 1)}
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-3 w-3" />
       </Action>
     </div>
   );

@@ -49,39 +49,36 @@ export function PureMessageActions({
   // User messages get edit (on hover) and copy actions
   if (message.role === "user") {
     return (
-      <Actions className="-mr-0.5 justify-end">
-        <div className="relative">
+      <Actions className="mr-1 justify-end gap-0.5 opacity-0 group-hover/message:opacity-100 transition-opacity">
+        <div className="relative flex items-center">
           {setMode && (
             <Action
-              className="-left-10 absolute top-0 opacity-100 md:opacity-0 transition-opacity md:group-hover/message:opacity-100"
+              className="-left-10 absolute top-0 opacity-100 md:opacity-0 transition-opacity md:group-hover/message:opacity-100 p-0 size-8 rounded-sm"
               onClick={() => setMode("edit")}
               tooltip="Edit"
             >
               <PencilLine />
             </Action>
           )}
-          <Action onClick={handleCopy} tooltip="Copy">
+          <Action className="p-0 size-8 rounded-sm" onClick={handleCopy} tooltip="Copy">
             <Copy />
           </Action>
-          {rightSlot && (
-            <div className="inline-flex items-center align-middle ml-1">
-              {rightSlot}
-            </div>
-          )}
+          {rightSlot && <div className="ml-0.5 flex items-center">{rightSlot}</div>}
         </div>
       </Actions>
     );
   }
 
   return (
-    <Actions className="-ml-0.5">
-      <Action onClick={handleCopy} tooltip="Copy">
+    <Actions className="ml-1 gap-0.5">
+      <Action className="p-0 size-8 rounded-sm" onClick={handleCopy} tooltip="Copy">
         <Copy />
       </Action>
 
       <Action
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
+        className="p-0 size-8 rounded-sm"
         onClick={() => {
           const upvote = fetch("/api/vote", {
             method: "PATCH",
@@ -132,6 +129,7 @@ export function PureMessageActions({
       <Action
         data-testid="message-downvote"
         disabled={vote && !vote.isUpvoted}
+  className="p-0 size-8 rounded-sm"
         onClick={() => {
           const downvote = fetch("/api/vote", {
             method: "PATCH",
