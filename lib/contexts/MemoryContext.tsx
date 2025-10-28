@@ -1,19 +1,25 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { SEED_MEMORIES } from "@/lib/memory/seed";
 import type { MemoryItem } from "@/lib/memory/storage";
 import {
-  getMemories,
   addMemory as addMemoryToStorage,
-  deleteMemory as deleteMemoryFromStorage,
-  togglePinMemory as togglePinMemoryInStorage,
   clearMemories as clearMemoriesFromStorage,
+  deleteMemory as deleteMemoryFromStorage,
+  getMemories,
+  togglePinMemory as togglePinMemoryInStorage,
 } from "@/lib/memory/storage";
-import { SEED_MEMORIES } from "@/lib/memory/seed";
 
 type MemoryContextValue = {
   memories: MemoryItem[];
-  addMemory: (content: string, category?: MemoryItem['category']) => void;
+  addMemory: (content: string, source?: MemoryItem["source"]) => void;
   deleteMemory: (id: string) => void;
   togglePin: (id: string) => void;
   clearAll: () => void;
@@ -37,29 +43,32 @@ export function MemoryProvider({ children }: { children: ReactNode }) {
       setMemories(seeded);
 
       // Save to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('glen-ai-memories', JSON.stringify(seeded));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("glen-ai-memories", JSON.stringify(seeded));
       }
     } else {
       setMemories(stored);
     }
   }, []);
 
-  const addMemory = (content: string, category: MemoryItem['category'] = 'topic') => {
-    const newMemory = addMemoryToStorage(content, category);
-    setMemories(prev => [newMemory, ...prev].slice(0, 50));
+  const addMemory = (
+    content: string,
+    source: MemoryItem["source"] = "chat"
+  ) => {
+    const newMemory = addMemoryToStorage(content, source);
+    setMemories((prev) => [newMemory, ...prev].slice(0, 50));
   };
 
   const deleteMemory = (id: string) => {
     deleteMemoryFromStorage(id);
-    setMemories(prev => prev.filter(m => m.id !== id));
+    setMemories((prev) => prev.filter((m) => m.id !== id));
   };
 
   const togglePin = (id: string) => {
     togglePinMemoryInStorage(id);
-    setMemories(prev => prev.map(m =>
-      m.id === id ? { ...m, pinned: !m.pinned } : m
-    ));
+    setMemories((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, pinned: !m.pinned } : m))
+    );
   };
 
   const clearAll = () => {
@@ -68,7 +77,9 @@ export function MemoryProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <MemoryContext.Provider value={{ memories, addMemory, deleteMemory, togglePin, clearAll }}>
+    <MemoryContext.Provider
+      value={{ memories, addMemory, deleteMemory, togglePin, clearAll }}
+    >
       {children}
     </MemoryContext.Provider>
   );

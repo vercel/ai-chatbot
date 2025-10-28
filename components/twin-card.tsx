@@ -30,9 +30,9 @@ export default function TwinCard({
         <div className="rounded-full bg-primary/20 p-4 transition-colors group-hover:bg-primary/30">
           <Plus className="h-8 w-8 text-primary" />
         </div>
-        <div className="font-medium text-lg">Create New Twin</div>
+        <div className="font-medium text-lg">Create New Glen AI</div>
         <div className="text-muted-foreground text-sm">
-          Spin up a new AI twin
+          Create a new Glen AI instance
         </div>
       </motion.button>
     );

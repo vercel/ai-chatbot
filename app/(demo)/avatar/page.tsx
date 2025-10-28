@@ -1,8 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mic, PhoneOff, Send, Video, Volume2, VolumeX, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  FileText,
+  Mic,
+  Pause,
+  PhoneOff,
+  Play,
+  Send,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FullScreenOrb } from "@/components/avatar/FullScreenOrb";
@@ -11,37 +20,34 @@ import ContextDrawer from "@/components/ContextDrawer";
 import { PrioritiesCard } from "@/components/PrioritiesCard";
 import type { SuggestionChip } from "@/components/SuggestionChips";
 import { SuggestionChips } from "@/components/SuggestionChips";
+import { TranscriptView } from "@/components/TranscriptView";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import VideoLoop from "@/components/VideoLoop";
 import { allDemoFlows } from "@/config/demoScript";
 import { suggestionChips } from "@/config/suggestionChips";
-import InteractiveAvatarWrapper from "@/heygen-avatar/ui/InteractiveAvatar";
 import { useGlenChat } from "@/hooks/useGlenChat";
 import { useHeyGenAvatar } from "@/hooks/useHeyGenAvatar";
-import { ABOUT_TEXT } from "@/lib/mockData";
 
 export default function AvatarExperiencePage() {
-  const router = useRouter();
   const [avatarState, setAvatarState] = useState<State>("idle");
   const [avatarText, setAvatarText] = useState<string>();
   const [callState, setCallState] = useState<"idle" | "active">("idle");
   const [muted, setMuted] = useState(false);
-  const [mode, setMode] = useState<"avatar" | "voice" | "text">("avatar");
+  const [paused, setPaused] = useState(false);
+  const [mode] = useState<"avatar" | "voice" | "text">("avatar");
   const [activeFollowUps, setActiveFollowUps] = useState<SuggestionChip[]>([]);
   const [priorities, setPriorities] = useState<string[]>([]);
   const [showPriorities, setShowPriorities] = useState(false);
   const [prioritiesPinned, setPrioritiesPinned] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [userTranscript, setUserTranscript] = useState<string>("");
-  const [sessionDuration, setSessionDuration] = useState(0);
-  const [suggestedQuestion, setSuggestedQuestion] = useState<string | null>(
-    null
-  );
+  const [transcriptOpen, setTranscriptOpen] = useState(false);
+
   const [hasStartedConversation, setHasStartedConversation] = useState(false);
   const hideTimeoutRef = useRef<NodeJS.Timeout>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const transcriptTimeoutRef = useRef<NodeJS.Timeout>();
-  const sessionTimerRef = useRef<NodeJS.Timeout>();
 
   const {
     sendScriptedMessage,
@@ -88,13 +94,7 @@ export default function AvatarExperiencePage() {
   const handleConnect = async () => {
     setCallState("active");
     setAvatarState("listening");
-    setSessionDuration(0);
     toast.success("Connected to Glen - listening now");
-
-    // Start session timer
-    sessionTimerRef.current = setInterval(() => {
-      setSessionDuration((prev) => prev + 1);
-    }, 1000);
 
     // Try to start HeyGen session (optional)
     try {
@@ -109,31 +109,12 @@ export default function AvatarExperiencePage() {
     setCallState("idle");
     setAvatarState("idle");
 
-    // Stop session timer
-    if (sessionTimerRef.current) {
-      clearInterval(sessionTimerRef.current);
-    }
-
     // Stop HeyGen session
     await stopSession();
   };
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const toggleMute = () => {
     setMuted(!muted);
-  };
-
-  const handleClose = () => {
-    router.push("/");
-  };
-
-  const handleModeChange = (newMode: "avatar" | "voice" | "text") => {
-    setMode(newMode);
   };
 
   const handleChipClick = async (chip: SuggestionChip) => {
@@ -183,7 +164,9 @@ export default function AvatarExperiencePage() {
   };
 
   const handleTextSend = async () => {
-    if (!textInput.trim() || isLoading) return;
+    if (!textInput.trim() || isLoading) {
+      return;
+    }
 
     const message = textInput.trim();
     setTextInput("");
@@ -213,10 +196,7 @@ export default function AvatarExperiencePage() {
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversationHistory]);
+  // Auto-scroll disabled for now
 
   return (
     <motion.div
@@ -233,9 +213,19 @@ export default function AvatarExperiencePage() {
       <div className="flex h-16 items-center justify-center border-b px-4 md:px-6">
         <div className="flex w-full items-center justify-between">
           <div className="flex-1" />
-          <h1 className="font-semibold text-xl">Glen AI</h1>
-          <div className="flex flex-1 justify-end">
-            <ContextDrawer about={ABOUT_TEXT} />
+          <h1 className="font-semibold text-2xl">Glen AI</h1>
+          <div className="flex flex-1 items-center justify-end gap-2">
+            {conversationHistory.length > 0 && (
+              <Button
+                onClick={() => setTranscriptOpen(true)}
+                size="sm"
+                variant="outline"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Transcript
+              </Button>
+            )}
+            <ContextDrawer />
           </div>
         </div>
       </div>
@@ -252,14 +242,11 @@ export default function AvatarExperiencePage() {
               {conversationHistory.length === 0 ? (
                 <div className="space-y-8 py-12 text-center">
                   <div>
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 font-bold text-2xl text-white">
-                      GT
-                    </div>
                     <p className="mb-2 font-semibold text-2xl">
                       Chat with Glen
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      Healthcare leader & AI twin pioneer
+                      Healthcare leader & AI assistant
                     </p>
                   </div>
 
@@ -323,14 +310,14 @@ export default function AvatarExperiencePage() {
                       onClick={() =>
                         handleChipClick({
                           id: "twin-time-save",
-                          text: "How could a twin save you time today?",
+                          text: "How could Glen AI save you time today?",
                           category: "tactical",
                         })
                       }
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <p className="mb-1 font-medium">AI twin ROI</p>
+                      <p className="mb-1 font-medium">AI Assistant ROI</p>
                       <p className="text-muted-foreground text-xs">
                         Maximize your impact
                       </p>
@@ -338,16 +325,16 @@ export default function AvatarExperiencePage() {
                   </div>
                 </div>
               ) : (
-                conversationHistory.map((msg, idx) => (
+                conversationHistory.map((msg) => (
                   <motion.div
                     animate={{ opacity: 1, y: 0 }}
                     className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                     initial={{ opacity: 0, y: 10 }}
-                    key={idx}
+                    key={`${msg.role}-${msg.content}`}
                   >
                     {msg.role === "assistant" && (
                       <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 font-semibold text-sm text-white">
-                        GT
+                        G
                       </div>
                     )}
                     <div className="flex flex-col gap-1">
@@ -431,23 +418,64 @@ export default function AvatarExperiencePage() {
           hasStartedConversation ? (
             <div className="flex w-full max-w-4xl flex-col items-center justify-center gap-6">
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl shadow-2xl">
-                <img
+                <Image
                   alt="Glen Tullman"
-                  className="h-full w-full object-cover"
-                  src="/images/glen-avatar.png"
+                  className="object-cover"
+                  fill
+                  priority={false}
+                  sizes="100vw"
+                  src="/Glen-Tullman2.jpg"
                 />
+                <div
+                  className="absolute bottom-4 left-1/2 flex gap-2"
+                  style={{ transform: "translateX(-50%)" }}
+                >
+                  <Button
+                    onClick={() => setPaused(!paused)}
+                    size="icon"
+                    variant="secondary"
+                  >
+                    {paused ? <Play /> : <Pause />}
+                  </Button>
+                  <Button onClick={toggleMute} size="icon" variant="secondary">
+                    {muted ? <VolumeX /> : <Volume2 />}
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <Button
-                className="relative rounded-full bg-emerald-500 px-8 py-6 text-lg text-white transition-all duration-200 hover:scale-105 hover:bg-emerald-600 hover:shadow-[0_0_0_4px_rgba(16,185,129,0.2)]"
-                onClick={() => setHasStartedConversation(true)}
-                size="lg"
-                variant="default"
-              >
-                Start Video Chat with Avatar
-              </Button>
+            <div className="relative flex min-h-[calc(100vh-4rem)] w-full items-center justify-center overflow-hidden">
+              {/* Video Background */}
+              <div className="absolute inset-0 z-0">
+                <VideoLoop
+                  blur={3}
+                  mask="none"
+                  showGlen={false}
+                  src="/videos/glen-loop.mp4"
+                />
+              </div>
+
+              {/* Dark Overlay for Text Readability */}
+              <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
+
+              {/* Content */}
+              <div className="relative z-20 flex flex-col items-center gap-6 text-center">
+                <div className="space-y-4">
+                  <h2 className="font-bold text-4xl text-white md:text-5xl">Glen AI</h2>
+                  <p className="mx-auto max-w-md text-lg text-white/90 md:text-xl">
+                    Start a video conversation with Glen's AI assistant
+                  </p>
+                </div>
+                <Button
+                  className="relative rounded-full bg-emerald-500 px-8 py-6 font-semibold text-lg text-white shadow-2xl transition-all duration-200 hover:scale-105 hover:bg-emerald-600 hover:shadow-[0_0_0_4px_rgba(16,185,129,0.2)]"
+                  onClick={() => setHasStartedConversation(true)}
+                  size="lg"
+                  type="button"
+                  variant="default"
+                >
+                  Start Video Chat
+                </Button>
+              </div>
             </div>
           )
         ) : (
@@ -473,21 +501,23 @@ export default function AvatarExperiencePage() {
                 initial={{ opacity: 0, scale: 0.9 }}
               >
                 <div className="flex gap-1.5">
-                  {[...Array(5)].map((_, i) => (
-                    <motion.div
-                      animate={{
-                        height: [12, 24, 12],
-                      }}
-                      className="w-1.5 rounded-full bg-green-500"
-                      key={i}
-                      transition={{
-                        duration: 1.2,
-                        repeat: Number.POSITIVE_INFINITY,
-                        delay: i * 0.15,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  ))}
+                  {["bar-0", "bar-1", "bar-2", "bar-3", "bar-4"].map(
+                    (id, i) => (
+                      <motion.div
+                        animate={{
+                          height: [12, 24, 12],
+                        }}
+                        className="w-1.5 rounded-full bg-green-500"
+                        key={id}
+                        transition={{
+                          duration: 1.2,
+                          repeat: Number.POSITIVE_INFINITY,
+                          delay: i * 0.15,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    )
+                  )}
                 </div>
                 <p className="font-medium text-green-600 text-sm">
                   Listening...
@@ -529,12 +559,12 @@ export default function AvatarExperiencePage() {
           >
             {callState === "idle" ? (
               <>
-                <Mic className="mr-2 h-5 w-5" />
+                <Mic className="h-5 w-5" />
                 Connect
               </>
             ) : (
               <>
-                <PhoneOff className="mr-2 h-5 w-5" />
+                <PhoneOff className="h-5 w-5" />
                 Hang Up
               </>
             )}
@@ -563,7 +593,7 @@ export default function AvatarExperiencePage() {
                 : suggestionChips.slice(0, 4)
             }
             className={isLoading ? "pointer-events-none opacity-50" : ""}
-            onChipClick={isLoading ? () => {} : handleChipClick}
+            onChipClick={isLoading ? () => null : handleChipClick}
           />
         </div>
       )}
@@ -579,6 +609,13 @@ export default function AvatarExperiencePage() {
           show={showPriorities}
         />
       </div>
+
+      {/* Transcript View */}
+      <TranscriptView
+        conversationHistory={conversationHistory}
+        onOpenChange={setTranscriptOpen}
+        open={transcriptOpen}
+      />
     </motion.div>
   );
 }

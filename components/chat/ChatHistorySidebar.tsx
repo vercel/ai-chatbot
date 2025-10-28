@@ -1,9 +1,16 @@
 "use client";
 
+import {
+  ChevronLeft,
+  ChevronRight,
+  MessageSquare,
+  Phone,
+  Plus,
+  Video,
+} from "lucide-react";
 import { useState } from "react";
-import { MessageSquare, Phone, Video, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ChatSession = {
   id: string;
@@ -75,22 +82,32 @@ export function ChatHistorySidebar({
   // Group sessions by time period
   const groupSessions = () => {
     const now = new Date();
-    const today: ChatSession[] = [];
-    const yesterday: ChatSession[] = [];
-    const lastWeek: ChatSession[] = [];
-    const older: ChatSession[] = [];
+    const todayList: ChatSession[] = [];
+    const yesterdayList: ChatSession[] = [];
+    const lastWeekList: ChatSession[] = [];
+    const olderList: ChatSession[] = [];
 
-    sessions.forEach((session) => {
+    for (const session of sessions) {
       const diffMs = now.getTime() - session.timestamp.getTime();
-      const diffDays = Math.floor(diffMs / 86400000);
+      const diffDays = Math.floor(diffMs / 86_400_000);
 
-      if (diffDays === 0) today.push(session);
-      else if (diffDays === 1) yesterday.push(session);
-      else if (diffDays <= 7) lastWeek.push(session);
-      else older.push(session);
-    });
+      if (diffDays === 0) {
+        todayList.push(session);
+      } else if (diffDays === 1) {
+        yesterdayList.push(session);
+      } else if (diffDays <= 7) {
+        lastWeekList.push(session);
+      } else {
+        olderList.push(session);
+      }
+    }
 
-    return { today, yesterday, lastWeek, older };
+    return {
+      today: todayList,
+      yesterday: yesterdayList,
+      lastWeek: lastWeekList,
+      older: olderList,
+    };
   };
 
   const { today, yesterday, lastWeek, older } = groupSessions();
@@ -98,28 +115,75 @@ export function ChatHistorySidebar({
   const renderSession = (session: ChatSession) => {
     const Icon = typeIcons[session.type];
     const isActive = session.id === currentSessionId;
+    // Only sessions 1, 2, and 3 have conversations available
+    const isAvailable = ["1", "2", "3"].includes(session.id);
+
+    // Color schemes for each chat type
+    const typeStyles = {
+      text: {
+        container: isActive
+          ? "bg-blue-500/20 ring-1 ring-blue-500/50"
+          : "bg-blue-500/10",
+        icon: "text-blue-600 dark:text-blue-400",
+      },
+      voice: {
+        container: isActive
+          ? "bg-purple-500/20 ring-1 ring-purple-500/50"
+          : "bg-purple-500/10",
+        icon: "text-purple-600 dark:text-purple-400",
+      },
+      avatar: {
+        container: isActive
+          ? "bg-teal-500/20 ring-1 ring-teal-500/50"
+          : "bg-teal-500/10",
+        icon: "text-teal-600 dark:text-teal-400",
+      },
+    };
+
+    const currentStyle = typeStyles[session.type];
 
     return (
       <button
-        key={session.id}
-        onClick={() => onSessionSelect?.(session.id)}
         className={cn(
           "group relative mb-1 w-full rounded-lg p-2.5 text-left transition-colors",
-          "hover:bg-accent",
+          isAvailable
+            ? "cursor-pointer hover:bg-accent"
+            : "cursor-not-allowed opacity-40",
           isActive && "bg-accent",
           collapsed && "flex items-center justify-center"
         )}
+        disabled={!isAvailable}
+        key={session.id}
+        onClick={() => isAvailable && onSessionSelect?.(session.id)}
         title={collapsed ? session.title : undefined}
+        type="button"
       >
         {collapsed ? (
-          <Icon className="h-4 w-4" />
+          <div
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-lg transition-all",
+              currentStyle.container
+            )}
+          >
+            <Icon className={cn("h-4 w-4", currentStyle.icon)} />
+          </div>
         ) : (
-          <div className="flex items-start gap-2">
-            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="flex items-start gap-2.5">
+            <div
+              className={cn(
+                "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all",
+                currentStyle.container
+              )}
+            >
+              <Icon className={cn("h-3.5 w-3.5", currentStyle.icon)} />
+            </div>
             <div className="min-w-0 flex-1">
-              <div className="line-clamp-1 text-sm font-medium">
+              <div className="line-clamp-1 font-medium text-sm">
                 {session.title}
               </div>
+              {!isAvailable && (
+                <div className="text-muted-foreground text-xs">Coming soon</div>
+              )}
             </div>
           </div>
         )}
@@ -127,15 +191,17 @@ export function ChatHistorySidebar({
     );
   };
 
-  const renderSection = (title: string, sessions: ChatSession[]) => {
-    if (sessions.length === 0 || collapsed) return null;
+  const renderSection = (title: string, sessionList: ChatSession[]) => {
+    if (sessionList.length === 0 || collapsed) {
+      return null;
+    }
 
     return (
       <div className="mb-4">
-        <h3 className="mb-1 px-2.5 text-xs font-semibold text-muted-foreground">
+        <h3 className="mb-1 px-2.5 font-semibold text-muted-foreground text-xs">
           {title}
         </h3>
-        <div>{sessions.map(renderSession)}</div>
+        <div>{sessionList.map(renderSession)}</div>
       </div>
     );
   };
@@ -149,14 +215,12 @@ export function ChatHistorySidebar({
     >
       {/* Header with collapse toggle */}
       <div className="flex items-center justify-between border-b p-3">
-        {!collapsed && (
-          <h2 className="font-semibold text-sm">Glen AI</h2>
-        )}
+        {!collapsed && <h2 className="font-semibold text-sm">Glen AI</h2>}
         <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed(!collapsed)}
           className={cn("h-8 w-8 shrink-0", collapsed && "mx-auto")}
+          onClick={() => setCollapsed(!collapsed)}
+          size="icon"
+          variant="ghost"
         >
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />
@@ -169,9 +233,12 @@ export function ChatHistorySidebar({
       {/* New Chat Button */}
       <div className="p-3">
         <Button
-          variant="outline"
-          className={cn("w-full justify-start gap-2", collapsed && "justify-center px-2")}
+          className={cn(
+            "w-full justify-start gap-2",
+            collapsed && "justify-center px-2"
+          )}
           onClick={onNewChat}
+          variant="outline"
         >
           <Plus className="h-4 w-4" />
           {!collapsed && <span>New Chat</span>}
@@ -181,9 +248,7 @@ export function ChatHistorySidebar({
       {/* Sessions List with Sections */}
       <div className="flex-1 overflow-y-auto px-2">
         {collapsed ? (
-          <div className="space-y-1">
-            {sessions.map(renderSession)}
-          </div>
+          <div className="space-y-1">{sessions.map(renderSession)}</div>
         ) : (
           <>
             {renderSection("Today", today)}

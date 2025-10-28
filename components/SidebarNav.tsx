@@ -3,15 +3,14 @@
 import {
   ChevronsLeft,
   ChevronsRight,
+  Compass,
   Database,
   LogOut,
   Menu,
   MessageSquare,
-  Phone,
   Users,
   Video,
   X,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,11 +20,10 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/avatar", label: "Avatar", icon: Video },
-  { href: "/call", label: "Call", icon: Phone },
   { href: "/chat", label: "Chat", icon: MessageSquare },
-  { href: "/cms", label: "CMS", icon: Database },
+  { href: "/cms", label: "Knowledge", icon: Database },
+  { href: "/discovery", label: "Discovery", icon: Compass },
   { href: "/users", label: "Users", icon: Users },
-  { href: "/twins", label: "Twins", icon: Zap },
 ];
 
 type NavContentProps = {

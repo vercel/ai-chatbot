@@ -42,7 +42,7 @@ export default function CreateTwinDialog({
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Please enter a twin name");
+      toast.error("Please enter a name");
       return;
     }
 
@@ -64,7 +64,7 @@ export default function CreateTwinDialog({
 
     onCreate(newTwin);
 
-    toast.success("Twin created!", {
+    toast.success("Created!", {
       description: `${name} is now in draft mode. Configure sources to activate.`,
       duration: 4000,
     });
@@ -80,21 +80,21 @@ export default function CreateTwinDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Create New Twin
+            Create New Glen AI
           </DialogTitle>
           <DialogDescription>
-            Spin up a new AI twin with purpose-built knowledge and governance
+            Create a new Glen AI instance with purpose-built knowledge and governance
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="twin-name">Twin Name *</Label>
+            <Label htmlFor="twin-name">Name *</Label>
             <Input
               autoFocus
               id="twin-name"
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Sarah Chen AI"
+              placeholder="e.g., Glen AI"
               value={name}
             />
           </div>
@@ -104,7 +104,7 @@ export default function CreateTwinDialog({
             <Textarea
               id="twin-description"
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the twin's voice, priorities, and key focus areas..."
+              placeholder="Describe Glen AI's voice, priorities, and key focus areas..."
               rows={4}
               value={description}
             />
@@ -137,7 +137,7 @@ export default function CreateTwinDialog({
           <div className="space-y-2 rounded-lg bg-muted p-4">
             <div className="font-medium text-sm">Default Access</div>
             <div className="text-muted-foreground text-sm">
-              New twins are created in{" "}
+              New instances are created in{" "}
               <span className="font-medium">draft mode</span> with Editor-only
               access. Configure sources and permissions before activating.
             </div>
@@ -152,8 +152,8 @@ export default function CreateTwinDialog({
               Cancel
             </Button>
             <Button type="submit">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate Twin
+              <Sparkles />
+              Create Glen AI
             </Button>
           </DialogFooter>
         </form>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s | Glen AI",
     default: "Demo | Glen AI",
   },
-  description: "Glen AI prototype - healthcare leadership AI twin",
+  description: "Glen AI - healthcare leadership AI assistant",
 };
 
 export default function DemoLayout({ children }: { children: ReactNode }) {

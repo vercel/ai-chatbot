@@ -33,7 +33,7 @@ export default function InviteUserDialog({
   onInvite,
 }: InviteUserDialogProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<UserRole>("Viewer");
+  const [role, setRole] = useState<UserRole>("viewer");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,28 +48,21 @@ export default function InviteUserDialog({
       ? localPart.charAt(0).toUpperCase() + localPart.slice(1)
       : email;
 
-    const accessMap: Record<UserRole, string> = {
-      Admin: "All",
-      Editor: "CMS + Chat",
-      Viewer: "Chat",
-    };
-
     const newUser: User = {
       id: crypto.randomUUID(),
       name,
       email,
       role,
-      access: accessMap[role],
       lastActive: "Invited",
     };
 
     onInvite(newUser);
     toast.success("Invitation sent", {
-      description: `Invited ${email} as ${role}`,
+      description: `Invited ${email} as ${role === "admin" ? "Admin" : "Viewer"}`,
     });
 
     setEmail("");
-    setRole("Viewer");
+    setRole("viewer");
   };
 
   return (
@@ -102,13 +95,10 @@ export default function InviteUserDialog({
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Viewer">
+                <SelectItem value="viewer">
                   Viewer — Chat access only
                 </SelectItem>
-                <SelectItem value="Editor">
-                  Editor — CMS + Chat access
-                </SelectItem>
-                <SelectItem value="Admin">Admin — Full access</SelectItem>
+                <SelectItem value="admin">Admin — Full CMS and user access</SelectItem>
               </SelectContent>
             </Select>
           </div>

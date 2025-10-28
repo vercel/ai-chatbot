@@ -41,7 +41,7 @@ export function PureMessageActions({
     }
 
     await copyToClipboard(textFromParts);
-    toast.success("Copied to clipboard!");
+    toast.success("Copied to clipboard");
   };
 
   // User messages get edit (on hover) and copy actions
@@ -67,12 +67,13 @@ export function PureMessageActions({
   }
 
   return (
-    <Actions className="-ml-0.5">
-      <Action onClick={handleCopy} tooltip="Copy">
+    <Actions className="-ml-0.5 opacity-0 transition-opacity group-hover/message:opacity-100">
+      <Action onClick={handleCopy} tooltip="Copy message">
         <CopyIcon />
       </Action>
 
       <Action
+        className={vote?.isUpvoted ? "text-green-600 hover:text-green-700" : ""}
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
         onClick={() => {
@@ -86,7 +87,7 @@ export function PureMessageActions({
           });
 
           toast.promise(upvote, {
-            loading: "Upvoting Response...",
+            loading: "Recording feedback...",
             success: () => {
               mutate<Vote[]>(
                 `/api/vote?chatId=${chatId}`,
@@ -111,17 +112,20 @@ export function PureMessageActions({
                 { revalidate: false }
               );
 
-              return "Upvoted Response!";
+              return "Feedback recorded";
             },
-            error: "Failed to upvote response.",
+            error: "Failed to record feedback.",
           });
         }}
-        tooltip="Upvote Response"
+        tooltip="Good response"
       >
         <ThumbUpIcon />
       </Action>
 
       <Action
+        className={
+          vote && !vote.isUpvoted ? "text-red-600 hover:text-red-700" : ""
+        }
         data-testid="message-downvote"
         disabled={vote && !vote.isUpvoted}
         onClick={() => {
@@ -135,7 +139,7 @@ export function PureMessageActions({
           });
 
           toast.promise(downvote, {
-            loading: "Downvoting Response...",
+            loading: "Recording feedback...",
             success: () => {
               mutate<Vote[]>(
                 `/api/vote?chatId=${chatId}`,
@@ -160,12 +164,12 @@ export function PureMessageActions({
                 { revalidate: false }
               );
 
-              return "Downvoted Response!";
+              return "Feedback recorded";
             },
-            error: "Failed to downvote response.",
+            error: "Failed to record feedback.",
           });
         }}
-        tooltip="Downvote Response"
+        tooltip="Bad response"
       >
         <ThumbDownIcon />
       </Action>

@@ -1,13 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "framer-motion";
+import type { SuggestionChip } from "@/components/SuggestionChips";
+import { allDemoFlows } from "@/config/demoScript";
 import type { Message } from "@/lib/types";
 import { ChatMessages } from "./ChatMessages";
 import { SimpleChatInput } from "./SimpleChatInput";
-import type { SuggestionChip } from "@/components/SuggestionChips";
-import { allDemoFlows } from "@/config/demoScript";
-import { suggestionChips } from "@/config/suggestionChips";
 
 type ChatContainerProps = {
   initialMessages: Message[];
@@ -34,8 +32,10 @@ export function ChatContainer({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSend = async (message: string) => {
-    if (!message.trim()) return;
+  const handleSend = (message: string) => {
+    if (!message.trim()) {
+      return;
+    }
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -55,9 +55,9 @@ export function ChatContainer({
 
       // Extract keywords from the flow to match against
       const keywords = [
-        ...f.id.split('-'),
-        ...titleLower.split(' '),
-        ...promptLower.split(' ').filter(w => w.length > 3),
+        ...f.id.split("-"),
+        ...titleLower.split(" "),
+        ...promptLower.split(" ").filter((w) => w.length > 3),
       ];
 
       // Check if message contains key phrases or multiple keywords
@@ -69,7 +69,7 @@ export function ChatContainer({
         normalizedMessage.includes(titleLower) ||
         titleLower.includes(normalizedMessage) ||
         // Multiple keyword match (at least 2 keywords present)
-        keywords.filter(kw => normalizedMessage.includes(kw)).length >= 2
+        keywords.filter((kw) => normalizedMessage.includes(kw)).length >= 2
       );
     });
 
@@ -78,12 +78,14 @@ export function ChatContainer({
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: flow ? flow.avatarResponse : "That's a great question. In my experience, the key is to focus on creating real value for people. Whether it's in healthcare, technology, or leadership, success comes from solving meaningful problems and empowering others to succeed.",
+        content: flow
+          ? flow.avatarResponse
+          : "That's a great question. In my experience, the key is to focus on creating real value for people. Whether it's in healthcare, technology, or leadership, success comes from solving meaningful problems and empowering others to succeed.",
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
       // Show follow-ups if available
-      if (flow && flow.followUps) {
+      if (flow?.followUps) {
         setActiveFollowUps(flow.followUps);
       } else {
         setActiveFollowUps([]);
@@ -113,15 +115,15 @@ export function ChatContainer({
     }
   };
 
-  const hasStartedChat = messages.length > 1;
+  const _hasStartedChat = messages.length > 1;
 
   // Only show pill chips at bottom when we have follow-ups
   // (Large card chips are shown in ChatMessages before chat starts)
-  const showChips = activeFollowUps.length > 0;
+  const _showChips = activeFollowUps.length > 0;
 
   return (
     <div className="relative flex h-full flex-col bg-background">
-      <div className="flex-1 overflow-y-auto pb-[250px]">
+      <div className="flex-1 overflow-y-auto pb-[280px] md:pb-[220px]">
         <ChatMessages
           messages={messages}
           messagesEndRef={messagesEndRef}
@@ -129,21 +131,23 @@ export function ChatContainer({
         />
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 border-t bg-background">
-        <SimpleChatInput
-          addMessage={addMessage}
-          enableVoiceDemo={enableVoiceDemo}
-          input={input}
-          isListening={isListening}
-          onAvatarStateChange={onAvatarStateChange}
-          onAvatarTextChange={onAvatarTextChange}
-          onSend={handleSend}
-          setInput={setInput}
-          setIsListening={setIsListening}
-          followUpChips={activeFollowUps}
-          onChipClick={handleChipClick}
-          onClearChips={() => setActiveFollowUps([])}
-        />
+      <div className="fixed right-0 bottom-0 left-0 z-10 flex justify-center border-t bg-background shadow-[0_-2px_10px_rgba(0,0,0,0.05)] md:left-64">
+        <div className="w-full max-w-3xl">
+          <SimpleChatInput
+            addMessage={addMessage}
+            enableVoiceDemo={enableVoiceDemo}
+            followUpChips={activeFollowUps}
+            input={input}
+            isListening={isListening}
+            onAvatarStateChange={onAvatarStateChange}
+            onAvatarTextChange={onAvatarTextChange}
+            onChipClick={handleChipClick}
+            onClearChips={() => setActiveFollowUps([])}
+            onSend={handleSend}
+            setInput={setInput}
+            setIsListening={setIsListening}
+          />
+        </div>
       </div>
     </div>
   );

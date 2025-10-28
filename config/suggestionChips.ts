@@ -55,7 +55,7 @@ export const suggestionChips: SuggestionChip[] = [
   // Tactical
   {
     id: 'twin-time-save',
-    text: "How could a twin save you time today?",
+    text: "How could Glen AI save you time today?",
     category: 'tactical'
   },
   {

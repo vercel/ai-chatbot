@@ -1,9 +1,13 @@
 import {
   ArrowRight,
   Database,
+  Lightbulb,
   MessageSquare,
   Shield,
   Sparkles,
+  Target,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -23,13 +27,21 @@ export default function LandingPage() {
     shield: Shield,
   } as const;
 
+  const benefitsIconMap = [TrendingUp, Target, Users];
+  const useCasesIconMap = [Lightbulb, Users, Target, TrendingUp];
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden py-16 md:py-32">
         {/* Background Video */}
         <div className="-z-10 absolute inset-0">
-          <VideoLoop blur={12} mask="rounded" src="/videos/placeholder.mp4" showGlen={false} />
+          <VideoLoop
+            blur={6}
+            mask="rounded"
+            showGlen={false}
+            src="/videos/glen-loop.mp4"
+          />
         </div>
 
         {/* Overlay */}
@@ -43,7 +55,7 @@ export default function LandingPage() {
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
             {copy.landing.heroSub}
           </p>
-          <Link href="/chat">
+          <Link href="/login">
             <Button className="mt-8 text-base" size="xl" type="button">
               {copy.landing.cta}
               <ArrowRight aria-hidden="true" className="ml-2 h-5 w-5" />
@@ -52,26 +64,88 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Benefits Section */}
+      <section className="container mx-auto px-6 py-32">
+        <div className="mx-auto mb-16 max-w-3xl text-center">
+          <h2 className="mb-6 bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text font-bold text-4xl text-transparent md:text-5xl">
+            {copy.landing.benefitsTitle}
+          </h2>
+          <p className="text-lg text-muted-foreground md:text-xl">
+            {copy.landing.benefitsSub}
+          </p>
+        </div>
+
+        <div className="mx-auto mt-16 grid max-w-6xl gap-8 md:grid-cols-3">
+          {copy.landing.benefits.map((benefit, index) => {
+            const Icon = benefitsIconMap[index];
+            return (
+              <div className="group relative flex flex-col rounded-2xl border border-border bg-gradient-to-br from-background to-muted/30 p-8 shadow-lg transition-all hover:border-primary/50 hover:shadow-xl" key={benefit.title}>
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
+                  <Icon aria-hidden="true" className="h-7 w-7 text-primary-foreground" />
+                </div>
+                <h3 className="mb-3 font-bold text-xl">{benefit.title}</h3>
+                <p className="leading-relaxed text-muted-foreground">{benefit.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="relative border-border border-t py-32">
+        <div className="absolute inset-0 bg-gradient-to-b from-muted/50 to-background" />
+        <div className="container relative mx-auto px-6">
+          <h2 className="mb-16 text-center font-bold text-4xl md:text-5xl">
+            {copy.landing.useCasesTitle}
+          </h2>
+
+          <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2">
+            {copy.landing.useCases.map((useCase, index) => {
+              const Icon = useCasesIconMap[index];
+              return (
+                <Card
+                  className="group border-border bg-background/80 shadow-md backdrop-blur transition-all hover:border-primary/50 hover:shadow-xl"
+                  key={useCase.title}
+                >
+                  <CardHeader className="p-8">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-all group-hover:bg-primary/20">
+                      <Icon
+                        aria-hidden="true"
+                        className="h-6 w-6 text-primary"
+                      />
+                    </div>
+                    <CardTitle className="text-xl font-bold">{useCase.title}</CardTitle>
+                    <CardDescription className="mt-3 text-base leading-relaxed">
+                      {useCase.description}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Three-Up Feature Cards */}
-      <section className="container mx-auto px-6 py-24">
-        <h2 className="mb-4 text-center font-semibold text-3xl md:text-4xl">
+      <section className="container mx-auto px-6 py-32">
+        <h2 className="mb-6 text-center font-bold text-4xl md:text-5xl">
           {copy.landing.threeUpTitle}
         </h2>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
           {copy.landing.threeUp.map((feature) => {
             const Icon = iconMap[feature.icon as keyof typeof iconMap];
             return (
               <Card
-                className="border-border transition-all duration-200 hover:border-primary/50"
+                className="group border-border bg-gradient-to-br from-background to-muted/20 shadow-md transition-all duration-200 hover:border-primary/50 hover:shadow-xl"
                 key={feature.title}
               >
-                <CardHeader>
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon aria-hidden="true" className="h-6 w-6 text-primary" />
+                <CardHeader className="p-8">
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 shadow-sm transition-all group-hover:bg-primary/20 group-hover:shadow-md">
+                    <Icon aria-hidden="true" className="h-7 w-7 text-primary" />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  <CardDescription className="mt-2 text-base">
+                  <CardTitle className="text-2xl font-bold">{feature.title}</CardTitle>
+                  <CardDescription className="mt-3 text-base leading-relaxed">
                     {feature.description}
                   </CardDescription>
                 </CardHeader>
@@ -98,43 +172,17 @@ export default function LandingPage() {
 
         <div className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {copy.landing.platformCards.map((card) => (
-            <Link href={card.href} key={card.href}>
-              <Card className="group h-full cursor-pointer border-border transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
-                <CardHeader>
-                  <CardTitle className="text-lg transition-colors group-hover:text-primary">
-                    {card.label}
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="ml-2 inline-block h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100"
-                    />
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    {card.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
+            <Card key={card.href} className="h-full border-border shadow-md">
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {card.label}
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  {card.description}
+                </CardDescription>
+              </CardHeader>
+            </Card>
           ))}
-        </div>
-      </section>
-
-      {/* Extend the Model Section (Optional Teaser) */}
-      <section className="container mx-auto border-border border-t px-6 py-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="font-semibold text-2xl md:text-3xl">
-            Extend the model
-          </h2>
-          <p className="mt-4 text-muted-foreground">
-            Glen AI demonstrates what's possible. Create twins for executives,
-            advisors, or domain experts — each with tailored knowledge, voice,
-            and access controls.
-          </p>
-          <Link href="/twins">
-            <Button className="mt-8" size="lg" type="button" variant="outline">
-              Explore Twins
-              <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
         </div>
       </section>
 

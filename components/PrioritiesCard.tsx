@@ -6,14 +6,14 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PinChip } from "./pin-chip";
 
-interface PrioritiesCardProps {
+type PrioritiesCardProps = {
   priorities: string[];
   onClose: () => void;
   show: boolean;
   pinned?: boolean;
   onPinChange?: (pinned: boolean) => void;
   isLoading?: boolean;
-}
+};
 
 export function PrioritiesCard({
   priorities,
@@ -56,20 +56,13 @@ export function PrioritiesCard({
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="rounded-xl border border-border/50 bg-card/95 p-4 shadow-lg backdrop-blur-sm">
+          <div className="rounded-xl border bg-card/95 p-4 shadow-lg backdrop-blur-sm">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold text-card-foreground text-sm">
-                Glen's Priorities
-              </h3>
+              <h3 className="font-semibold text-sm">Glen's Priorities</h3>
               <div className="flex items-center gap-2">
                 <PinChip onToggle={handleTogglePin} pinned={pinned} />
                 {!pinned && (
-                  <Button
-                    className="h-6 w-6"
-                    onClick={onClose}
-                    size="icon"
-                    variant="ghost"
-                  >
+                  <Button onClick={onClose} size="icon" variant="ghost">
                     <X className="h-4 w-4" />
                   </Button>
                 )}
@@ -99,13 +92,13 @@ export function PrioritiesCard({
               </div>
             ) : (
               <ul className="space-y-2">
-                {priorities.map((priority, i) => (
+                {priorities.map((priority) => (
                   <motion.li
                     animate={{ opacity: 1, x: 0 }}
                     className="flex items-start gap-2 text-muted-foreground text-sm"
                     initial={{ opacity: 0, x: -10 }}
-                    key={i}
-                    transition={{ delay: i * 0.1 }}
+                    key={priority}
+                    transition={{ delay: 0.1 }}
                   >
                     <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                     {priority}

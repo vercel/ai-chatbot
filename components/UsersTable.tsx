@@ -1,8 +1,15 @@
 "use client";
-import { UserPlus } from "lucide-react";
+import { Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -11,8 +18,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { User } from "@/lib/types";
-import { TWINS } from "@/lib/mockData";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import type { User, UserRole } from "@/lib/types";
 import InviteUserDialog from "./InviteUserDialog";
 
 type UsersTableProps = {
@@ -22,43 +38,69 @@ type UsersTableProps = {
 export default function UsersTable({ initialUsers }: UsersTableProps) {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [userToRemove, setUserToRemove] = useState<User | null>(null);
+
+  // Assume first user is current user (in real app, get from auth context)
+  const currentUserId = initialUsers[0]?.id;
 
   const handleInvite = (newUser: User) => {
     setUsers((prev) => [...prev, newUser]);
     setDialogOpen(false);
   };
 
-  const getTwinNames = (twinIds?: string[]) => {
-    if (!twinIds || twinIds.length === 0) return "No twins assigned";
-    const twinNames = twinIds
-      .map((id) => TWINS.find((t) => t.id === id)?.name)
-      .filter(Boolean);
-    return twinNames.length > 0 ? twinNames.join(", ") : "No twins assigned";
+  const handleRoleChange = (userId: string, newRole: UserRole) => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === userId ? { ...user, role: newRole } : user
+      )
+    );
+    toast({
+      type: "success",
+      description: `User role changed to ${newRole === "admin" ? "Admin" : "Viewer"}`,
+    });
+  };
+
+  const handleRemoveClick = (user: User) => {
+    setUserToRemove(user);
+    setRemoveDialogOpen(true);
+  };
+
+  const handleRemoveConfirm = () => {
+    if (userToRemove) {
+      setUsers((prev) => prev.filter((user) => user.id !== userToRemove.id));
+      toast({
+        type: "success",
+        description: "User removed",
+      });
+      setRemoveDialogOpen(false);
+      setUserToRemove(null);
+    }
   };
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-medium text-lg">Team Members</h2>
-          <p className="text-muted-foreground text-sm">
+          <p className="mt-1 text-muted-foreground text-sm">
             {users.length} {users.length === 1 ? "member" : "members"}
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)} type="button">
-          <UserPlus className="mr-2 h-4 w-4" />
+          <UserPlus className="h-4 w-4" />
           Invite
         </Button>
       </div>
 
-      <div className="rounded-lg border border-border">
+      <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Platform Role</TableHead>
-              <TableHead>Twin Assignments</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>Last Active</TableHead>
+              <TableHead className="w-[100px]">Remove</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -73,23 +115,34 @@ export default function UsersTable({ initialUsers }: UsersTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      user.platformRole === "platform_admin" ? "default" : "outline"
+                  <Select
+                    onValueChange={(value) =>
+                      handleRoleChange(user.id, value as UserRole)
                     }
+                    value={user.role}
                   >
-                    {user.platformRole === "platform_admin"
-                      ? "Platform Admin"
-                      : "User"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  <div className="max-w-xs truncate">
-                    {getTwinNames(user.twinAssignments)}
-                  </div>
+                    <SelectTrigger className="w-[130px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {user.lastActive}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    disabled={user.id === currentUserId}
+                    onClick={() => handleRemoveClick(user)}
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -102,6 +155,23 @@ export default function UsersTable({ initialUsers }: UsersTableProps) {
         onOpenChange={setDialogOpen}
         open={dialogOpen}
       />
+
+      <AlertDialog onOpenChange={setRemoveDialogOpen} open={removeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {userToRemove?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemoveConfirm}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

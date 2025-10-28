@@ -66,21 +66,21 @@ export const scaleWisdom: DemoFlow = {
   id: 'scale-wisdom',
   title: 'Scale Your Wisdom',
   description: 'How leaders scale wisdom',
-  avatarResponse: "You can't clone yourself, but you can clone your thinking. Record your decisions—why, not just what. Create decision templates. Build an AI twin for the repetitive conversations. Your team gets your brain at scale. You get your time back.",
+  avatarResponse: "You can't clone yourself, but you can clone your thinking. Record your decisions—why, not just what. Create decision templates. Build Glen AI to handle the repetitive conversations. Your team gets your brain at scale. You get your time back.",
   userPrompt: "How can leaders scale their wisdom?",
   priorities: [
     'Record decisions: document the why, not just the what',
     'Create reusable decision frameworks and templates',
-    'Build an AI twin to handle repetitive conversations',
+    'Build Glen AI to handle repetitive conversations',
   ],
 };
 
 export const twinTimeSave: DemoFlow = {
   id: 'twin-time-save',
-  title: 'AI Twin ROI',
-  description: 'How twins save time',
-  avatarResponse: "Execs spend 30-40% of their time answering the same strategic questions over and over. An AI twin handles those. You focus on the 10% only you can do—the novel problems, the tough calls, the moments that need your full presence.",
-  userPrompt: "How could a twin save you time today?",
+  title: 'Glen AI ROI',
+  description: 'How Glen AI saves time',
+  avatarResponse: "Execs spend 30-40% of their time answering the same strategic questions over and over. Glen AI handles those. You focus on the 10% only you can do—the novel problems, the tough calls, the moments that need your full presence.",
+  userPrompt: "How could Glen AI save you time today?",
   priorities: [
     'Offload repetitive strategic Q&A (30-40% time savings)',
     'Focus on novel problems only you can solve',

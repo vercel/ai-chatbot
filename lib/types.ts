@@ -69,6 +69,8 @@ export type Attachment = {
 // CMS types
 export type DocStatus = "Live" | "Pending";
 
+export type ContentType = "pdf" | "doc" | "video" | "website" | "podcast";
+
 export type Doc = {
   id: string;
   title: string;
@@ -76,6 +78,15 @@ export type Doc = {
   updated?: string; // for approved docs
   discovered?: string; // for pending docs
   status: DocStatus;
+  // Preview metadata
+  contentType?: ContentType;
+  description?: string;
+  url?: string; // Link to original source
+  fileSize?: string; // e.g., "2.5 MB"
+  duration?: string; // for video/podcast e.g., "45:30"
+  thumbnailUrl?: string; // for video/website
+  author?: string;
+  publishedDate?: string;
 };
 
 export type AuditItem = {
@@ -87,18 +98,14 @@ export type AuditItem = {
 };
 
 // User management types
-export type PlatformRole = "platform_admin" | "user";
-export type UserRole = "Admin" | "Editor" | "Viewer";
+export type UserRole = "admin" | "viewer";
 
 export type User = {
   id: string;
   name: string;
   email: string;
-  platformRole?: PlatformRole; // Platform-level access (admin can manage everything, user is default)
-  role?: UserRole; // Legacy role field for invite dialog
-  access?: string; // Legacy access field for invite dialog
+  role: UserRole; // admin: full CMS and user access, viewer: chat access only
   lastActive: string;
-  twinAssignments?: string[]; // Array of twin IDs this user has access to (via TwinPermission)
 };
 
 // Twins
@@ -131,4 +138,104 @@ export type Twin = {
   primarySource?: string; // Initial knowledge source type
   permissions?: TwinPermission[]; // Users who can access/edit this twin
   ownerId?: string; // Primary owner user ID
+};
+
+// CMS Scanning types
+export type ScanSource = {
+  id: string;
+  url: string;
+  type: "website" | "podcast" | "rss";
+  enabled: boolean;
+  lastScanned?: string;
+};
+
+export type ScanMetadata = {
+  lastScanned: string | null;
+  isScanning: boolean;
+};
+
+export type ScanScheduleFrequency = "12h" | "24h" | "48h" | "weekly" | "manual";
+
+export type ScanSchedule = {
+  frequency: ScanScheduleFrequency;
+  timeOfDay?: string; // e.g., "03:00" in 24h format
+  timezone?: string; // e.g., "EST"
+  enabledSources: string[]; // Array of source IDs to include
+  nextScanAt?: string; // ISO datetime or formatted string
+};
+
+// Discovery types
+export type SourceType =
+  | "website"
+  | "podcast"
+  | "rss"
+  | "youtube"
+  | "newsletter"
+  | "linkedin"
+  | "news"
+  | "press";
+
+export type ScanFrequency =
+  | "6h"
+  | "12h"
+  | "24h"
+  | "48h"
+  | "weekly"
+  | "manual";
+
+export type ScanStatus = "idle" | "scanning" | "success" | "error";
+
+export type Source = {
+  id: string;
+  name: string;
+  url: string;
+  type: SourceType;
+  frequency: ScanFrequency;
+  lastScanned?: string;
+  enabled: boolean;
+  description?: string;
+  scanStatus?: ScanStatus;
+  scanProgress?: number; // 0-100
+  itemsFound?: number; // Number of items found in last scan
+  nextScheduledScan?: string; // ISO datetime
+};
+
+export type DiscoveryMethod =
+  | "automatic_scan"
+  | "perplexity_search"
+  | "rss_feed"
+  | "manual_addition"
+  | "api_integration";
+
+export type DiscoveredItem = {
+  id: string;
+  sourceId: string;
+  sourceName: string;
+  title: string;
+  url: string;
+  discoveredAt: string;
+  contentType: ContentType;
+  description?: string;
+  thumbnailUrl?: string;
+  author?: string;
+  publishedDate?: string;
+  discoveryMethod: DiscoveryMethod;
+};
+
+// Knowledge types (new architecture)
+export type KnowledgeContentType = "file" | "url" | "text";
+
+export type KnowledgeItem = {
+  id: string;
+  title: string;
+  contentType: KnowledgeContentType;
+  fileType?: ContentType; // pdf, video, doc, etc.
+  uploadedAt: string;
+  uploadedBy: string;
+  url?: string; // For URL type or file download
+  fileName?: string; // Original file name
+  fileSize?: string;
+  chunksGenerated: number; // How many InsightChunks were created
+  textPreview?: string; // First 200 chars for text type
+  description?: string;
 };

@@ -10,8 +10,9 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-semibold text-2xl">User Management</h1>
-        <p className="mt-1 text-muted-foreground">
-          Manage platform users and their twin assignments. Twin-specific permissions are managed in each twin's configuration.
+        <p className="mt-2 text-muted-foreground text-sm">
+          Manage platform users and their roles. Admins have full CMS and user
+          access. Viewers have chat access only.
         </p>
       </div>
 

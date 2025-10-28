@@ -2,6 +2,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { memo, useState } from "react";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
@@ -67,8 +68,14 @@ const PurePreviewMessage = ({
         })}
       >
         {message.role === "assistant" && (
-          <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
-            <SparklesIcon size={14} />
+          <div className="-mt-1 size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-border">
+            <Image
+              alt="Glen AI"
+              className="h-full w-full object-cover"
+              height={32}
+              src="/Glen-Tullman2.jpg"
+              width={32}
+            />
           </div>
         )}
 
@@ -318,8 +325,14 @@ export const ThinkingMessage = () => {
       transition={{ duration: 0.2 }}
     >
       <div className="flex items-start justify-start gap-3">
-        <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
-          <SparklesIcon size={14} />
+        <div className="-mt-1 size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-border">
+          <Image
+            alt="Glen AI"
+            className="h-full w-full object-cover"
+            height={32}
+            src="/images/glen-avatar.png"
+            width={32}
+          />
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
