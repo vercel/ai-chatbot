@@ -1,6 +1,6 @@
 import equal from "fast-deep-equal";
 import { Copy, PencilLine, ThumbsDown, ThumbsUp } from "lucide-react";
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
@@ -14,12 +14,14 @@ export function PureMessageActions({
   vote,
   isLoading,
   setMode,
+  rightSlot,
 }: {
   chatId: string;
   message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
   setMode?: (mode: "view" | "edit") => void;
+  rightSlot?: ReactNode;
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
@@ -61,6 +63,11 @@ export function PureMessageActions({
           <Action onClick={handleCopy} tooltip="Copy">
             <Copy />
           </Action>
+          {rightSlot && (
+            <div className="inline-flex items-center align-middle ml-1">
+              {rightSlot}
+            </div>
+          )}
         </div>
       </Actions>
     );

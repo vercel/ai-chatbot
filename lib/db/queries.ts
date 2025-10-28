@@ -1093,7 +1093,9 @@ export async function getMessagesWithCurrentVersions({
       id: message.id,
       chatId: message.chatId,
       role: message.role,
-      parts: message.parts,
+      // Prefer denormalized latestContent for the current version
+      parts: message.latestContent || message.parts,
+      latestContent: message.latestContent || message.parts,
       attachments: message.attachments,
       createdAt: message.createdAt,
       updatedAt: message.updatedAt,

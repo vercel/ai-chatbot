@@ -294,45 +294,61 @@ const PurePreviewMessage = ({
                 message={message}
                 setMode={setMode}
                 vote={vote}
+                rightSlot={message.role === "user" ? (
+                  <MessageVersionSwitcher
+                    key={`version-${message.id}`}
+                    message={message}
+                    onVersionSwitch={(newContent) => {
+                      setMessages(prevMessages =>
+                        prevMessages.map(m =>
+                          m.id === message.id
+                            ? { ...m, parts: newContent }
+                            : m
+                        )
+                      );
+                    }}
+                    onAssistantSwitch={(assistant) => {
+                      if (!assistant) return;
+                      setMessages(prev => {
+                        const idx = prev.findIndex((m) => m.id === message.id);
+                        if (idx === -1) return prev;
+                        // Build a cleaned list without other occurrences of this assistant id
+                        const cleaned = prev.filter((m, j) => {
+                          if (m.role !== "assistant") return true;
+                          // Keep the assistant at the intended position (userIdx+1); drop others with same id
+                          if (m.id === assistant.id && j !== idx + 1) return false;
+                          return true;
+                        });
+
+                        const next = [...cleaned];
+                        const following = next[idx + 1];
+
+                        if (following && following.role === "assistant") {
+                          next[idx + 1] = {
+                            ...following,
+                            id: assistant.id,
+                            parts: assistant.parts,
+                            role: "assistant",
+                          } as any;
+                        } else {
+                          // Insert assistant right after the user message
+                          next.splice(idx + 1, 0, {
+                            id: assistant.id,
+                            role: "assistant",
+                            parts: assistant.parts,
+                            metadata: assistant.metadata || following?.metadata,
+                          } as any);
+                        }
+
+                        return next;
+                      });
+                    }}
+                    onRegenerateAfterSwitch={() => {
+                      regenerate();
+                    }}
+                  />
+                ) : undefined}
               />
-              {message.role === "user" && (
-                <MessageVersionSwitcher
-                  key={`version-${message.id}`}
-                  message={message}
-                  onVersionSwitch={(newContent) => {
-                    // Update the message content optimistically
-                    setMessages(prevMessages => 
-                      prevMessages.map(m => 
-                        m.id === message.id 
-                          ? { ...m, parts: newContent }
-                          : m
-                      )
-                    );
-                  }}
-                  onAssistantSwitch={(assistant) => {
-                    if (!assistant) return;
-                    // Replace the assistant message immediately following this user message
-                    setMessages(prev => {
-                      const idx = prev.findIndex(m => m.id === message.id);
-                      if (idx === -1) return prev;
-                      const next = [...prev];
-                      const following = next[idx + 1];
-                      if (following && following.role === "assistant") {
-                        next[idx + 1] = {
-                          ...following,
-                          id: assistant.id,
-                          parts: assistant.parts,
-                        } as any;
-                      }
-                      return next;
-                    });
-                  }}
-                  onRegenerateAfterSwitch={() => {
-                    // Trigger regeneration from this message onwards
-                    regenerate();
-                  }}
-                />
-              )}
             </>
           )}
         </div>
