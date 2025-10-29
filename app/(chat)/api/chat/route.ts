@@ -207,22 +207,9 @@ export async function POST(request: Request) {
                   content,
                 };
               });
-            const lastUser = hfMessages.filter((m) => m.role === "user").at(-1);
-            const lastUserText = lastUser?.content?.slice(0, 200);
-            console.log("[HF][chat] request", {
-              chatId: id,
-              streamId,
-              model: selectedChatModel,
-              messagesCount: hfMessages.length,
-              supportsTools,
-              useTransform,
-              hasLastUser: !!lastUser,
-              lastUserText,
-              geolocation: { longitude, latitude, city, country },
-            });
+            // Logging removed for production cleanliness
             messagesForModel = hfMessages;
           } catch (e) {
-            console.warn("[HF][chat] context log failed", e);
             messagesForModel = [];
           }
         }
@@ -275,68 +262,7 @@ export async function POST(request: Request) {
           },
         });
 
-        // DEBUG: detailed stream inspection for OpenAI-compatible models (HF router)
-        if (isOpenAICompat) {
-          let chunks = 0;
-          let textDeltas = 0;
-          let firstDeltaAt: number | null = null;
-          let fiveSecTimer: any = null;
-
-          try {
-            // Timer to detect no-text early
-            fiveSecTimer = setTimeout(() => {
-              if (textDeltas === 0) {
-                console.warn(`[HF][${streamId}] no text-delta after 5s`);
-              }
-            }, 5000);
-
-            // Asynchronously log all parts without blocking the pipeline
-            (async () => {
-              try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                for await (const part of (result as any).fullStream) {
-                  chunks++;
-                  // Common part shapes: 'text-delta', 'response-metadata', 'object', 'finish', 'error'
-                  const type = (part as any)?.type;
-                  switch (type) {
-                    case "text-delta": {
-                      textDeltas++;
-                      if (!firstDeltaAt) firstDeltaAt = Date.now();
-                      const snippet = String((part as any).textDelta || "").slice(0, 160);
-                      console.log(`[HF][${streamId}] text-delta[${textDeltas}]`, snippet);
-                      break;
-                    }
-                    case "response-metadata": {
-                      console.log(`[HF][${streamId}] metadata`, part);
-                      break;
-                    }
-                    case "finish": {
-                      console.log(`[HF][${streamId}] finish`, part);
-                      break;
-                    }
-                    case "error": {
-                      console.error(`[HF][${streamId}] error`, part);
-                      break;
-                    }
-                    default: {
-                      console.log(`[HF][${streamId}] part`, type, part);
-                    }
-                  }
-                }
-              } catch (readerErr) {
-                console.error(`[HF][${streamId}] fullStream reader error`, readerErr);
-              } finally {
-                clearTimeout(fiveSecTimer);
-                console.log(`[HF][${streamId}] stream complete: chunks=${chunks} textDeltas=${textDeltas} firstDeltaMs=${firstDeltaAt ? (Date.now() - firstDeltaAt) : -1}`);
-                if (textDeltas === 0) {
-                  console.warn(`[HF][${streamId}] completed with no text-delta`);
-                }
-              }
-            })();
-          } catch (e) {
-            console.warn(`[HF][${streamId}] failed to start debug reader`, e);
-          }
-        }
+  // All Hugging Face/OpenAI router debug logging removed
 
         result.consumeStream();
 
