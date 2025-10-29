@@ -181,16 +181,56 @@ export async function POST(request: Request) {
 
     let finalMergedUsage: AppUsage | undefined;
 
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const isOpenAICompat = selectedChatModel.startsWith("openai/");
         const supportsTools = !isOpenAICompat;
         const useTransform = !isOpenAICompat;
 
+        // For OpenAI-compatible (HF router), filter/transform messages to valid format
+        let messagesForModel: any[] = uiMessages;
+        if (isOpenAICompat) {
+          try {
+            // Only allow messages with type 'message' (or no type), valid role, and string content
+            const allowedRoles = ["user", "assistant", "system", "developer"];
+            const hfMessages = uiMessages
+              .filter((m: any) => (!m.type || m.type === "message") && allowedRoles.includes(m.role) && Array.isArray(m.parts))
+              .map((m: any) => {
+                // Concatenate all text parts for content
+                const content = m.parts
+                  .filter((p: any) => p?.type === "text")
+                  .map((p: any) => String(p.text || ""))
+                  .join(" ");
+                return {
+                  role: m.role,
+                  content,
+                };
+              });
+            const lastUser = hfMessages.filter((m) => m.role === "user").at(-1);
+            const lastUserText = lastUser?.content?.slice(0, 200);
+            console.log("[HF][chat] request", {
+              chatId: id,
+              streamId,
+              model: selectedChatModel,
+              messagesCount: hfMessages.length,
+              supportsTools,
+              useTransform,
+              hasLastUser: !!lastUser,
+              lastUserText,
+              geolocation: { longitude, latitude, city, country },
+            });
+            messagesForModel = hfMessages;
+          } catch (e) {
+            console.warn("[HF][chat] context log failed", e);
+            messagesForModel = [];
+          }
+        }
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
+          messages: isOpenAICompat ? messagesForModel : convertToModelMessages(messagesForModel),
           stopWhen: !isOpenAICompat ? stepCountIs(5) : undefined,
           maxOutputTokens: isOpenAICompat ? 1024 : undefined,
           experimental_activeTools: supportsTools
@@ -234,6 +274,69 @@ export async function POST(request: Request) {
             }
           },
         });
+
+        // DEBUG: detailed stream inspection for OpenAI-compatible models (HF router)
+        if (isOpenAICompat) {
+          let chunks = 0;
+          let textDeltas = 0;
+          let firstDeltaAt: number | null = null;
+          let fiveSecTimer: any = null;
+
+          try {
+            // Timer to detect no-text early
+            fiveSecTimer = setTimeout(() => {
+              if (textDeltas === 0) {
+                console.warn(`[HF][${streamId}] no text-delta after 5s`);
+              }
+            }, 5000);
+
+            // Asynchronously log all parts without blocking the pipeline
+            (async () => {
+              try {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                for await (const part of (result as any).fullStream) {
+                  chunks++;
+                  // Common part shapes: 'text-delta', 'response-metadata', 'object', 'finish', 'error'
+                  const type = (part as any)?.type;
+                  switch (type) {
+                    case "text-delta": {
+                      textDeltas++;
+                      if (!firstDeltaAt) firstDeltaAt = Date.now();
+                      const snippet = String((part as any).textDelta || "").slice(0, 160);
+                      console.log(`[HF][${streamId}] text-delta[${textDeltas}]`, snippet);
+                      break;
+                    }
+                    case "response-metadata": {
+                      console.log(`[HF][${streamId}] metadata`, part);
+                      break;
+                    }
+                    case "finish": {
+                      console.log(`[HF][${streamId}] finish`, part);
+                      break;
+                    }
+                    case "error": {
+                      console.error(`[HF][${streamId}] error`, part);
+                      break;
+                    }
+                    default: {
+                      console.log(`[HF][${streamId}] part`, type, part);
+                    }
+                  }
+                }
+              } catch (readerErr) {
+                console.error(`[HF][${streamId}] fullStream reader error`, readerErr);
+              } finally {
+                clearTimeout(fiveSecTimer);
+                console.log(`[HF][${streamId}] stream complete: chunks=${chunks} textDeltas=${textDeltas} firstDeltaMs=${firstDeltaAt ? (Date.now() - firstDeltaAt) : -1}`);
+                if (textDeltas === 0) {
+                  console.warn(`[HF][${streamId}] completed with no text-delta`);
+                }
+              }
+            })();
+          } catch (e) {
+            console.warn(`[HF][${streamId}] failed to start debug reader`, e);
+          }
+        }
 
         result.consumeStream();
 

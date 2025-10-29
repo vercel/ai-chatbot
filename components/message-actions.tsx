@@ -1,11 +1,12 @@
 import equal from "fast-deep-equal";
 import { Copy, PencilLine, ThumbsDown, ThumbsUp } from "lucide-react";
-import { memo, type ReactNode } from "react";
+import { memo, type ReactNode, type MouseEvent } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
+import { getTextFromMessage } from "@/lib/utils";
 import { Action, Actions } from "./elements/actions";
 
 // Detect if a user message is a vision message (contains image input)
@@ -52,19 +53,49 @@ export function PureMessageActions({
     return null;
   }
 
-  const textFromParts = message.parts
-    ?.filter((part) => part.type === "text")
-    .map((part) => part.text)
+  const textFromParts = getTextFromMessage(message);
+
+  const reasoningFromParts = (message.parts || [])
+    .map((p) => p as any)
+    .filter((part) => part.type === "reasoning" && typeof part.text === "string" && part.text.trim())
+    .map((part) => part.text as string)
     .join("\n")
     .trim();
 
-  const handleCopy = async () => {
-    if (!textFromParts) {
+  const handleCopy = async (e?: MouseEvent<HTMLButtonElement>) => {
+    // Prefer explicit text parts, then reasoning parts
+    let contentToCopy = textFromParts || reasoningFromParts || "";
+
+    // If still empty, attempt to extract rendered text from the message DOM
+    if (!contentToCopy && e?.currentTarget) {
+      try {
+        const root = (e.currentTarget as HTMLElement).closest(
+          '[data-testid^="message-"]'
+        ) as HTMLElement | null;
+        if (root) {
+          const nodes = root.querySelectorAll(
+            '[data-testid="message-content"]'
+          );
+          const collected: string[] = [];
+          nodes.forEach((n) => {
+            const text = (n as HTMLElement).innerText?.trim();
+            if (text) collected.push(text);
+          });
+          if (collected.length > 0) {
+            contentToCopy = collected.join("\n\n");
+          }
+        }
+      } catch (err) {
+        console.warn("Copy DOM fallback failed", err);
+      }
+    }
+
+    if (!contentToCopy) {
       toast.error("There's no text to copy!");
       return;
     }
 
-    await copyToClipboard(textFromParts);
+    await copyToClipboard(contentToCopy);
     toast.success("Copied to clipboard!");
   };
 
@@ -94,7 +125,7 @@ export function PureMessageActions({
 
   return (
     <Actions className="ml-1 gap-0.5 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 transition-opacity">
-      <Action className="p-0 size-8 rounded-sm" onClick={handleCopy} tooltip="Copy">
+  <Action className="p-0 size-8 rounded-sm" onClick={handleCopy} tooltip="Copy">
         <Copy />
       </Action>
 

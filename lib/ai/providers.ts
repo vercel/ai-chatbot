@@ -38,10 +38,13 @@ if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY) {
 
 // Configure Hugging Face Router (OpenAI-compatible) if token is available
 if (process.env.HF_TOKEN) {
-  providers.hf = createOpenAI({
+  const hfSettings: any = {
     apiKey: process.env.HF_TOKEN,
     baseURL: "https://router.huggingface.co/v1",
-  });
+    // Ensure we use the Chat Completions API for routers that don't support Responses API
+    compatibility: "strict",
+  };
+  providers.hf = createOpenAI(hfSettings);
 } else if (!isTestEnvironment) {
   console.warn(
     "⚠️  HF_TOKEN is not configured. Hugging Face OpenAI-compatible models will be unavailable."
