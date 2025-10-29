@@ -114,14 +114,14 @@ export async function getMessageVersionsAction({
     const message = messages[0] as any;
     // Use versionGroupId if available, otherwise use the messageId itself
     const versionGroupId = message.versionGroupId || messageId;
-    console.log("getMessageVersionsAction: Using versionGroupId:", versionGroupId, "from message:", message);
+    
     
     const versions = await getMessageVersions({ versionGroupId });
-    console.log("getMessageVersionsAction: Found versions:", versions.length, versions);
+    
     
     return versions;
   } catch (error) {
-    console.error("Failed to get message versions:", error);
+    
     return [];
   }
 }

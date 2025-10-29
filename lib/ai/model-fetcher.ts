@@ -57,6 +57,24 @@ export function getAvailableModelsSync(): ModelInfo[] {
     );
   }
 
+  // Add Hugging Face OpenAI-compatible OSS models if HF token is available
+  if (process.env.HF_TOKEN) {
+    models.push(
+      {
+        id: "openai/gpt-oss-120b:novita",
+        name: "GPT-OSS 120B (HF)",
+        description: "OpenAI-compatible 120B OSS model via Hugging Face Inference Providers",
+        provider: "hf",
+      },
+      {
+        id: "openai/gpt-oss-20b:novita",
+        name: "GPT-OSS 20B (HF)",
+        description: "OpenAI-compatible 20B OSS model via Hugging Face Inference Providers",
+        provider: "hf",
+      }
+    );
+  }
+
   return models;
 }
 

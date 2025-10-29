@@ -4,7 +4,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
-import { memo, useEffect } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
@@ -62,6 +62,20 @@ function PureMessages({
     }
   }, [status, messagesContainerRef]);
 
+  // De-duplicate messages by id, keeping the last occurrence to avoid duplicate React keys
+  const uniqueMessages = useMemo(() => {
+    const seen = new Set<string>();
+    const out: ChatMessage[] = [];
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (!seen.has(m.id)) {
+        seen.add(m.id);
+        out.unshift(m);
+      }
+    }
+    return out;
+  }, [messages]);
+
   return (
     <div
       className="overscroll-behavior-contain -webkit-overflow-scrolling-touch flex-1 touch-pan-y overflow-y-scroll overflow-x-hidden"
@@ -70,18 +84,18 @@ function PureMessages({
     >
       <Conversation className="mx-auto flex min-w-0 w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl flex-col gap-4 md:gap-6 overflow-x-hidden">
         <ConversationContent className="flex flex-col gap-2 md:gap-2 py-2 overflow-x-hidden">
-          {messages.map((message, index) => (
+      {uniqueMessages.map((message, index) => (
             <PreviewMessage
               chatId={chatId}
               isLoading={
-                status === "streaming" && messages.length - 1 === index
+                status === "streaming" && uniqueMessages.length - 1 === index
               }
               isReadonly={isReadonly}
-              key={message.id}
+        key={`${message.id}-${index}`}
               message={message}
               regenerate={regenerate}
               requiresScrollPadding={
-                hasSentMessage && index === messages.length - 1
+                hasSentMessage && index === uniqueMessages.length - 1
               }
               setMessages={setMessages}
               userId={userId}

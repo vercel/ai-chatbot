@@ -16,7 +16,7 @@ export const PreviewAttachment = ({
 
   return (
     <div
-      className="group relative size-64 overflow-hidden rounded-lg border bg-muted"
+      className="group relative size-46 overflow-hidden rounded-lg border bg-muted"
       data-testid="input-attachment-preview"
     >
       {contentType?.startsWith("image") ? (
@@ -49,9 +49,7 @@ export const PreviewAttachment = ({
         </Button>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 truncate bg-linear-to-t from-black/80 to-transparent px-1 py-0.5 text-[10px] text-white">
-        {name}
-      </div>
+      
     </div>
   );
 };

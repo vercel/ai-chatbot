@@ -8,6 +8,28 @@ import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { Action, Actions } from "./elements/actions";
 
+// Detect if a user message is a vision message (contains image input)
+function isVisionMessage(message: ChatMessage): boolean {
+  try {
+    return (
+      Array.isArray(message.parts) &&
+      message.parts.some((p: any) => {
+        if (!p) return false;
+        if (p.type === "file") {
+          const mt = p.mediaType || p.contentType || p.mimeType || p.type;
+          return typeof mt === "string" && mt.startsWith("image/");
+        }
+        // Other possible shapes from providers
+        if (p.type === "image" || p.type === "input_image") return true;
+        if (p.image_url || p.image || p.inlineData) return true;
+        return false;
+      })
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function PureMessageActions({
   chatId,
   message,
@@ -48,10 +70,11 @@ export function PureMessageActions({
 
   // User messages get edit (on hover) and copy actions
   if (message.role === "user") {
+    const vision = isVisionMessage(message);
     return (
       <Actions className="mr-1 justify-end gap-0.5 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 transition-opacity">
-        <div className="relative flex items-center">
-          {setMode && (
+        <div className="relative flex items-center" data-vision={vision ? "true" : "false"}>
+          {setMode && !vision && (
             <Action
               className="-left-10 absolute top-0 opacity-100 md:opacity-0 transition-opacity md:group-hover/message:opacity-100 p-0 size-8 rounded-sm"
               onClick={() => setMode("edit")}

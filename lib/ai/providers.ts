@@ -1,4 +1,5 @@
 import { createMistral } from "@ai-sdk/mistral";
+import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import {
   customProvider,
@@ -35,6 +36,18 @@ if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY) {
   );
 }
 
+// Configure Hugging Face Router (OpenAI-compatible) if token is available
+if (process.env.HF_TOKEN) {
+  providers.hf = createOpenAI({
+    apiKey: process.env.HF_TOKEN,
+    baseURL: "https://router.huggingface.co/v1",
+  });
+} else if (!isTestEnvironment) {
+  console.warn(
+    "⚠️  HF_TOKEN is not configured. Hugging Face OpenAI-compatible models will be unavailable."
+  );
+}
+
 // Create language models dynamically based on available models
 function createLanguageModels() {
   const availableModels = getCachedAvailableModels();
@@ -46,6 +59,9 @@ function createLanguageModels() {
         languageModels[model.id] = providers.mistral(model.id);
       } else if (model.provider === "google" && providers.google) {
         languageModels[model.id] = providers.google(model.id);
+      } else if ((model.provider === "hf" || model.provider === "huggingface") && providers.hf) {
+        // OpenAI-compatible models served via Hugging Face router
+        languageModels[model.id] = providers.hf(model.id);
       } else {
       }
     } catch (error) {}
@@ -80,6 +96,15 @@ function getDefaultModels() {
     defaults.title = "gemini-1.5-flash";
     defaults.artifact = "gemini-1.5-pro";
     defaults.reasoning = "gemini-1.5-pro";
+  }
+
+  // If neither Mistral nor Google available, but HF is, use HF models
+  if (!providers.mistral && !providers.google && providers.hf) {
+    // Prefer the larger OSS model for chat
+    defaults.chat = "openai/gpt-oss-120b:novita";
+    defaults.title = "openai/gpt-oss-20b:novita";
+    defaults.artifact = "openai/gpt-oss-20b:novita";
+    defaults.reasoning = "openai/gpt-oss-120b:novita";
   }
 
   return defaults;

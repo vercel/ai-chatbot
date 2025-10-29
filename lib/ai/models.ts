@@ -44,6 +44,18 @@ const FALLBACK_MODELS: ChatModel[] = [
     name: "Gemini 2.5 Flash-Lite",
     description: "Fastest flash model optimized for cost-efficiency",
     provider: "google"
+  },
+  {
+    id: "openai/gpt-oss-120b:novita",
+    name: "GPT-OSS 120B (HF)",
+    description: "OpenAI-compatible 120B OSS model via Hugging Face",
+    provider: "hf"
+  },
+  {
+    id: "openai/gpt-oss-20b:novita",
+    name: "GPT-OSS 20B (HF)",
+    description: "OpenAI-compatible 20B OSS model via Hugging Face",
+    provider: "hf"
   }
 ];
 
@@ -100,6 +112,26 @@ function initializeModels(): ChatModel[] {
 // Helper functions to identify model capabilities
 export function isReasoningModel(modelId: string): boolean {
   return modelId.includes("reasoning") || modelId === "chat-model-reasoning" || modelId === "mistral-large-reasoning";
+}
+
+// Heuristic: models that can accept images (vision/multimodal)
+export function isVisionModel(modelId: string): boolean {
+  const id = (modelId || "").toLowerCase();
+  return (
+    id.includes("vision") ||
+    id.includes("multimodal") ||
+    id.includes("omni") || // e.g., gpt-4o
+    id.includes("4o") ||
+    id.startsWith("gemini-") || // Gemini 1.5 / 2.5 support images
+    id.startsWith("pixtral") || // Mistral Pixtral models support images
+    id.startsWith("mistral-pixtral")
+  );
+}
+
+export function getFirstVisionModelId(): string | undefined {
+  const models = getAvailableModels();
+  const found = models.find(m => isVisionModel(m.id));
+  return found?.id;
 }
 
 export function getModelByLegacyId(legacyId: string): string {

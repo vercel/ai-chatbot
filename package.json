@@ -22,6 +22,7 @@
   "dependencies": {
     "@ai-sdk/google": "^2.0.23",
     "@ai-sdk/mistral": "^2.0.19",
+    "@ai-sdk/openai": "2.0.23",
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/react": "2.0.26",
     "@codemirror/lang-javascript": "^6.2.2",

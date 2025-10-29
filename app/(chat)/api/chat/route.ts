@@ -183,33 +183,32 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        const isOpenAICompat = selectedChatModel.startsWith("openai/");
+        const supportsTools = !isOpenAICompat;
+        const useTransform = !isOpenAICompat;
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            (selectedChatModel === "chat-model-reasoning" || selectedChatModel.includes("reasoning"))
-              ? [
-                  "createDocument",
-                  "updateDocument",
-                ]
-              : [
-                  "getWeather",
-                  "createDocument", 
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
-          experimental_transform: smoothStream({ chunking: "word" }),
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
-          },
+          stopWhen: !isOpenAICompat ? stepCountIs(5) : undefined,
+          maxOutputTokens: isOpenAICompat ? 1024 : undefined,
+          experimental_activeTools: supportsTools
+            ? (
+                (selectedChatModel === "chat-model-reasoning" || selectedChatModel.includes("reasoning"))
+                  ? ["createDocument", "updateDocument"]
+                  : ["getWeather", "createDocument", "updateDocument", "requestSuggestions"]
+              )
+            : [],
+          experimental_transform: useTransform ? smoothStream({ chunking: "word" }) : undefined,
+          tools: supportsTools
+            ? {
+                getWeather,
+                createDocument: createDocument({ session, dataStream }),
+                updateDocument: updateDocument({ session, dataStream }),
+                requestSuggestions: requestSuggestions({ session, dataStream }),
+              }
+            : undefined,
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",
@@ -217,23 +216,11 @@ export async function POST(request: Request) {
           onFinish: async ({ usage }) => {
             try {
               const providers = await getTokenlensCatalog();
-              const modelId =
-                myProvider.languageModel(selectedChatModel).modelId;
-              if (!modelId) {
+              const lm = myProvider.languageModel(selectedChatModel);
+              const modelId = (lm as any)?.modelId || selectedChatModel;
+              if (!modelId || !providers) {
                 finalMergedUsage = usage;
-                dataStream.write({
-                  type: "data-usage",
-                  data: finalMergedUsage,
-                });
-                return;
-              }
-
-              if (!providers) {
-                finalMergedUsage = usage;
-                dataStream.write({
-                  type: "data-usage",
-                  data: finalMergedUsage,
-                });
+                dataStream.write({ type: "data-usage", data: finalMergedUsage });
                 return;
               }
 

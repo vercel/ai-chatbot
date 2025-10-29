@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { SelectItem } from "@/components/ui/select";
-import { chatModels } from "@/lib/ai/models";
+import { chatModels, isVisionModel, getFirstVisionModelId } from "@/lib/ai/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { LanguageModel } from "ai";
 import type { AppUsage } from "@/lib/usage";
@@ -138,6 +138,18 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${chatId}`);
 
+    // Guard: block image sends on non-vision models
+    const hasImages = attachments.some(a => (a.contentType || "").startsWith("image/"));
+    if (hasImages && !isVisionModel(selectedModelId)) {
+      const suggestion = getFirstVisionModelId();
+      toast.error(
+        suggestion
+          ? `The selected model doesn’t support images. Switch to ${chatModels().find(m=>m.id===suggestion)?.name || suggestion} to send images.`
+          : "The selected model doesn’t support images.",
+      );
+      return;
+    }
+
     sendMessage({
       role: "user",
       parts: [
@@ -172,6 +184,7 @@ function PureMultimodalInput({
     width,
     chatId,
     resetHeight,
+    selectedModelId,
   ]);
 
   const uploadFile = useCallback(async (file: File) => {
@@ -372,12 +385,13 @@ function PureAttachmentsButton({
   selectedModelId: string;
 }) {
   const isReasoningModel = selectedModelId === "chat-model-reasoning" || selectedModelId.includes("reasoning");
+  const isVisionCapable = isVisionModel(selectedModelId);
 
   return (
     <Button
       className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
       data-testid="attachments-button"
-      disabled={status !== "ready" || isReasoningModel}
+  disabled={status !== "ready" || isReasoningModel || !isVisionCapable}
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
