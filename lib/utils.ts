@@ -1,8 +1,14 @@
-import type { CoreAssistantMessage, CoreToolMessage, UIMessage } from 'ai';
+import type {
+  CoreAssistantMessage,
+  CoreToolMessage,
+  UIMessage,
+  UIMessagePart,
+} from 'ai';
 import { type ClassValue, clsx } from 'clsx';
+import { formatISO } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import type { Document } from '@/lib/db/schema';
 import { ChatSDKError, type ErrorCode } from './errors';
+import type { ChatMessage, ChatTools, CustomUIDataTypes, Document } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -59,17 +65,17 @@ export function generateUUID(): string {
 type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
 type ResponseMessage = ResponseMessageWithoutId & { id: string };
 
-export function getMostRecentUserMessage(messages: Array<UIMessage>) {
+export function getMostRecentUserMessage(messages: UIMessage[]) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }
 
 export function getDocumentTimestampByIndex(
-  documents: Array<Document>,
+  documents: Document[],
   index: number,
 ) {
-  if (!documents) return new Date();
-  if (index > documents.length) return new Date();
+  if (!documents) { return new Date(); }
+  if (index > documents.length) { return new Date(); }
 
   return documents[index].createdAt;
 }
@@ -77,15 +83,30 @@ export function getDocumentTimestampByIndex(
 export function getTrailingMessageId({
   messages,
 }: {
-  messages: Array<ResponseMessage>;
+  messages: ResponseMessage[];
 }): string | null {
   const trailingMessage = messages.at(-1);
 
-  if (!trailingMessage) return null;
+  if (!trailingMessage) { return null; }
 
   return trailingMessage.id;
 }
 
 export function sanitizeText(text: string) {
   return text.replace('<has_function_call>', '');
+}
+
+// Stateless: This function is kept for compatibility but not used in stateless mode
+// Clients send UIMessage[] directly, no database conversion needed
+export function convertToUIMessages(_messages: never[]): ChatMessage[] {
+  // Stateless: No database messages to convert
+  // Clients manage messages client-side
+  return [];
+}
+
+export function getTextFromMessage(message: ChatMessage): string {
+  return message.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
 }

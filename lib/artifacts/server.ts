@@ -1,40 +1,29 @@
-import { codeDocumentHandler } from '@/artifacts/code/server';
-import { imageDocumentHandler } from '@/artifacts/image/server';
-import { sheetDocumentHandler } from '@/artifacts/sheet/server';
-import { textDocumentHandler } from '@/artifacts/text/server';
-import { ArtifactKind } from '@/components/artifact';
-import { DataStreamWriter } from 'ai';
-import { Document } from '../db/schema';
-import { saveDocument } from '../db/queries';
-import { Session } from 'next-auth';
+import type { UIMessageStreamWriter } from "ai";
+import { codeDocumentHandler } from "@/artifacts/code/server";
+import { sheetDocumentHandler } from "@/artifacts/sheet/server";
+import { textDocumentHandler } from "@/artifacts/text/server";
+import type { ArtifactKind } from "@/components/artifact";
+import type { ChatMessage } from "../types";
 
-export interface SaveDocumentProps {
+export type CreateDocumentCallbackProps = {
   id: string;
   title: string;
-  kind: ArtifactKind;
-  content: string;
-  userId: string;
-}
+  dataStream: UIMessageStreamWriter<ChatMessage> | null;
+};
 
-export interface CreateDocumentCallbackProps {
-  id: string;
-  title: string;
-  dataStream: DataStreamWriter;
-  session: Session;
-}
-
-export interface UpdateDocumentCallbackProps {
-  document: Document;
+export type UpdateDocumentCallbackProps = {
+  documentId: string;
+  documentKind: ArtifactKind;
+  documentContent: string;
   description: string;
-  dataStream: DataStreamWriter;
-  session: Session;
-}
+  dataStream: UIMessageStreamWriter<ChatMessage> | null;
+};
 
-export interface DocumentHandler<T = ArtifactKind> {
+export type DocumentHandler<T = ArtifactKind> = {
   kind: T;
   onCreateDocument: (args: CreateDocumentCallbackProps) => Promise<void>;
   onUpdateDocument: (args: UpdateDocumentCallbackProps) => Promise<void>;
-}
+};
 
 export function createDocumentHandler<T extends ArtifactKind>(config: {
   kind: T;
@@ -44,43 +33,23 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
   return {
     kind: config.kind,
     onCreateDocument: async (args: CreateDocumentCallbackProps) => {
-      const draftContent = await config.onCreateDocument({
+      // Stateless: Create document content only, don't persist
+      await config.onCreateDocument({
         id: args.id,
         title: args.title,
         dataStream: args.dataStream,
-        session: args.session,
       });
-
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.id,
-          title: args.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-        });
-      }
-
       return;
     },
     onUpdateDocument: async (args: UpdateDocumentCallbackProps) => {
-      const draftContent = await config.onUpdateDocument({
-        document: args.document,
+      // Stateless: Update document content only, don't persist
+      await config.onUpdateDocument({
+        documentId: args.documentId,
+        documentKind: args.documentKind,
+        documentContent: args.documentContent,
         description: args.description,
         dataStream: args.dataStream,
-        session: args.session,
       });
-
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.document.id,
-          title: args.document.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-        });
-      }
-
       return;
     },
   };
@@ -89,11 +58,10 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
 /*
  * Use this array to define the document handlers for each artifact kind.
  */
-export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
+export const documentHandlersByArtifactKind: DocumentHandler[] = [
   textDocumentHandler,
   codeDocumentHandler,
-  imageDocumentHandler,
   sheetDocumentHandler,
 ];
 
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
+export const artifactKinds = ["text", "code", "sheet"] as const;

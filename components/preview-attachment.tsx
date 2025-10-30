@@ -1,46 +1,59 @@
-import type { Attachment } from 'ai';
-
-import { LoaderIcon } from './icons';
+import Image from "next/image";
+import type { Attachment } from "@/lib/types";
+import { Loader } from "./elements/loader";
+import { CrossSmallIcon } from "./icons";
+import { Button } from "./ui/button";
 
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
+  onRemove,
 }: {
   attachment: Attachment;
   isUploading?: boolean;
+  onRemove?: () => void;
 }) => {
   const { name, url, contentType } = attachment;
 
   return (
-    <div data-testid="input-attachment-preview" className="flex flex-col gap-2">
-      <div className="w-20 h-16 aspect-video bg-muted rounded-md relative flex flex-col items-center justify-center">
-        {contentType ? (
-          contentType.startsWith('image') ? (
-            // NOTE: it is recommended to use next/image for images
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={url}
-              src={url}
-              alt={name ?? 'An image attachment'}
-              className="rounded-md size-full object-cover"
-            />
-          ) : (
-            <div className="" />
-          )
-        ) : (
-          <div className="" />
-        )}
+    <div
+      className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
+      data-testid="input-attachment-preview"
+    >
+      {contentType?.startsWith("image") ? (
+        <Image
+          alt={name ?? "An image attachment"}
+          className="size-full object-cover"
+          height={64}
+          src={url}
+          width={64}
+        />
+      ) : (
+        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+          File
+        </div>
+      )}
 
-        {isUploading && (
-          <div
-            data-testid="input-attachment-loader"
-            className="animate-spin absolute text-zinc-500"
-          >
-            <LoaderIcon />
-          </div>
-        )}
+      {isUploading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <Loader size={16} />
+        </div>
+      )}
+
+      {onRemove && !isUploading && (
+        <Button
+          className="absolute top-0.5 right-0.5 size-4 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
+          onClick={onRemove}
+          size="sm"
+          variant="destructive"
+        >
+          <CrossSmallIcon size={8} />
+        </Button>
+      )}
+
+      <div className="absolute inset-x-0 bottom-0 truncate bg-linear-to-t from-black/80 to-transparent px-1 py-0.5 text-[10px] text-white">
+        {name}
       </div>
-      <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
     </div>
   );
 };

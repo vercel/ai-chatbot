@@ -1,47 +1,53 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import type { UIMessage } from 'ai';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { DataPart } from '@/lib/types';
+import type { UseChatHelpers } from "@ai-sdk/react";
+import { useEffect } from "react";
+import { useDataStream } from "@/components/data-stream-provider";
+import type { ChatMessage } from "@/lib/types";
 
-export interface UseAutoResumeParams {
+export type UseAutoResumeParams = {
   autoResume: boolean;
-  initialMessages: UIMessage[];
-  experimental_resume: UseChatHelpers['experimental_resume'];
-  data: UseChatHelpers['data'];
-  setMessages: UseChatHelpers['setMessages'];
-}
+  initialMessages: ChatMessage[];
+  resumeStream: UseChatHelpers<ChatMessage>["resumeStream"];
+  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+};
 
 export function useAutoResume({
   autoResume,
   initialMessages,
-  experimental_resume,
-  data,
+  resumeStream,
   setMessages,
 }: UseAutoResumeParams) {
+  const { dataStream } = useDataStream();
+
   useEffect(() => {
-    if (!autoResume) return;
+    if (!autoResume) {
+      return;
+    }
 
     const mostRecentMessage = initialMessages.at(-1);
 
-    if (mostRecentMessage?.role === 'user') {
-      experimental_resume();
+    if (mostRecentMessage?.role === "user") {
+      resumeStream();
     }
 
     // we intentionally run this once
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [autoResume, initialMessages.at, resumeStream]);
 
   useEffect(() => {
-    if (!data) return;
-    if (data.length === 0) return;
+    if (!dataStream) {
+      return;
+    }
+    if (dataStream.length === 0) {
+      return;
+    }
 
-    const dataPart = data[0] as DataPart;
+    const dataPart = dataStream[0];
 
-    if (dataPart.type === 'append-message') {
-      const message = JSON.parse(dataPart.message) as UIMessage;
+    if (dataPart.type === "data-appendMessage") {
+      const message = JSON.parse(dataPart.data);
       setMessages([...initialMessages, message]);
     }
-  }, [data, initialMessages, setMessages]);
+  }, [dataStream, initialMessages, setMessages]);
 }

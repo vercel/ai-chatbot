@@ -1,51 +1,55 @@
-import { generateUUID } from '@/lib/utils';
-import { DataStreamWriter, tool } from 'ai';
-import { z } from 'zod';
-import { Session } from 'next-auth';
+import { tool, type UIMessageStreamWriter } from "ai";
+import { z } from "zod";
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
-} from '@/lib/artifacts/server';
+} from "@/lib/artifacts/server";
+import type { ChatMessage } from "@/lib/types";
+import { generateUUID } from "@/lib/utils";
 
-interface CreateDocumentProps {
-  session: Session;
-  dataStream: DataStreamWriter;
-}
+type CreateDocumentProps = {
+  session: null;
+  dataStream: UIMessageStreamWriter<ChatMessage> | null;
+};
 
-export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
+export const createDocument = ({ dataStream }: CreateDocumentProps) =>
   tool({
     description:
-      'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
-    parameters: z.object({
+      "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.",
+    inputSchema: z.object({
       title: z.string(),
       kind: z.enum(artifactKinds),
     }),
     execute: async ({ title, kind }) => {
       const id = generateUUID();
 
-      dataStream.writeData({
-        type: 'kind',
-        content: kind,
+      dataStream.write({
+        type: "data-kind",
+        data: kind,
+        transient: true,
       });
 
-      dataStream.writeData({
-        type: 'id',
-        content: id,
+      dataStream.write({
+        type: "data-id",
+        data: id,
+        transient: true,
       });
 
-      dataStream.writeData({
-        type: 'title',
-        content: title,
+      dataStream.write({
+        type: "data-title",
+        data: title,
+        transient: true,
       });
 
-      dataStream.writeData({
-        type: 'clear',
-        content: '',
+      dataStream.write({
+        type: "data-clear",
+        data: null,
+        transient: true,
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
         (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === kind,
+          documentHandlerByArtifactKind.kind === kind
       );
 
       if (!documentHandler) {
@@ -55,17 +59,16 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       await documentHandler.onCreateDocument({
         id,
         title,
-        dataStream,
-        session,
+        dataStream: dataStream || null,
       });
 
-      dataStream.writeData({ type: 'finish', content: '' });
+      dataStream?.write({ type: "data-finish", data: null, transient: true });
 
       return {
         id,
         title,
         kind,
-        content: 'A document was created and is now visible to the user.',
+        content: "A document was created and is now visible to the user.",
       };
     },
   });
