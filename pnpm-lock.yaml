@@ -29,6 +29,9 @@ dependencies:
   '@codemirror/view':
     specifier: ^6.35.3
     version: 6.38.0
+  '@google/generative-ai':
+    specifier: ^0.24.1
+    version: 0.24.1
   '@icons-pack/react-simple-icons':
     specifier: ^13.7.0
     version: 13.8.0(react@19.0.0-rc-45804af1-20241021)
@@ -1287,6 +1290,11 @@ packages:
 
   /@floating-ui/utils@0.2.10:
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+    dev: false
+
+  /@google/generative-ai@0.24.1:
+    resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
+    engines: {node: '>=18.0.0'}
     dev: false
 
   /@iconify/types@2.0.0:

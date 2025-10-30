@@ -11,6 +11,7 @@ type UpdateDocumentProps = {
 // Stateless: Documents are passed in-memory via tool context
 // For now, updateDocument requires the document content to be passed as context
 export const updateDocument = ({ dataStream }: UpdateDocumentProps) =>
+  // @ts-expect-error - TypeScript overload resolution issue with tool() function in AI SDK v5
   tool({
     description: "Update a document with the given description.",
     inputSchema: z.object({
@@ -18,15 +19,22 @@ export const updateDocument = ({ dataStream }: UpdateDocumentProps) =>
       description: z
         .string()
         .describe("The description of changes that need to be made"),
-      documentContent: z.string().optional().describe("Current document content (required in stateless mode)"),
-      documentKind: z.enum(["text", "code", "sheet"]).optional().describe("Document kind (required in stateless mode)"),
+      documentContent: z
+        .string()
+        .optional()
+        .describe("Current document content (required in stateless mode)"),
+      documentKind: z
+        .enum(["text", "code", "sheet"])
+        .optional()
+        .describe("Document kind (required in stateless mode)"),
     }),
     execute: async ({ id, description, documentContent, documentKind }) => {
       // Stateless: Document content and kind must be passed in tool call
       // In a real implementation, this would come from client-side state
       if (!documentContent || !documentKind) {
         return {
-          error: "Document content and kind are required. In stateless mode, these must be provided in the tool call.",
+          error:
+            "Document content and kind are required. In stateless mode, these must be provided in the tool call.",
         };
       }
 
@@ -57,8 +65,7 @@ export const updateDocument = ({ dataStream }: UpdateDocumentProps) =>
 
       return {
         id,
-        title: document.title,
-        kind: document.kind,
+        kind: documentKind,
         content: "The document has been updated successfully.",
       };
     },

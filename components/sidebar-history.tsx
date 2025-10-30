@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-} from "@/components/ui/sidebar";
+import { SidebarGroup, SidebarGroupContent } from "@/components/ui/sidebar";
 
 export type ChatHistory = {
   chats: never[];
@@ -19,7 +16,7 @@ export function getChatHistoryPaginationKey(
   }
 
   if (_pageIndex === 0) {
-    return `/api/history?limit=20`;
+    return "/api/history?limit=20";
   }
 
   return null;

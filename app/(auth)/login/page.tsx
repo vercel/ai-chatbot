@@ -38,11 +38,15 @@ export default function Page() {
       });
     } else if (state.status === "success") {
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      updateSession()
+        .then(() => {
+          router.refresh();
+        })
+        .catch((error) => {
+          console.error("Failed to refresh session after login:", error);
+        });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status]);
+  }, [router, state.status, updateSession]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

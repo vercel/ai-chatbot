@@ -77,7 +77,7 @@ export function MessageEditor({
           className="h-fit px-3 py-2"
           data-testid="message-editor-send-button"
           disabled={isSubmitting}
-          onClick={async () => {
+          onClick={() => {
             setIsSubmitting(true);
 
             // Stateless: Update messages client-side, removing trailing messages

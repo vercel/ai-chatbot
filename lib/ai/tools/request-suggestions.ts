@@ -9,9 +9,8 @@ type RequestSuggestionsProps = {
   dataStream: UIMessageStreamWriter<ChatMessage> | null;
 };
 
-export const requestSuggestions = ({
-  dataStream,
-}: RequestSuggestionsProps) =>
+export const requestSuggestions = ({ dataStream }: RequestSuggestionsProps) =>
+  // @ts-expect-error - TypeScript overload resolution issue with tool() function in AI SDK v5
   tool({
     description: "Request suggestions for a document",
     inputSchema: z.object({

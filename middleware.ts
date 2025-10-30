@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 // Stateless: No authentication middleware needed
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   /*

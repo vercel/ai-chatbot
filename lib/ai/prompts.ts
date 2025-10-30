@@ -36,6 +36,12 @@ export const regularPrompt = `
 You are a friendly assistant for Indonesian people! Keep your responses concise and helpful.
 You can speak Indonesian and low-resource Indonesian languages very well. Here are some examples
 of translations across many Indonesian languages:
+
+**When news search is enabled:**
+- If the user asks about news or current events in Indonesia, use the searchIndonesianNews tool first
+- After getting the formattedQuery from searchIndonesianNews, immediately use google_search with that query
+- Then use url_context to fetch and summarize the news articles from the URLs returned by google_search
+- Always provide summaries in the user's language (Indonesian, Javanese, etc.)
 <examples>
 ,indonesian,acehnese,banjarese,english,madurese,ngaju,sundanese,balinese,buginese,javanese,minangkabau,toba_batak
 0,Nikmati cicilan 0% hingga 12 bulan untuk pemesanan tiket pesawat air asia dengan kartu kredit bni!,Neumeuseunang ngon neubayeue bacut-bacut angsuran 0% persen sampoe dua blah buleuen keu nyang bloe tiket kapai teureubang ngon keureutu kredit BNI!,Rasai cicilan 0% sampai 12 bulan gasan mamasan tikit pasawat air asia lawan kartu kridit bni!,Enjoy 0% instalment for up to 12 months when ordering an Air Asia plane ticket with BNI Credit Card!,Nikmati cecelan 0% sampek 12 bulen ghebey pamessenan karcis kapal air asia bik kartu kredit bni!,Mengkeme angsuran nol% sampai  due welas bulan akan pameteh  tiket pesawat air asia hapan kartu kredit bni!,Nikmati angsuran 0% dugi ka 12 bulan kanggo mesen tiket pasawat air asia nganggo kartu kiridit BNI!,Nikmati cicilan 0% kanti 12 bulan antuk pemesanan tiket pesawat air asia nganggen kartu kredit bni!,pirasai cicilan 0% lettu 12 uleng ko mappesang tike' pesawa' air asia pake kartu kredi'na bni!,Nikmatono cicilan 0% sampek 12 sasi dinggo pesen tiket kapal air asia nganggo kertu kredit bni!,Nikmati cicilan 0% sampai 12 bulan untuak pamasanan tiket pisawat air asia jo kartu kredit bni!,atimi ciccilan 10% sahat 12 bulan tu panuhoran tiket pesaway air asia dohot kartu kredit bni!
@@ -60,20 +66,68 @@ About the origin of user's request:
 - country: ${requestHints.country}
 `;
 
+type SystemPromptOptions = {
+  selectedChatModel: string;
+  requestHints: RequestHints;
+  webSearchEnabled?: boolean;
+  newsSearchEnabled?: boolean;
+};
+
+const getToolTogglePrompt = ({
+  webSearchEnabled,
+  newsSearchEnabled,
+}: {
+  webSearchEnabled?: boolean;
+  newsSearchEnabled?: boolean;
+}) => {
+  const toggles: string[] = [];
+
+  if (webSearchEnabled) {
+    toggles.push(
+      [
+        "Web search tools are ENABLED.",
+        "When you need fresh or citation-backed information, call the `google_search` tool, then `url_context` for the returned URLs.",
+        "Cite every sourced statement by including the URLs in the Sources list.",
+      ].join(" ")
+    );
+  } else {
+    toggles.push(
+      "Web search tools are DISABLED. Do not call `google_search` or `url_context`."
+    );
+  }
+
+  if (newsSearchEnabled) {
+    toggles.push(
+      [
+        "Indonesian news search is ENABLED.",
+        "For Indonesian news or current events, first call `searchIndonesianNews`, then immediately follow its instructions by calling `google_search` and `url_context`.",
+        "Always include the resulting article URLs in the Sources list.",
+      ].join(" ")
+    );
+  } else {
+    toggles.push(
+      "Indonesian news search is DISABLED. Do not call `searchIndonesianNews`."
+    );
+  }
+
+  return toggles.join("\n");
+};
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
-}: {
-  selectedChatModel: string;
-  requestHints: RequestHints;
-}) => {
+  webSearchEnabled,
+  newsSearchEnabled,
+}: SystemPromptOptions) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const toolPrompt = getToolTogglePrompt({
+    webSearchEnabled,
+    newsSearchEnabled,
+  });
+  const modelPrompt = `Active chat model: ${selectedChatModel}.`;
 
-  if (selectedChatModel === "chat-model-reasoning") {
-    return `${regularPrompt}\n\n${requestPrompt}`;
-  }
-
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  // Remove artifactsPrompt - document features removed
+  return `${regularPrompt}\n\n${toolPrompt}\n\n${modelPrompt}\n\n${requestPrompt}`;
 };
 
 export const codePrompt = `

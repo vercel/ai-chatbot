@@ -10,7 +10,8 @@ export const chatModels: ChatModel[] = [
   {
     id: "chat-model",
     name: "Gemini Flash Lite",
-    description: "Optimized for Indonesian languages with cost-efficient, high-quality responses",
+    description:
+      "Optimized for Indonesian languages with cost-efficient, high-quality responses",
   },
   {
     id: "chat-model-reasoning",

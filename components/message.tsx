@@ -2,15 +2,19 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
-import { memo, useState } from "react";
-import type { Vote } from "@/lib/types";
-import type { ChatMessage } from "@/lib/types";
+import { memo, useMemo, useState } from "react";
+import type { ChatMessage, Vote } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
-import { DocumentPreview } from "./document-preview";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
+import {
+  Source,
+  Sources,
+  SourcesContent,
+  SourcesTrigger,
+} from "./elements/source";
 import {
   Tool,
   ToolContent,
@@ -24,6 +28,164 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+
+type SourceItem = {
+  href: string;
+  title: string;
+};
+
+const extractSourcesFromMessage = (message: ChatMessage): SourceItem[] => {
+  const uniqueSources = new Map<string, string | undefined>();
+
+  const addSource = (href?: string | null, title?: string | null) => {
+    if (!href) {
+      return;
+    }
+
+    const trimmedHref = href.trim();
+    if (!trimmedHref) {
+      return;
+    }
+
+    const existingTitle = uniqueSources.get(trimmedHref);
+    const normalizedTitle = title?.trim();
+
+    if (!uniqueSources.has(trimmedHref)) {
+      uniqueSources.set(trimmedHref, normalizedTitle);
+      return;
+    }
+
+    if (!existingTitle && normalizedTitle) {
+      uniqueSources.set(trimmedHref, normalizedTitle);
+    }
+  };
+
+  for (const part of message.parts ?? []) {
+    if (part.type === "source-url") {
+      addSource(part.url, part.title);
+      continue;
+    }
+
+    if (part.type === "data-sources") {
+      const sources = Array.isArray(part.data) ? part.data : [];
+      for (const source of sources) {
+        if (typeof source === "string") {
+          addSource(source);
+        }
+      }
+      continue;
+    }
+
+    if (
+      part.type === "dynamic-tool" &&
+      part.toolName === "google_search" &&
+      part.state === "output-available"
+    ) {
+      const results = Array.isArray((part.output as any)?.results)
+        ? (part.output as any).results
+        : [];
+      for (const result of results) {
+        if (typeof result?.url === "string") {
+          addSource(result.url, result?.title);
+        }
+      }
+      continue;
+    }
+
+    if (
+      part.type === "dynamic-tool" &&
+      part.toolName === "url_context" &&
+      part.state === "output-available"
+    ) {
+      const output = (part.output ?? {}) as Record<string, unknown>;
+      const candidates: unknown[] = [];
+
+      if (Array.isArray((output as any).summaries)) {
+        candidates.push(...((output as any).summaries as unknown[]));
+      }
+
+      if (Array.isArray((output as any).entries)) {
+        candidates.push(...((output as any).entries as unknown[]));
+      }
+
+      if (Array.isArray((output as any).results)) {
+        candidates.push(...((output as any).results as unknown[]));
+      }
+
+      for (const entry of candidates) {
+        if (entry && typeof (entry as any).url === "string") {
+          addSource(
+            (entry as any).url,
+            typeof (entry as any).title === "string"
+              ? ((entry as any).title as string)
+              : undefined
+          );
+        }
+      }
+    }
+  }
+
+  const messageSources = (message as { sources?: unknown }).sources;
+  if (Array.isArray(messageSources)) {
+    for (const source of messageSources) {
+      if (typeof source === "string") {
+        addSource(source);
+      }
+    }
+  }
+
+  const googleMetadata = message.experimental_providerMetadata?.google as
+    | {
+        groundingMetadata?: {
+          groundingChunks?: Array<{
+            web?: { uri?: string | null; title?: string | null } | null;
+            retrievedContext?: {
+              uri?: string | null;
+              title?: string | null;
+            } | null;
+          }>;
+        };
+        urlContextMetadata?: {
+          urlMetadata?: Array<{
+            retrievedUrl?: string | null;
+            title?: string | null;
+          }>;
+        };
+      }
+    | undefined;
+
+  const groundingChunks =
+    googleMetadata?.groundingMetadata?.groundingChunks ?? [];
+  for (const chunk of groundingChunks) {
+    addSource(chunk.web?.uri ?? undefined, chunk.web?.title ?? undefined);
+    addSource(
+      chunk.retrievedContext?.uri ?? undefined,
+      chunk.retrievedContext?.title ?? undefined
+    );
+  }
+
+  const urlMetadata = googleMetadata?.urlContextMetadata?.urlMetadata ?? [];
+  for (const metadata of urlMetadata) {
+    addSource(metadata.retrievedUrl ?? undefined, metadata.title ?? undefined);
+  }
+
+  const sources: SourceItem[] = [];
+  for (const [href, title] of uniqueSources.entries()) {
+    let resolvedTitle = title;
+
+    if (!resolvedTitle) {
+      try {
+        resolvedTitle = new URL(href).hostname;
+      } catch {
+        resolvedTitle = href;
+      }
+    }
+
+    sources.push({ href, title: resolvedTitle });
+  }
+
+  return sources;
+};
 
 const PurePreviewMessage = ({
   chatId,
@@ -51,6 +213,8 @@ const PurePreviewMessage = ({
   );
 
   useDataStream();
+
+  const sources = useMemo(() => extractSourcesFromMessage(message), [message]);
 
   return (
     <motion.div
@@ -186,54 +350,6 @@ const PurePreviewMessage = ({
               );
             }
 
-            if (type === "tool-createDocument") {
-              const { toolCallId } = part;
-
-              if (part.output && "error" in part.output) {
-                return (
-                  <div
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                    key={toolCallId}
-                  >
-                    Error creating document: {String(part.output.error)}
-                  </div>
-                );
-              }
-
-              return (
-                <DocumentPreview
-                  isReadonly={isReadonly}
-                  key={toolCallId}
-                  result={part.output}
-                />
-              );
-            }
-
-            if (type === "tool-updateDocument") {
-              const { toolCallId } = part;
-
-              if (part.output && "error" in part.output) {
-                return (
-                  <div
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                    key={toolCallId}
-                  >
-                    Error updating document: {String(part.output.error)}
-                  </div>
-                );
-              }
-
-              return (
-                <div className="relative" key={toolCallId}>
-                  <DocumentPreview
-                    args={{ ...part.output, isUpdate: true }}
-                    isReadonly={isReadonly}
-                    result={part.output}
-                  />
-                </div>
-              );
-            }
-
             if (type === "tool-requestSuggestions") {
               const { toolCallId, state } = part;
 
@@ -269,6 +385,24 @@ const PurePreviewMessage = ({
 
             return null;
           })}
+
+          {/* Display sources for assistant messages with web/news search */}
+          {message.role === "assistant" && sources.length > 0 && (
+            <div className="mt-4">
+              <Sources>
+                <SourcesTrigger count={sources.length} />
+                <SourcesContent>
+                  {sources.map((source) => (
+                    <Source
+                      href={source.href}
+                      key={source.href}
+                      title={source.title}
+                    />
+                  ))}
+                </SourcesContent>
+              </Sources>
+            </div>
+          )}
 
           {!isReadonly && (
             <MessageActions
@@ -328,12 +462,9 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">
-            Thinking...
-          </div>
+          <div className="p-0 text-muted-foreground text-sm">Thinking...</div>
         </div>
       </div>
     </motion.div>
   );
 };
-

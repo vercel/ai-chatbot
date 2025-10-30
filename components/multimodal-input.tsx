@@ -37,8 +37,10 @@ import {
 } from "./elements/prompt-input";
 import {
   ArrowUpIcon,
+  BookIcon,
   ChevronDownIcon,
   CpuIcon,
+  GlobeIcon,
   PaperclipIcon,
   StopIcon,
 } from "./icons";
@@ -106,6 +108,31 @@ function PureMultimodalInput({
     ""
   );
 
+  // Initialize with false to prevent hydration mismatch, sync with localStorage after mount
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [newsSearchEnabled, setNewsSearchEnabled] = useState(false);
+
+  // Sync with localStorage after component mounts (client-side only)
+  useEffect(() => {
+    const storedWebSearch = localStorage.getItem("webSearchEnabled");
+    const storedNewsSearch = localStorage.getItem("newsSearchEnabled");
+    if (storedWebSearch === "true") {
+      setWebSearchEnabled(true);
+    }
+    if (storedNewsSearch === "true") {
+      setNewsSearchEnabled(true);
+    }
+  }, []);
+
+  // Persist to localStorage when values change
+  useEffect(() => {
+    localStorage.setItem("webSearchEnabled", String(webSearchEnabled));
+  }, [webSearchEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem("newsSearchEnabled", String(newsSearchEnabled));
+  }, [newsSearchEnabled]);
+
   useEffect(() => {
     if (textareaRef.current) {
       const domValue = textareaRef.current.value;
@@ -146,6 +173,12 @@ function PureMultimodalInput({
           text: input,
         },
       ],
+      experimental_attachments: undefined,
+      experimental_providerMetadata: undefined,
+      data: {
+        webSearchEnabled,
+        newsSearchEnabled,
+      },
     });
 
     setAttachments([]);
@@ -166,6 +199,8 @@ function PureMultimodalInput({
     width,
     chatId,
     resetHeight,
+    webSearchEnabled,
+    newsSearchEnabled,
   ]);
 
   const uploadFile = useCallback(async (file: File) => {
@@ -318,6 +353,19 @@ function PureMultimodalInput({
             <AttachmentsButton
               fileInputRef={fileInputRef}
               selectedModelId={selectedModelId}
+              status={status}
+            />
+            <SearchToggleButton
+              enabled={webSearchEnabled}
+              label="Web Search"
+              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+              status={status}
+            />
+            <SearchToggleButton
+              enabled={newsSearchEnabled}
+              icon={BookIcon}
+              label="News"
+              onClick={() => setNewsSearchEnabled(!newsSearchEnabled)}
               status={status}
             />
             <ModelSelectorCompact
@@ -477,3 +525,41 @@ function PureStopButton({
 }
 
 const StopButton = memo(PureStopButton);
+
+function PureSearchToggleButton({
+  enabled,
+  label,
+  onClick,
+  status,
+  icon: Icon = GlobeIcon,
+}: {
+  enabled: boolean;
+  label: string;
+  onClick: () => void;
+  status: UseChatHelpers<ChatMessage>["status"];
+  icon?: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+}) {
+  return (
+    <Button
+      className={cn(
+        "h-8 rounded-lg px-2 font-medium text-xs transition-colors",
+        enabled
+          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+          : "bg-background text-muted-foreground hover:bg-accent"
+      )}
+      disabled={status !== "ready"}
+      onClick={(event) => {
+        event.preventDefault();
+        onClick();
+      }}
+      title={`Toggle ${label}`}
+      type="button"
+      variant="ghost"
+    >
+      <Icon size={14} style={{ width: 14, height: 14 }} />
+      <span className="hidden sm:block">{label}</span>
+    </Button>
+  );
+}
+
+const SearchToggleButton = memo(PureSearchToggleButton);

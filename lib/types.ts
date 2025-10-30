@@ -74,6 +74,7 @@ export type CustomUIDataTypes = {
   clear: null;
   finish: null;
   usage: AppUsage;
+  sources: string[]; // Array of source URLs from Google Search
 };
 
 export type ChatMessage = UIMessage<

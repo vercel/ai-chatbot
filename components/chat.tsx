@@ -20,9 +20,8 @@ import {
 import { useArtifactSelector } from "@/hooks/use-artifact";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
-import type { Vote } from "@/lib/types";
 import { ChatSDKError } from "@/lib/errors";
-import type { Attachment, ChatMessage } from "@/lib/types";
+import type { Attachment, ChatMessage, Vote } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "./artifact";
@@ -85,11 +84,18 @@ export function Chat({
       api: "/api/chat",
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest(request) {
+        // Extract webSearch and newsSearch from the last message's data
+        const lastMessage = request.messages.at(-1);
+        const webSearchEnabled = lastMessage?.data?.webSearchEnabled ?? false;
+        const newsSearchEnabled = lastMessage?.data?.newsSearchEnabled ?? false;
+
         // AI SDK v5: Send all messages for stateless operation
         return {
           body: {
             messages: request.messages, // Send all messages, not just last one
             selectedChatModel: currentModelIdRef.current,
+            webSearchEnabled,
+            newsSearchEnabled,
             ...request.body,
           },
         };
