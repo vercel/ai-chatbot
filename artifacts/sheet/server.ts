@@ -26,7 +26,7 @@ export const sheetDocumentHandler = createDocumentHandler<"sheet">({
         const { csv } = object;
 
         if (csv) {
-          dataStream.write({
+          dataStream?.write({
             type: "data-sheetDelta",
             data: csv,
             transient: true,
@@ -37,7 +37,7 @@ export const sheetDocumentHandler = createDocumentHandler<"sheet">({
       }
     }
 
-    dataStream.write({
+    dataStream?.write({
       type: "data-sheetDelta",
       data: draftContent,
       transient: true,
@@ -45,12 +45,12 @@ export const sheetDocumentHandler = createDocumentHandler<"sheet">({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ documentContent, description, dataStream }) => {
     let draftContent = "";
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel("artifact-model"),
-      system: updateDocumentPrompt(document.content, "sheet"),
+      system: updateDocumentPrompt(documentContent, "sheet"),
       prompt: description,
       schema: z.object({
         csv: z.string(),
@@ -65,7 +65,7 @@ export const sheetDocumentHandler = createDocumentHandler<"sheet">({
         const { csv } = object;
 
         if (csv) {
-          dataStream.write({
+          dataStream?.write({
             type: "data-sheetDelta",
             data: csv,
             transient: true,

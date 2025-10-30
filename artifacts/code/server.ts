@@ -26,7 +26,7 @@ export const codeDocumentHandler = createDocumentHandler<"code">({
         const { code } = object;
 
         if (code) {
-          dataStream.write({
+          dataStream?.write({
             type: "data-codeDelta",
             data: code ?? "",
             transient: true,
@@ -39,12 +39,12 @@ export const codeDocumentHandler = createDocumentHandler<"code">({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ documentContent, description, dataStream }) => {
     let draftContent = "";
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel("artifact-model"),
-      system: updateDocumentPrompt(document.content, "code"),
+      system: updateDocumentPrompt(documentContent, "code"),
       prompt: description,
       schema: z.object({
         code: z.string(),
@@ -59,7 +59,7 @@ export const codeDocumentHandler = createDocumentHandler<"code">({
         const { code } = object;
 
         if (code) {
-          dataStream.write({
+          dataStream?.write({
             type: "data-codeDelta",
             data: code ?? "",
             transient: true,

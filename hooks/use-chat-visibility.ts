@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
-import { updateChatVisibility } from "@/app/(chat)/actions";
+// Stateless: Visibility managed client-side
 import {
   type ChatHistory,
   getChatHistoryPaginationKey,
@@ -40,13 +40,9 @@ export function useChatVisibility({
   }, [history, chatId, localVisibility]);
 
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
+    // Stateless: Visibility updated client-side only
     setLocalVisibility(updatedVisibilityType);
     mutate(unstable_serialize(getChatHistoryPaginationKey));
-
-    updateChatVisibility({
-      chatId,
-      visibility: updatedVisibilityType,
-    });
   };
 
   return { visibilityType, setVisibilityType };

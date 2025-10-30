@@ -5,8 +5,39 @@ import type { createDocument } from "./ai/tools/create-document";
 import type { getWeather } from "./ai/tools/get-weather";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type { updateDocument } from "./ai/tools/update-document";
-import type { Suggestion } from "./db/schema";
 import type { AppUsage } from "./usage";
+
+// Stateless: Minimal type definitions (replacing database schema types)
+export type Vote = {
+  chatId: string;
+  messageId: string;
+  isUpvoted: boolean;
+};
+
+export type Document = {
+  id: string;
+  title: string;
+  kind: ArtifactKind;
+  content: string;
+  createdAt: Date;
+};
+
+export type Chat = {
+  id: string;
+  title: string;
+  visibility: "public" | "private";
+  createdAt: Date;
+  lastContext?: AppUsage | null;
+};
+
+export type Suggestion = {
+  id: string;
+  documentId: string;
+  originalText: string;
+  suggestedText: string;
+  description: string;
+  isResolved: boolean;
+};
 
 export type DataPart = { type: "append-message"; message: string };
 

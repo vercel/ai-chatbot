@@ -1,33 +1,22 @@
 import type { UIMessageStreamWriter } from "ai";
-import type { Session } from "next-auth";
 import { codeDocumentHandler } from "@/artifacts/code/server";
 import { sheetDocumentHandler } from "@/artifacts/sheet/server";
 import { textDocumentHandler } from "@/artifacts/text/server";
 import type { ArtifactKind } from "@/components/artifact";
-import { saveDocument } from "../db/queries";
-import type { Document } from "../db/schema";
 import type { ChatMessage } from "../types";
-
-export type SaveDocumentProps = {
-  id: string;
-  title: string;
-  kind: ArtifactKind;
-  content: string;
-  userId: string;
-};
 
 export type CreateDocumentCallbackProps = {
   id: string;
   title: string;
-  dataStream: UIMessageStreamWriter<ChatMessage>;
-  session: Session;
+  dataStream: UIMessageStreamWriter<ChatMessage> | null;
 };
 
 export type UpdateDocumentCallbackProps = {
-  document: Document;
+  documentId: string;
+  documentKind: ArtifactKind;
+  documentContent: string;
   description: string;
-  dataStream: UIMessageStreamWriter<ChatMessage>;
-  session: Session;
+  dataStream: UIMessageStreamWriter<ChatMessage> | null;
 };
 
 export type DocumentHandler<T = ArtifactKind> = {
@@ -44,43 +33,23 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
   return {
     kind: config.kind,
     onCreateDocument: async (args: CreateDocumentCallbackProps) => {
-      const draftContent = await config.onCreateDocument({
+      // Stateless: Create document content only, don't persist
+      await config.onCreateDocument({
         id: args.id,
         title: args.title,
         dataStream: args.dataStream,
-        session: args.session,
       });
-
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.id,
-          title: args.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-        });
-      }
-
       return;
     },
     onUpdateDocument: async (args: UpdateDocumentCallbackProps) => {
-      const draftContent = await config.onUpdateDocument({
-        document: args.document,
+      // Stateless: Update document content only, don't persist
+      await config.onUpdateDocument({
+        documentId: args.documentId,
+        documentKind: args.documentKind,
+        documentContent: args.documentContent,
         description: args.description,
         dataStream: args.dataStream,
-        session: args.session,
       });
-
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.document.id,
-          title: args.document.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-        });
-      }
-
       return;
     },
   };

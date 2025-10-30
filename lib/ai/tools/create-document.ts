@@ -1,5 +1,4 @@
 import { tool, type UIMessageStreamWriter } from "ai";
-import type { Session } from "next-auth";
 import { z } from "zod";
 import {
   artifactKinds,
@@ -9,11 +8,11 @@ import type { ChatMessage } from "@/lib/types";
 import { generateUUID } from "@/lib/utils";
 
 type CreateDocumentProps = {
-  session: Session;
-  dataStream: UIMessageStreamWriter<ChatMessage>;
+  session: null;
+  dataStream: UIMessageStreamWriter<ChatMessage> | null;
 };
 
-export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
+export const createDocument = ({ dataStream }: CreateDocumentProps) =>
   tool({
     description:
       "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.",
@@ -60,11 +59,10 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       await documentHandler.onCreateDocument({
         id,
         title,
-        dataStream,
-        session,
+        dataStream: dataStream || null,
       });
 
-      dataStream.write({ type: "data-finish", data: null, transient: true });
+      dataStream?.write({ type: "data-finish", data: null, transient: true });
 
       return {
         id,

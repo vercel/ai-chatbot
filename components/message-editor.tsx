@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { deleteTrailingMessages } from "@/app/(chat)/actions";
+// Stateless: Messages managed client-side, no server actions needed
 import type { ChatMessage } from "@/lib/types";
 import { getTextFromMessage } from "@/lib/utils";
 import { Button } from "./ui/button";
@@ -80,10 +80,7 @@ export function MessageEditor({
           onClick={async () => {
             setIsSubmitting(true);
 
-            await deleteTrailingMessages({
-              id: message.id,
-            });
-
+            // Stateless: Update messages client-side, removing trailing messages
             setMessages((messages) => {
               const index = messages.findIndex((m) => m.id === message.id);
 
@@ -93,6 +90,7 @@ export function MessageEditor({
                   parts: [{ type: "text", text: draftContent }],
                 };
 
+                // Remove all messages after the edited one (trailing messages)
                 return [...messages.slice(0, index), updatedMessage];
               }
 

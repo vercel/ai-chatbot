@@ -1,16 +1,16 @@
 import { tool, type UIMessageStreamWriter } from "ai";
-import type { Session } from "next-auth";
 import { z } from "zod";
 import { documentHandlersByArtifactKind } from "@/lib/artifacts/server";
-import { getDocumentById } from "@/lib/db/queries";
 import type { ChatMessage } from "@/lib/types";
 
 type UpdateDocumentProps = {
-  session: Session;
-  dataStream: UIMessageStreamWriter<ChatMessage>;
+  session: null;
+  dataStream: UIMessageStreamWriter<ChatMessage> | null;
 };
 
-export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
+// Stateless: Documents are passed in-memory via tool context
+// For now, updateDocument requires the document content to be passed as context
+export const updateDocument = ({ dataStream }: UpdateDocumentProps) =>
   tool({
     description: "Update a document with the given description.",
     inputSchema: z.object({
@@ -18,17 +18,19 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       description: z
         .string()
         .describe("The description of changes that need to be made"),
+      documentContent: z.string().optional().describe("Current document content (required in stateless mode)"),
+      documentKind: z.enum(["text", "code", "sheet"]).optional().describe("Document kind (required in stateless mode)"),
     }),
-    execute: async ({ id, description }) => {
-      const document = await getDocumentById({ id });
-
-      if (!document) {
+    execute: async ({ id, description, documentContent, documentKind }) => {
+      // Stateless: Document content and kind must be passed in tool call
+      // In a real implementation, this would come from client-side state
+      if (!documentContent || !documentKind) {
         return {
-          error: "Document not found",
+          error: "Document content and kind are required. In stateless mode, these must be provided in the tool call.",
         };
       }
 
-      dataStream.write({
+      dataStream?.write({
         type: "data-clear",
         data: null,
         transient: true,
@@ -36,21 +38,22 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
 
       const documentHandler = documentHandlersByArtifactKind.find(
         (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === document.kind
+          documentHandlerByArtifactKind.kind === documentKind
       );
 
       if (!documentHandler) {
-        throw new Error(`No document handler found for kind: ${document.kind}`);
+        throw new Error(`No document handler found for kind: ${documentKind}`);
       }
 
       await documentHandler.onUpdateDocument({
-        document,
+        documentId: id,
+        documentKind,
+        documentContent,
         description,
-        dataStream,
-        session,
+        dataStream: dataStream || null,
       });
 
-      dataStream.write({ type: "data-finish", data: null, transient: true });
+      dataStream?.write({ type: "data-finish", data: null, transient: true });
 
       return {
         id,
