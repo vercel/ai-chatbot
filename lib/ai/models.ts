@@ -9,12 +9,12 @@ export type ChatModel = {
 export const chatModels: ChatModel[] = [
   {
     id: "chat-model",
-    name: "Grok Vision",
-    description: "Advanced multimodal model with vision and text capabilities",
+    name: "Cerebras GPT-OSS",
+    description: "Fast and efficient open-source model powered by Cerebras",
   },
   {
     id: "chat-model-reasoning",
-    name: "Grok Reasoning",
+    name: "Cerebras GPT-OSS Reasoning",
     description:
       "Uses advanced chain-of-thought reasoning for complex problems",
   },
