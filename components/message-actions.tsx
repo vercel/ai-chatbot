@@ -3,6 +3,7 @@ import { memo } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
+import { voteOnMessage } from "@/app/actions/vote/patch";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { Action, Actions } from "./ai-elements/actions";
@@ -77,20 +78,17 @@ export function PureMessageActions({
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
         onClick={() => {
-          const upvote = fetch("/api/vote", {
-            method: "PATCH",
-            body: JSON.stringify({
-              chatId,
-              messageId: message.id,
-              type: "up",
-            }),
-          });
+          const upvote = voteOnMessage(chatId, message.id, "up");
 
           toast.promise(upvote, {
             loading: "Upvoting Response...",
-            success: () => {
+            success: (result) => {
+              if ("error" in result) {
+                throw new Error("Failed to upvote response");
+              }
+
               mutate<Vote[]>(
-                `/api/vote?chatId=${chatId}`,
+                `votes-${chatId}`,
                 (currentVotes) => {
                   if (!currentVotes) {
                     return [];
@@ -126,20 +124,17 @@ export function PureMessageActions({
         data-testid="message-downvote"
         disabled={vote && !vote.isUpvoted}
         onClick={() => {
-          const downvote = fetch("/api/vote", {
-            method: "PATCH",
-            body: JSON.stringify({
-              chatId,
-              messageId: message.id,
-              type: "down",
-            }),
-          });
+          const downvote = voteOnMessage(chatId, message.id, "down");
 
           toast.promise(downvote, {
             loading: "Downvoting Response...",
-            success: () => {
+            success: (result) => {
+              if ("error" in result) {
+                throw new Error("Failed to downvote response");
+              }
+
               mutate<Vote[]>(
-                `/api/vote?chatId=${chatId}`,
+                `votes-${chatId}`,
                 (currentVotes) => {
                   if (!currentVotes) {
                     return [];

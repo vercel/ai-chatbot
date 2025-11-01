@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
+import { deleteAllChats } from "@/app/actions/history/delete";
 import { PlusIcon, TrashIcon } from "@/components/icons";
 import { SidebarHistory, getChatHistoryPaginationKey } from "@/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
@@ -38,13 +39,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
 
   const handleDeleteAll = () => {
-    const deletePromise = fetch("/api/history", {
-      method: "DELETE",
-    });
+    const deletePromise = deleteAllChats();
 
     toast.promise(deletePromise, {
       loading: "Deleting all chats...",
-      success: () => {
+      success: (result) => {
+        if ("error" in result) {
+          throw new Error("Failed to delete all chats");
+        }
+
         mutate(unstable_serialize(getChatHistoryPaginationKey));
         router.push("/");
         setShowDeleteAllDialog(false);

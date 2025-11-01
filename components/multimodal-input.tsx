@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
+import { uploadFile as uploadFileAction } from "@/app/actions/files/upload";
 import { SelectItem } from "@/components/ui/select";
 import { chatModels } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
@@ -173,14 +174,10 @@ function PureMultimodalInput({
     formData.append("file", file);
 
     try {
-      const response = await fetch("/api/files/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const result = await uploadFileAction(formData);
 
-      if (response.ok) {
-        const data = await response.json();
-        const { url, pathname, contentType } = data;
+      if ("data" in result) {
+        const { url, pathname, contentType } = result.data;
 
         return {
           url,
@@ -188,8 +185,8 @@ function PureMultimodalInput({
           contentType,
         };
       }
-      const { error } = await response.json();
-      toast.error(error);
+
+      toast.error(result.error);
     } catch (_error) {
       toast.error("Failed to upload file, please try again!");
     }

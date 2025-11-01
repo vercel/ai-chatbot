@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useSWRConfig } from "swr";
 import { useWindowSize } from "usehooks-ts";
+import { deleteDocuments } from "@/app/actions/document/delete";
 import { useArtifact } from "@/hooks/use-artifact";
 import type { Document } from "@/lib/db/schema";
 import { getDocumentTimestampByIndex } from "@/lib/utils";
@@ -55,29 +56,35 @@ export const VersionFooter = ({
           onClick={async () => {
             setIsMutating(true);
 
+            const timestamp = getDocumentTimestampByIndex(
+              documents,
+              currentVersionIndex
+            );
+
             mutate(
-              `/api/document?id=${artifact.documentId}`,
-              await fetch(
-                `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
-                  documents,
-                  currentVersionIndex
-                )}`,
-                {
-                  method: "DELETE",
+              `documents-${artifact.documentId}`,
+              async () => {
+                const result = await deleteDocuments(
+                  artifact.documentId,
+                  timestamp
+                );
+
+                if ("error" in result) {
+                  console.error("Failed to delete documents:", result.error);
+                  setIsMutating(false);
+                  return documents;
                 }
-              ),
+
+                setIsMutating(false);
+                return result.data;
+              },
               {
                 optimisticData: documents
                   ? [
                       ...documents.filter((document) =>
                         isAfter(
                           new Date(document.createdAt),
-                          new Date(
-                            getDocumentTimestampByIndex(
-                              documents,
-                              currentVersionIndex
-                            )
-                          )
+                          new Date(timestamp)
                         )
                       ),
                     ]

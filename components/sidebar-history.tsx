@@ -7,6 +7,8 @@ import type { User } from "next-auth";
 import { useState } from "react";
 import { toast } from "sonner";
 import useSWRInfinite from "swr/infinite";
+import { deleteChat } from "@/app/actions/chat/delete";
+import { getChatHistory } from "@/app/actions/history/get";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +26,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import type { Chat } from "@/lib/db/schema";
-import { fetcher } from "@/lib/utils";
 import { LoaderIcon } from "./icons";
 import { ChatItem } from "./sidebar-history-item";
 
@@ -85,7 +86,7 @@ export function getChatHistoryPaginationKey(
   }
 
   if (pageIndex === 0) {
-    return `/api/history?limit=${PAGE_SIZE}`;
+    return `chat-history-${PAGE_SIZE}`;
   }
 
   const firstChatFromPage = previousPageData.chats.at(-1);
@@ -94,7 +95,7 @@ export function getChatHistoryPaginationKey(
     return null;
   }
 
-  return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
+  return `chat-history-${firstChatFromPage.id}-${PAGE_SIZE}`;
 }
 
 export function SidebarHistory({ user }: { user: User | undefined }) {
@@ -107,9 +108,43 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     isValidating,
     isLoading,
     mutate,
-  } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
-    fallbackData: [],
-  });
+  } = useSWRInfinite<ChatHistory>(
+    getChatHistoryPaginationKey,
+    async (key) => {
+      const parts = key.split("-");
+      const limit = Number.parseInt(parts[parts.length - 1], 10);
+
+      if (key === `chat-history-${limit}`) {
+        // First page
+        const result = await getChatHistory(limit);
+        if ("error" in result) {
+          throw result.error;
+        }
+        return {
+          chats: result.data,
+          hasMore: result.data.length === limit,
+        };
+      }
+
+      // Subsequent pages
+      const endingBefore = parts[parts.length - 2];
+      const resultWithPagination = await getChatHistory(
+        limit,
+        undefined,
+        endingBefore
+      );
+      if ("error" in resultWithPagination) {
+        throw resultWithPagination.error;
+      }
+      return {
+        chats: resultWithPagination.data,
+        hasMore: resultWithPagination.data.length === limit,
+      };
+    },
+    {
+      fallbackData: [],
+    }
+  );
 
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -124,13 +159,17 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     : false;
 
   const handleDelete = () => {
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: "DELETE",
-    });
+    if (!deleteId) return;
+
+    const deletePromise = deleteChat(deleteId);
 
     toast.promise(deletePromise, {
       loading: "Deleting chat...",
-      success: () => {
+      success: (result) => {
+        if ("error" in result) {
+          throw new Error("Failed to delete chat");
+        }
+
         mutate((chatHistories) => {
           if (chatHistories) {
             return chatHistories.map((chatHistory) => ({

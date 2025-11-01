@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
+import { getVotes } from "@/app/actions/vote/get";
 import { ChatHeader } from "@/components/chat-header";
 import {
   AlertDialog,
@@ -24,7 +25,7 @@ import type { Vote } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
-import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
+import { fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
@@ -140,8 +141,14 @@ export function Chat({
   }, [query, sendMessage, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Vote[]>(
-    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
-    fetcher
+    messages.length >= 2 ? `votes-${id}` : null,
+    async () => {
+      const result = await getVotes(id);
+      if ("error" in result) {
+        throw result.error;
+      }
+      return result.data;
+    }
   );
 
   const [attachments, setAttachments] = useState<Attachment[]>([]);

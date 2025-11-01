@@ -12,6 +12,8 @@ import {
 } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { useDebounceCallback, useWindowSize } from "usehooks-ts";
+import { getDocuments } from "@/app/actions/document/get";
+import { saveDocumentAction } from "@/app/actions/document/save";
 import { codeArtifact } from "@/artifacts/code/client";
 import { imageArtifact } from "@/artifacts/image/client";
 import { sheetArtifact } from "@/artifacts/sheet/client";
@@ -19,7 +21,6 @@ import { textArtifact } from "@/artifacts/text/client";
 import { useArtifact } from "@/hooks/use-artifact";
 import type { Document, Vote } from "@/lib/db/schema";
 import type { Attachment, ChatMessage } from "@/lib/types";
-import { fetcher } from "@/lib/utils";
 import { ArtifactActions } from "./artifact-actions";
 import { ArtifactCloseButton } from "./artifact-close-button";
 import { ArtifactMessages } from "./artifact-messages";
@@ -93,9 +94,15 @@ function PureArtifact({
     mutate: mutateDocuments,
   } = useSWR<Document[]>(
     artifact.documentId !== "init" && artifact.status !== "streaming"
-      ? `/api/document?id=${artifact.documentId}`
+      ? `documents-${artifact.documentId}`
       : null,
-    fetcher
+    async () => {
+      const result = await getDocuments(artifact.documentId);
+      if ("error" in result) {
+        throw result.error;
+      }
+      return result.data;
+    }
   );
 
   const [mode, setMode] = useState<"edit" | "diff">("edit");
@@ -133,7 +140,7 @@ function PureArtifact({
       }
 
       mutate<Document[]>(
-        `/api/document?id=${artifact.documentId}`,
+        `documents-${artifact.documentId}`,
         async (currentDocuments) => {
           if (!currentDocuments) {
             return [];
@@ -147,14 +154,17 @@ function PureArtifact({
           }
 
           if (currentDocument.content !== updatedContent) {
-            await fetch(`/api/document?id=${artifact.documentId}`, {
-              method: "POST",
-              body: JSON.stringify({
-                title: artifact.title,
-                content: updatedContent,
-                kind: artifact.kind,
-              }),
-            });
+            const result = await saveDocumentAction(
+              artifact.documentId,
+              updatedContent,
+              artifact.title,
+              artifact.kind
+            );
+
+            if ("error" in result) {
+              console.error("Failed to save document:", result.error);
+              return currentDocuments;
+            }
 
             setIsContentDirty(false);
 

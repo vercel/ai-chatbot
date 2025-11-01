@@ -1,0 +1,43 @@
+"use server";
+
+import { auth } from "@/app/(auth)/auth";
+import { getDocumentsById } from "@/lib/db/queries";
+import type { Document } from "@/lib/db/schema";
+import { ChatSDKError } from "@/lib/errors";
+
+export const getDocuments = async (
+  id: string
+): Promise<
+  | {
+      data: Document[];
+    }
+  | {
+      error: ChatSDKError;
+    }
+> => {
+  if (!id) {
+    return {
+      error: new ChatSDKError("bad_request:api", "Parameter id is missing"),
+    };
+  }
+
+  const session = await auth();
+
+  if (!session?.user) {
+    return { error: new ChatSDKError("unauthorized:document") };
+  }
+
+  const documents = await getDocumentsById({ id });
+
+  const [document] = documents;
+
+  if (!document) {
+    return { error: new ChatSDKError("not_found:document") };
+  }
+
+  if (document.userId !== session.user.id) {
+    return { error: new ChatSDKError("forbidden:document") };
+  }
+
+  return { data: documents };
+};
