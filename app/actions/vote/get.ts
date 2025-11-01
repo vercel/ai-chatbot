@@ -1,9 +1,9 @@
 "use server";
 
 import { headers } from "next/headers";
+import type { Vote_v2 as Vote } from "@/generated/client";
 import { auth } from "@/lib/auth";
 import { getChatById, getVotesByChatId } from "@/lib/db/queries";
-import type { Vote_v2 as Vote } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const getVotes = async (

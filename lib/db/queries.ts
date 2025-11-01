@@ -1,17 +1,17 @@
 import "server-only";
 
-import { nanoid } from "nanoid";
-import { PrismaClient, type Prisma } from "@prisma/client";
+import { type Prisma, PrismaClient } from "@prisma/client";
 import { subHours } from "date-fns";
+import { nanoid } from "nanoid";
 import type { ArtifactKind } from "@/components/artifact";
 import type { VisibilityType } from "@/components/visibility-selector";
 import type {
-  User,
   Chat,
   Document,
-  Suggestion,
-  Vote_v2,
   Message_v2,
+  Suggestion,
+  User,
+  Vote_v2,
 } from "@/generated/client";
 import { ChatSDKError } from "../errors";
 import type { AppUsage } from "../usage";
@@ -484,7 +484,9 @@ export async function deleteMessagesByChatIdAfterTimestamp({
       select: { id: true },
     });
 
-    const messageIds = messagesToDelete.map((currentMessage) => currentMessage.id);
+    const messageIds = messagesToDelete.map(
+      (currentMessage) => currentMessage.id
+    );
 
     if (messageIds.length > 0) {
       await prisma.vote_v2.deleteMany({

@@ -1,9 +1,9 @@
 "use server";
 
 import { headers } from "next/headers";
+import type { Document } from "@/generated/client";
 import { auth } from "@/lib/auth";
 import { getDocumentsById } from "@/lib/db/queries";
-import type { Document } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const getDocuments = async (

@@ -1,7 +1,7 @@
 import type { LanguageModel } from "ai";
 
-const createMockModel = (): LanguageModel => {
-  return {
+const createMockModel = (): LanguageModel =>
+  ({
     specificationVersion: "v2",
     provider: "mock",
     modelId: "mock-model",
@@ -29,8 +29,7 @@ const createMockModel = (): LanguageModel => {
       }),
       rawCall: { rawPrompt: null, rawSettings: {} },
     }),
-  } as unknown as LanguageModel;
-};
+  }) as unknown as LanguageModel;
 
 export const chatModel = createMockModel();
 export const reasoningModel = createMockModel();

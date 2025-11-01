@@ -87,14 +87,12 @@ function formatmodelname(modelid: string): string {
 }
 
 export const getchatmodels = cache(
-  async () => {
-    return await fetchmodels();
-  },
+  async () => await fetchmodels(),
   ["chat-models"],
   {
     revalidate: 3600,
     tags: ["chat-models"],
-  },
+  }
 );
 
 export const chatModels: ChatModel[] = [];

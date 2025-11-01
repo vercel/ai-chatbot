@@ -90,27 +90,25 @@ export const codeArtifact = new Artifact<"code", Metadata>({
       }));
     }
   },
-  content: ({ metadata, setMetadata, ...props }) => {
-    return (
-      <>
-        <div className="px-1">
-          <CodeEditor {...props} />
-        </div>
+  content: ({ metadata, setMetadata, ...props }) => (
+    <>
+      <div className="px-1">
+        <CodeEditor {...props} />
+      </div>
 
-        {metadata?.outputs && (
-          <Console
-            consoleOutputs={metadata.outputs}
-            setConsoleOutputs={() => {
-              setMetadata({
-                ...metadata,
-                outputs: [],
-              });
-            }}
-          />
-        )}
-      </>
-    );
-  },
+      {metadata?.outputs && (
+        <Console
+          consoleOutputs={metadata.outputs}
+          setConsoleOutputs={() => {
+            setMetadata({
+              ...metadata,
+              outputs: [],
+            });
+          }}
+        />
+      )}
+    </>
+  ),
   actions: [
     {
       icon: <PlayIcon size={18} />,

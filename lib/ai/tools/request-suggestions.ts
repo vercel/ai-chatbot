@@ -1,8 +1,8 @@
 import { streamObject, tool, type UIMessageStreamWriter } from "ai";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { getDocumentById, saveSuggestions } from "@/lib/db/queries";
 import type { Suggestion } from "@/generated/client";
+import { getDocumentById, saveSuggestions } from "@/lib/db/queries";
 import type { ChatMessage } from "@/lib/types";
 import { myProvider } from "../providers";
 

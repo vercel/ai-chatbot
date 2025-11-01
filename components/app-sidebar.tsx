@@ -150,4 +150,4 @@ export const AppSidebar = ({ user }: AppSidebarProps) => {
       </AlertDialog>
     </>
   );
-}
+};

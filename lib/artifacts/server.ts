@@ -1,11 +1,21 @@
 import type { UIMessageStreamWriter } from "ai";
-type Session = { user: { id: string; email: string; image?: string; name?: string; type?: string } };
+
+type Session = {
+  user: {
+    id: string;
+    email: string;
+    image?: string;
+    name?: string;
+    type?: string;
+  };
+};
+
 import { codeDocumentHandler } from "@/artifacts/code/server";
 import { sheetDocumentHandler } from "@/artifacts/sheet/server";
 import { textDocumentHandler } from "@/artifacts/text/server";
 import type { ArtifactKind } from "@/components/artifact";
-import { saveDocument } from "../db/queries";
 import type { Document } from "@/generated/client";
+import { saveDocument } from "../db/queries";
 import type { ChatMessage } from "../types";
 
 export type SaveDocumentProps = {

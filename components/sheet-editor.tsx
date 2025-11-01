@@ -70,20 +70,22 @@ const PureSpreadsheetEditor = ({ content, saveContent }: SheetEditorProps) => {
     return [rowNumberColumn, ...dataColumns];
   }, []);
 
-  const initialRows = useMemo(() => {
-    return parseData.map((row, rowIndex) => {
-      const rowData: any = {
-        id: rowIndex,
-        rowNumber: rowIndex + 1,
-      };
+  const initialRows = useMemo(
+    () =>
+      parseData.map((row, rowIndex) => {
+        const rowData: any = {
+          id: rowIndex,
+          rowNumber: rowIndex + 1,
+        };
 
-      columns.slice(1).forEach((col, colIndex) => {
-        rowData[col.key] = row[colIndex] || "";
-      });
+        columns.slice(1).forEach((col, colIndex) => {
+          rowData[col.key] = row[colIndex] || "";
+        });
 
-      return rowData;
-    });
-  }, [parseData, columns]);
+        return rowData;
+      }),
+    [parseData, columns]
+  );
 
   const [localRows, setLocalRows] = useState(initialRows);
 
@@ -91,16 +93,14 @@ const PureSpreadsheetEditor = ({ content, saveContent }: SheetEditorProps) => {
     setLocalRows(initialRows);
   }, [initialRows]);
 
-  const generateCsv = (data: any[][]) => {
-    return unparse(data);
-  };
+  const generateCsv = (data: any[][]) => unparse(data);
 
   const handleRowsChange = (newRows: any[]) => {
     setLocalRows(newRows);
 
-    const updatedData = newRows.map((row) => {
-      return columns.slice(1).map((col) => row[col.key] || "");
-    });
+    const updatedData = newRows.map((row) =>
+      columns.slice(1).map((col) => row[col.key] || "")
+    );
 
     const newCsvContent = generateCsv(updatedData);
     saveContent(newCsvContent, true);

@@ -2,9 +2,9 @@
 
 import { headers } from "next/headers";
 import type { ArtifactKind } from "@/components/artifact";
+import type { Document } from "@/generated/client";
 import { auth } from "@/lib/auth";
 import { getDocumentsById, saveDocument } from "@/lib/db/queries";
-import type { Document } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const saveDocumentAction = async (

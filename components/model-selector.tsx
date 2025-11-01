@@ -1,9 +1,24 @@
 "use client";
 
-type Session = { user: { id: string; email: string; image?: string; name?: string; type?: string } };
-import { startTransition, useEffect, useMemo, useOptimistic, useState } from "react";
-import { getavailablemodels } from "@/app/actions/models/get";
+type Session = {
+  user: {
+    id: string;
+    email: string;
+    image?: string;
+    name?: string;
+    type?: string;
+  };
+};
+
+import {
+  startTransition,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useState,
+} from "react";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
+import { getavailablemodels } from "@/app/actions/models/get";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

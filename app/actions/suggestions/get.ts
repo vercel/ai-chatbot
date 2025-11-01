@@ -1,9 +1,9 @@
 "use server";
 
 import { headers } from "next/headers";
+import type { Suggestion } from "@/generated/client";
 import { auth } from "@/lib/auth";
 import { getSuggestionsByDocumentId } from "@/lib/db/queries";
-import type { Suggestion } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const getSuggestions = async (

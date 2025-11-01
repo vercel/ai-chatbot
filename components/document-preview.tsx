@@ -11,8 +11,8 @@ import {
 } from "react";
 import useSWR from "swr";
 import { getDocuments } from "@/app/actions/document/get";
-import { useArtifact } from "@/hooks/use-artifact";
 import type { Document } from "@/generated/client";
+import { useArtifact } from "@/hooks/use-artifact";
 import { cn } from "@/lib/utils";
 import type { ArtifactKind, UIArtifact } from "./artifact";
 import { CodeEditor } from "./code-editor";
@@ -38,16 +38,13 @@ export function DocumentPreview({
 
   const { data: documents, isLoading: isDocumentsFetching } = useSWR<
     Document[]
-  >(
-    result ? `documents-${result.id}` : null,
-    async () => {
-      const response = await getDocuments(result.id);
-      if ("error" in response) {
-        throw response.error;
-      }
-      return response.data;
+  >(result ? `documents-${result.id}` : null, async () => {
+    const response = await getDocuments(result.id);
+    if ("error" in response) {
+      throw response.error;
     }
-  );
+    return response.data;
+  });
 
   const previewDocument = useMemo(() => documents?.[0], [documents]);
   const hitboxRef = useRef<HTMLDivElement>(null);
