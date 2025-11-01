@@ -1,22 +1,23 @@
-import { PreviewMessage } from './message';
-import { useScrollToBottom } from './use-scroll-to-bottom';
-import { Vote } from '@/lib/db/schema';
-import { UIMessage } from 'ai';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
-import { UIArtifact } from './artifact';
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from "@ai-sdk/react";
+import equal from "fast-deep-equal";
+import { AnimatePresence, motion } from "framer-motion";
+import { memo } from "react";
+import { useMessages } from "@/hooks/use-messages";
+import type { Vote } from "@/lib/db/schema";
+import type { ChatMessage } from "@/lib/types";
+import type { UIArtifact } from "./artifact";
+import { PreviewMessage, ThinkingMessage } from "./message";
 
-interface ArtifactMessagesProps {
+type ArtifactMessagesProps = {
   chatId: string;
-  status: UseChatHelpers['status'];
-  votes: Array<Vote> | undefined;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
-  reload: UseChatHelpers['reload'];
+  status: UseChatHelpers<ChatMessage>["status"];
+  votes: Vote[] | undefined;
+  messages: ChatMessage[];
+  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
   isReadonly: boolean;
-  artifactStatus: UIArtifact['status'];
-}
+  artifactStatus: UIArtifact["status"];
+};
 
 function PureArtifactMessages({
   chatId,
@@ -24,37 +25,53 @@ function PureArtifactMessages({
   votes,
   messages,
   setMessages,
-  reload,
+  regenerate,
   isReadonly,
 }: ArtifactMessagesProps) {
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+  const {
+    containerRef: messagesContainerRef,
+    endRef: messagesEndRef,
+    onViewportEnter,
+    onViewportLeave,
+    hasSentMessage,
+  } = useMessages({
+    status,
+  });
 
   return (
     <div
+      className="flex h-full flex-col items-center gap-4 overflow-y-scroll px-4 pt-20"
       ref={messagesContainerRef}
-      className="flex flex-col gap-4 h-full items-center overflow-y-scroll px-4 pt-20"
     >
       {messages.map((message, index) => (
         <PreviewMessage
           chatId={chatId}
+          isLoading={status === "streaming" && index === messages.length - 1}
+          isReadonly={isReadonly}
           key={message.id}
           message={message}
-          isLoading={status === 'streaming' && index === messages.length - 1}
+          regenerate={regenerate}
+          requiresScrollPadding={
+            hasSentMessage && index === messages.length - 1
+          }
+          setMessages={setMessages}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
               : undefined
           }
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
         />
       ))}
 
-      <div
+      <AnimatePresence mode="wait">
+        {status === "submitted" && <ThinkingMessage key="thinking" />}
+      </AnimatePresence>
+
+      <motion.div
+        className="min-h-[24px] min-w-[24px] shrink-0"
+        onViewportEnter={onViewportEnter}
+        onViewportLeave={onViewportLeave}
         ref={messagesEndRef}
-        className="shrink-0 min-w-[24px] min-h-[24px]"
       />
     </div>
   );
@@ -62,18 +79,27 @@ function PureArtifactMessages({
 
 function areEqual(
   prevProps: ArtifactMessagesProps,
-  nextProps: ArtifactMessagesProps,
+  nextProps: ArtifactMessagesProps
 ) {
   if (
-    prevProps.artifactStatus === 'streaming' &&
-    nextProps.artifactStatus === 'streaming'
-  )
+    prevProps.artifactStatus === "streaming" &&
+    nextProps.artifactStatus === "streaming"
+  ) {
     return true;
+  }
 
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.status && nextProps.status) return false;
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-  if (!equal(prevProps.votes, nextProps.votes)) return false;
+  if (prevProps.status !== nextProps.status) {
+    return false;
+  }
+  if (prevProps.status && nextProps.status) {
+    return false;
+  }
+  if (prevProps.messages.length !== nextProps.messages.length) {
+    return false;
+  }
+  if (!equal(prevProps.votes, nextProps.votes)) {
+    return false;
+  }
 
   return true;
 }

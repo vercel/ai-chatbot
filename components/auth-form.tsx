@@ -1,12 +1,12 @@
-import Form from 'next/form';
+import Form from "next/form";
 
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 export function AuthForm({
   action,
   children,
-  defaultEmail = '',
+  defaultEmail = "",
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
@@ -18,39 +18,39 @@ export function AuthForm({
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
       <div className="flex flex-col gap-2">
         <Label
+          className="font-normal text-zinc-600 dark:text-zinc-400"
           htmlFor="email"
-          className="text-zinc-600 font-normal dark:text-zinc-400"
         >
           Email Address
         </Label>
 
         <Input
+          autoComplete="email"
+          autoFocus
+          className="bg-muted text-md md:text-sm"
+          defaultValue={defaultEmail}
           id="email"
           name="email"
-          className="bg-muted text-md md:text-sm"
-          type="email"
           placeholder="user@acme.com"
-          autoComplete="email"
           required
-          autoFocus
-          defaultValue={defaultEmail}
+          type="email"
         />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label
+          className="font-normal text-zinc-600 dark:text-zinc-400"
           htmlFor="password"
-          className="text-zinc-600 font-normal dark:text-zinc-400"
         >
           Password
         </Label>
 
         <Input
+          className="bg-muted text-md md:text-sm"
           id="password"
           name="password"
-          className="bg-muted text-md md:text-sm"
-          type="password"
           required
+          type="password"
         />
       </div>
 

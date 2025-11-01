@@ -1,69 +1,52 @@
-import type { Document } from '@/lib/db/schema';
-import { generateUUID } from '@/lib/utils';
-import {
-  createAuthenticatedContext,
-  type UserContext,
-} from '@/tests/auth-helper';
-import { expect, test } from '@playwright/test';
+import type { Document } from "@/lib/db/schema";
+import { getMessageByErrorCode } from "@/lib/errors";
+import { generateUUID } from "@/lib/utils";
+import { expect, test } from "../fixtures";
 
-let adaContext: UserContext;
-let babbageContext: UserContext;
-
-const documentsCreatedByAda: Array<Document> = [];
-
-test.beforeAll(async ({ browser }) => {
-  adaContext = await createAuthenticatedContext({
-    browser,
-    name: 'ada',
-  });
-
-  babbageContext = await createAuthenticatedContext({
-    browser,
-    name: 'babbage',
-  });
-});
-
-test.afterAll(async () => {
-  await adaContext.context.close();
-  await babbageContext.context.close();
-});
+const documentsCreatedByAda: Document[] = [];
 
 test.describe
-  .serial('/api/document', () => {
-    test('Ada cannot retrieve a document without specifying an id', async () => {
-      const response = await adaContext.request.get('/api/document');
+  .serial("/api/document", () => {
+    test("Ada cannot retrieve a document without specifying an id", async ({
+      adaContext,
+    }) => {
+      const response = await adaContext.request.get("/api/document");
       expect(response.status()).toBe(400);
 
-      const text = await response.text();
-      expect(text).toEqual('Missing id');
+      const { code, message } = await response.json();
+      expect(code).toEqual("bad_request:api");
+      expect(message).toEqual(getMessageByErrorCode(code));
     });
 
-    test('Ada cannot retrieve a document that does not exist', async () => {
+    test("Ada cannot retrieve a document that does not exist", async ({
+      adaContext,
+    }) => {
       const documentId = generateUUID();
 
       const response = await adaContext.request.get(
-        `/api/document?id=${documentId}`,
+        `/api/document?id=${documentId}`
       );
       expect(response.status()).toBe(404);
 
-      const text = await response.text();
-      expect(text).toEqual('Not found');
+      const { code, message } = await response.json();
+      expect(code).toEqual("not_found:document");
+      expect(message).toEqual(getMessageByErrorCode(code));
     });
 
-    test('Ada can create a document', async () => {
+    test("Ada can create a document", async ({ adaContext }) => {
       const documentId = generateUUID();
 
       const draftDocument = {
         title: "Ada's Document",
-        kind: 'text',
-        content: 'Created by Ada',
+        kind: "text",
+        content: "Created by Ada",
       };
 
       const response = await adaContext.request.post(
         `/api/document?id=${documentId}`,
         {
           data: draftDocument,
-        },
+        }
       );
       expect(response.status()).toBe(200);
 
@@ -73,11 +56,11 @@ test.describe
       documentsCreatedByAda.push(createdDocument);
     });
 
-    test('Ada can retrieve a created document', async () => {
+    test("Ada can retrieve a created document", async ({ adaContext }) => {
       const [document] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${document.id}`,
+        `/api/document?id=${document.id}`
       );
       expect(response.status()).toBe(200);
 
@@ -88,20 +71,22 @@ test.describe
       expect(retrievedDocument).toMatchObject(document);
     });
 
-    test('Ada can save a new version of the document', async () => {
+    test("Ada can save a new version of the document", async ({
+      adaContext,
+    }) => {
       const [firstDocument] = documentsCreatedByAda;
 
       const draftDocument = {
         title: "Ada's Document",
-        kind: 'text',
-        content: 'Updated by Ada',
+        kind: "text",
+        content: "Updated by Ada",
       };
 
       const response = await adaContext.request.post(
         `/api/document?id=${firstDocument.id}`,
         {
           data: draftDocument,
-        },
+        }
       );
       expect(response.status()).toBe(200);
 
@@ -111,11 +96,13 @@ test.describe
       documentsCreatedByAda.push(createdDocument);
     });
 
-    test('Ada can retrieve all versions of her documents', async () => {
+    test("Ada can retrieve all versions of her documents", async ({
+      adaContext,
+    }) => {
       const [firstDocument, secondDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`,
+        `/api/document?id=${firstDocument.id}`
       );
       expect(response.status()).toBe(200);
 
@@ -128,31 +115,39 @@ test.describe
       expect(secondRetrievedDocument).toMatchObject(secondDocument);
     });
 
-    test('Ada cannot delete a document without specifying an id', async () => {
-      const response = await adaContext.request.delete(`/api/document`);
+    test("Ada cannot delete a document without specifying an id", async ({
+      adaContext,
+    }) => {
+      const response = await adaContext.request.delete("/api/document");
       expect(response.status()).toBe(400);
 
-      const text = await response.text();
-      expect(text).toEqual('Missing id');
+      const { code, message } = await response.json();
+      expect(code).toEqual("bad_request:api");
+      expect(message).toEqual(getMessageByErrorCode(code));
     });
 
-    test('Ada cannot delete a document without specifying a timestamp', async () => {
+    test("Ada cannot delete a document without specifying a timestamp", async ({
+      adaContext,
+    }) => {
       const [firstDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.delete(
-        `/api/document?id=${firstDocument.id}`,
+        `/api/document?id=${firstDocument.id}`
       );
       expect(response.status()).toBe(400);
 
-      const text = await response.text();
-      expect(text).toEqual('Missing timestamp');
+      const { code, message } = await response.json();
+      expect(code).toEqual("bad_request:api");
+      expect(message).toEqual(getMessageByErrorCode(code));
     });
 
-    test('Ada can delete a document by specifying id and timestamp', async () => {
+    test("Ada can delete a document by specifying id and timestamp", async ({
+      adaContext,
+    }) => {
       const [firstDocument, secondDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.delete(
-        `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`,
+        `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`
       );
       expect(response.status()).toBe(200);
 
@@ -163,11 +158,13 @@ test.describe
       expect(deletedDocument).toMatchObject(secondDocument);
     });
 
-    test('Ada can retrieve documents without deleted versions', async () => {
+    test("Ada can retrieve documents without deleted versions", async ({
+      adaContext,
+    }) => {
       const [firstDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`,
+        `/api/document?id=${firstDocument.id}`
       );
       expect(response.status()).toBe(200);
 
@@ -178,32 +175,33 @@ test.describe
       expect(firstRetrievedDocument).toMatchObject(firstDocument);
     });
 
-    test("Babbage cannot update Ada's document", async () => {
+    test("Babbage cannot update Ada's document", async ({ babbageContext }) => {
       const [firstDocument] = documentsCreatedByAda;
 
       const draftDocument = {
         title: "Babbage's Document",
-        kind: 'text',
-        content: 'Created by Babbage',
+        kind: "text",
+        content: "Created by Babbage",
       };
 
       const response = await babbageContext.request.post(
         `/api/document?id=${firstDocument.id}`,
         {
           data: draftDocument,
-        },
+        }
       );
       expect(response.status()).toBe(403);
 
-      const text = await response.text();
-      expect(text).toEqual('Forbidden');
+      const { code, message } = await response.json();
+      expect(code).toEqual("forbidden:document");
+      expect(message).toEqual(getMessageByErrorCode(code));
     });
 
-    test("Ada's documents did not get updated", async () => {
+    test("Ada's documents did not get updated", async ({ adaContext }) => {
       const [firstDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`,
+        `/api/document?id=${firstDocument.id}`
       );
       expect(response.status()).toBe(200);
 

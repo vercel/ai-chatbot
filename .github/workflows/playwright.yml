@@ -13,6 +13,7 @@ jobs:
       AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
       POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
 
     steps:
       - uses: actions/checkout@v4
