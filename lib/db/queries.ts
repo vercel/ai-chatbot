@@ -13,12 +13,12 @@ import {
   type SQL,
 } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
+import { nanoid } from "nanoid";
 import postgres from "postgres";
 import type { ArtifactKind } from "@/components/artifact";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { ChatSDKError } from "../errors";
 import type { AppUsage } from "../usage";
-import { generateUUID } from "../utils";
 import {
   type Chat,
   chat,
@@ -65,7 +65,7 @@ export async function createUser(email: string, password: string) {
 
 export async function createGuestUser() {
   const email = `guest-${Date.now()}`;
-  const password = generateHashedPassword(generateUUID());
+  const password = generateHashedPassword(nanoid());
 
   try {
     return await db.insert(user).values({ email, password }).returning({
@@ -134,7 +134,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
       return { deletedCount: 0 };
     }
 
-    const chatIds = userChats.map(c => c.id);
+    const chatIds = userChats.map((c) => c.id);
 
     await db.delete(vote).where(inArray(vote.chatId, chatIds));
     await db.delete(message).where(inArray(message.chatId, chatIds));

@@ -19,10 +19,7 @@
         "noUnknownAtRules": "off",
 
         /* Allowing console for debugging */
-        "noConsole": "off",
-
-        /* Needed for generateUUID() */
-        "noBitwiseOperators": "off"
+        "noConsole": "off"
       },
       "style": {
         /* Allowing magic numbers */

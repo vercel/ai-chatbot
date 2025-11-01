@@ -7,6 +7,7 @@ import {
   stepCountIs,
   streamText,
 } from "ai";
+import { nanoid } from "nanoid";
 import { unstable_cache as cache } from "next/cache";
 import { after } from "next/server";
 import {
@@ -41,7 +42,7 @@ import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
-import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import { convertToUIMessages } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
@@ -172,7 +173,7 @@ export async function POST(request: Request) {
       ],
     });
 
-    const streamId = generateUUID();
+    const streamId = nanoid();
     await createStreamId({ streamId, chatId: id });
 
     let finalMergedUsage: AppUsage | undefined;
@@ -249,7 +250,7 @@ export async function POST(request: Request) {
           })
         );
       },
-      generateId: generateUUID,
+      generateId: nanoid,
       onFinish: async ({ messages }) => {
         await saveMessages({
           messages: messages.map((currentMessage) => ({

@@ -1,6 +1,6 @@
+import { nanoid } from "nanoid";
 import type { Document } from "@/lib/db/schema";
 import { getMessageByErrorCode } from "@/lib/errors";
-import { generateUUID } from "@/lib/utils";
 import { expect, test } from "../fixtures";
 
 const documentsCreatedByAda: Document[] = [];
@@ -21,7 +21,7 @@ test.describe
     test("Ada cannot retrieve a document that does not exist", async ({
       adaContext,
     }) => {
-      const documentId = generateUUID();
+      const documentId = nanoid();
 
       const response = await adaContext.request.get(
         `/api/document?id=${documentId}`
@@ -34,7 +34,7 @@ test.describe
     });
 
     test("Ada can create a document", async ({ adaContext }) => {
-      const documentId = generateUUID();
+      const documentId = nanoid();
 
       const draftDocument = {
         title: "Ada's Document",

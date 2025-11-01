@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { toast } from "sonner";
 import { CodeEditor } from "@/components/code-editor";
 import {
@@ -14,7 +15,6 @@ import {
   RedoIcon,
   UndoIcon,
 } from "@/components/icons";
-import { generateUUID } from "@/lib/utils";
 
 const OUTPUT_HANDLERS = {
   matplotlib: `
@@ -117,7 +117,7 @@ export const codeArtifact = new Artifact<"code", Metadata>({
       label: "Run",
       description: "Execute code",
       onClick: async ({ content, setMetadata }) => {
-        const runId = generateUUID();
+        const runId = nanoid();
         const outputContent: ConsoleOutputContent[] = [];
 
         setMetadata((metadata) => ({

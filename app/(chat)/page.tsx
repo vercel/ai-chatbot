@@ -1,9 +1,9 @@
+import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
-import { generateUUID } from "@/lib/utils";
 import { auth } from "../(auth)/auth";
 
 export default async function Page() {
@@ -13,8 +13,7 @@ export default async function Page() {
     redirect("/api/auth/guest");
   }
 
-  const id = generateUUID();
-
+  const id = nanoid();
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("chat-model");
 

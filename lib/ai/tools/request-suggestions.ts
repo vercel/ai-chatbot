@@ -1,10 +1,10 @@
 import { streamObject, tool, type UIMessageStreamWriter } from "ai";
+import { nanoid } from "nanoid";
 import type { Session } from "next-auth";
 import { z } from "zod";
 import { getDocumentById, saveSuggestions } from "@/lib/db/queries";
 import type { Suggestion } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
-import { generateUUID } from "@/lib/utils";
 import { myProvider } from "../providers";
 
 type RequestSuggestionsProps = {
@@ -56,7 +56,7 @@ export const requestSuggestions = ({
           originalText: element.originalSentence,
           suggestedText: element.suggestedSentence,
           description: element.description,
-          id: generateUUID(),
+          id: nanoid(),
           documentId,
           isResolved: false,
         };
