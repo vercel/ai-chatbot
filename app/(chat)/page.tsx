@@ -1,18 +1,11 @@
 import { nanoid } from "nanoid";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
+import { GuestHandler } from "@/components/guest-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
-import { auth } from "@/lib/auth";
 
 export default async function Page() {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    redirect("/login");
-  }
-
   const id = nanoid();
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("chat-model");
@@ -20,6 +13,7 @@ export default async function Page() {
   if (!modelIdFromCookie) {
     return (
       <>
+        <GuestHandler />
         <Chat
           autoResume={false}
           id={id}
@@ -36,6 +30,7 @@ export default async function Page() {
 
   return (
     <>
+      <GuestHandler />
       <Chat
         autoResume={false}
         id={id}

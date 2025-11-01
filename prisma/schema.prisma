@@ -117,6 +117,7 @@ model User {
   name          String?      @db.VarChar(255)
   updatedAt     DateTime     @default(now()) @db.Timestamp(6)
   type          String       @default("regular") @db.VarChar(20)
+  isAnonymous   Boolean      @default(false)
   Account       Account[]
   Chat          Chat[]
   Document      Document[]

@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { anonymous } from "better-auth/plugins";
 import { prisma } from "./prisma";
 
 export type UserType = "guest" | "regular";
@@ -24,4 +25,5 @@ export const auth = betterAuth({
       generateId: false,
     },
   },
+  plugins: [anonymous()],
 });

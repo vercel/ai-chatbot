@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
+import { GuestHandler } from "@/components/guest-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { auth } from "@/lib/auth";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
@@ -17,10 +18,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    redirect("/login");
-  }
 
   if (chat.visibility === "private") {
     if (!session.user) {

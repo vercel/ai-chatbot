@@ -4,6 +4,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
+import Image from "next/image";
 import {
   type ChangeEvent,
   type Dispatch,
@@ -20,8 +21,12 @@ import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { uploadFile as uploadFileAction } from "@/app/actions/files/upload";
+import { getavailablemodels } from "@/app/actions/models/get";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { SelectItem } from "@/components/ui/select";
-import { chatModels } from "@/lib/ai/models";
+import { entitlementsByUserType } from "@/lib/ai/entitlements";
+import type { ChatModel } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
@@ -40,6 +45,7 @@ import {
   ArrowUpIcon,
   ChevronDownIcon,
   CpuIcon,
+  LockIcon,
   PaperclipIcon,
   StopIcon,
 } from "./icons";
@@ -83,6 +89,11 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const [chatModels, setChatModels] = useState<ChatModel[]>([]);
+
+  useEffect(() => {
+    getavailablemodels().then(setChatModels);
+  }, []);
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -198,9 +209,13 @@ function PureMultimodalInput({
     );
     const modelId = modelExists
       ? selectedModelId
+<<<<<<< HEAD
       : chatModels[0]?.id || "chat-model";
+=======
+      : chatModels[0]?.id || "anthropic/claude-sonnet-4";
+>>>>>>> a7ffecf (auth and model selector)
     return myProvider.languageModel(modelId);
-  }, [selectedModelId]);
+  }, [selectedModelId, chatModels]);
 
   const contextProps = useMemo(
     () => ({
@@ -238,13 +253,17 @@ function PureMultimodalInput({
   const handlePaste = useCallback(
     async (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
-      if (!items) return;
+      if (!items) {
+        return;
+      }
 
       const imageItems = Array.from(items).filter((item) =>
         item.type.startsWith("image/")
       );
 
-      if (imageItems.length === 0) return;
+      if (imageItems.length === 0) {
+        return;
+      }
 
       // Prevent default paste behavior for images
       event.preventDefault();
@@ -252,11 +271,10 @@ function PureMultimodalInput({
       setUploadQueue((prev) => [...prev, "Pasted image"]);
 
       try {
-        const uploadPromises = imageItems.map(async (item) => {
-          const file = item.getAsFile();
-          if (!file) return;
-          return uploadFile(file);
-        });
+        const files = imageItems
+          .map((item) => item.getAsFile())
+          .filter((file): file is File => file !== null);
+        const uploadPromises = files.map((file) => uploadFile(file));
 
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
@@ -277,13 +295,15 @@ function PureMultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments]
+    [setAttachments, uploadFile]
   );
 
   // Add paste event listener to textarea
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      return;
+    }
 
     textarea.addEventListener("paste", handlePaste);
     return () => textarea.removeEventListener("paste", handlePaste);
@@ -378,6 +398,7 @@ function PureMultimodalInput({
               status={status}
             />
             <ModelSelectorCompact
+              chatModels={chatModels}
               onModelChange={onModelChange}
               selectedModelId={selectedModelId}
             />
@@ -453,14 +474,31 @@ function PureAttachmentsButton({
 
 const AttachmentsButton = memo(PureAttachmentsButton);
 
+const ProviderIcon = ({ provider }: { provider: string }) => {
+  const p = provider.toLowerCase();
+  const src = `https://models.dev/logos/${p}.svg`;
+  return (
+    <Image
+      alt={`${p} logo`}
+      className="h-[14px] w-[14px] brightness-0 invert filter"
+      height={14}
+      src={src}
+      width={14}
+    />
+  );
+};
+
 function PureModelSelectorCompact({
   selectedModelId,
   onModelChange,
+  chatModels,
 }: {
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
+  chatModels: ChatModel[];
 }) {
   const [optimisticModelId, setOptimisticModelId] = useState(selectedModelId);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setOptimisticModelId(selectedModelId);
@@ -468,6 +506,50 @@ function PureModelSelectorCompact({
 
   const selectedModel = chatModels.find(
     (model) => model.id === optimisticModelId
+  );
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) {
+      return [...chatModels].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    const withScores = chatModels
+      .map((m) => {
+        const name = m.name.toLowerCase();
+        const starts = name.startsWith(q) ? 0 : 1;
+        const includes = name.includes(q) ? 0 : 1;
+        const score = starts * 2 + includes;
+        return { m, score };
+      })
+      .filter(({ m }) => m.name.toLowerCase().includes(q));
+    return withScores
+      .sort((a, b) => a.score - b.score || a.m.name.localeCompare(b.m.name))
+      .map(({ m }) => m);
+  }, [chatModels, search]);
+
+  const { availableChatModelIds } = entitlementsByUserType.guest;
+  const isXaiModel = useCallback((m: ChatModel) => {
+    const id = m.id.toLowerCase();
+    const nm = m.name.toLowerCase();
+    return (
+      id.startsWith("xai/") || id.startsWith("x-ai/") || nm.includes("grok")
+    );
+  }, []);
+  const isEnabled = useCallback(
+    (m: ChatModel) => availableChatModelIds.includes(m.id) || isXaiModel(m),
+    [availableChatModelIds, isXaiModel]
+  );
+  const enabledModels = useMemo(
+    () =>
+      filtered.filter(isEnabled).sort((a, b) => a.name.localeCompare(b.name)),
+    [filtered, isEnabled]
+  );
+  const disabledModels = useMemo(
+    () =>
+      filtered
+        .filter((m) => !isEnabled(m))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [filtered, isEnabled]
   );
 
   return (
@@ -493,13 +575,66 @@ function PureModelSelectorCompact({
           <ChevronDownIcon size={16} />
         </Button>
       </Trigger>
-      <PromptInputModelSelectContent className="min-w-[260px] p-0">
-        <div className="flex flex-col gap-px">
-          {chatModels.map((model) => (
-            <SelectItem key={model.id} value={model.name}>
-              <div className="truncate font-medium text-xs">{model.name}</div>
-              <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
-                {model.description}
+      <PromptInputModelSelectContent className="max-h-[360px] min-w-[260px] overflow-y-auto p-0">
+        <div className="sticky top-0 z-10 border-b bg-popover/95 px-1.5 py-1 backdrop-blur supports-backdrop-filter:bg-popover/60">
+          <div className="relative">
+            <Input
+              autoFocus
+              className="h-8 rounded-md pr-7 pl-3 text-xs"
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search models..."
+              value={search}
+            />
+            {search && (
+              <button
+                className="-translate-y-1/2 absolute top-1/2 right-2 rounded px-1 text-muted-foreground hover:bg-accent"
+                onClick={() => setSearch("")}
+                type="button"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col gap-0.5 p-0.5">
+          {enabledModels.map((model) => (
+            <SelectItem className="pr-2 pl-2" key={model.id} value={model.name}>
+              <div className="flex w-full items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <ProviderIcon provider={model.id.split("/")[0]} />
+                  <div className="truncate font-medium text-[11px]">
+                    {model.name}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Badge
+                    className="px-1.5 py-0 text-[10px]"
+                    variant="secondary"
+                  >
+                    free
+                  </Badge>
+                </div>
+              </div>
+            </SelectItem>
+          ))}
+
+          {disabledModels.map((model) => (
+            <SelectItem
+              className="pr-2 pl-2"
+              disabled
+              key={model.id}
+              value={model.name}
+            >
+              <div className="flex w-full items-center justify-between gap-2 opacity-60">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <ProviderIcon provider={model.id.split("/")[0]} />
+                  <div className="truncate font-medium text-[11px]">
+                    {model.name}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <LockIcon size={12} />
+                </div>
               </div>
             </SelectItem>
           ))}

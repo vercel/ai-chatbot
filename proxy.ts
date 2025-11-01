@@ -10,11 +10,7 @@ export const proxy = (request: NextRequest) => {
   const sessionToken = request.cookies.get("better-auth.session_token");
 
   if (!sessionToken) {
-    const redirectUrl = encodeURIComponent(request.url);
-
-    return NextResponse.redirect(
-      new URL(`/login?redirectUrl=${redirectUrl}`, request.url)
-    );
+    return NextResponse.next();
   }
 
   if (["/login", "/register"].includes(pathname)) {

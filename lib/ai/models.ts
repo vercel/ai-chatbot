@@ -47,15 +47,6 @@ async function fetchmodels(): Promise<ChatModel[]> {
     const models: GatewayModel[] = data.data || [];
 
     return models
-      .filter((model) => {
-        const ownedby = model.owned_by.toLowerCase();
-        return (
-          ownedby === "anthropic" ||
-          ownedby === "openai" ||
-          ownedby === "google" ||
-          ownedby === "xai"
-        );
-      })
       .map((model) => ({
         id: model.id,
         name: formatmodelname(model.id),
@@ -76,7 +67,7 @@ async function fetchmodels(): Promise<ChatModel[]> {
 
 function formatmodelname(modelid: string): string {
   const parts = modelid.split("/");
-  const name = parts[parts.length - 1];
+  const name = parts.at(-1) ?? modelid;
 
   return name
     .replace(/-/g, " ")
@@ -94,5 +85,3 @@ export const getchatmodels = cache(
     tags: ["chat-models"],
   }
 );
-
-export const chatModels: ChatModel[] = [];
