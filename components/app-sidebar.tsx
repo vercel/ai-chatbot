@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { User } from "next-auth";
+type User = { id: string; email: string; image?: string; name?: string; type?: string };
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";

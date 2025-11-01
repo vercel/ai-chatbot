@@ -193,7 +193,9 @@ function PureMultimodalInput({
   }, []);
 
   const _modelResolver = useMemo(() => {
-    return myProvider.languageModel(selectedModelId);
+    const modelExists = chatModels.some((model) => model.id === selectedModelId);
+    const modelId = modelExists ? selectedModelId : chatModels[0]?.id || "chat-model";
+    return myProvider.languageModel(modelId);
   }, [selectedModelId]);
 
   const contextProps = useMemo(

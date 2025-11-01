@@ -1,12 +1,21 @@
 import { tool, type UIMessageStreamWriter } from "ai";
 import { nanoid } from "nanoid";
-import type { Session } from "next-auth";
 import { z } from "zod";
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
 } from "@/lib/artifacts/server";
 import type { ChatMessage } from "@/lib/types";
+
+type Session = {
+  user: {
+    id: string;
+    email: string;
+    image?: string;
+    name?: string;
+    type?: string;
+  };
+};
 
 type CreateDocumentProps = {
   session: Session;

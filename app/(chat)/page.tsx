@@ -1,13 +1,13 @@
 import { nanoid } from "nanoid";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
-import { auth } from "../(auth)/auth";
+import { auth } from "@/lib/auth";
 
 export default async function Page() {
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
     redirect("/api/auth/guest");

@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId             String    @db.VarChar(255)
+  providerId            String    @db.VarChar(255)
+  userId                String    @db.Uuid
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime? @db.Timestamp(6)
+  refreshTokenExpiresAt DateTime? @db.Timestamp(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime  @default(now()) @db.Timestamp(6)
+  User                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Chat {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt   DateTime     @db.Timestamp(6)
+  userId      String       @db.Uuid
+  title       String
+  visibility  String       @default("private") @db.VarChar
+  lastContext Json?
+  User        User         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Chat_userId_User_id_fk")
+  Message     Message[]
+  Message_v2  Message_v2[]
+  Stream      Stream[]
+  Vote        Vote[]
+  Vote_v2     Vote_v2[]
+}
+
+model Document {
+  id         String       @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt  DateTime     @db.Timestamp(6)
+  title      String
+  content    String?
+  userId     String       @db.Uuid
+  text       String       @default("text") @db.VarChar
+  User       User         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Document_userId_User_id_fk")
+  Suggestion Suggestion[]
+
+  @@id([id, createdAt], map: "Document_id_createdAt_pk")
+}
+
+model Message {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chatId    String   @db.Uuid
+  role      String   @db.VarChar
+  content   Json     @db.Json
+  createdAt DateTime @db.Timestamp(6)
+  Chat      Chat     @relation(fields: [chatId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Message_chatId_Chat_id_fk")
+  Vote      Vote[]
+}
+
+model Message_v2 {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chatId      String    @db.Uuid
+  role        String    @db.VarChar
+  parts       Json      @db.Json
+  attachments Json      @db.Json
+  createdAt   DateTime  @db.Timestamp(6)
+  Chat        Chat      @relation(fields: [chatId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Message_v2_chatId_Chat_id_fk")
+  Vote_v2     Vote_v2[]
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expiresAt DateTime @db.Timestamp(6)
+  token     String   @unique @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @db.Timestamp(6)
+  ipAddress String?  @db.VarChar(255)
+  userAgent String?
+  userId    String   @db.Uuid
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Stream {
+  id        String   @id(map: "Stream_id_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chatId    String   @db.Uuid
+  createdAt DateTime @db.Timestamp(6)
+  Chat      Chat     @relation(fields: [chatId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Stream_chatId_Chat_id_fk")
+}
+
+model Suggestion {
+  id                String   @id(map: "Suggestion_id_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentId        String   @db.Uuid
+  documentCreatedAt DateTime @db.Timestamp(6)
+  originalText      String
+  suggestedText     String
+  description       String?
+  isResolved        Boolean  @default(false)
+  userId            String   @db.Uuid
+  createdAt         DateTime @db.Timestamp(6)
+  Document          Document @relation(fields: [documentId, documentCreatedAt], references: [id, createdAt], onDelete: NoAction, onUpdate: NoAction, map: "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_f")
+  User              User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Suggestion_userId_User_id_fk")
+}
+
+model User {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String       @db.VarChar(64)
+  password      String?      @db.VarChar(64)
+  createdAt     DateTime     @default(now()) @db.Timestamp(6)
+  emailVerified Boolean      @default(false)
+  image         String?
+  name          String?      @db.VarChar(255)
+  updatedAt     DateTime     @default(now()) @db.Timestamp(6)
+  type          String       @default("regular") @db.VarChar(20)
+  Account       Account[]
+  Chat          Chat[]
+  Document      Document[]
+  Session       Session[]
+  Suggestion    Suggestion[]
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String   @db.VarChar(255)
+  value      String
+  expiresAt  DateTime @db.Timestamp(6)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @default(now()) @db.Timestamp(6)
+}
+
+model Vote {
+  chatId    String  @db.Uuid
+  messageId String  @db.Uuid
+  isUpvoted Boolean
+  Chat      Chat    @relation(fields: [chatId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Vote_chatId_Chat_id_fk")
+  Message   Message @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Vote_messageId_Message_id_fk")
+
+  @@id([chatId, messageId], map: "Vote_chatId_messageId_pk")
+}
+
+model Vote_v2 {
+  chatId     String     @db.Uuid
+  messageId  String     @db.Uuid
+  isUpvoted  Boolean
+  Chat       Chat       @relation(fields: [chatId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Vote_v2_chatId_Chat_id_fk")
+  Message_v2 Message_v2 @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Vote_v2_messageId_Message_v2_id_fk")
+
+  @@id([chatId, messageId], map: "Vote_v2_chatId_messageId_pk")
+}
