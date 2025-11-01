@@ -3,7 +3,6 @@
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-type User = { id: string; email: string; image?: string; name?: string; type?: string };
 import { useState } from "react";
 import { toast } from "sonner";
 import useSWRInfinite from "swr/infinite";
@@ -25,7 +24,7 @@ import {
   SidebarMenu,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { Chat } from "@/generated/client";
+import type { Chat, User } from "@/generated/client";
 import { LoaderIcon } from "./icons";
 import { ChatItem } from "./sidebar-history-item";
 

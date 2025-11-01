@@ -1,16 +1,20 @@
 import { cookies, headers } from "next/headers";
 import Script from "next/script";
+import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DataStreamProvider } from "@/components/data-stream-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth";
 
-export default async function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [session, cookieStore] = await Promise.all([auth.api.getSession({ headers: await headers() }), cookies()]);
+type ChatLayoutProps = {
+  children: ReactNode;
+};
+
+export const ChatLayout = async ({ children }: ChatLayoutProps) => {
+  const [session, cookieStore] = await Promise.all([
+    auth.api.getSession({ headers: await headers() }),
+    cookies(),
+  ]);
   const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
 
   return (
@@ -27,4 +31,4 @@ export default async function Layout({
       </DataStreamProvider>
     </>
   );
-}
+};
