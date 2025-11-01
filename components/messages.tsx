@@ -82,8 +82,8 @@ function PureMessages({
       ref={messagesContainerRef}
       style={{ overflowAnchor: "none" }}
     >
-      <Conversation className="mx-auto flex min-w-0 w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl flex-col gap-4 md:gap-6 overflow-x-hidden">
-        <ConversationContent className="flex flex-col gap-2 md:gap-2 py-2 overflow-x-hidden">
+      <Conversation className="w-full max-w-3xl px-4" style={{ marginLeft: 'calc((100vw - 768px) / 2)', marginRight: 'calc((100vw - 768px) / 2)' }}>
+        <ConversationContent className="flex flex-col gap-2 md:gap-2 py-2 pb-32">
       {uniqueMessages.map((message, index) => (
             <PreviewMessage
               chatId={chatId}
@@ -108,7 +108,7 @@ function PureMessages({
           ))}
 
           <AnimatePresence mode="wait">
-            {status === "submitted" && <ThinkingMessage key="thinking" />}
+            {(status === "submitted" || (status === "streaming" && !uniqueMessages.some(m => m.role === "assistant" && m.parts.some(p => p.type === "text" && p.text)))) && <ThinkingMessage key="thinking" />}
           </AnimatePresence>
 
           <div

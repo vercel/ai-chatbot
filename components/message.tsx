@@ -92,7 +92,7 @@ const PurePreviewMessage = ({
             "min-h-96": message.role === "assistant" && requiresScrollPadding,
             "w-full max-w-full items-start overflow-hidden":
               message.role === "assistant" || mode === "edit",
-            "max-w-[calc(100%-2.5rem)] items-end sm:max-w-[80%]":
+            "w-full max-w-full items-end":
               message.role === "user" && mode !== "edit",
           })}
         >
@@ -143,7 +143,7 @@ const PurePreviewMessage = ({
                   >
           <MessageContent
                       className={cn({
-            "user-bubble inline-block max-w-full sm:max-w-md lg:max-w-lg rounded-2xl px-3 py-2 text-left text-white break-normal hyphens-none whitespace-pre-wrap":
+            "user-bubble inline-block max-w-full rounded-2xl px-3 py-2 text-left text-white break-normal hyphens-none whitespace-pre-wrap":
                           message.role === "user",
                         "w-full min-w-0 bg-transparent pr-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
                           message.role === "assistant",

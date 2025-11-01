@@ -73,7 +73,7 @@ function PureArtifactMessages({
       ))}
 
       <AnimatePresence mode="wait">
-        {status === "submitted" && <ThinkingMessage key="thinking" />}
+        {(status === "submitted" || (status === "streaming" && !messages.some(m => m.role === "assistant" && m.parts.some(p => p.type === "text" && p.text)))) && <ThinkingMessage key="thinking" />}
       </AnimatePresence>
 
       <motion.div

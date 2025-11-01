@@ -206,16 +206,16 @@ export function Chat({
           // Welcome state - different layout for mobile vs desktop
           <>
             {/* Mobile Layout */}
-            <div className="md:hidden flex-1 flex flex-col">
+            <div className="md:hidden flex-1 flex flex-col relative">
               {/* Centered greeting */}
-              <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+              <div className="flex-1 flex flex-col items-center justify-center px-4 text-center pb-32">
                 <div className="font-semibold text-2xl mb-2">Hello there!</div>
                 <div className="text-xl text-zinc-500 mb-8">
                   How can I help you today?
                 </div>
 
                 {attachments.length === 0 && (
-                  <div className="w-full max-w-3xl px-4">
+                  <div className="w-full max-w-full md:max-w-3xl px-4">
                     <SuggestedActions
                       chatId={id}
                       selectedVisibilityType={visibilityType}
@@ -225,32 +225,36 @@ export function Chat({
                 )}
               </div>
 
-              {/* Bottom input for mobile */}
-              {!isReadonly && (
-                <div className="sticky bottom-0 z-1 mx-auto w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background mb-2">
-                  <MultimodalInput
-                    attachments={attachments}
-                    chatId={id}
-                    input={input}
-                    messages={messages}
-                    onModelChange={setCurrentModelId}
-                    selectedModelId={currentModelId}
-                    selectedVisibilityType={visibilityType}
-                    sendMessage={sendMessage}
-                    setAttachments={setAttachments}
-                    setInput={setInput}
-                    setMessages={setMessages}
-                    status={status}
-                    stop={enhancedStop}
-                    usage={usage}
-                  />
+              {/* Floating input for mobile */}
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-background via-background/95 to-transparent">
+                <div className="mx-auto w-full max-w-full md:max-w-3xl">
+                  {!isReadonly && (
+                    <div className="bg-background/90 backdrop-blur-md border rounded-2xl shadow-xl">
+                      <MultimodalInput
+                        attachments={attachments}
+                        chatId={id}
+                        input={input}
+                        messages={messages}
+                        onModelChange={setCurrentModelId}
+                        selectedModelId={currentModelId}
+                        selectedVisibilityType={visibilityType}
+                        sendMessage={sendMessage}
+                        setAttachments={setAttachments}
+                        setInput={setInput}
+                        setMessages={setMessages}
+                        status={status}
+                        stop={enhancedStop}
+                        usage={usage}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Desktop Layout */}
             <div className="hidden md:flex flex-1 flex-col items-center justify-center px-4">
-              <div className="mx-auto flex w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl flex-col items-center justify-center px-4 text-center">
+              <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center px-4 text-center">
                 <div className="font-semibold text-2xl md:text-3xl mb-2">
                   Hello there!
                 </div>
@@ -259,7 +263,7 @@ export function Chat({
                 </div>
 
                 {!isReadonly && (
-                  <div className="w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl">
+                  <div className="w-full max-w-3xl">
                     <MultimodalInput
                       attachments={attachments}
                       chatId={id}
@@ -292,50 +296,58 @@ export function Chat({
             </div>
           </>
         ) : (
-          // Chat state with messages and bottom input
-          <>
-            <StreamingErrorBoundary
-              onError={(error, errorInfo) => {
-                console.error("Messages component error:", error, errorInfo);
-                // Force cleanup on component error
-                cleanup();
-              }}
-            >
-              <Messages
-                chatId={id}
-                isArtifactVisible={isArtifactVisible}
-                isReadonly={isReadonly}
-                messages={messages}
-                regenerate={regenerate}
-                selectedModelId={initialChatModel}
-                setMessages={setMessages}
-                status={status}
-                votes={votes}
-                userId={userId}
-              />
-            </StreamingErrorBoundary>
-
-            <div className="sticky bottom-0 z-1 mx-auto w-full max-w-[375px] md:max-w-[640px] lg:max-w-3xl border-t-0 bg-background mb-2">
-              {!isReadonly && (
-                <MultimodalInput
-                  attachments={attachments}
+          // Chat state with messages and floating bottom input
+          <div className="flex flex-1 flex-col relative overflow-hidden">
+            <div className="flex-1 overflow-y-auto pb-32">
+              <StreamingErrorBoundary
+                onError={(error, errorInfo) => {
+                  console.error("Messages component error:", error, errorInfo);
+                  // Force cleanup on component error
+                  cleanup();
+                }}
+              >
+                <Messages
                   chatId={id}
-                  input={input}
+                  isArtifactVisible={isArtifactVisible}
+                  isReadonly={isReadonly}
                   messages={messages}
-                  onModelChange={setCurrentModelId}
-                  selectedModelId={currentModelId}
-                  selectedVisibilityType={visibilityType}
-                  sendMessage={sendMessage}
-                  setAttachments={setAttachments}
-                  setInput={setInput}
+                  regenerate={regenerate}
+                  selectedModelId={initialChatModel}
                   setMessages={setMessages}
                   status={status}
-                  stop={enhancedStop}
-                  usage={usage}
+                  votes={votes}
+                  userId={userId}
                 />
-              )}
+              </StreamingErrorBoundary>
             </div>
-          </>
+
+            {/* Truly floating input box - positioned absolutely over content */}
+            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none pb-4">
+              {/* Container matching Messages exactly - same padding structure */}
+              <div className="w-full max-w-3xl px-4 pointer-events-auto" style={{ marginLeft: 'calc((100vw - 768px) / 2)', marginRight: 'calc((100vw - 768px) / 2)' }}>
+                {!isReadonly && (
+                  <div className="bg-background/90 backdrop-blur-md border rounded-2xl shadow-xl">
+                    <MultimodalInput
+                      attachments={attachments}
+                      chatId={id}
+                      input={input}
+                      messages={messages}
+                      onModelChange={setCurrentModelId}
+                      selectedModelId={currentModelId}
+                      selectedVisibilityType={visibilityType}
+                      sendMessage={sendMessage}
+                      setAttachments={setAttachments}
+                      setInput={setInput}
+                      setMessages={setMessages}
+                      status={status}
+                      stop={enhancedStop}
+                      usage={usage}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
