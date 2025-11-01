@@ -1,77 +1,52 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Button } from './ui/button';
-import { memo } from 'react';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { VisibilityType } from './visibility-selector';
-import type { ChatMessage } from '@/lib/types';
+import type { UseChatHelpers } from "@ai-sdk/react";
+import { motion } from "framer-motion";
+import { memo } from "react";
+import type { ChatMessage } from "@/lib/types";
+import { Suggestion } from "./elements/suggestion";
+import type { VisibilityType } from "./visibility-selector";
 
-interface SuggestedActionsProps {
+type SuggestedActionsProps = {
   chatId: string;
-  sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
+  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
   selectedVisibilityType: VisibilityType;
-}
+};
 
-function PureSuggestedActions({
-  chatId,
-  sendMessage,
-  selectedVisibilityType,
-}: SuggestedActionsProps) {
+function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   const suggestedActions = [
-    {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
-    },
-    {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
-    },
-    {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
-    },
-    {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
-    },
+    "What are the advantages of using Next.js?",
+    "Write code to demonstrate Dijkstra's algorithm",
+    "Help me write an essay about Silicon Valley",
+    "What is the weather in San Francisco?",
   ];
 
   return (
     <div
+      className="grid w-full gap-2 sm:grid-cols-2"
       data-testid="suggested-actions"
-      className="grid sm:grid-cols-2 gap-2 w-full"
     >
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 20 }}
+          key={suggestedAction}
           transition={{ delay: 0.05 * index }}
-          key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
         >
-          <Button
-            variant="ghost"
-            onClick={async () => {
-              window.history.replaceState({}, '', `/chat/${chatId}`);
-
+          <Suggestion
+            className="h-auto w-full whitespace-normal p-3 text-left"
+            onClick={(suggestion) => {
+              window.history.replaceState({}, "", `/chat/${chatId}`);
               sendMessage({
-                role: 'user',
-                parts: [{ type: 'text', text: suggestedAction.action }],
+                role: "user",
+                parts: [{ type: "text", text: suggestion }],
               });
             }}
-            className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
+            suggestion={suggestedAction}
           >
-            <span className="font-medium">{suggestedAction.title}</span>
-            <span className="text-muted-foreground">
-              {suggestedAction.label}
-            </span>
-          </Button>
+            {suggestedAction}
+          </Suggestion>
         </motion.div>
       ))}
     </div>
@@ -81,10 +56,13 @@ function PureSuggestedActions({
 export const SuggestedActions = memo(
   PureSuggestedActions,
   (prevProps, nextProps) => {
-    if (prevProps.chatId !== nextProps.chatId) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+    if (prevProps.chatId !== nextProps.chatId) {
       return false;
+    }
+    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType) {
+      return false;
+    }
 
     return true;
-  },
+  }
 );
