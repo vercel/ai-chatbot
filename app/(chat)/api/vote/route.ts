@@ -1,4 +1,5 @@
-import { auth } from "@/app/(auth)/auth";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { getChatById, getVotesByChatId, voteMessage } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return new ChatSDKError("unauthorized:vote").toResponse();
@@ -49,7 +50,7 @@ export async function PATCH(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return new ChatSDKError("unauthorized:vote").toResponse();
