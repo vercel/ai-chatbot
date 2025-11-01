@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { useWindowSize } from "usehooks-ts";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "./custom/theme-toggle";
 import { PlusIcon, VercelIcon } from "./icons";
 import { SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { VisibilitySelector, type VisibilityType } from "./visibility-selector";
@@ -62,6 +63,8 @@ function PureChatHeader({
           Deploy with Vercel
         </Link>
       </Button>
+
+      <ThemeToggle />
     </header>
   );
 }
