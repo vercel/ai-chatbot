@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         //https://nextjs.org/docs/messages/next-image-unconfigured-host
-        hostname: "YourBlobURL.public.blob.vercel-storage.com",
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
   },
