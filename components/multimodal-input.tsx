@@ -130,7 +130,7 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
 
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, "", `/chat/${chatId}`);
+    window.history.pushState({}, "", `/chat/${chatId}`);
 
     sendMessage({
       role: "user",

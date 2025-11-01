@@ -27,20 +27,16 @@ async function geocodeCity(city: string): Promise<{ latitude: number; longitude:
 
 export const getWeather = tool({
   description: "Get the current weather at a location. You can provide either coordinates or a city name.",
-  inputSchema: z.union([
-    z.object({
-      latitude: z.number(),
-      longitude: z.number(),
-    }),
-    z.object({
-      city: z.string().describe("City name (e.g., 'San Francisco', 'New York', 'London')"),
-    }),
-  ]),
+  inputSchema: z.object({
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
+    city: z.string().describe("City name (e.g., 'San Francisco', 'New York', 'London')").optional(),
+  }),
   execute: async (input) => {
     let latitude: number;
     let longitude: number;
 
-    if ("city" in input) {
+    if (input.city) {
       const coords = await geocodeCity(input.city);
       if (!coords) {
         return {
@@ -49,9 +45,13 @@ export const getWeather = tool({
       }
       latitude = coords.latitude;
       longitude = coords.longitude;
-    } else {
+    } else if (input.latitude !== undefined && input.longitude !== undefined) {
       latitude = input.latitude;
       longitude = input.longitude;
+    } else {
+      return {
+        error: "Please provide either a city name or both latitude and longitude coordinates.",
+      };
     }
 
     const response = await fetch(
