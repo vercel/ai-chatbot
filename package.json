@@ -3,9 +3,9 @@
   "version": "3.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "tsx lib/db/migrate && next build",
-    "start": "next start",
+    "dev": "bun --bun next dev",
+    "build": "tsx lib/db/migrate && bun --bun next build",
+    "start": "bun --bun next start",
     "lint": "npx ultracite@latest check",
     "format": "npx ultracite@latest fix",
     "db:generate": "drizzle-kit generate",
