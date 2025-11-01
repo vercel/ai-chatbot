@@ -58,7 +58,7 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>("");
-  const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
+  const [, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
@@ -88,6 +88,8 @@ export function Chat({
         const lastMessage = request.messages.at(-1);
         const webSearchEnabled = lastMessage?.data?.webSearchEnabled ?? false;
         const newsSearchEnabled = lastMessage?.data?.newsSearchEnabled ?? false;
+        const languagePreference =
+          lastMessage?.data?.languagePreference ?? "auto";
 
         // AI SDK v5: Send all messages for stateless operation
         return {
@@ -96,6 +98,7 @@ export function Chat({
             selectedChatModel: currentModelIdRef.current,
             webSearchEnabled,
             newsSearchEnabled,
+            languagePreference,
             ...request.body,
           },
         };
@@ -196,7 +199,6 @@ export function Chat({
               setMessages={setMessages}
               status={status}
               stop={stop}
-              usage={usage}
             />
           )}
         </div>

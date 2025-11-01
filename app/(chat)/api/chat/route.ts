@@ -49,11 +49,13 @@ export async function POST(request: Request) {
       selectedChatModel,
       webSearchEnabled,
       newsSearchEnabled,
+      languagePreference,
     }: {
       messages: UIMessage[];
       selectedChatModel?: ChatModel["id"];
       webSearchEnabled?: boolean;
       newsSearchEnabled?: boolean;
+      languagePreference?: string;
     } = json;
 
     if (!messages || !Array.isArray(messages)) {
@@ -130,6 +132,7 @@ export async function POST(request: Request) {
         requestHints,
         webSearchEnabled,
         newsSearchEnabled,
+        languagePreference,
       }),
       messages: convertToModelMessages(uiMessages),
       stopWhen: stepCountIs(5),
