@@ -6,7 +6,7 @@ import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
 } from "@/lib/db/queries";
-import type { Document } from "@/lib/db/schema";
+import type { Document } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const deleteDocuments = async (

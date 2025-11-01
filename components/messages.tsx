@@ -4,7 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
 import { memo, useEffect } from "react";
 import { useMessages } from "@/hooks/use-messages";
-import type { Vote } from "@/lib/db/schema";
+import type { Vote_v2 as Vote } from "@/generated/client";
 import type { ChatMessage } from "@/lib/types";
 import { Conversation, ConversationContent } from "./ai-elements/conversation";
 import { useDataStream } from "./data-stream-provider";

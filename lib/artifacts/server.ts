@@ -5,7 +5,7 @@ import { sheetDocumentHandler } from "@/artifacts/sheet/server";
 import { textDocumentHandler } from "@/artifacts/text/server";
 import type { ArtifactKind } from "@/components/artifact";
 import { saveDocument } from "../db/queries";
-import type { Document } from "../db/schema";
+import type { Document } from "@/generated/client";
 import type { ChatMessage } from "../types";
 
 export type SaveDocumentProps = {

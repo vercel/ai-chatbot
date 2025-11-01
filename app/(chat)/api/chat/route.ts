@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { geolocation } from "@vercel/functions";
 import {
   convertToModelMessages,
@@ -10,6 +9,7 @@ import {
 } from "ai";
 import { nanoid } from "nanoid";
 import { unstable_cache as cache } from "next/cache";
+import { headers } from "next/headers";
 import { after } from "next/server";
 import {
   createResumableStreamContext,
@@ -18,8 +18,8 @@ import {
 import type { ModelCatalog } from "tokenlens/core";
 import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
-import { auth, type UserType } from "@/lib/auth";
 import type { VisibilityType } from "@/components/visibility-selector";
+import type { Message } from "@/generated/client";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
@@ -28,6 +28,7 @@ import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+import { auth, type UserType } from "@/lib/auth";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -39,7 +40,6 @@ import {
   saveMessages,
   updateChatLastContextById,
 } from "@/lib/db/queries";
-import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     }
 
     const chat = await getChatById({ id });
-    let messagesFromDb: DBMessage[] = [];
+    let messagesFromDb: Message[] = [];
 
     if (chat) {
       if (chat.userId !== session.user.id) {

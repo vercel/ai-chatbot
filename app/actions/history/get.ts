@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getChatsByUserId } from "@/lib/db/queries";
-import type { Chat } from "@/lib/db/schema";
+import type { Chat } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const getChatHistory = async (

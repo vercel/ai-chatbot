@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
 import { voteOnMessage } from "@/app/actions/vote/patch";
-import type { Vote } from "@/lib/db/schema";
+import type { Vote_v2 as Vote } from "@/generated/client";
 import type { ChatMessage } from "@/lib/types";
 import { Action, Actions } from "./ai-elements/actions";
 import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";

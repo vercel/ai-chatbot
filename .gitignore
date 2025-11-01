@@ -45,3 +45,4 @@ yarn-error.log*
 
 # Prisma
 /generated
+tsconfig.tsbuildinfo

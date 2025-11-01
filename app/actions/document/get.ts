@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getDocumentsById } from "@/lib/db/queries";
-import type { Document } from "@/lib/db/schema";
+import type { Document } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const getDocuments = async (

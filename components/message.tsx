@@ -3,7 +3,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
 import { memo, useState } from "react";
-import type { Vote } from "@/lib/db/schema";
+import type { Vote_v2 as Vote } from "@/generated/client";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { MessageContent } from "./ai-elements/message";

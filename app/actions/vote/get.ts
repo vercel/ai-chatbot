@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getChatById, getVotesByChatId } from "@/lib/db/queries";
-import type { Vote } from "@/lib/db/schema";
+import type { Vote_v2 as Vote } from "@/generated/client";
 import { ChatSDKError } from "@/lib/errors";
 
 export const getVotes = async (
