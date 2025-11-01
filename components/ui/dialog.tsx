@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { Dialog as DialogPrimitive } from "radix-ui"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
