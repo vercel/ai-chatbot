@@ -12,6 +12,7 @@ import {
   lt,
   type SQL,
 } from "drizzle-orm";
+import { subHours } from "date-fns";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { nanoid } from "nanoid";
 import postgres from "postgres";
@@ -529,9 +530,7 @@ export async function getMessageCountByUserId({
   differenceInHours: number;
 }) {
   try {
-    const twentyFourHoursAgo = new Date(
-      Date.now() - differenceInHours * 60 * 60 * 1000
-    );
+    const twentyFourHoursAgo = subHours(new Date(), differenceInHours);
 
     const [stats] = await db
       .select({ count: count(message.id) })
