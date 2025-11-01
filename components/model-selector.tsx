@@ -1,15 +1,5 @@
 "use client";
 
-type Session = {
-  user: {
-    id: string;
-    email: string;
-    image?: string;
-    name?: string;
-    type?: string;
-  };
-};
-
 import {
   startTransition,
   useEffect,
@@ -19,6 +9,7 @@ import {
 } from "react";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { getavailablemodels } from "@/app/actions/models/get";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

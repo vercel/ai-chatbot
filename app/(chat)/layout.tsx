@@ -10,7 +10,7 @@ type ChatLayoutProps = {
   children: ReactNode;
 };
 
-export const ChatLayout = async ({ children }: ChatLayoutProps) => {
+export default async function ChatLayout({ children }: ChatLayoutProps) {
   const [session, cookieStore] = await Promise.all([
     auth.api.getSession({ headers: await headers() }),
     cookies(),
@@ -31,4 +31,4 @@ export const ChatLayout = async ({ children }: ChatLayoutProps) => {
       </DataStreamProvider>
     </>
   );
-};
+}

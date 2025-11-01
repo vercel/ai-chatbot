@@ -77,7 +77,7 @@ export function DataStreamHandler() {
         }
       });
     }
-  }, [dataStream, setArtifact, setMetadata, artifact]);
+  }, [dataStream, setArtifact, setMetadata, artifact, setDataStream]);
 
   return null;
 }

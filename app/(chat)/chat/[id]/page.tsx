@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { GuestHandler } from "@/components/guest-handler";

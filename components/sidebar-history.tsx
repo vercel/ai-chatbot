@@ -111,7 +111,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     getChatHistoryPaginationKey,
     async (key) => {
       const parts = key.split("-");
-      const limit = Number.parseInt(parts[parts.length - 1], 10);
+      const limit = Number.parseInt(parts.at(-1), 10);
 
       if (key === `chat-history-${limit}`) {
         // First page
@@ -126,7 +126,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       }
 
       // Subsequent pages
-      const endingBefore = parts[parts.length - 2];
+      const endingBefore = parts.at(-2);
       const resultWithPagination = await getChatHistory(
         limit,
         undefined,
@@ -158,7 +158,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     : false;
 
   const handleDelete = () => {
-    if (!deleteId) return;
+    if (!deleteId) {
+      return;
+    }
 
     const deletePromise = deleteChat(deleteId);
 
