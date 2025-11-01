@@ -28,11 +28,11 @@ import { cn } from "@/lib/utils";
 import { Context } from "./ai-elements/context";
 import {
   PromptInput,
+  PromptInputFooter,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputToolbar,
   PromptInputTools,
 } from "./ai-elements/prompt-input";
 import {
@@ -367,7 +367,7 @@ function PureMultimodalInput({
           />{" "}
           <Context {...contextProps} />
         </div>
-        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
+        <PromptInputFooter className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -392,7 +392,7 @@ function PureMultimodalInput({
               <ArrowUpIcon size={14} />
             </PromptInputSubmit>
           )}
-        </PromptInputToolbar>
+        </PromptInputFooter>
       </PromptInput>
     </div>
   );
