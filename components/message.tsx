@@ -318,7 +318,9 @@ export const ThinkingMessage = () => {
       className="group/message w-full"
       data-role={role}
       data-testid="message-assistant-loading"
+      exit={{ opacity: 0, transition: { duration: 0.5 } }}
       initial={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
       <div className="flex items-start justify-start gap-3">
         <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
@@ -327,7 +329,7 @@ export const ThinkingMessage = () => {
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
           <div className="p-0 text-muted-foreground text-sm">
-            <LoadingText>Thinking...</LoadingText>
+            Thinking...
           </div>
         </div>
       </div>
@@ -335,25 +337,3 @@ export const ThinkingMessage = () => {
   );
 };
 
-const LoadingText = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <motion.div
-      animate={{ backgroundPosition: ["100% 50%", "-100% 50%"] }}
-      className="flex items-center text-transparent"
-      style={{
-        background:
-          "linear-gradient(90deg, hsl(var(--muted-foreground)) 0%, hsl(var(--muted-foreground)) 35%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground)) 65%, hsl(var(--muted-foreground)) 100%)",
-        backgroundSize: "200% 100%",
-        WebkitBackgroundClip: "text",
-        backgroundClip: "text",
-      }}
-      transition={{
-        duration: 1.5,
-        repeat: Number.POSITIVE_INFINITY,
-        ease: "linear",
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-};

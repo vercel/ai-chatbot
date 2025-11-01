@@ -1,6 +1,6 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { memo } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
@@ -63,9 +63,9 @@ function PureArtifactMessages({
         />
       ))}
 
-      {status === "submitted" &&
-        messages.length > 0 &&
-        messages.at(-1)?.role === "user" && <ThinkingMessage />}
+      <AnimatePresence mode="wait">
+        {status === "submitted" && <ThinkingMessage key="thinking" />}
+      </AnimatePresence>
 
       <motion.div
         className="min-h-[24px] min-w-[24px] shrink-0"
