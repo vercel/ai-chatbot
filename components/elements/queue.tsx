@@ -40,7 +40,7 @@ function PureQueuePanel({ items, isOpen, onToggle, onRemove }: QueuePanelProps) 
             })();
 
             return (
-              <li key={index} className='group flex items-center gap-2 py-1 px-2 text-sm text-muted-foreground rounded-md hover:bg-muted transition-colors'>
+              <li key={`${index}-${summary.slice(0, 50)}`} className='group flex items-center gap-2 py-1 px-2 text-sm text-muted-foreground rounded-md hover:bg-muted transition-colors'>
                 <span className='mt-1 inline-block size-2.5 rounded-full border border-muted-foreground/50'></span>
                 <span className='line-clamp-1 break-words grow'>{summary}</span>
                 <button
