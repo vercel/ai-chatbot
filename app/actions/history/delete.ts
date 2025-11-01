@@ -1,6 +1,7 @@
 "use server";
 
-import { auth } from "@/app/(auth)/auth";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { deleteAllChatsByUserId } from "@/lib/db/queries";
 import type { Chat } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
@@ -13,7 +14,7 @@ export const deleteAllChats = async (): Promise<
       error: ChatSDKError;
     }
 > => {
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return { error: new ChatSDKError("unauthorized:chat") };

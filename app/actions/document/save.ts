@@ -1,7 +1,8 @@
 "use server";
 
-import { auth } from "@/app/(auth)/auth";
+import { headers } from "next/headers";
 import type { ArtifactKind } from "@/components/artifact";
+import { auth } from "@/lib/auth";
 import { getDocumentsById, saveDocument } from "@/lib/db/queries";
 import type { Document } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
@@ -25,7 +26,7 @@ export const saveDocumentAction = async (
     };
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return { error: new ChatSDKError("not_found:document") };

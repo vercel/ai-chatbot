@@ -1,8 +1,9 @@
 "use server";
 
 import { put } from "@vercel/blob";
+import { headers } from "next/headers";
 import { z } from "zod";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@/lib/auth";
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
@@ -30,7 +31,7 @@ export const uploadFile = async (
     }
   | { error: string }
 > => {
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
     return { error: "Unauthorized" };

@@ -1,12 +1,13 @@
 "use server";
 
-import { auth } from "@/app/(auth)/auth";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { getChatsByUserId } from "@/lib/db/queries";
 import type { Chat } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 
 export const getChatHistory = async (
-  limit: number = 10,
+  limit = 10,
   startingAfter?: string,
   endingBefore?: string
 ): Promise<
@@ -26,7 +27,7 @@ export const getChatHistory = async (
     };
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return { error: new ChatSDKError("unauthorized:chat") };

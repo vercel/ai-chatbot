@@ -1,6 +1,7 @@
 "use server";
 
-import { auth } from "@/app/(auth)/auth";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { getChatById, voteMessage } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
@@ -25,7 +26,7 @@ export const voteOnMessage = async (
     };
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return { error: new ChatSDKError("unauthorized:vote") };
