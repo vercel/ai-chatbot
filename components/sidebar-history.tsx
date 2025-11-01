@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "better-auth";
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
@@ -24,7 +25,7 @@ import {
   SidebarMenu,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { Chat, User } from "@/generated/client";
+import type { Chat } from "@/generated/client";
 import { LoaderIcon } from "./icons";
 import { ChatItem } from "./sidebar-history-item";
 

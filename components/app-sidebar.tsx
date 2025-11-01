@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "better-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,7 +23,6 @@ import {
   SidebarMenu,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { User } from "@/generated/client";
 import {
   AlertDialog,
   AlertDialogAction,
