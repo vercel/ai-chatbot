@@ -1,7 +1,6 @@
 "use client";
 
 import type { UseChatHelpers } from "@ai-sdk/react";
-import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
 import Image from "next/image";
@@ -37,6 +36,7 @@ import {
   PromptInputFooter,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
+  PromptInputModelSelectTrigger,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
@@ -559,7 +559,7 @@ function PureModelSelectorCompact({
       }}
       value={selectedModel?.name}
     >
-      <Trigger asChild>
+      <PromptInputModelSelectTrigger>
         <Button className="h-8 px-2" variant="ghost">
           <CpuIcon size={16} />
           <span className="hidden font-medium text-xs sm:block">
@@ -567,7 +567,7 @@ function PureModelSelectorCompact({
           </span>
           <ChevronDownIcon size={16} />
         </Button>
-      </Trigger>
+      </PromptInputModelSelectTrigger>
       <PromptInputModelSelectContent className="max-h-[360px] min-w-[260px] overflow-y-auto p-0">
         <div className="sticky top-0 z-10 border-b bg-popover/95 px-1.5 py-1 backdrop-blur supports-backdrop-filter:bg-popover/60">
           <div className="relative">
