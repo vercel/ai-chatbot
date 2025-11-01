@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authclient } from "@/lib/auth-client";
+import { guestRegex } from "@/lib/constants";
 
 export default function Register() {
   const router = useRouter();
@@ -14,6 +15,16 @@ export default function Register() {
   const [password, setpassword] = useState("");
   const [error, seterror] = useState("");
   const [loading, setloading] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const session = await authclient.getSession();
+      if (session.data?.user?.email && !guestRegex.test(session.data.user.email)) {
+        router.push("/");
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const handleback = () => {
     router.push("/");

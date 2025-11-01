@@ -7,16 +7,6 @@ export const proxy = (request: NextRequest) => {
     return NextResponse.next();
   }
 
-  const sessionToken = request.cookies.get("better-auth.session_token");
-
-  if (!sessionToken) {
-    return NextResponse.next();
-  }
-
-  if (["/login", "/register"].includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
   return NextResponse.next();
 };
 

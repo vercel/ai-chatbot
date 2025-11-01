@@ -1,6 +1,6 @@
 import "server-only";
 
-import { type Prisma, PrismaClient } from "@prisma/client";
+import { type Prisma, PrismaClient } from "@/generated/client";
 import { subHours } from "date-fns";
 import { nanoid } from "nanoid";
 import type { ArtifactKind } from "@/components/artifact";

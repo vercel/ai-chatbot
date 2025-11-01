@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronUp } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
@@ -50,13 +49,7 @@ export function SidebarUserNav({ user }: { user: any }) {
                 className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 data-testid="user-nav-button"
               >
-                <Image
-                  alt={user.email ?? "User Avatar"}
-                  className="rounded-full"
-                  height={24}
-                  src={`https://avatar.vercel.sh/${user.email}`}
-                  width={24}
-                />
+                <div className="size-6 rounded-full bg-zinc-400" />
                 <span className="truncate" data-testid="user-email">
                   {isGuest ? "Guest" : user?.email}
                 </span>
