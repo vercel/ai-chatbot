@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { guestRegex } from "./lib/constants";
 
-export async function proxy(request: NextRequest) {
+export const proxy = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/ping")) {
@@ -27,7 +26,7 @@ export async function proxy(request: NextRequest) {
   }
 
   return NextResponse.next();
-}
+};
 
 export const config = {
   matcher: [
