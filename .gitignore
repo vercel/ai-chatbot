@@ -37,12 +37,6 @@ yarn-error.log*
 .vercel
 .env*.local
 
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/*
-
 # Prisma
 /generated
 tsconfig.tsbuildinfo

@@ -8,8 +8,7 @@
     "start": "bun --bun next start",
     "lint": "npx ultracite@latest check",
     "format": "npx ultracite@latest fix",
-    "migrate": "npx prisma format && npx prisma generate && npx prisma db push",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
+    "migrate": "npx prisma format && npx prisma generate && npx prisma db push"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.5",
