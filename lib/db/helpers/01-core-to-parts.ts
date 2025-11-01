@@ -1,251 +1,253 @@
-import { config } from 'dotenv';
-import postgres from 'postgres';
-import {
-  chat,
-  message,
-  type MessageDeprecated,
-  messageDeprecated,
-  vote,
-  voteDeprecated,
-} from '../schema';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { inArray } from 'drizzle-orm';
-import { appendResponseMessages, type UIMessage } from 'ai';
+// This is a helper for an older version of ai, v4.3.13
 
-config({
-  path: '.env.local',
-});
+// import { config } from 'dotenv';
+// import postgres from 'postgres';
+// import {
+//   chat,
+//   message,
+//   type MessageDeprecated,
+//   messageDeprecated,
+//   vote,
+//   voteDeprecated,
+// } from '../schema';
+// import { drizzle } from 'drizzle-orm/postgres-js';
+// import { inArray } from 'drizzle-orm';
+// import { appendResponseMessages, type UIMessage } from 'ai';
 
-if (!process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL environment variable is not set');
-}
+// config({
+//   path: '.env.local',
+// });
 
-const client = postgres(process.env.POSTGRES_URL);
-const db = drizzle(client);
+// if (!process.env.POSTGRES_URL) {
+//   throw new Error('POSTGRES_URL environment variable is not set');
+// }
 
-const BATCH_SIZE = 100; // Process 100 chats at a time
-const INSERT_BATCH_SIZE = 1000; // Insert 1000 messages at a time
+// const client = postgres(process.env.POSTGRES_URL);
+// const db = drizzle(client);
 
-type NewMessageInsert = {
-  id: string;
-  chatId: string;
-  parts: any[];
-  role: string;
-  attachments: any[];
-  createdAt: Date;
-};
+// const BATCH_SIZE = 100; // Process 100 chats at a time
+// const INSERT_BATCH_SIZE = 1000; // Insert 1000 messages at a time
 
-type NewVoteInsert = {
-  messageId: string;
-  chatId: string;
-  isUpvoted: boolean;
-};
+// type NewMessageInsert = {
+//   id: string;
+//   chatId: string;
+//   parts: any[];
+//   role: string;
+//   attachments: any[];
+//   createdAt: Date;
+// };
 
-interface MessageDeprecatedContentPart {
-  type: string;
-  content: unknown;
-}
+// type NewVoteInsert = {
+//   messageId: string;
+//   chatId: string;
+//   isUpvoted: boolean;
+// };
 
-function getMessageRank(message: MessageDeprecated): number {
-  if (
-    message.role === 'assistant' &&
-    (message.content as MessageDeprecatedContentPart[]).some(
-      (contentPart) => contentPart.type === 'tool-call',
-    )
-  ) {
-    return 0;
-  }
+// interface MessageDeprecatedContentPart {
+//   type: string;
+//   content: unknown;
+// }
 
-  if (
-    message.role === 'tool' &&
-    (message.content as MessageDeprecatedContentPart[]).some(
-      (contentPart) => contentPart.type === 'tool-result',
-    )
-  ) {
-    return 1;
-  }
+// function getMessageRank(message: MessageDeprecated): number {
+//   if (
+//     message.role === 'assistant' &&
+//     (message.content as MessageDeprecatedContentPart[]).some(
+//       (contentPart) => contentPart.type === 'tool-call',
+//     )
+//   ) {
+//     return 0;
+//   }
 
-  if (message.role === 'assistant') {
-    return 2;
-  }
+//   if (
+//     message.role === 'tool' &&
+//     (message.content as MessageDeprecatedContentPart[]).some(
+//       (contentPart) => contentPart.type === 'tool-result',
+//     )
+//   ) {
+//     return 1;
+//   }
 
-  return 3;
-}
+//   if (message.role === 'assistant') {
+//     return 2;
+//   }
 
-function dedupeParts<T extends { type: string; [k: string]: any }>(
-  parts: T[],
-): T[] {
-  const seen = new Set<string>();
-  return parts.filter((p) => {
-    const key = `${p.type}|${JSON.stringify(p.content ?? p)}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
+//   return 3;
+// }
 
-function sanitizeParts<T extends { type: string; [k: string]: any }>(
-  parts: T[],
-): T[] {
-  return parts.filter(
-    (part) => !(part.type === 'reasoning' && part.reasoning === 'undefined'),
-  );
-}
+// function dedupeParts<T extends { type: string; [k: string]: any }>(
+//   parts: T[],
+// ): T[] {
+//   const seen = new Set<string>();
+//   return parts.filter((p) => {
+//     const key = `${p.type}|${JSON.stringify(p.content ?? p)}`;
+//     if (seen.has(key)) return false;
+//     seen.add(key);
+//     return true;
+//   });
+// }
 
-async function migrateMessages() {
-  const chats = await db.select().from(chat);
+// function sanitizeParts<T extends { type: string; [k: string]: any }>(
+//   parts: T[],
+// ): T[] {
+//   return parts.filter(
+//     (part) => !(part.type === 'reasoning' && part.reasoning === 'undefined'),
+//   );
+// }
 
-  let processedCount = 0;
+// async function migrateMessages() {
+//   const chats = await db.select().from(chat);
 
-  for (let i = 0; i < chats.length; i += BATCH_SIZE) {
-    const chatBatch = chats.slice(i, i + BATCH_SIZE);
-    const chatIds = chatBatch.map((chat) => chat.id);
+//   let processedCount = 0;
 
-    const allMessages = await db
-      .select()
-      .from(messageDeprecated)
-      .where(inArray(messageDeprecated.chatId, chatIds));
+//   for (let i = 0; i < chats.length; i += BATCH_SIZE) {
+//     const chatBatch = chats.slice(i, i + BATCH_SIZE);
+//     const chatIds = chatBatch.map((chat) => chat.id);
 
-    const allVotes = await db
-      .select()
-      .from(voteDeprecated)
-      .where(inArray(voteDeprecated.chatId, chatIds));
+//     const allMessages = await db
+//       .select()
+//       .from(messageDeprecated)
+//       .where(inArray(messageDeprecated.chatId, chatIds));
 
-    const newMessagesToInsert: NewMessageInsert[] = [];
-    const newVotesToInsert: NewVoteInsert[] = [];
+//     const allVotes = await db
+//       .select()
+//       .from(voteDeprecated)
+//       .where(inArray(voteDeprecated.chatId, chatIds));
 
-    for (const chat of chatBatch) {
-      processedCount++;
-      console.info(`Processed ${processedCount}/${chats.length} chats`);
+//     const newMessagesToInsert: NewMessageInsert[] = [];
+//     const newVotesToInsert: NewVoteInsert[] = [];
 
-      const messages = allMessages
-        .filter((message) => message.chatId === chat.id)
-        .sort((a, b) => {
-          const differenceInTime =
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          if (differenceInTime !== 0) return differenceInTime;
+//     for (const chat of chatBatch) {
+//       processedCount++;
+//       console.info(`Processed ${processedCount}/${chats.length} chats`);
 
-          return getMessageRank(a) - getMessageRank(b);
-        });
+//       const messages = allMessages
+//         .filter((message) => message.chatId === chat.id)
+//         .sort((a, b) => {
+//           const differenceInTime =
+//             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+//           if (differenceInTime !== 0) return differenceInTime;
 
-      const votes = allVotes.filter((v) => v.chatId === chat.id);
+//           return getMessageRank(a) - getMessageRank(b);
+//         });
 
-      const messageSection: Array<UIMessage> = [];
-      const messageSections: Array<Array<UIMessage>> = [];
+//       const votes = allVotes.filter((v) => v.chatId === chat.id);
 
-      for (const message of messages) {
-        const { role } = message;
+//       const messageSection: Array<UIMessage> = [];
+//       const messageSections: Array<Array<UIMessage>> = [];
 
-        if (role === 'user' && messageSection.length > 0) {
-          messageSections.push([...messageSection]);
-          messageSection.length = 0;
-        }
+//       for (const message of messages) {
+//         const { role } = message;
 
-        // @ts-expect-error message.content has different type
-        messageSection.push(message);
-      }
+//         if (role === 'user' && messageSection.length > 0) {
+//           messageSections.push([...messageSection]);
+//           messageSection.length = 0;
+//         }
 
-      if (messageSection.length > 0) {
-        messageSections.push([...messageSection]);
-      }
+//         // @ts-expect-error message.content has different type
+//         messageSection.push(message);
+//       }
 
-      for (const section of messageSections) {
-        const [userMessage, ...assistantMessages] = section;
+//       if (messageSection.length > 0) {
+//         messageSections.push([...messageSection]);
+//       }
 
-        const [firstAssistantMessage] = assistantMessages;
+//       for (const section of messageSections) {
+//         const [userMessage, ...assistantMessages] = section;
 
-        try {
-          const uiSection = appendResponseMessages({
-            messages: [userMessage],
-            // @ts-expect-error: message.content has different type
-            responseMessages: assistantMessages,
-            _internal: {
-              currentDate: () => firstAssistantMessage.createdAt ?? new Date(),
-            },
-          });
+//         const [firstAssistantMessage] = assistantMessages;
 
-          const projectedUISection = uiSection
-            .map((message) => {
-              if (message.role === 'user') {
-                return {
-                  id: message.id,
-                  chatId: chat.id,
-                  parts: [{ type: 'text', text: message.content }],
-                  role: message.role,
-                  createdAt: message.createdAt,
-                  attachments: [],
-                } as NewMessageInsert;
-              } else if (message.role === 'assistant') {
-                const cleanParts = sanitizeParts(
-                  dedupeParts(message.parts || []),
-                );
+//         try {
+//           const uiSection = appendResponseMessages({
+//             messages: [userMessage],
+//             // @ts-expect-error: message.content has different type
+//             responseMessages: assistantMessages,
+//             _internal: {
+//               currentDate: () => firstAssistantMessage.createdAt ?? new Date(),
+//             },
+//           });
 
-                return {
-                  id: message.id,
-                  chatId: chat.id,
-                  parts: cleanParts,
-                  role: message.role,
-                  createdAt: message.createdAt,
-                  attachments: [],
-                } as NewMessageInsert;
-              }
-              return null;
-            })
-            .filter((msg): msg is NewMessageInsert => msg !== null);
+//           const projectedUISection = uiSection
+//             .map((message) => {
+//               if (message.role === 'user') {
+//                 return {
+//                   id: message.id,
+//                   chatId: chat.id,
+//                   parts: [{ type: 'text', text: message.content }],
+//                   role: message.role,
+//                   createdAt: message.createdAt,
+//                   attachments: [],
+//                 } as NewMessageInsert;
+//               } else if (message.role === 'assistant') {
+//                 const cleanParts = sanitizeParts(
+//                   dedupeParts(message.parts || []),
+//                 );
 
-          for (const msg of projectedUISection) {
-            newMessagesToInsert.push(msg);
+//                 return {
+//                   id: message.id,
+//                   chatId: chat.id,
+//                   parts: cleanParts,
+//                   role: message.role,
+//                   createdAt: message.createdAt,
+//                   attachments: [],
+//                 } as NewMessageInsert;
+//               }
+//               return null;
+//             })
+//             .filter((msg): msg is NewMessageInsert => msg !== null);
 
-            if (msg.role === 'assistant') {
-              const voteByMessage = votes.find((v) => v.messageId === msg.id);
-              if (voteByMessage) {
-                newVotesToInsert.push({
-                  messageId: msg.id,
-                  chatId: msg.chatId,
-                  isUpvoted: voteByMessage.isUpvoted,
-                });
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`Error processing chat ${chat.id}: ${error}`);
-        }
-      }
-    }
+//           for (const msg of projectedUISection) {
+//             newMessagesToInsert.push(msg);
 
-    for (let j = 0; j < newMessagesToInsert.length; j += INSERT_BATCH_SIZE) {
-      const messageBatch = newMessagesToInsert.slice(j, j + INSERT_BATCH_SIZE);
-      if (messageBatch.length > 0) {
-        const validMessageBatch = messageBatch.map((msg) => ({
-          id: msg.id,
-          chatId: msg.chatId,
-          parts: msg.parts,
-          role: msg.role,
-          attachments: msg.attachments,
-          createdAt: msg.createdAt,
-        }));
+//             if (msg.role === 'assistant') {
+//               const voteByMessage = votes.find((v) => v.messageId === msg.id);
+//               if (voteByMessage) {
+//                 newVotesToInsert.push({
+//                   messageId: msg.id,
+//                   chatId: msg.chatId,
+//                   isUpvoted: voteByMessage.isUpvoted,
+//                 });
+//               }
+//             }
+//           }
+//         } catch (error) {
+//           console.error(`Error processing chat ${chat.id}: ${error}`);
+//         }
+//       }
+//     }
 
-        await db.insert(message).values(validMessageBatch);
-      }
-    }
+//     for (let j = 0; j < newMessagesToInsert.length; j += INSERT_BATCH_SIZE) {
+//       const messageBatch = newMessagesToInsert.slice(j, j + INSERT_BATCH_SIZE);
+//       if (messageBatch.length > 0) {
+//         const validMessageBatch = messageBatch.map((msg) => ({
+//           id: msg.id,
+//           chatId: msg.chatId,
+//           parts: msg.parts,
+//           role: msg.role,
+//           attachments: msg.attachments,
+//           createdAt: msg.createdAt,
+//         }));
 
-    for (let j = 0; j < newVotesToInsert.length; j += INSERT_BATCH_SIZE) {
-      const voteBatch = newVotesToInsert.slice(j, j + INSERT_BATCH_SIZE);
-      if (voteBatch.length > 0) {
-        await db.insert(vote).values(voteBatch);
-      }
-    }
-  }
+//         await db.insert(message).values(validMessageBatch);
+//       }
+//     }
 
-  console.info(`Migration completed: ${processedCount} chats processed`);
-}
+//     for (let j = 0; j < newVotesToInsert.length; j += INSERT_BATCH_SIZE) {
+//       const voteBatch = newVotesToInsert.slice(j, j + INSERT_BATCH_SIZE);
+//       if (voteBatch.length > 0) {
+//         await db.insert(vote).values(voteBatch);
+//       }
+//     }
+//   }
 
-migrateMessages()
-  .then(() => {
-    console.info('Script completed successfully');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('Script failed:', error);
-    process.exit(1);
-  });
+//   console.info(`Migration completed: ${processedCount} chats processed`);
+// }
+
+// migrateMessages()
+//   .then(() => {
+//     console.info('Script completed successfully');
+//     process.exit(0);
+//   })
+//   .catch((error) => {
+//     console.error('Script failed:', error);
+//     process.exit(1);
+//   });
