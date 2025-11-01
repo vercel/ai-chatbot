@@ -1,4 +1,4 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -7,7 +7,12 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'avatar.vercel.sh',
+        hostname: "avatar.vercel.sh",
+      },
+      {
+        protocol: "https",
+        //https://nextjs.org/docs/messages/next-image-unconfigured-host
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
   },
