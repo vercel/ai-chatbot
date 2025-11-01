@@ -11,7 +11,6 @@ const INDONESIAN_NEWS_SITES = [
   "liputan6.com",
 ];
 
-// @ts-expect-error - TypeScript overload resolution issue, but this matches the pattern used in getWeather.ts
 export const searchIndonesianNews = tool({
   description: `Format a search query to find news from Indonesian news sites (${INDONESIAN_NEWS_SITES.join(", ")}). IMPORTANT: After calling this tool, you MUST call google_search tool with the formattedQuery from this tool's result. The google_search tool will return URLs. Then call url_context tool with those URLs to get article content.`,
   inputSchema: z.object({
