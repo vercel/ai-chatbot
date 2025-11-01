@@ -5,28 +5,11 @@ import { DataStreamHandler } from "@/components/data-stream-handler";
 import { GuestHandler } from "@/components/guest-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 
-export default async function Page() {
+const ChatPage = async () => {
   const id = nanoid();
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("chat-model");
-
-  if (!modelIdFromCookie) {
-    return (
-      <>
-        <GuestHandler />
-        <Chat
-          autoResume={false}
-          id={id}
-          initialChatModel={DEFAULT_CHAT_MODEL}
-          initialMessages={[]}
-          initialVisibilityType="private"
-          isReadonly={false}
-          key={id}
-        />
-        <DataStreamHandler />
-      </>
-    );
-  }
+  const initialChatModel = modelIdFromCookie?.value ?? DEFAULT_CHAT_MODEL;
 
   return (
     <>
@@ -34,7 +17,7 @@ export default async function Page() {
       <Chat
         autoResume={false}
         id={id}
-        initialChatModel={modelIdFromCookie.value}
+        initialChatModel={initialChatModel}
         initialMessages={[]}
         initialVisibilityType="private"
         isReadonly={false}
@@ -43,4 +26,6 @@ export default async function Page() {
       <DataStreamHandler />
     </>
   );
-}
+};
+
+export default ChatPage;

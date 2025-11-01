@@ -35,7 +35,7 @@ import { getChatHistoryPaginationKey } from "./sidebar-history";
 import { toast } from "./toast";
 import type { VisibilityType } from "./visibility-selector";
 
-export function Chat({
+export const Chat = ({
   id,
   initialMessages,
   initialChatModel,
@@ -51,7 +51,7 @@ export function Chat({
   isReadonly: boolean;
   autoResume: boolean;
   initialLastContext?: AppUsage;
-}) {
+}) => {
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
@@ -254,4 +254,4 @@ export function Chat({
       </AlertDialog>
     </>
   );
-}
+};
