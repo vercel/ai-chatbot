@@ -1,4 +1,4 @@
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -10,12 +10,8 @@ type ChatLayoutProps = {
   children: ReactNode;
 };
 
-export default async function ChatLayout({ children }: ChatLayoutProps) {
-  const [session, cookieStore] = await Promise.all([
-    auth.api.getSession({ headers: await headers() }),
-    cookies(),
-  ]);
-  const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
+const ChatLayout = async ({ children }: ChatLayoutProps) => {
+  const session = await auth.api.getSession({ headers: await headers() });
 
   return (
     <>
@@ -24,11 +20,13 @@ export default async function ChatLayout({ children }: ChatLayoutProps) {
         strategy="beforeInteractive"
       />
       <DataStreamProvider>
-        <SidebarProvider defaultOpen={!isCollapsed}>
+        <SidebarProvider>
           <AppSidebar user={session?.user} />
           <SidebarInset>{children}</SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>
     </>
   );
-}
+};
+
+export default ChatLayout;
