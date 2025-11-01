@@ -41,6 +41,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   if (!chatModelFromCookie) {
     return (
       <>
+        <GuestHandler />
         <Chat
           autoResume={true}
           id={chat.id}
@@ -57,6 +58,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   return (
     <>
+      <GuestHandler />
       <Chat
         autoResume={true}
         id={chat.id}

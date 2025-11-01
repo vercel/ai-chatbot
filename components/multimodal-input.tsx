@@ -209,11 +209,7 @@ function PureMultimodalInput({
     );
     const modelId = modelExists
       ? selectedModelId
-<<<<<<< HEAD
       : chatModels[0]?.id || "chat-model";
-=======
-      : chatModels[0]?.id || "anthropic/claude-sonnet-4";
->>>>>>> a7ffecf (auth and model selector)
     return myProvider.languageModel(modelId);
   }, [selectedModelId, chatModels]);
 
