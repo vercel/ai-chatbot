@@ -425,7 +425,7 @@ export async function getSuggestionsByDocumentId({
     return await db
       .select()
       .from(suggestion)
-      .where(and(eq(suggestion.documentId, documentId)));
+      .where(eq(suggestion.documentId, documentId));
   } catch (_error) {
     throw new ChatSDKError(
       "bad_request:database",
