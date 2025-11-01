@@ -6,18 +6,17 @@ import { artifactDefinitions } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 
 export function DataStreamHandler() {
-  const { dataStream } = useDataStream();
+  const { dataStream,setDataStream } = useDataStream();
 
   const { artifact, setArtifact, setMetadata } = useArtifact();
-  const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
     if (!dataStream?.length) {
       return;
     }
 
-    const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
-    lastProcessedIndex.current = dataStream.length - 1;
+    const newDeltas = dataStream.slice();
+    setDataStream([]);
 
     for (const delta of newDeltas) {
       const artifactDefinition = artifactDefinitions.find(
