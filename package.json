@@ -6,8 +6,8 @@
     "dev": "bun --bun next dev",
     "build": "npx prisma generate && bun --bun next build",
     "start": "bun --bun next start",
-    "lint": "npx ultracite@latest check",
-    "format": "npx ultracite@latest fix",
+    "check": "npx ultracite@latest check",
+    "fix": "npx ultracite@latest fix",
     "migrate": "npx prisma format && npx prisma generate && npx prisma db push"
   },
   "dependencies": {
