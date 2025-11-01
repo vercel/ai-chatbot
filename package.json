@@ -66,6 +66,7 @@
     "react-hook-form": "^7.66.0",
     "react-resizable-panels": "^3.0.6",
     "recharts": "2.15.4",
+    "redis": "^5.9.0",
     "resumable-stream": "^2.2.8",
     "server-only": "^0.0.1",
     "shiki": "^3.14.0",
