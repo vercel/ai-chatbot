@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: true,
-  },
   images: {
     remotePatterns: [
       {
@@ -11,7 +8,6 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        //https://nextjs.org/docs/messages/next-image-unconfigured-host
         hostname: "*.public.blob.vercel-storage.com",
       },
     ],

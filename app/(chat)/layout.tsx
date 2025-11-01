@@ -5,8 +5,6 @@ import { DataStreamProvider } from "@/components/data-stream-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth";
 
-export const experimental_ppr = true;
-
 export default async function Layout({
   children,
 }: {

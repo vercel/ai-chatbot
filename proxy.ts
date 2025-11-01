@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { guestRegex } from "./lib/constants";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/ping")) {
