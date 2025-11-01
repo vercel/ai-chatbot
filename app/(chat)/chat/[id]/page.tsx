@@ -1,10 +1,9 @@
-import { cookies } , headers0;
+import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-
-import { auth } from "@/lib/auth";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
+import { auth } from "@/lib/auth";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { convertToUIMessages } from "@/lib/utils";
 
