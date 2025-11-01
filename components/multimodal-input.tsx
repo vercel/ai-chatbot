@@ -427,15 +427,14 @@ function PureModelSelectorCompact({
       }}
       value={selectedModel?.name}
     >
-      <Trigger
-        className="flex h-8 items-center gap-2 rounded-lg border-0 bg-background px-2 text-foreground shadow-none transition-colors hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-        type="button"
-      >
-        <CpuIcon size={16} />
-        <span className="hidden font-medium text-xs sm:block">
-          {selectedModel?.name}
-        </span>
-        <ChevronDownIcon size={16} />
+      <Trigger asChild>
+        <Button variant="ghost" className="h-8 px-2">
+          <CpuIcon size={16} />
+          <span className="hidden font-medium text-xs sm:block">
+            {selectedModel?.name}
+          </span>
+          <ChevronDownIcon size={16} />
+        </Button>
       </Trigger>
       <PromptInputModelSelectContent className="min-w-[260px] p-0">
         <div className="flex flex-col gap-px">
