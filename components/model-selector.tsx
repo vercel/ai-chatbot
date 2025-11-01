@@ -1,7 +1,8 @@
 "use client";
 
 type Session = { user: { id: string; email: string; image?: string; name?: string; type?: string } };
-import { startTransition, useMemo, useOptimistic, useState } from "react";
+import { startTransition, useEffect, useMemo, useOptimistic, useState } from "react";
+import { getavailablemodels } from "@/app/actions/models/get";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import { chatModels } from "@/lib/ai/models";
+import type { ChatModel } from "@/lib/ai/models";
 import { cn } from "@/lib/utils";
 import { CheckCircleFillIcon, ChevronDownIcon } from "./icons";
 
@@ -26,6 +27,11 @@ export function ModelSelector({
   const [open, setOpen] = useState(false);
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
+  const [chatModels, setChatModels] = useState<ChatModel[]>([]);
+
+  useEffect(() => {
+    getavailablemodels().then(setChatModels);
+  }, []);
 
   const userType = session.user.type;
   const { availableChatModelIds } = entitlementsByUserType[userType];
