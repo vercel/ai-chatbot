@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.5",
-    "@ai-sdk/provider": "^2.0.0",
     "@ai-sdk/react": "^2.0.86",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",
@@ -84,7 +83,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.2",
-    "@playwright/test": "^1.50.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@tailwindcss/typography": "^0.5.15",
     "@types/d3-scale": "^4.0.8",
