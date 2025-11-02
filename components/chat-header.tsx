@@ -37,7 +37,7 @@ function PureChatHeader({
           variant="outline"
         >
           <PlusIcon />
-          <span className="md:sr-only">New Chat</span>
+          <span className="md:sr-only">Obrolan baru</span>
         </Button>
       )}
 

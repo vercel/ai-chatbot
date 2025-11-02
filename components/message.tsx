@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { memo, useMemo, useState } from "react";
 import type { ChatMessage, Vote } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
+import { createTranslator } from "@/lib/i18n";
 import type { ArtifactKind } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
@@ -469,8 +470,32 @@ export const PreviewMessage = memo(
   }
 );
 
-export const ThinkingMessage = () => {
+type ThinkingMessageProps = {
+  languagePreference?: string;
+  showWebSearch?: boolean;
+  showNewsSearch?: boolean;
+  isReasoningModel?: boolean;
+};
+
+export const ThinkingMessage = ({
+  languagePreference = "auto",
+  showWebSearch = false,
+  showNewsSearch = false,
+  isReasoningModel = false,
+}: ThinkingMessageProps) => {
   const role = "assistant";
+  const translator = createTranslator(languagePreference);
+
+  const progressSteps = [
+    ...(showWebSearch ? [translator("progressWebSearch")] : []),
+    ...(showNewsSearch ? [translator("progressNews")] : []),
+  ];
+
+  const reasoningSteps = [
+    translator("progressReasoningStep1"),
+    translator("progressReasoningStep2"),
+    translator("progressReasoningStep3"),
+  ];
 
   return (
     <motion.div
@@ -488,7 +513,45 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">Thinking...</div>
+          <div className="text-muted-foreground text-sm">
+            {translator("thinkingPrimary")}
+          </div>
+
+          {progressSteps.length > 0 && (
+            <div className="flex flex-col gap-1 text-muted-foreground text-xs">
+              {progressSteps.map((step, index) => (
+                <div className="flex items-center gap-2" key={step}>
+                  <span className="relative flex size-2 items-center justify-center">
+                    <span
+                      className="absolute inline-flex size-2 rounded-full bg-primary opacity-60 animate-ping"
+                      style={{ animationDelay: `${index * 150}ms` }}
+                    />
+                    <span className="relative inline-flex size-2 rounded-full bg-primary" />
+                  </span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isReasoningModel && (
+            <div className="mt-1 flex flex-col gap-1">
+              <span className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wide">
+                {translator("progressReasoningHeading")}
+              </span>
+              <div className="flex flex-col gap-1">
+                {reasoningSteps.map((step, index) => (
+                  <div
+                    className="rounded-lg bg-muted/60 p-2 text-muted-foreground text-xs animate-pulse"
+                    key={`${step}-${index}`}
+                    style={{ animationDelay: `${index * 120}ms` }}
+                  >
+                    {step}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
