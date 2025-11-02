@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import { memo, useMemo, useState } from "react";
 import type { ChatMessage, Vote } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
-import { useDataStream } from "./data-stream-provider";
 import type { ArtifactKind } from "./artifact";
+import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
@@ -141,7 +141,8 @@ const extractSourcesFromMessage = (message: ChatMessage): SourceItem[] => {
       google?: unknown;
     };
   };
-  const googleMetadata = messageWithMetadata.experimental_providerMetadata?.google as
+  const googleMetadata = messageWithMetadata.experimental_providerMetadata
+    ?.google as
     | {
         groundingMetadata?: {
           groundingChunks?: Array<{

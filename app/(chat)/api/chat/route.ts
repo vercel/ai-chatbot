@@ -171,7 +171,10 @@ export async function POST(request: Request) {
                 google?: {
                   groundingMetadata?: {
                     groundingChunks?: Array<{
-                      web?: { uri?: string | null; title?: string | null } | null;
+                      web?: {
+                        uri?: string | null;
+                        title?: string | null;
+                      } | null;
                     }>;
                   };
                   urlContextMetadata?: {
@@ -184,7 +187,8 @@ export async function POST(request: Request) {
               sources?: string[];
             };
 
-            const googleMetadata = responseWithMetadata?.providerMetadata?.google;
+            const googleMetadata =
+              responseWithMetadata?.providerMetadata?.google;
             const sources: string[] = [];
 
             // Extract from response.sources if available
