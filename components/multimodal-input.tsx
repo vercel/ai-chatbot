@@ -29,6 +29,7 @@ import {
 import { chatModels } from "@/lib/ai/models";
 import { formatPromptLanguage, promptLanguages } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
+import { createTranslator } from "@/lib/i18n";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -60,24 +61,21 @@ type UseChatHelpersType = ReturnType<typeof useChat<ChatMessage>>;
 
 const UNIQUE_PROMPT_LANGUAGES = Array.from(new Set(promptLanguages));
 
-const LANGUAGE_OPTIONS = [
-  { value: "auto", label: "Auto (detect)" },
+const LANGUAGE_OPTION_VALUES = new Set<string>([
+  "auto",
+  ...UNIQUE_PROMPT_LANGUAGES,
+]);
+
+const normalizeLanguagePreference = (value: string) =>
+  LANGUAGE_OPTION_VALUES.has(value) ? value : "auto";
+
+const getLanguageOptions = (t: ReturnType<typeof createTranslator>) => [
+  { value: "auto", label: t("autoDetect") },
   ...UNIQUE_PROMPT_LANGUAGES.map((language) => ({
     value: language,
     label: formatPromptLanguage(language),
   })),
 ];
-
-const LANGUAGE_OPTION_VALUES = new Set(
-  LANGUAGE_OPTIONS.map((option) => option.value)
-);
-
-const normalizeLanguagePreference = (value: string) =>
-  LANGUAGE_OPTION_VALUES.has(value) ? value : "auto";
-
-const getLanguageLabel = (value: string) =>
-  LANGUAGE_OPTIONS.find((option) => option.value === value)?.label ??
-  "Auto (detect)";
 
 function PureMultimodalInput({
   chatId,
@@ -147,6 +145,16 @@ function PureMultimodalInput({
   const normalizedLanguagePreference = useMemo(
     () => normalizeLanguagePreference(languagePreference),
     [languagePreference]
+  );
+
+  const translator = useMemo(
+    () => createTranslator(normalizedLanguagePreference),
+    [normalizedLanguagePreference]
+  );
+
+  const languageOptions = useMemo(
+    () => getLanguageOptions(translator),
+    [translator]
   );
 
   useEffect(() => {
@@ -247,32 +255,35 @@ function PureMultimodalInput({
     normalizedLanguagePreference,
   ]);
 
-  const uploadFile = useCallback(async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
+  const uploadFile = useCallback(
+    async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    try {
-      const response = await fetch("/api/files/upload", {
-        method: "POST",
-        body: formData,
-      });
+      try {
+        const response = await fetch("/api/files/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const { url, pathname, contentType } = data;
+        if (response.ok) {
+          const data = await response.json();
+          const { url, pathname, contentType } = data;
 
-        return {
-          url,
-          name: pathname,
-          contentType,
-        };
+          return {
+            url,
+            name: pathname,
+            contentType,
+          };
+        }
+        const { error } = await response.json();
+        toast.error(error);
+      } catch (_error) {
+        toast.error(translator("toastUploadFailed"));
       }
-      const { error } = await response.json();
-      toast.error(error);
-    } catch (_error) {
-      toast.error("Failed to upload file, please try again!");
-    }
-  }, []);
+    },
+    [translator]
+  );
 
   const _modelResolver = useMemo(() => {
     return myProvider.languageModel(selectedModelId);
@@ -330,7 +341,7 @@ function PureMultimodalInput({
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== "ready") {
-            toast.error("Please wait for the model to finish its response!");
+            toast.error(translator("toastWait"));
           } else {
             submitForm();
           }
@@ -378,13 +389,15 @@ function PureMultimodalInput({
             maxHeight={200}
             minHeight={44}
             onChange={handleInput}
-            placeholder="Send a message..."
+            placeholder={translator("inputPlaceholder")}
             ref={textareaRef}
             rows={1}
             value={input}
           />
           <LanguagePreferenceSelect
             onChange={setLanguagePreference}
+            options={languageOptions}
+            translator={translator}
             value={normalizedLanguagePreference}
           />
         </div>
@@ -397,16 +410,22 @@ function PureMultimodalInput({
             />
             <SearchToggleButton
               enabled={webSearchEnabled}
-              label="Web Search"
+              label={translator("webSearch")}
               onClick={() => setWebSearchEnabled(!webSearchEnabled)}
               status={status}
+              title={translator("toggleTitle", {
+                label: translator("webSearch"),
+              })}
             />
             <SearchToggleButton
               enabled={newsSearchEnabled}
               icon={BookIcon}
-              label="News"
+              label={translator("news")}
               onClick={() => setNewsSearchEnabled(!newsSearchEnabled)}
               status={status}
+              title={translator("toggleTitle", {
+                label: translator("news"),
+              })}
             />
             <ModelSelectorCompact
               onModelChange={onModelChange}
@@ -454,17 +473,25 @@ export const MultimodalInput = memo(
   }
 );
 
+type LanguageOption = { value: string; label: string };
+
 type LanguagePreferenceSelectProps = {
   value: string;
   onChange: (value: string) => void;
+  options: LanguageOption[];
+  translator: ReturnType<typeof createTranslator>;
 };
 
 function PureLanguagePreferenceSelect({
   value,
   onChange,
+  options,
+  translator,
 }: LanguagePreferenceSelectProps) {
   const normalizedValue = normalizeLanguagePreference(value);
-  const label = getLanguageLabel(normalizedValue);
+  const label =
+    options.find((option) => option.value === normalizedValue)?.label ??
+    translator("autoDetect");
 
   return (
     <Select
@@ -474,16 +501,16 @@ function PureLanguagePreferenceSelect({
       value={normalizedValue}
     >
       <SelectTrigger
-        aria-label="Preferred language"
+        aria-label={translator("preferredLanguage")}
         className="h-9 w-fit min-w-[140px] shrink-0 gap-2 rounded-lg border border-transparent bg-muted/60 px-3 font-medium text-muted-foreground text-xs shadow-none transition-colors hover:bg-muted focus:outline-none focus:ring-0 focus-visible:ring-0 sm:min-w-[180px]"
-        title={`Preferred language: ${label}`}
+        title={translator("languageSelectTitle", { label })}
       >
         <GlobeIcon size={16} />
-        <SelectValue placeholder="Auto (detect)" />
+        <SelectValue placeholder={translator("autoDetect")} />
       </SelectTrigger>
       <SelectContent className="max-h-64 min-w-[200px] p-0">
         <div className="flex flex-col gap-px">
-          {LANGUAGE_OPTIONS.map((option) => (
+          {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>
@@ -613,12 +640,14 @@ function PureSearchToggleButton({
   label,
   onClick,
   status,
+  title,
   icon: Icon = GlobeIcon,
 }: {
   enabled: boolean;
   label: string;
   onClick: () => void;
   status: UseChatHelpersType["status"];
+  title?: string;
   icon?: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
 }) {
   return (
@@ -634,7 +663,7 @@ function PureSearchToggleButton({
         event.preventDefault();
         onClick();
       }}
-      title={`Toggle ${label}`}
+      title={title ?? label}
       type="button"
       variant="ghost"
     >

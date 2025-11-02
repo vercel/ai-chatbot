@@ -4,6 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
 import { memo, useEffect } from "react";
 import { useMessages } from "@/hooks/use-messages";
+import { createTranslator } from "@/lib/i18n";
 import type { ChatMessage, Vote } from "@/lib/types";
 import { useDataStream } from "./data-stream-provider";
 import { Conversation, ConversationContent } from "./elements/conversation";
@@ -32,6 +33,7 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
+  selectedModelId,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -44,6 +46,25 @@ function PureMessages({
   });
 
   useDataStream();
+
+  type MessageData = {
+    webSearchEnabled?: boolean;
+    newsSearchEnabled?: boolean;
+    languagePreference?: string;
+  };
+
+  const lastUserMessage = [...messages]
+    .reverse()
+    .find((message) => message.role === "user") as
+    | (ChatMessage & {
+        data?: MessageData;
+      })
+    | null;
+  const lastUserData = lastUserMessage?.data ?? {};
+  const pendingLanguagePreference = lastUserData.languagePreference ?? "auto";
+  const translator = createTranslator(pendingLanguagePreference);
+  const pendingWebSearchEnabled = Boolean(lastUserData.webSearchEnabled);
+  const pendingNewsSearchEnabled = Boolean(lastUserData.newsSearchEnabled);
 
   useEffect(() => {
     if (status === "submitted") {
@@ -92,7 +113,15 @@ function PureMessages({
           ))}
 
           <AnimatePresence mode="wait">
-            {status === "submitted" && <ThinkingMessage key="thinking" />}
+            {status === "submitted" && (
+              <ThinkingMessage
+                isReasoningModel={selectedModelId === "chat-model-reasoning"}
+                key="thinking"
+                languagePreference={pendingLanguagePreference}
+                showNewsSearch={pendingNewsSearchEnabled}
+                showWebSearch={pendingWebSearchEnabled}
+              />
+            )}
           </AnimatePresence>
 
           <div
@@ -104,9 +133,10 @@ function PureMessages({
 
       {!isAtBottom && (
         <button
-          aria-label="Scroll to bottom"
+          aria-label={translator("scrollToBottom")}
           className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
           onClick={() => scrollToBottom("smooth")}
+          title={translator("scrollToBottom")}
           type="button"
         >
           <ArrowDownIcon className="size-4" />
