@@ -14,9 +14,15 @@ export const chatModels: ChatModel[] = [
       "Optimized for Indonesian languages with cost-efficient, high-quality responses",
   },
   {
-    id: "chat-model-reasoning",
-    name: "Gemini Flash Lite (Reasoning)",
+    id: "chat-model-flash",
+    name: "Gemini Flash",
     description:
-      "Uses advanced chain-of-thought reasoning for complex problems in Indonesian languages",
+      "High-quality responses with improved performance",
+  },
+  {
+    id: "chat-model-reasoning",
+    name: "Gemini Flash (Reasoning)",
+    description:
+      "Uses advanced chain-of-thought reasoning for complex problems",
   },
 ];
