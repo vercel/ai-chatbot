@@ -3,15 +3,15 @@
 
 import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   oneDark,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
-import { useResponsiveWidth } from "@/hooks/use-responsive-width";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 type CodeBlockContextType = {
   code: string;
@@ -47,19 +47,25 @@ export const CodeBlock = ({
     if (typeof window === 'undefined') return false;
     return window.innerWidth >= 1024;
   });
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const handleResize = () => {
       const newIsDesktop = window.innerWidth >= 1024;
-      console.log('CodeBlock resize check:', window.innerWidth, 'isDesktop:', newIsDesktop);
       setIsDesktop(newIsDesktop);
     };
 
     window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => setMounted(true), []);
+
+  const isDark = (mounted ? resolvedTheme : undefined) !== 'light';
+  const syntaxStyle = useMemo(() => (isDark ? oneDark : oneLight), [isDark]);
 
   return (
     <CodeBlockContext.Provider value={{ code }}>
@@ -100,10 +106,8 @@ export const CodeBlock = ({
           }}
         >
           <SyntaxHighlighter
-            className="dark:hidden !min-w-0 !max-w-full !overflow-x-auto"
-            codeTagProps={{
-              className: "font-mono text-sm",
-            }}
+            className="!min-w-0 !max-w-full !overflow-x-auto"
+            codeTagProps={{ className: "font-mono text-sm" }}
             customStyle={{
               margin: 0,
               padding: "1rem",
@@ -126,38 +130,7 @@ export const CodeBlock = ({
               minWidth: "2.5rem",
             }}
             showLineNumbers={showLineNumbers}
-            style={oneLight}
-          >
-            {code}
-          </SyntaxHighlighter>
-          <SyntaxHighlighter
-            className="hidden dark:block !min-w-0 !max-w-full !overflow-x-auto"
-            codeTagProps={{
-              className: "font-mono text-sm",
-            }}
-            customStyle={{
-              margin: 0,
-              padding: "1rem",
-              fontSize: "0.875rem",
-              background: "hsl(var(--background))",
-              color: "hsl(var(--foreground))",
-              whiteSpace: "pre",
-              minWidth: 0,
-              maxWidth: "100%",
-              width: "100%",
-              overflowX: "auto",
-              overflowY: "visible", 
-              display: "block",
-              contain: "layout",
-            }}
-            language={language}
-            lineNumberStyle={{
-              color: "hsl(var(--muted-foreground))",
-              paddingRight: "1rem",
-              minWidth: "2.5rem",
-            }}
-            showLineNumbers={showLineNumbers}
-            style={oneDark}
+            style={syntaxStyle}
           >
             {code}
           </SyntaxHighlighter>
