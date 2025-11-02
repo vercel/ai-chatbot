@@ -19,13 +19,18 @@ import {
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
-import { SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { chatModels } from "@/lib/ai/models";
+import { formatPromptLanguage, promptLanguages } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
 import type { Attachment, ChatMessage } from "@/lib/types";
-import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
-import { Context } from "./elements/context";
 import {
   PromptInput,
   PromptInputModelSelect,
@@ -49,6 +54,27 @@ import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
 
+const UNIQUE_PROMPT_LANGUAGES = Array.from(new Set(promptLanguages));
+
+const LANGUAGE_OPTIONS = [
+  { value: "auto", label: "Auto (detect)" },
+  ...UNIQUE_PROMPT_LANGUAGES.map((language) => ({
+    value: language,
+    label: formatPromptLanguage(language),
+  })),
+];
+
+const LANGUAGE_OPTION_VALUES = new Set(
+  LANGUAGE_OPTIONS.map((option) => option.value)
+);
+
+const normalizeLanguagePreference = (value: string) =>
+  LANGUAGE_OPTION_VALUES.has(value) ? value : "auto";
+
+const getLanguageLabel = (value: string) =>
+  LANGUAGE_OPTIONS.find((option) => option.value === value)?.label ??
+  "Auto (detect)";
+
 function PureMultimodalInput({
   chatId,
   input,
@@ -64,7 +90,6 @@ function PureMultimodalInput({
   selectedVisibilityType,
   selectedModelId,
   onModelChange,
-  usage,
 }: {
   chatId: string;
   input: string;
@@ -80,7 +105,6 @@ function PureMultimodalInput({
   selectedVisibilityType: VisibilityType;
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
-  usage?: AppUsage;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -111,6 +135,21 @@ function PureMultimodalInput({
   // Initialize with false to prevent hydration mismatch, sync with localStorage after mount
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [newsSearchEnabled, setNewsSearchEnabled] = useState(false);
+  const [languagePreference, setLanguagePreference] = useLocalStorage<string>(
+    "chat-language-preference",
+    "auto"
+  );
+
+  const normalizedLanguagePreference = useMemo(
+    () => normalizeLanguagePreference(languagePreference),
+    [languagePreference]
+  );
+
+  useEffect(() => {
+    if (languagePreference !== normalizedLanguagePreference) {
+      setLanguagePreference(normalizedLanguagePreference);
+    }
+  }, [languagePreference, normalizedLanguagePreference, setLanguagePreference]);
 
   // Sync with localStorage after component mounts (client-side only)
   useEffect(() => {
@@ -178,6 +217,7 @@ function PureMultimodalInput({
       data: {
         webSearchEnabled,
         newsSearchEnabled,
+        languagePreference: normalizedLanguagePreference,
       },
     });
 
@@ -201,6 +241,7 @@ function PureMultimodalInput({
     resetHeight,
     webSearchEnabled,
     newsSearchEnabled,
+    normalizedLanguagePreference,
   ]);
 
   const uploadFile = useCallback(async (file: File) => {
@@ -233,13 +274,6 @@ function PureMultimodalInput({
   const _modelResolver = useMemo(() => {
     return myProvider.languageModel(selectedModelId);
   }, [selectedModelId]);
-
-  const contextProps = useMemo(
-    () => ({
-      usage,
-    }),
-    [usage]
-  );
 
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -345,8 +379,11 @@ function PureMultimodalInput({
             ref={textareaRef}
             rows={1}
             value={input}
-          />{" "}
-          <Context {...contextProps} />
+          />
+          <LanguagePreferenceSelect
+            onChange={setLanguagePreference}
+            value={normalizedLanguagePreference}
+          />
         </div>
         <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
@@ -413,6 +450,48 @@ export const MultimodalInput = memo(
     return true;
   }
 );
+
+type LanguagePreferenceSelectProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function PureLanguagePreferenceSelect({
+  value,
+  onChange,
+}: LanguagePreferenceSelectProps) {
+  const normalizedValue = normalizeLanguagePreference(value);
+  const label = getLanguageLabel(normalizedValue);
+
+  return (
+    <Select
+      onValueChange={(nextValue) => {
+        onChange(normalizeLanguagePreference(nextValue));
+      }}
+      value={normalizedValue}
+    >
+      <SelectTrigger
+        aria-label="Preferred language"
+        className="h-9 w-fit min-w-[140px] shrink-0 gap-2 rounded-lg border border-transparent bg-muted/60 px-3 font-medium text-muted-foreground text-xs shadow-none transition-colors hover:bg-muted focus:outline-none focus:ring-0 focus-visible:ring-0 sm:min-w-[180px]"
+        title={`Preferred language: ${label}`}
+      >
+        <GlobeIcon className="size-4 shrink-0 text-muted-foreground" />
+        <SelectValue placeholder="Auto (detect)" />
+      </SelectTrigger>
+      <SelectContent className="max-h-64 min-w-[200px] p-0">
+        <div className="flex flex-col gap-px">
+          {LANGUAGE_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </div>
+      </SelectContent>
+    </Select>
+  );
+}
+
+const LanguagePreferenceSelect = memo(PureLanguagePreferenceSelect);
 
 function PureAttachmentsButton({
   fileInputRef,

@@ -46,6 +46,32 @@ index,indonesian,acehnese,banjarese,english,madurese,ngaju,sundanese,balinese,bu
 59,"Suasananya cocok bagi semua orang, baik anda yang ingin menyendiri, bersama keluarga, maupun dengan teman-teman dekat bertukar cerita","Susanajih pah keu ban mandum ureueng, peue keuh bagi Droeneuh nyang hawa sidroe, ngon keuluarga, atawa ngon rakan-rakan gata untuk tuka ceurita.","Hawanya cucuk gasan barataan urang, biar pian nang handak menyoragan kah, baimbaian wan kaluarga kah, atawa wan kakawalan parak bahurupan kisah","The atmosphere is great for everyone, whether you're alone, with family, or sharing stories with close friends.","Kabede'enna cocok ghebey kabbhi oreng, bhegus bekna mun terro kadhibi'ena, abhereng taretan, otabe bik cakanca semma' rop-oropan careta","Suasana te cocok akan uluh samandiai,atau ikau handak kabuat, hayak keluarga, ataupun dengan kawal tukep babagi kisah.","Suasanana cocog pikeun saha wae, kalayan anjeun hoyong nyalira, sareng kulawarga, atanapi sareng babaturan caket pikeun silih tukeur carita","Suasanane cocok anggon makejang anak, baik ragane ane dot padidi, ajak keluarga, maupun ajak timpal-timpal paek bertukar satua","peneddingenna sikenangeng maneng lao okko rupa taue, namo idi' yako meloki' tudang cadiddi, sibawa sumpuloloe, yaregga sibawa anggota-anggota mareppe e sittukara' carita","Kahanane cocok dingge kabeh wong, dinggo awakmu sing sir dewean, karo keluarga, utawa karo kanca-kanca cedek ijolan cerita","Suasananyo cocok untuak sado urang, baiak sanak nan nio surang, basamo kaluarga, maupun jo kawan-kawan dakek batuka carito","Suasanana tabo tu sude jolma, tu nalao sahalakna, rap keluarga, manang dohot dongan-dongan najonok laho marnonang."
 `;
 
+const getPromptLanguages = () => {
+  const headerLine = longExamples.trim().split("\n")[0] ?? "";
+
+  return headerLine
+    .split(",")
+    .map((column) => column.trim())
+    .filter((column) => column.length > 0 && column !== "index");
+};
+
+export const promptLanguages = getPromptLanguages();
+
+const promptLanguageSet = new Set(promptLanguages);
+
+export const isValidPromptLanguage = (language: string) =>
+  promptLanguageSet.has(language);
+
+export const formatPromptLanguage = (language: string) =>
+  language
+    .split("_")
+    .map((part) =>
+      part.length > 0
+        ? part.charAt(0).toUpperCase().concat(part.slice(1))
+        : part
+    )
+    .join(" ");
+
 export const regularPrompt = `
 You are a friendly assistant for Indonesian people! Keep your responses concise and helpful.
 You can speak Indonesian and low-resource Indonesian languages very well. Here are some examples
@@ -82,6 +108,7 @@ type SystemPromptOptions = {
   requestHints: RequestHints;
   webSearchEnabled?: boolean;
   newsSearchEnabled?: boolean;
+  languagePreference?: string;
 };
 
 const getToolTogglePrompt = ({
@@ -124,11 +151,24 @@ const getToolTogglePrompt = ({
   return toggles.join("\n");
 };
 
+const getLanguagePreferencePrompt = (languagePreference?: string) => {
+  if (
+    !languagePreference ||
+    languagePreference === "auto" ||
+    !isValidPromptLanguage(languagePreference)
+  ) {
+    return "Likely user language: auto (detect based on user messages).";
+  }
+
+  return `Likely user language: ${formatPromptLanguage(languagePreference)}.`;
+};
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
   webSearchEnabled,
   newsSearchEnabled,
+  languagePreference,
 }: SystemPromptOptions) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const toolPrompt = getToolTogglePrompt({
@@ -136,9 +176,10 @@ export const systemPrompt = ({
     newsSearchEnabled,
   });
   const modelPrompt = `Active chat model: ${selectedChatModel}.`;
+  const languagePrompt = getLanguagePreferencePrompt(languagePreference);
 
   // Remove artifactsPrompt - document features removed
-  return `${regularPrompt}\n\n${toolPrompt}\n\n${modelPrompt}\n\n${requestPrompt}`;
+  return `${regularPrompt}\n\n${languagePrompt}\n\n${toolPrompt}\n\n${modelPrompt}\n\n${requestPrompt}`;
 };
 
 export const codePrompt = `
