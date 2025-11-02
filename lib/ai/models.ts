@@ -16,8 +16,7 @@ export const chatModels: ChatModel[] = [
   {
     id: "chat-model-flash",
     name: "Gemini Flash",
-    description:
-      "High-quality responses with improved performance",
+    description: "High-quality responses with improved performance",
   },
   {
     id: "chat-model-reasoning",
