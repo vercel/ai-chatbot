@@ -32,7 +32,10 @@ export function useChatVisibility({
     if (!history) {
       return localVisibility;
     }
-    const chat = history.chats.find((currentChat) => currentChat.id === chatId);
+    // In stateless mode, chats array is typed as never[], so we can't find chats
+    // Just return the local visibility or default to private
+    const chats = history.chats as Array<{ id: string; visibility: VisibilityType }>;
+    const chat = chats.find((currentChat) => currentChat.id === chatId);
     if (!chat) {
       return "private";
     }

@@ -10,7 +10,6 @@ type RequestSuggestionsProps = {
 };
 
 export const requestSuggestions = ({ dataStream }: RequestSuggestionsProps) =>
-  // @ts-expect-error - TypeScript overload resolution issue with tool() function in AI SDK v5
   tool({
     description: "Request suggestions for a document",
     inputSchema: z.object({
@@ -55,6 +54,7 @@ export const requestSuggestions = ({ dataStream }: RequestSuggestionsProps) =>
           description: element.description,
           id: generateUUID(),
           documentId,
+          isResolved: false,
         };
 
         dataStream?.write({

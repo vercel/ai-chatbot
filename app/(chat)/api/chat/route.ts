@@ -143,7 +143,7 @@ export async function POST(request: Request) {
         isEnabled: isProductionEnvironment,
         functionId: "stream-text",
       },
-      onFinish: async ({ usage, response, experimental_providerMetadata }) => {
+      onFinish: async ({ usage, response }) => {
         try {
           const providers = await getTokenlensCatalog();
           const modelIdString = myProvider.languageModel(modelId).modelId;
@@ -165,14 +165,31 @@ export async function POST(request: Request) {
 
           // Extract sources from Google Search/Grounding
           if (webSearchEnabled || newsSearchEnabled) {
-            const googleMetadata =
-              experimental_providerMetadata?.google ||
-              response?.providerMetadata?.google;
+            // Provider metadata and sources may be available at runtime but not in types
+            const responseWithMetadata = response as {
+              providerMetadata?: {
+                google?: {
+                  groundingMetadata?: {
+                    groundingChunks?: Array<{
+                      web?: { uri?: string | null; title?: string | null } | null;
+                    }>;
+                  };
+                  urlContextMetadata?: {
+                    urlMetadata?: Array<{
+                      retrievedUrl?: string;
+                    }>;
+                  };
+                };
+              };
+              sources?: string[];
+            };
+
+            const googleMetadata = responseWithMetadata?.providerMetadata?.google;
             const sources: string[] = [];
 
             // Extract from response.sources if available
-            if (response?.sources) {
-              sources.push(...response.sources);
+            if (responseWithMetadata?.sources) {
+              sources.push(...responseWithMetadata.sources);
             }
 
             // Extract from groundingMetadata
@@ -202,7 +219,7 @@ export async function POST(request: Request) {
             if (sources.length > 0) {
               console.log("Extracted sources:", sources);
               // Note: Sources will be included in the message stream automatically by toUIMessageStreamResponse
-              // We'll handle display on the client side by checking message.sources or experimental_providerMetadata
+              // We'll handle display on the client side by checking message.sources or response.providerMetadata
             }
             console.log("Response:", response);
             console.log("groundingMetadata:", groundingMetadata);

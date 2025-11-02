@@ -198,6 +198,7 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${chatId}`);
 
+    // Data property may exist at runtime but not in types
     sendMessage({
       role: "user",
       parts: [
@@ -212,14 +213,12 @@ function PureMultimodalInput({
           text: input,
         },
       ],
-      experimental_attachments: undefined,
-      experimental_providerMetadata: undefined,
       data: {
         webSearchEnabled,
         newsSearchEnabled,
         languagePreference: normalizedLanguagePreference,
       },
-    });
+    } as unknown as Parameters<typeof sendMessage>[0]);
 
     setAttachments([]);
     setLocalStorageInput("");
@@ -475,7 +474,7 @@ function PureLanguagePreferenceSelect({
         className="h-9 w-fit min-w-[140px] shrink-0 gap-2 rounded-lg border border-transparent bg-muted/60 px-3 font-medium text-muted-foreground text-xs shadow-none transition-colors hover:bg-muted focus:outline-none focus:ring-0 focus-visible:ring-0 sm:min-w-[180px]"
         title={`Preferred language: ${label}`}
       >
-        <GlobeIcon className="size-4 shrink-0 text-muted-foreground" />
+        <GlobeIcon size={16} />
         <SelectValue placeholder="Auto (detect)" />
       </SelectTrigger>
       <SelectContent className="max-h-64 min-w-[200px] p-0">

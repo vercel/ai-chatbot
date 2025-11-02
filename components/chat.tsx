@@ -85,7 +85,16 @@ export function Chat({
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest(request) {
         // Extract webSearch and newsSearch from the last message's data
-        const lastMessage = request.messages.at(-1);
+        // In AI SDK v5, data may exist at runtime but not in types
+        const lastMessage = request.messages.at(-1) as
+          | (ChatMessage & {
+              data?: {
+                webSearchEnabled?: boolean;
+                newsSearchEnabled?: boolean;
+                languagePreference?: string;
+              };
+            })
+          | undefined;
         const webSearchEnabled = lastMessage?.data?.webSearchEnabled ?? false;
         const newsSearchEnabled = lastMessage?.data?.newsSearchEnabled ?? false;
         const languagePreference =

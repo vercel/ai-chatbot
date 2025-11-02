@@ -13,7 +13,6 @@ type CreateDocumentProps = {
 };
 
 export const createDocument = ({ dataStream }: CreateDocumentProps) =>
-  // @ts-expect-error - TypeScript overload resolution issue with tool() function in AI SDK v5
   tool({
     description:
       "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.",
@@ -24,25 +23,25 @@ export const createDocument = ({ dataStream }: CreateDocumentProps) =>
     execute: async ({ title, kind }) => {
       const id = generateUUID();
 
-      dataStream.write({
+      dataStream?.write({
         type: "data-kind",
         data: kind,
         transient: true,
       });
 
-      dataStream.write({
+      dataStream?.write({
         type: "data-id",
         data: id,
         transient: true,
       });
 
-      dataStream.write({
+      dataStream?.write({
         type: "data-title",
         data: title,
         transient: true,
       });
 
-      dataStream.write({
+      dataStream?.write({
         type: "data-clear",
         data: null,
         transient: true,
