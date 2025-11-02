@@ -4,13 +4,16 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
-import { memo, useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { useDataStream } from "./data-stream-provider";
 import { Conversation, ConversationContent } from "./elements/conversation";
 import { PreviewMessage, ThinkingMessage } from "./message";
+
+// Re-export for other components
+export { PreviewMessage, ThinkingMessage } from "./message";
 
 type MessagesProps = {
   chatId: string;
@@ -77,12 +80,12 @@ function PureMessages({
   }, [messages]);
 
   return (
-    <div
-      className="overscroll-behavior-contain -webkit-overflow-scrolling-touch flex-1 touch-pan-y overflow-y-scroll overflow-x-hidden"
-      ref={messagesContainerRef}
-      style={{ overflowAnchor: "none" }}
-    >
-      <Conversation className="w-full max-w-3xl px-4" style={{ marginLeft: 'calc((100vw - 768px) / 2)', marginRight: 'calc((100vw - 768px) / 2)' }}>
+    <div className="flex-1 min-w-0 overflow-hidden" ref={messagesContainerRef}>
+      <Conversation
+        // Use a single scroll container; center via mx-auto
+        className="mx-auto w-full max-w-3xl px-4 overscroll-contain -webkit-overflow-scrolling-touch"
+        style={{ overflowAnchor: "none" }}
+      >
         <ConversationContent className="flex flex-col gap-2 md:gap-2 py-2 pb-32">
       {uniqueMessages.map((message, index) => (
             <PreviewMessage
@@ -116,9 +119,9 @@ function PureMessages({
             ref={messagesEndRef}
           />
         </ConversationContent>
-      </Conversation>
+  </Conversation>
 
-      {!isAtBottom && (
+  {!isAtBottom && (
         <button
           aria-label="Scroll to bottom"
           className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"

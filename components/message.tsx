@@ -25,8 +25,8 @@ const ArtifactTrigger = ({ result }: { result: any }) => {
   // No automatic document display - artifacts are now purely user-controlled via "Run Code"
   return null;
 };
-import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
+import type { HTMLAttributes } from "react";
 import {
   Tool,
   ToolContent,
@@ -40,6 +40,28 @@ import { MessageReasoning } from "./message-reasoning";
 import { MessageVersionSwitcher } from "./message-version-switcher";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+
+// MessageContent component (moved from elements/message.tsx)
+export type MessageContentProps = HTMLAttributes<HTMLDivElement>;
+
+export const MessageContent = ({
+  children,
+  className,
+  ...props
+}: MessageContentProps) => (
+  <div
+    className={cn(
+      "inline-flex flex-col gap-1 overflow-hidden rounded-lg py-3 text-foreground text-base min-w-0",
+      "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground",
+      "group-[.is-assistant]:bg-secondary group-[.is-assistant]:text-foreground",
+      "is-user:dark",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
 const PurePreviewMessage = ({
   chatId,
@@ -73,7 +95,7 @@ const PurePreviewMessage = ({
   return (
     <motion.div
       animate={{ opacity: 1 }}
-      className="group/message w-full"
+      className="group/message w-full max-w-full lg:max-w-3xl"
       data-role={message.role}
       data-testid={`message-${message.role}`}
       initial={{ opacity: 0 }}
@@ -83,18 +105,30 @@ const PurePreviewMessage = ({
           "justify-end": message.role === "user" && mode !== "edit",
           "justify-start": message.role === "assistant",
         })}
+        style={{
+          minWidth: 0,
+          maxWidth: "100%",
+          overflow: "hidden"
+        }}
       >
         <div
-          className={cn("flex flex-col", {
+          className={cn("flex flex-col w-full max-w-full", {
             "gap-1 md:gap-1": message.parts?.some(
               (p) => p.type === "text" && p.text?.trim()
             ),
             "min-h-96": message.role === "assistant" && requiresScrollPadding,
-            "w-full max-w-full items-start overflow-hidden":
+            "items-start overflow-hidden":
               message.role === "assistant" || mode === "edit",
-            "w-full max-w-full items-end":
+            "items-end":
               message.role === "user" && mode !== "edit",
           })}
+          style={{
+            minWidth: 0,
+            maxWidth: "100%",
+            width: "100%",
+            overflow: "hidden",
+            contain: "layout"
+          }}
         >
           {attachmentsFromMessage.length > 0 && (
             <div
@@ -135,15 +169,15 @@ const PurePreviewMessage = ({
               if (mode === "view") {
                 return (
                   <div
-                    className={cn({
-                      "flex justify-end min-w-0": message.role === "user",
-                      "flex justify-start min-w-[340px]": message.role === "assistant",
+                    className={cn("flex w-full", {
+                      "justify-end": message.role === "user",
+                      "justify-start": message.role === "assistant",
                     })}
                     key={key}
                   >
           <MessageContent
                       className={cn({
-            "user-bubble inline-block max-w-full rounded-2xl px-3 py-2 text-left text-white break-normal hyphens-none whitespace-pre-wrap":
+            "user-bubble inline-block max-w-[85%] md:max-w-[70%] rounded-2xl px-3 py-2 text-left text-white break-normal hyphens-none whitespace-pre-wrap":
                           message.role === "user",
                         "w-full min-w-0 bg-transparent pr-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
                           message.role === "assistant",

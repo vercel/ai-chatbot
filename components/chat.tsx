@@ -199,7 +199,7 @@ export function Chat({
 
   return (
     <>
-      <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
+      <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background !m-0 !ml-0">
         <ChatHeader />
 
         {messages.length === 0 ? (
@@ -226,7 +226,7 @@ export function Chat({
               </div>
 
               {/* Floating input for mobile */}
-              <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-background via-background/95 to-transparent">
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-background via-background/95 to-transparent">
                 <div className="mx-auto w-full max-w-full md:max-w-3xl">
                   {!isReadonly && (
                     <div className="bg-background/90 backdrop-blur-md border rounded-2xl shadow-xl">
@@ -298,7 +298,7 @@ export function Chat({
         ) : (
           // Chat state with messages and floating bottom input
           <div className="flex flex-1 flex-col relative overflow-hidden">
-            <div className="flex-1 overflow-y-auto pb-32">
+            <div className="flex-1 overflow-y-auto pb-32 md:pb-20 md:mb-20">
               <StreamingErrorBoundary
                 onError={(error, errorInfo) => {
                   console.error("Messages component error:", error, errorInfo);
@@ -322,9 +322,9 @@ export function Chat({
             </div>
 
             {/* Truly floating input box - positioned absolutely over content */}
-            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none pb-4">
-              {/* Container matching Messages exactly - same padding structure */}
-              <div className="w-full max-w-3xl px-4 pointer-events-auto" style={{ marginLeft: 'calc((100vw - 768px) / 2)', marginRight: 'calc((100vw - 768px) / 2)' }}>
+            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none pb-2 md:mr-[6px]">
+              {/* Container matching Messages scrollbar layout exactly */}
+              <div className="mx-auto max-w-3xl px-2 pointer-events-auto">
                 {!isReadonly && (
                   <div className="bg-background/90 backdrop-blur-md border rounded-2xl shadow-xl">
                     <MultimodalInput

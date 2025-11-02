@@ -3,13 +3,14 @@
 
 import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   oneDark,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
+import { useResponsiveWidth } from "@/hooks/use-responsive-width";
 import { cn } from "@/lib/utils";
 
 type CodeBlockContextType = {
@@ -40,14 +41,41 @@ export const CodeBlock = ({
   ...props
 }: CodeBlockProps) => {
   const displayTitle = title || (showLanguage ? language : undefined);
+  
+  // Use direct viewport check instead of hook to avoid streaming issues
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth >= 1024;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      const newIsDesktop = window.innerWidth >= 1024;
+      console.log('CodeBlock resize check:', window.innerWidth, 'isDesktop:', newIsDesktop);
+      setIsDesktop(newIsDesktop);
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <CodeBlockContext.Provider value={{ code }}>
       <div
         className={cn(
-          "relative w-full max-w-3xl overflow-hidden rounded-md border bg-background text-foreground shrink-0",
+          "relative w-full overflow-hidden rounded-md border bg-background text-foreground shrink-0",
+          isDesktop ? "max-w-3xl" : "max-w-full",
           className
         )}
+        style={{ 
+          minWidth: 0,
+          maxWidth: "100%",
+          width: "100%",
+          overflow: "hidden",
+          contain: "layout",
+        }}
         {...props}
       >
         {displayTitle && (
@@ -62,9 +90,17 @@ export const CodeBlock = ({
             )}
           </div>
         )}
-        <div className="relative overflow-x-auto min-w-0 w-full max-w-full">
+        <div 
+          className="relative overflow-x-auto min-w-0 w-full max-w-full" 
+          style={{ 
+            maxWidth: "100%",
+            width: "100%",
+            overflow: "hidden auto",
+            contain: "layout style",
+          }}
+        >
           <SyntaxHighlighter
-            className="dark:hidden !min-w-0 !max-w-full"
+            className="dark:hidden !min-w-0 !max-w-full !overflow-x-auto"
             codeTagProps={{
               className: "font-mono text-sm",
             }}
@@ -77,7 +113,11 @@ export const CodeBlock = ({
               whiteSpace: "pre",
               minWidth: 0,
               maxWidth: "100%",
-              width: "max-content",
+              width: "100%",
+              overflowX: "auto",
+              overflowY: "visible",
+              display: "block",
+              contain: "layout",
             }}
             language={language}
             lineNumberStyle={{
@@ -91,7 +131,7 @@ export const CodeBlock = ({
             {code}
           </SyntaxHighlighter>
           <SyntaxHighlighter
-            className="hidden dark:block !min-w-0 !max-w-full"
+            className="hidden dark:block !min-w-0 !max-w-full !overflow-x-auto"
             codeTagProps={{
               className: "font-mono text-sm",
             }}
@@ -104,7 +144,11 @@ export const CodeBlock = ({
               whiteSpace: "pre",
               minWidth: 0,
               maxWidth: "100%",
-              width: "max-content",
+              width: "100%",
+              overflowX: "auto",
+              overflowY: "visible", 
+              display: "block",
+              contain: "layout",
             }}
             language={language}
             lineNumberStyle={{

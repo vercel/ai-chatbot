@@ -29,6 +29,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "next.config.js"
-  ],
+, "components/messages.tsx"  ],
   "exclude": ["node_modules"]
 }
