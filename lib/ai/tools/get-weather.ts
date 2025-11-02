@@ -29,7 +29,6 @@ async function geocodeCity(
   }
 }
 
-// @ts-expect-error - TypeScript overload resolution issue with tool() function in AI SDK v5
 export const getWeather = tool({
   description:
     "Get the current weather at a location. You can provide either coordinates or a city name.",

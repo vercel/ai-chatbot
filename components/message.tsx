@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { memo, useMemo, useState } from "react";
 import type { ChatMessage, Vote } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
+import type { ArtifactKind } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { MessageContent } from "./elements/message";
@@ -134,7 +135,14 @@ const extractSourcesFromMessage = (message: ChatMessage): SourceItem[] => {
     }
   }
 
-  const googleMetadata = message.experimental_providerMetadata?.google as
+  // Provider metadata may be available at runtime but not in types
+  const messageWithMetadata = message as ChatMessage & {
+    experimental_providerMetadata?: {
+      google?: unknown;
+    };
+  };
+  const googleMetadata = messageWithMetadata.experimental_providerMetadata
+    ?.google as
     | {
         groundingMetadata?: {
           groundingChunks?: Array<{
@@ -371,7 +379,13 @@ const PurePreviewMessage = ({
                           ) : (
                             <DocumentToolResult
                               isReadonly={isReadonly}
-                              result={part.output}
+                              result={
+                                part.output as unknown as {
+                                  id: string;
+                                  title: string;
+                                  kind: ArtifactKind;
+                                }
+                              }
                               type="request-suggestions"
                             />
                           )

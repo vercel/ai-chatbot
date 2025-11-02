@@ -11,7 +11,6 @@ type UpdateDocumentProps = {
 // Stateless: Documents are passed in-memory via tool context
 // For now, updateDocument requires the document content to be passed as context
 export const updateDocument = ({ dataStream }: UpdateDocumentProps) =>
-  // @ts-expect-error - TypeScript overload resolution issue with tool() function in AI SDK v5
   tool({
     description: "Update a document with the given description.",
     inputSchema: z.object({
