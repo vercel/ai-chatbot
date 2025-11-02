@@ -28,8 +28,8 @@ import {
 } from "@/components/ui/select";
 import { chatModels } from "@/lib/ai/models";
 import { formatPromptLanguage, promptLanguages } from "@/lib/ai/prompts";
-import { createTranslator } from "@/lib/i18n";
 import { myProvider } from "@/lib/ai/providers";
+import { createTranslator } from "@/lib/i18n";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -61,7 +61,10 @@ type UseChatHelpersType = ReturnType<typeof useChat<ChatMessage>>;
 
 const UNIQUE_PROMPT_LANGUAGES = Array.from(new Set(promptLanguages));
 
-const LANGUAGE_OPTION_VALUES = new Set<string>(["auto", ...UNIQUE_PROMPT_LANGUAGES]);
+const LANGUAGE_OPTION_VALUES = new Set<string>([
+  "auto",
+  ...UNIQUE_PROMPT_LANGUAGES,
+]);
 
 const normalizeLanguagePreference = (value: string) =>
   LANGUAGE_OPTION_VALUES.has(value) ? value : "auto";
@@ -252,32 +255,35 @@ function PureMultimodalInput({
     normalizedLanguagePreference,
   ]);
 
-  const uploadFile = useCallback(async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
+  const uploadFile = useCallback(
+    async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    try {
-      const response = await fetch("/api/files/upload", {
-        method: "POST",
-        body: formData,
-      });
+      try {
+        const response = await fetch("/api/files/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const { url, pathname, contentType } = data;
+        if (response.ok) {
+          const data = await response.json();
+          const { url, pathname, contentType } = data;
 
-        return {
-          url,
-          name: pathname,
-          contentType,
-        };
+          return {
+            url,
+            name: pathname,
+            contentType,
+          };
+        }
+        const { error } = await response.json();
+        toast.error(error);
+      } catch (_error) {
+        toast.error(translator("toastUploadFailed"));
       }
-      const { error } = await response.json();
-      toast.error(error);
-    } catch (_error) {
-      toast.error(translator("toastUploadFailed"));
-    }
-  }, [translator]);
+    },
+    [translator]
+  );
 
   const _modelResolver = useMemo(() => {
     return myProvider.languageModel(selectedModelId);
@@ -405,21 +411,21 @@ function PureMultimodalInput({
             <SearchToggleButton
               enabled={webSearchEnabled}
               label={translator("webSearch")}
+              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+              status={status}
               title={translator("toggleTitle", {
                 label: translator("webSearch"),
               })}
-              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-              status={status}
             />
             <SearchToggleButton
               enabled={newsSearchEnabled}
               icon={BookIcon}
               label={translator("news")}
+              onClick={() => setNewsSearchEnabled(!newsSearchEnabled)}
+              status={status}
               title={translator("toggleTitle", {
                 label: translator("news"),
               })}
-              onClick={() => setNewsSearchEnabled(!newsSearchEnabled)}
-              status={status}
             />
             <ModelSelectorCompact
               onModelChange={onModelChange}

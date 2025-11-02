@@ -3,8 +3,8 @@ import equal from "fast-deep-equal";
 import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
 import { memo, useEffect } from "react";
-import { createTranslator } from "@/lib/i18n";
 import { useMessages } from "@/hooks/use-messages";
+import { createTranslator } from "@/lib/i18n";
 import type { ChatMessage, Vote } from "@/lib/types";
 import { useDataStream } from "./data-stream-provider";
 import { Conversation, ConversationContent } from "./elements/conversation";
@@ -33,6 +33,7 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
+  selectedModelId,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -54,12 +55,13 @@ function PureMessages({
 
   const lastUserMessage = [...messages]
     .reverse()
-    .find((message) => message.role === "user") as (ChatMessage & {
-    data?: MessageData;
-  }) | null;
+    .find((message) => message.role === "user") as
+    | (ChatMessage & {
+        data?: MessageData;
+      })
+    | null;
   const lastUserData = lastUserMessage?.data ?? {};
-  const pendingLanguagePreference =
-    lastUserData.languagePreference ?? "auto";
+  const pendingLanguagePreference = lastUserData.languagePreference ?? "auto";
   const translator = createTranslator(pendingLanguagePreference);
   const pendingWebSearchEnabled = Boolean(lastUserData.webSearchEnabled);
   const pendingNewsSearchEnabled = Boolean(lastUserData.newsSearchEnabled);
@@ -113,8 +115,8 @@ function PureMessages({
           <AnimatePresence mode="wait">
             {status === "submitted" && (
               <ThinkingMessage
-                key="thinking"
                 isReasoningModel={selectedModelId === "chat-model-reasoning"}
+                key="thinking"
                 languagePreference={pendingLanguagePreference}
                 showNewsSearch={pendingNewsSearchEnabled}
                 showWebSearch={pendingWebSearchEnabled}

@@ -3,9 +3,9 @@ import type { useChat } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
 import { memo, useMemo, useState } from "react";
+import { createTranslator } from "@/lib/i18n";
 import type { ChatMessage, Vote } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
-import { createTranslator } from "@/lib/i18n";
 import type { ArtifactKind } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
@@ -523,7 +523,7 @@ export const ThinkingMessage = ({
                 <div className="flex items-center gap-2" key={step}>
                   <span className="relative flex size-2 items-center justify-center">
                     <span
-                      className="absolute inline-flex size-2 rounded-full bg-primary opacity-60 animate-ping"
+                      className="absolute inline-flex size-2 animate-ping rounded-full bg-primary opacity-60"
                       style={{ animationDelay: `${index * 150}ms` }}
                     />
                     <span className="relative inline-flex size-2 rounded-full bg-primary" />
@@ -536,14 +536,14 @@ export const ThinkingMessage = ({
 
           {isReasoningModel && (
             <div className="mt-1 flex flex-col gap-1">
-              <span className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wide">
+              <span className="font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
                 {translator("progressReasoningHeading")}
               </span>
               <div className="flex flex-col gap-1">
                 {reasoningSteps.map((step, index) => (
                   <div
-                    className="rounded-lg bg-muted/60 p-2 text-muted-foreground text-xs animate-pulse"
-                    key={`${step}-${index}`}
+                    className="animate-pulse rounded-lg bg-muted/60 p-2 text-muted-foreground text-xs"
+                    key={step}
                     style={{ animationDelay: `${index * 120}ms` }}
                   >
                     {step}

@@ -1,4 +1,4 @@
-import { promptLanguages } from "@/lib/ai/prompts";
+import type { promptLanguages } from "@/lib/ai/prompts";
 
 type SupportedLanguage = (typeof promptLanguages)[number];
 
@@ -326,7 +326,8 @@ const translateWithLanguage = (
   key: TranslationKey,
   values?: Record<string, string | number>
 ) => {
-  const languageTranslations = translations[language] ?? translations[FALLBACK_LANGUAGE];
+  const languageTranslations =
+    translations[language] ?? translations[FALLBACK_LANGUAGE];
   const template =
     languageTranslations[key] ?? translations[FALLBACK_LANGUAGE][key];
 
@@ -342,4 +343,3 @@ export const createTranslator = (languagePreference?: string) => {
 
 export const getResolvedLanguage = (languagePreference?: string) =>
   resolveLanguage(languagePreference);
-
