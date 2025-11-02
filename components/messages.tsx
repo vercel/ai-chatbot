@@ -83,7 +83,7 @@ function PureMessages({
     <div className="flex-1 min-w-0 overflow-hidden" ref={messagesContainerRef}>
       <Conversation
         // Use a single scroll container; center via mx-auto
-        className="mx-auto w-full max-w-3xl px-4 overscroll-contain -webkit-overflow-scrolling-touch"
+        className="mx-auto w-full max-w-3xl px-2 overscroll-contain -webkit-overflow-scrolling-touch"
         style={{ overflowAnchor: "none" }}
       >
         <ConversationContent className="flex flex-col gap-2 md:gap-2 py-2 pb-32">

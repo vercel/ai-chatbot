@@ -51,7 +51,8 @@ export const MessageContent = ({
 }: MessageContentProps) => (
   <div
     className={cn(
-      "inline-flex flex-col gap-1 overflow-hidden rounded-lg py-3 text-foreground text-base min-w-0",
+  // Note: do not use inline-flex here; it prevents w-full from expanding for assistant messages
+  "flex flex-col gap-1 overflow-hidden rounded-lg text-foreground text-base min-w-0",
       "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground",
       "group-[.is-assistant]:bg-secondary group-[.is-assistant]:text-foreground",
       "is-user:dark",
@@ -179,7 +180,8 @@ const PurePreviewMessage = ({
                       className={cn({
             "user-bubble inline-block max-w-[85%] md:max-w-[70%] rounded-2xl px-3 py-2 text-left text-white break-normal hyphens-none whitespace-pre-wrap":
                           message.role === "user",
-                        "w-full min-w-0 bg-transparent pr-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
+                        // Assistant spans the full chat width and uses internal content padding alignment similar to input
+                        "w-full min-w-0 bg-transparent px-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
                           message.role === "assistant",
                       })}
                       data-testid="message-content"

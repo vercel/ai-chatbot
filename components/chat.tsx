@@ -4,7 +4,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
@@ -180,6 +180,34 @@ export function Chat({
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
+  // Compute platform scrollbar width (Windows has wide gutters) and whether we're on md+
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+  const [isDesktopLike, setIsDesktopLike] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const measureScrollbar = () => {
+      const el = document.createElement("div");
+      el.style.width = "100px";
+      el.style.height = "100px";
+      el.style.overflow = "scroll";
+      el.style.position = "absolute";
+      el.style.top = "-9999px";
+      document.body.appendChild(el);
+      const width = el.offsetWidth - el.clientWidth; // scrollbar width
+      document.body.removeChild(el);
+      return width;
+    };
+
+    const update = () => {
+      setScrollbarWidth(measureScrollbar());
+      setIsDesktopLike(window.innerWidth >= 768); // md breakpoint
+    };
+    update();
+    window.addEventListener("resize", update, { passive: true });
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   // Enhanced stop function with cleanup
   const enhancedStop = useCallback(async () => {
     try {
@@ -215,7 +243,7 @@ export function Chat({
                 </div>
 
                 {attachments.length === 0 && (
-                  <div className="w-full max-w-full md:max-w-3xl px-4">
+                  <div className="w-full max-w-full md:max-w-3xl px-2">
                     <SuggestedActions
                       chatId={id}
                       selectedVisibilityType={visibilityType}
@@ -322,7 +350,10 @@ export function Chat({
             </div>
 
             {/* Truly floating input box - positioned absolutely over content */}
-            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none pb-2 md:mr-[6px]">
+            <div
+              className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none pb-2"
+              style={{ right: isDesktopLike ? `${scrollbarWidth}px` : undefined }}
+            >
               {/* Container matching Messages scrollbar layout exactly */}
               <div className="mx-auto max-w-3xl px-2 pointer-events-auto">
                 {!isReadonly && (
