@@ -166,7 +166,6 @@ export async function POST(request: Request) {
           id: message.id,
           role: "user",
           parts: message.parts,
-          attachments: [],
           createdAt: new Date(),
         },
       ],
@@ -257,7 +256,6 @@ export async function POST(request: Request) {
             role: currentMessage.role,
             parts: currentMessage.parts,
             createdAt: new Date(),
-            attachments: [],
             chatId: id,
           })),
         });
