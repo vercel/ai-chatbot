@@ -1,15 +1,18 @@
 "use client";
 
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { useChat } from "@ai-sdk/react";
 import { useEffect } from "react";
 import { useDataStream } from "@/components/data-stream-provider";
 import type { ChatMessage } from "@/lib/types";
 
+// @ts-expect-error - useChat generic type inference
+type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
+
 export type UseAutoResumeParams = {
   autoResume: boolean;
   initialMessages: ChatMessage[];
-  resumeStream: UseChatHelpers<ChatMessage>["resumeStream"];
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+  resumeStream: UseChatReturnType["resumeStream"];
+  setMessages: UseChatReturnType["setMessages"];
 };
 
 export function useAutoResume({

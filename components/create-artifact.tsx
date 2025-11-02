@@ -1,8 +1,11 @@
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { useChat } from "@ai-sdk/react";
 import type { DataUIPart } from "ai";
 import type { ComponentType, Dispatch, ReactNode, SetStateAction } from "react";
 import type { ChatMessage, CustomUIDataTypes, Suggestion } from "@/lib/types";
 import type { UIArtifact } from "./artifact";
+
+// @ts-expect-error - useChat generic type inference
+type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 export type ArtifactActionContext<M = any> = {
   content: string;
@@ -23,7 +26,7 @@ type ArtifactAction<M = any> = {
 };
 
 export type ArtifactToolbarContext = {
-  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+  sendMessage: UseChatReturnType["sendMessage"];
 };
 
 export type ArtifactToolbarItem = {

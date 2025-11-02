@@ -13,14 +13,14 @@ const INDONESIAN_NEWS_SITES = [
 
 export const searchIndonesianNews = tool({
   description: `Format a search query to find news from Indonesian news sites (${INDONESIAN_NEWS_SITES.join(", ")}). IMPORTANT: After calling this tool, you MUST call google_search tool with the formattedQuery from this tool's result. The google_search tool will return URLs. Then call url_context tool with those URLs to get article content.`,
-  inputSchema: z.object({
+  parameters: z.object({
     query: z
       .string()
       .describe(
         "The search query for Indonesian news. Can be in Indonesian or English."
       ),
   }),
-  execute: (input) => {
+  execute: (input: { query: string }) => {
     const query = "query" in input ? input.query : "";
     // Build search query with site: operators for Indonesian news sites
     const siteFilters = INDONESIAN_NEWS_SITES.map(
@@ -28,7 +28,7 @@ export const searchIndonesianNews = tool({
     ).join(" OR ");
     const formattedQuery = `${query} (${siteFilters})`;
 
-    return {
+    return Promise.resolve({
       success: true,
       formattedQuery,
       originalQuery: query,
@@ -39,6 +39,6 @@ export const searchIndonesianNews = tool({
         "Step 3: Call url_context tool with those URLs to fetch and summarize the article content",
         "Step 4: Provide a summary of the news articles in the user's language",
       ].join("\n"),
-    };
+    });
   },
 });

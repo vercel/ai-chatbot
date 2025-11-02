@@ -1,5 +1,5 @@
 "use client";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { useChat } from "@ai-sdk/react";
 import cx from "classnames";
 import {
   AnimatePresence,
@@ -29,6 +29,9 @@ import { type ArtifactKind, artifactDefinitions } from "./artifact";
 import type { ArtifactToolbarItem } from "./create-artifact";
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from "./icons";
 
+// @ts-expect-error - useChat generic type inference
+type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
+
 type ToolProps = {
   description: string;
   icon: ReactNode;
@@ -37,11 +40,11 @@ type ToolProps = {
   isToolbarVisible?: boolean;
   setIsToolbarVisible?: Dispatch<SetStateAction<boolean>>;
   isAnimating: boolean;
-  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+  sendMessage: UseChatReturnType["sendMessage"];
   onClick: ({
     sendMessage,
   }: {
-    sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+    sendMessage: UseChatReturnType["sendMessage"];
   }) => void;
 };
 
@@ -140,7 +143,7 @@ const ReadingLevelSelector = ({
 }: {
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
   isAnimating: boolean;
-  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+  sendMessage: UseChatReturnType["sendMessage"];
 }) => {
   const LEVELS = [
     "Elementary",
@@ -256,7 +259,7 @@ export const Tools = ({
   isToolbarVisible: boolean;
   selectedTool: string | null;
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
-  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+  sendMessage: UseChatReturnType["sendMessage"];
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
   tools: ArtifactToolbarItem[];
@@ -312,10 +315,10 @@ const PureToolbar = ({
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  status: UseChatHelpers<ChatMessage>["status"];
-  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
-  stop: UseChatHelpers<ChatMessage>["stop"];
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+  status: UseChatReturnType["status"];
+  sendMessage: UseChatReturnType["sendMessage"];
+  stop: UseChatReturnType["stop"];
+  setMessages: UseChatReturnType["setMessages"];
   artifactKind: ArtifactKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);

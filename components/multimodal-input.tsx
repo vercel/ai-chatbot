@@ -1,6 +1,6 @@
 "use client";
 
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { useChat } from "@ai-sdk/react";
 import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
@@ -54,6 +54,11 @@ import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
 
+// Extract the actual return type from useChat when called with ChatMessage
+// Since UseChatHelpers should be generic, we use a helper to extract the type
+// @ts-expect-error - useChat generic type inference
+type UseChatHelpersType = ReturnType<typeof useChat<ChatMessage>>;
+
 const UNIQUE_PROMPT_LANGUAGES = Array.from(new Set(promptLanguages));
 
 const LANGUAGE_OPTIONS = [
@@ -94,13 +99,13 @@ function PureMultimodalInput({
   chatId: string;
   input: string;
   setInput: Dispatch<SetStateAction<string>>;
-  status: UseChatHelpers<ChatMessage>["status"];
+  status: UseChatHelpersType["status"];
   stop: () => void;
   attachments: Attachment[];
   setAttachments: Dispatch<SetStateAction<Attachment[]>>;
   messages: UIMessage[];
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
-  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+  setMessages: UseChatHelpersType["setMessages"];
+  sendMessage: UseChatHelpersType["sendMessage"];
   className?: string;
   selectedVisibilityType: VisibilityType;
   selectedModelId: string;
@@ -498,7 +503,7 @@ function PureAttachmentsButton({
   selectedModelId,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
-  status: UseChatHelpers<ChatMessage>["status"];
+  status: UseChatHelpersType["status"];
   selectedModelId: string;
 }) {
   const isReasoningModel = selectedModelId === "chat-model-reasoning";
@@ -585,7 +590,7 @@ function PureStopButton({
   setMessages,
 }: {
   stop: () => void;
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+  setMessages: UseChatHelpersType["setMessages"];
 }) {
   return (
     <Button
@@ -594,7 +599,7 @@ function PureStopButton({
       onClick={(event) => {
         event.preventDefault();
         stop();
-        setMessages((messages) => messages);
+        setMessages((messages: ChatMessage[]) => messages);
       }}
     >
       <StopIcon size={14} />
@@ -614,7 +619,7 @@ function PureSearchToggleButton({
   enabled: boolean;
   label: string;
   onClick: () => void;
-  status: UseChatHelpers<ChatMessage>["status"];
+  status: UseChatHelpersType["status"];
   icon?: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
 }) {
   return (

@@ -1,15 +1,18 @@
 "use client";
 
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { useChat } from "@ai-sdk/react";
 import { motion } from "framer-motion";
 import { memo } from "react";
 import type { ChatMessage } from "@/lib/types";
 import { Suggestion } from "./elements/suggestion";
 import type { VisibilityType } from "./visibility-selector";
 
+// @ts-expect-error - useChat generic type inference
+type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
+
 type SuggestedActionsProps = {
   chatId: string;
-  sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+  sendMessage: UseChatReturnType["sendMessage"];
   selectedVisibilityType: VisibilityType;
 };
 

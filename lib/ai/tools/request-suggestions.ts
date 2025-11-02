@@ -12,13 +12,19 @@ type RequestSuggestionsProps = {
 export const requestSuggestions = ({ dataStream }: RequestSuggestionsProps) =>
   tool({
     description: "Request suggestions for a document",
-    inputSchema: z.object({
+    parameters: z.object({
       documentId: z
         .string()
         .describe("The ID of the document to request edits"),
       documentContent: z.string().describe("The document content to analyze"),
     }),
-    execute: async ({ documentId, documentContent }) => {
+    execute: async ({
+      documentId,
+      documentContent,
+    }: {
+      documentId: string;
+      documentContent: string;
+    }) => {
       // Stateless: Document content must be provided
       if (!documentContent) {
         return {

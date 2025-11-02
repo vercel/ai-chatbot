@@ -1,12 +1,15 @@
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { useChat } from "@ai-sdk/react";
 import { useEffect, useState } from "react";
 import type { ChatMessage } from "@/lib/types";
 import { useScrollToBottom } from "./use-scroll-to-bottom";
 
+// @ts-expect-error - useChat generic type inference
+type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
+
 export function useMessages({
   status,
 }: {
-  status: UseChatHelpers<ChatMessage>["status"];
+  status: UseChatReturnType["status"];
 }) {
   const {
     containerRef,

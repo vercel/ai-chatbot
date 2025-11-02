@@ -1,5 +1,5 @@
 "use client";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { useChat } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
 import { memo, useMemo, useState } from "react";
@@ -29,6 +29,9 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+
+// @ts-expect-error - useChat generic type inference
+type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 type SourceItem = {
   href: string;
@@ -209,15 +212,15 @@ const PurePreviewMessage = ({
   message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
-  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
+  setMessages: UseChatReturnType["setMessages"];
+  regenerate: UseChatReturnType["regenerate"];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   const attachmentsFromMessage = message.parts.filter(
-    (part) => part.type === "file"
+    (part: ChatMessage["parts"][number]) => part.type === "file"
   );
 
   useDataStream();
@@ -247,13 +250,15 @@ const PurePreviewMessage = ({
         <div
           className={cn("flex flex-col", {
             "gap-2 md:gap-4": message.parts?.some(
-              (p) => p.type === "text" && p.text?.trim()
+              (p: ChatMessage["parts"][number]) =>
+                p.type === "text" && p.text?.trim()
             ),
             "min-h-96": message.role === "assistant" && requiresScrollPadding,
             "w-full":
               (message.role === "assistant" &&
                 message.parts?.some(
-                  (p) => p.type === "text" && p.text?.trim()
+                  (p: ChatMessage["parts"][number]) =>
+                    p.type === "text" && p.text?.trim()
                 )) ||
               mode === "edit",
             "max-w-[calc(100%-2.5rem)] sm:max-w-[min(fit-content,80%)]":
@@ -265,140 +270,146 @@ const PurePreviewMessage = ({
               className="flex flex-row justify-end gap-2"
               data-testid={"message-attachments"}
             >
-              {attachmentsFromMessage.map((attachment) => (
-                <PreviewAttachment
-                  attachment={{
-                    name: attachment.filename ?? "file",
-                    contentType: attachment.mediaType,
-                    url: attachment.url,
-                  }}
-                  key={attachment.url}
-                />
-              ))}
+              {attachmentsFromMessage.map(
+                (
+                  attachment: ChatMessage["parts"][number] & { type: "file" }
+                ) => (
+                  <PreviewAttachment
+                    attachment={{
+                      name: attachment.filename ?? "file",
+                      contentType: attachment.mediaType,
+                      url: attachment.url,
+                    }}
+                    key={attachment.url}
+                  />
+                )
+              )}
             </div>
           )}
 
-          {message.parts?.map((part, index) => {
-            const { type } = part;
-            const key = `message-${message.id}-part-${index}`;
+          {message.parts?.map(
+            (part: ChatMessage["parts"][number], index: number) => {
+              const { type } = part;
+              const key = `message-${message.id}-part-${index}`;
 
-            if (type === "reasoning" && part.text?.trim().length > 0) {
-              return (
-                <MessageReasoning
-                  isLoading={isLoading}
-                  key={key}
-                  reasoning={part.text}
-                />
-              );
-            }
-
-            if (type === "text") {
-              if (mode === "view") {
+              if (type === "reasoning" && part.text?.trim().length > 0) {
                 return (
-                  <div key={key}>
-                    <MessageContent
-                      className={cn({
-                        "w-fit break-words rounded-2xl px-3 py-2 text-right text-white":
-                          message.role === "user",
-                        "bg-transparent px-0 py-0 text-left":
-                          message.role === "assistant",
-                      })}
-                      data-testid="message-content"
-                      style={
-                        message.role === "user"
-                          ? { backgroundColor: "#006cff" }
-                          : undefined
-                      }
-                    >
-                      <Response>{sanitizeText(part.text)}</Response>
-                    </MessageContent>
-                  </div>
-                );
-              }
-
-              if (mode === "edit") {
-                return (
-                  <div
-                    className="flex w-full flex-row items-start gap-3"
+                  <MessageReasoning
+                    isLoading={isLoading}
                     key={key}
-                  >
-                    <div className="size-8" />
-                    <div className="min-w-0 flex-1">
-                      <MessageEditor
-                        key={message.id}
-                        message={message}
-                        regenerate={regenerate}
-                        setMessages={setMessages}
-                        setMode={setMode}
-                      />
-                    </div>
-                  </div>
+                    reasoning={part.text}
+                  />
                 );
               }
-            }
 
-            if (type === "tool-getWeather") {
-              const { toolCallId, state } = part;
-
-              return (
-                <Tool defaultOpen={true} key={toolCallId}>
-                  <ToolHeader state={state} type="tool-getWeather" />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={part.input} />
-                    )}
-                    {state === "output-available" && (
-                      <ToolOutput
-                        errorText={undefined}
-                        output={<Weather weatherAtLocation={part.output} />}
-                      />
-                    )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
-
-            if (type === "tool-requestSuggestions") {
-              const { toolCallId, state } = part;
-
-              return (
-                <Tool defaultOpen={true} key={toolCallId}>
-                  <ToolHeader state={state} type="tool-requestSuggestions" />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={part.input} />
-                    )}
-                    {state === "output-available" && (
-                      <ToolOutput
-                        errorText={undefined}
-                        output={
-                          "error" in part.output ? (
-                            <div className="rounded border p-2 text-red-500">
-                              Error: {String(part.output.error)}
-                            </div>
-                          ) : (
-                            <DocumentToolResult
-                              isReadonly={isReadonly}
-                              result={
-                                part.output as unknown as {
-                                  id: string;
-                                  title: string;
-                                  kind: ArtifactKind;
-                                }
-                              }
-                              type="request-suggestions"
-                            />
-                          )
+              if (type === "text") {
+                if (mode === "view") {
+                  return (
+                    <div key={key}>
+                      <MessageContent
+                        className={cn({
+                          "w-fit break-words rounded-2xl px-3 py-2 text-right text-white":
+                            message.role === "user",
+                          "bg-transparent px-0 py-0 text-left":
+                            message.role === "assistant",
+                        })}
+                        data-testid="message-content"
+                        style={
+                          message.role === "user"
+                            ? { backgroundColor: "#006cff" }
+                            : undefined
                         }
-                      />
-                    )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
+                      >
+                        <Response>{sanitizeText(part.text)}</Response>
+                      </MessageContent>
+                    </div>
+                  );
+                }
 
-            return null;
-          })}
+                if (mode === "edit") {
+                  return (
+                    <div
+                      className="flex w-full flex-row items-start gap-3"
+                      key={key}
+                    >
+                      <div className="size-8" />
+                      <div className="min-w-0 flex-1">
+                        <MessageEditor
+                          key={message.id}
+                          message={message}
+                          regenerate={regenerate}
+                          setMessages={setMessages}
+                          setMode={setMode}
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+              }
+
+              if (type === "tool-getWeather") {
+                const { toolCallId, state } = part;
+
+                return (
+                  <Tool defaultOpen={true} key={toolCallId}>
+                    <ToolHeader state={state} type="tool-getWeather" />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === "output-available" && (
+                        <ToolOutput
+                          errorText={undefined}
+                          output={<Weather weatherAtLocation={part.output} />}
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              if (type === "tool-requestSuggestions") {
+                const { toolCallId, state } = part;
+
+                return (
+                  <Tool defaultOpen={true} key={toolCallId}>
+                    <ToolHeader state={state} type="tool-requestSuggestions" />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === "output-available" && (
+                        <ToolOutput
+                          errorText={undefined}
+                          output={
+                            "error" in part.output ? (
+                              <div className="rounded border p-2 text-red-500">
+                                Error: {String(part.output.error)}
+                              </div>
+                            ) : (
+                              <DocumentToolResult
+                                isReadonly={isReadonly}
+                                result={
+                                  part.output as unknown as {
+                                    id: string;
+                                    title: string;
+                                    kind: ArtifactKind;
+                                  }
+                                }
+                                type="request-suggestions"
+                              />
+                            )
+                          }
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              return null;
+            }
+          )}
 
           {/* Display sources for assistant messages with web/news search */}
           {message.role === "assistant" && sources.length > 0 && (
