@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { DataStreamProvider } from "@/components/data-stream-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth";
+import { GatewayProvider } from "@/providers/gateway";
 
 type ChatLayoutProps = {
   children: ReactNode;
@@ -20,10 +21,12 @@ const ChatLayout = async ({ children }: ChatLayoutProps) => {
         strategy="beforeInteractive"
       />
       <DataStreamProvider>
-        <SidebarProvider>
-          <AppSidebar user={session?.user} />
-          <SidebarInset>{children}</SidebarInset>
-        </SidebarProvider>
+        <GatewayProvider>
+          <SidebarProvider>
+            <AppSidebar user={session?.user} />
+            <SidebarInset>{children}</SidebarInset>
+          </SidebarProvider>
+        </GatewayProvider>
       </DataStreamProvider>
     </>
   );
