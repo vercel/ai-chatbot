@@ -12,7 +12,10 @@ import { SpreadsheetEditor } from "@/components/sheet-editor";
 
 type Metadata = any;
 
-export const sheetArtifact = new Artifact<"sheet", Metadata>({
+export const sheetArtifact: Artifact<"sheet", Metadata> = new Artifact<
+  "sheet",
+  Metadata
+>({
   kind: "sheet",
   description: "Useful for working with spreadsheets",
   initialize: () => null,

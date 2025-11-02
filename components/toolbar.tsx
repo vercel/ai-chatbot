@@ -29,7 +29,6 @@ import { type ArtifactKind, artifactDefinitions } from "./artifact";
 import type { ArtifactToolbarItem } from "./create-artifact";
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from "./icons";
 
-// @ts-expect-error - useChat generic type inference
 type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 type ToolProps = {

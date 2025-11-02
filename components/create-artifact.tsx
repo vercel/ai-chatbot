@@ -4,7 +4,6 @@ import type { ComponentType, Dispatch, ReactNode, SetStateAction } from "react";
 import type { ChatMessage, CustomUIDataTypes, Suggestion } from "@/lib/types";
 import type { UIArtifact } from "./artifact";
 
-// @ts-expect-error - useChat generic type inference
 type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 export type ArtifactActionContext<M = any> = {

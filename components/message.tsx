@@ -30,7 +30,6 @@ import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
 
-// @ts-expect-error - useChat generic type inference
 type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 type SourceItem = {
@@ -360,7 +359,9 @@ const PurePreviewMessage = ({
                       {state === "output-available" && (
                         <ToolOutput
                           errorText={undefined}
-                          output={<Weather weatherAtLocation={part.output} />}
+                          output={
+                            <Weather weatherAtLocation={part.output as any} />
+                          }
                         />
                       )}
                     </ToolContent>
@@ -382,15 +383,15 @@ const PurePreviewMessage = ({
                         <ToolOutput
                           errorText={undefined}
                           output={
-                            "error" in part.output ? (
+                            "error" in (part.output as any) ? (
                               <div className="rounded border p-2 text-red-500">
-                                Error: {String(part.output.error)}
+                                Error: {String((part.output as any).error)}
                               </div>
                             ) : (
                               <DocumentToolResult
                                 isReadonly={isReadonly}
                                 result={
-                                  part.output as unknown as {
+                                  part.output as any as unknown as {
                                     id: string;
                                     title: string;
                                     kind: ArtifactKind;

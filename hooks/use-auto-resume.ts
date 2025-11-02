@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { useDataStream } from "@/components/data-stream-provider";
 import type { ChatMessage } from "@/lib/types";
 
-// @ts-expect-error - useChat generic type inference
 type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 export type UseAutoResumeParams = {

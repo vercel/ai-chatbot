@@ -15,7 +15,6 @@ import { getTextFromMessage } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 
-// @ts-expect-error - useChat generic type inference
 type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 export type MessageEditorProps = {

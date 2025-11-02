@@ -79,4 +79,4 @@ export const requestSuggestions = ({ dataStream }: RequestSuggestionsProps) =>
         suggestionsCount: suggestions.length,
       };
     },
-  });
+  } as any);

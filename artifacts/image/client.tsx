@@ -3,7 +3,7 @@ import { Artifact } from "@/components/create-artifact";
 import { CopyIcon, RedoIcon, UndoIcon } from "@/components/icons";
 import { ImageEditor } from "@/components/image-editor";
 
-export const imageArtifact = new Artifact({
+export const imageArtifact: Artifact<"image", any> = new Artifact({
   kind: "image",
   description: "Useful for image generation",
   onStreamPart: ({ streamPart, setArtifact }) => {

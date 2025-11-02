@@ -28,7 +28,6 @@ import { useSidebar } from "./ui/sidebar";
 import { VersionFooter } from "./version-footer";
 import type { VisibilityType } from "./visibility-selector";
 
-// @ts-expect-error - useChat generic type inference
 type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 export const artifactDefinitions = [

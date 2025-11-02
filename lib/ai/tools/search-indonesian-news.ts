@@ -41,4 +41,4 @@ export const searchIndonesianNews = tool({
       ].join("\n"),
     });
   },
-});
+} as any);

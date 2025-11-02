@@ -75,4 +75,4 @@ export const getWeather = tool({
 
     return weatherData;
   },
-});
+} as any);

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import type { ChatMessage } from "@/lib/types";
 import { useScrollToBottom } from "./use-scroll-to-bottom";
 
-// @ts-expect-error - useChat generic type inference
 type UseChatReturnType = ReturnType<typeof useChat<ChatMessage>>;
 
 export function useMessages({

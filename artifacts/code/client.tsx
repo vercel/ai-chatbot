@@ -66,7 +66,10 @@ type Metadata = {
   outputs: ConsoleOutput[];
 };
 
-export const codeArtifact = new Artifact<"code", Metadata>({
+export const codeArtifact: Artifact<"code", Metadata> = new Artifact<
+  "code",
+  Metadata
+>({
   kind: "code",
   description:
     "Useful for code generation; Code execution is only available for python code.",

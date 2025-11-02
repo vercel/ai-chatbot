@@ -56,7 +56,6 @@ import type { VisibilityType } from "./visibility-selector";
 
 // Extract the actual return type from useChat when called with ChatMessage
 // Since UseChatHelpers should be generic, we use a helper to extract the type
-// @ts-expect-error - useChat generic type inference
 type UseChatHelpersType = ReturnType<typeof useChat<ChatMessage>>;
 
 const UNIQUE_PROMPT_LANGUAGES = Array.from(new Set(promptLanguages));
