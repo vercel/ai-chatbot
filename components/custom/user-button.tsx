@@ -17,7 +17,16 @@ export const UserButton = () => {
   const router = useRouter();
 
   if (isPending) {
-    return <Loader2Icon className="size-4 animate-spin" />;
+    return (
+      <Button
+        data-testid="user-nav-button"
+        disabled
+        size="icon"
+        variant="ghost"
+      >
+        <Loader2Icon className="size-4 animate-spin" />
+      </Button>
+    );
   }
 
   const isGuest = guestRegex.test(data?.user?.email ?? "");
