@@ -149,11 +149,7 @@ function PureMultimodalInput({
     if (languagePreference !== normalizedLanguagePreference) {
       setLanguagePreference(normalizedLanguagePreference);
     }
-  }, [
-    languagePreference,
-    normalizedLanguagePreference,
-    setLanguagePreference,
-  ]);
+  }, [languagePreference, normalizedLanguagePreference, setLanguagePreference]);
 
   // Sync with localStorage after component mounts (client-side only)
   useEffect(() => {
@@ -476,7 +472,7 @@ function PureLanguagePreferenceSelect({
     >
       <SelectTrigger
         aria-label="Preferred language"
-        className="h-9 w-fit min-w-[140px] shrink-0 gap-2 rounded-lg border border-transparent bg-muted/60 px-3 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:bg-muted focus:outline-none focus:ring-0 focus-visible:ring-0 sm:min-w-[180px]"
+        className="h-9 w-fit min-w-[140px] shrink-0 gap-2 rounded-lg border border-transparent bg-muted/60 px-3 font-medium text-muted-foreground text-xs shadow-none transition-colors hover:bg-muted focus:outline-none focus:ring-0 focus-visible:ring-0 sm:min-w-[180px]"
         title={`Preferred language: ${label}`}
       >
         <GlobeIcon className="size-4 shrink-0 text-muted-foreground" />

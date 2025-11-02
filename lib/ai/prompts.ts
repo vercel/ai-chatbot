@@ -66,7 +66,9 @@ export const formatPromptLanguage = (language: string) =>
   language
     .split("_")
     .map((part) =>
-      part.length > 0 ? part.charAt(0).toUpperCase().concat(part.slice(1)) : part
+      part.length > 0
+        ? part.charAt(0).toUpperCase().concat(part.slice(1))
+        : part
     )
     .join(" ");
 
