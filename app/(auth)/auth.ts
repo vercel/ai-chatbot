@@ -38,6 +38,8 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  secret: process.env.AUTH_SECRET ?? "dev-secret-change-me",
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {},

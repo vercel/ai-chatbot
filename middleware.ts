@@ -17,9 +17,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public access to landing page and contact page
+  if (pathname === "/" || pathname === "/contact") {
+    return NextResponse.next();
+  }
+
+  // In development, allow chat UI and chat API without auth for local testing
+  if (isDevelopmentEnvironment) {
+    if (pathname === "/chat" || pathname.startsWith("/chat/api")) {
+      return NextResponse.next();
+    }
+  }
+
   const token = await getToken({
     req: request,
-    secret: process.env.AUTH_SECRET,
+    secret: process.env.AUTH_SECRET ?? "dev-secret-change-me",
+    // Use default secret from NextAuth config; avoids requiring AUTH_SECRET in dev
     secureCookie: !isDevelopmentEnvironment,
   });
 
@@ -34,7 +47,7 @@ export async function middleware(request: NextRequest) {
   const isGuest = guestRegex.test(token?.email ?? "");
 
   if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/chat", request.url));
   }
 
   return NextResponse.next();

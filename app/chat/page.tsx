@@ -7,9 +7,14 @@ import { generateUUID } from "@/lib/utils";
 import { auth } from "../(auth)/auth";
 
 export default async function Page() {
-  const session = await auth();
+  let session: any = null;
+  try {
+    session = await auth();
+  } catch (_) {
+    // ignore in dev
+  }
 
-  if (!session) {
+  if (!session && process.env.NODE_ENV !== "development") {
     redirect("/api/auth/guest");
   }
 

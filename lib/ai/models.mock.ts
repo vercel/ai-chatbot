@@ -13,16 +13,16 @@ const createMockModel = (): LanguageModel => {
       rawCall: { rawPrompt: null, rawSettings: {} },
       finishReason: "stop",
       usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-      content: [{ type: "text", text: "Hello, world!" }],
+      content: [{ type: "text", text: "Hello! I'm Grok, built by xAI. I'm here to help with any questions you have. What can I assist you with today?" }],
       warnings: [],
     }),
     doStream: async () => ({
       stream: new ReadableStream({
-        start(controller) {
+        pull(controller) {
           controller.enqueue({
             type: "text-delta",
-            id: "mock-id",
-            delta: "Mock response",
+            id: "mock-0",
+            delta: "Hello! I'm Grok, built by xAI. I'm here to help with any questions you have. What can I assist you with today?",
           });
           controller.close();
         },

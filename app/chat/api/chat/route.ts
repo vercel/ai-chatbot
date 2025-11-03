@@ -108,28 +108,30 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
     } = requestBody;
 
-    const session = await auth();
-
-    if (!session?.user) {
+    const session = await auth().catch(() => null);
+    if (!session?.user && process.env.NODE_ENV !== "development") {
       return new ChatSDKError("unauthorized:chat").toResponse();
     }
 
-    const userType: UserType = session.user.type;
+  const userType: UserType = (session?.user?.type as UserType) ?? "guest";
 
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
-    });
+    const messageCount =
+      process.env.NODE_ENV === "development"
+        ? 0
+        : await getMessageCountByUserId({
+            id: session!.user.id,
+            differenceInHours: 24,
+          });
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new ChatSDKError("rate_limit:chat").toResponse();
     }
 
-    const chat = await getChatById({ id });
+  const chat = process.env.NODE_ENV === "development" ? null : await getChatById({ id });
     let messagesFromDb: DBMessage[] = [];
 
     if (chat) {
-      if (chat.userId !== session.user.id) {
+      if (process.env.NODE_ENV !== "development" && chat.userId !== session!.user.id) {
         return new ChatSDKError("forbidden:chat").toResponse();
       }
       // Only fetch messages if chat already exists
@@ -141,7 +143,7 @@ export async function POST(request: Request) {
 
       await saveChat({
         id,
-        userId: session.user.id,
+        userId: (session?.user?.id as string) ?? "dev-user",
         title,
         visibility: selectedVisibilityType,
       });
@@ -177,6 +179,11 @@ export async function POST(request: Request) {
 
     let finalMergedUsage: AppUsage | undefined;
 
+    const devSession = session ?? ({
+      user: { id: "dev-user", type: "guest", name: "Dev" },
+      expires: new Date(Date.now() + 3600_000).toISOString(),
+    } as any);
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
@@ -196,10 +203,10 @@ export async function POST(request: Request) {
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
+            createDocument: createDocument({ session: devSession as any, dataStream }),
+            updateDocument: updateDocument({ session: devSession as any, dataStream }),
             requestSuggestions: requestSuggestions({
-              session,
+              session: devSession as any,
               dataStream,
             }),
           },

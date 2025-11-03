@@ -9,8 +9,7 @@ import { SessionProvider } from "next-auth/react";
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
   title: "WebBuilder Pro - Professional Websites for Small Businesses",
-  description:
-    "Grow your small business with a professional website. Chat with our AI assistant to learn the benefits, then schedule a consultation to bring your vision to life.",
+  description: "Grow your small business with a professional website. Chat with our AI assistant to learn the benefits, then schedule a consultation to bring your vision to life.",
 };
 
 export const viewport = {
@@ -72,7 +71,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased" suppressHydrationWarning={true}>
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -22,8 +22,10 @@ export type ErrorCode = `${ErrorType}:${Surface}`;
 
 export type ErrorVisibility = "response" | "log" | "none";
 
+import { isDevelopmentEnvironment } from "./constants";
+
 export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
-  database: "log",
+  database: isDevelopmentEnvironment ? "response" : "log",
   chat: "response",
   auth: "response",
   stream: "response",
