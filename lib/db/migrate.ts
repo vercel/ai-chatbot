@@ -9,7 +9,9 @@ config({
 
 const runMigrate = async () => {
   if (!process.env.POSTGRES_URL) {
-    throw new Error("POSTGRES_URL is not defined");
+    console.log("⚠️  POSTGRES_URL is not defined. Skipping migrations (using in-memory fallback).");
+    console.log("   To enable persistent storage, set POSTGRES_URL in your Vercel environment variables.");
+    process.exit(0);
   }
 
   const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
