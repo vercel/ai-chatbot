@@ -11,16 +11,10 @@ export default function LandingPage() {
             Grow Your Small Business with a Professional Website
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Discover how an online presence can transform your business. Chat with our AI assistant to learn the benefits, then schedule a call to bring your vision to life.
+            Discover how an online presence can transform your business. Schedule a call and we’ll help bring your vision to life.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/chat"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-lg font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg hover:shadow-xl"
-            >
-              Chat with AI Assistant
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </Link>
+            {/* Chat removed */}
             <Link
               href="/contact"
               className="inline-flex items-center justify-center rounded-lg border-2 border-primary px-8 py-3 text-lg font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
@@ -88,7 +82,7 @@ export default function LandingPage() {
             <StepCard
               number="1"
               title="Learn & Explore"
-              description="Chat with our AI assistant to understand how a website can benefit your specific business and get answers to all your questions."
+              description="Explore examples and resources to understand how a website can benefit your specific business."
             />
             <StepCard
               number="2"
@@ -133,16 +127,10 @@ export default function LandingPage() {
             Ready to Grow Your Business Online?
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Start by chatting with our AI assistant to learn how a website can help your business, or jump straight to scheduling a consultation call.
+            Start by scheduling a consultation call to learn how a website can help your business.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/chat"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-lg font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg hover:shadow-xl"
-            >
-              Start Learning Now
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </Link>
+            {/* Chat removed */}
             <Link
               href="/contact"
               className="inline-flex items-center justify-center rounded-lg border-2 border-primary px-8 py-3 text-lg font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"

@@ -22,12 +22,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // In development, allow chat UI and chat API without auth for local testing
-  if (isDevelopmentEnvironment) {
-    if (pathname === "/chat" || pathname.startsWith("/chat/api")) {
-      return NextResponse.next();
-    }
-  }
+  // Chat removed: no exceptions needed
 
   const token = await getToken({
     req: request,
@@ -47,7 +42,7 @@ export async function middleware(request: NextRequest) {
   const isGuest = guestRegex.test(token?.email ?? "");
 
   if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
-    return NextResponse.redirect(new URL("/chat", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
@@ -56,7 +51,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/chat/:id",
+  // Chat removed
     "/api/:path*",
     "/login",
     "/register",

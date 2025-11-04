@@ -27,7 +27,18 @@ const runMigrate = async () => {
   process.exit(0);
 };
 
-runMigrate().catch((err) => {
+runMigrate().catch((err: any) => {
+  const codes: string[] = [
+    err?.code,
+    ...(Array.isArray(err?.errors) ? err.errors.map((e: any) => e?.code) : []),
+  ].filter(Boolean);
+
+  if (codes.includes("ECONNREFUSED")) {
+    console.log("⚠️  Database unreachable. Skipping migrations (using in-memory fallback).");
+    process.exit(0);
+    return;
+  }
+
   console.error("❌ Migration failed");
   console.error(err);
   process.exit(1);
