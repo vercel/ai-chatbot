@@ -13,6 +13,16 @@
 				"$tsc"
 			],
 			"group": "build"
+		},
+		{
+			"label": "build (quick)",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"-s",
+				"build"
+			],
+			"group": "build"
 		}
 	]
 }

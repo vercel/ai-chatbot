@@ -7,11 +7,22 @@ export const imageArtifact = new Artifact({
   kind: "image",
   description: "Useful for image generation",
   onStreamPart: ({ streamPart, setArtifact }) => {
+  // Do not auto-open the artifact panel for images anymore
+
+    if (streamPart.type === "data-clear") {
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
+        content: "",
+    isVisible: false,
+        status: "streaming",
+      }));
+    }
+
     if (streamPart.type === "data-imageDelta") {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
         content: streamPart.data,
-        isVisible: true,
+    isVisible: false,
         status: "streaming",
       }));
     }

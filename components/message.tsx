@@ -8,6 +8,7 @@ import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
+import { Image as GeneratedImage } from "./elements/image";
 import { useArtifact } from "@/hooks/use-artifact";
 
 const ArtifactTrigger = ({ result }: { result: any }) => {
@@ -181,7 +182,7 @@ const PurePreviewMessage = ({
             "user-bubble inline-block max-w-[85%] md:max-w-[70%] rounded-2xl px-3 py-2 text-left text-white break-normal hyphens-none whitespace-pre-wrap":
                           message.role === "user",
                         // Assistant spans the full chat width and uses internal content padding alignment similar to input
-                        "w-full min-w-0 bg-transparent px-0 py-0 text-left max-w-none overflow-hidden break-words overflow-wrap-anywhere":
+                        "w-full min-w-0 bg-transparent px-0 py-0 text-left max-w-none overflow-hidden wrap-break-word overflow-wrap-anywhere":
                           message.role === "assistant",
                       })}
                       data-testid="message-content"
@@ -218,6 +219,33 @@ const PurePreviewMessage = ({
                   </div>
                 );
               }
+            }
+
+            // Inline generated image rendering (tool output)
+            const partAny: any = part as any;
+            if (partAny && partAny.type === "image") {
+              const mediaType = partAny.mediaType || "image/png";
+              const base64 = typeof partAny.image === "string" ? partAny.image : undefined;
+              if (!base64) return null;
+
+              return (
+                <div
+                  className={cn("flex w-full", {
+                    "justify-end": message.role === "user",
+                    "justify-start": message.role === "assistant",
+                  })}
+                  key={key}
+                >
+                  <div className={cn("max-w-full", { "user-bubble inline-block max-w-[85%] md:max-w-[70%] rounded-2xl p-1": message.role === "user" })}>
+                    {/* biome-ignore lint/performance/noImgElement: runtime base64 image */}
+                    <img
+                      alt="Generated image"
+                      className="h-auto max-w-full overflow-hidden rounded-md"
+                      src={`data:${mediaType};base64,${base64}`}
+                    />
+                  </div>
+                </div>
+              );
             }
 
             if (type === "tool-getWeather") {

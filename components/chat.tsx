@@ -114,6 +114,16 @@ export function Chat({
           return newStream.length > 500 ? newStream.slice(-250) : newStream;
         });
 
+        // If the server sends a complete assistant message, append it to chat immediately
+        if (dataPart.type === "data-appendMessage") {
+          try {
+            const message: ChatMessage = JSON.parse(dataPart.data as any);
+            setMessages((prev) => [...prev, message]);
+          } catch (e) {
+            console.warn("Failed to parse appended message:", e);
+          }
+        }
+
         if (dataPart.type === "data-usage") {
           setUsage(dataPart.data);
         }
@@ -227,7 +237,7 @@ export function Chat({
 
   return (
     <>
-      <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background !m-0 !ml-0">
+  <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background m-0! ml-0!">
         <ChatHeader />
 
         {messages.length === 0 ? (
@@ -254,7 +264,7 @@ export function Chat({
               </div>
 
               {/* Floating input for mobile */}
-              <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-background via-background/95 to-transparent">
+              <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-linear-to-t from-background via-background/95 to-transparent">
                 <div className="mx-auto w-full max-w-full md:max-w-3xl">
                   {!isReadonly && (
                     <div className="bg-background/90 backdrop-blur-md border rounded-2xl shadow-xl">
@@ -340,7 +350,7 @@ export function Chat({
                   isReadonly={isReadonly}
                   messages={messages}
                   regenerate={regenerate}
-                  selectedModelId={initialChatModel}
+                  selectedModelId={currentModelId}
                   setMessages={setMessages}
                   status={status}
                   votes={votes}
@@ -351,7 +361,7 @@ export function Chat({
 
             {/* Truly floating input box - positioned absolutely over content */}
             <div
-              className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none pb-2"
+              className="absolute bottom-0 left-0 right-0 z-20 bg-linear-to-t from-background via-background/95 to-transparent pointer-events-none pb-2"
               style={{ right: isDesktopLike ? `${scrollbarWidth}px` : undefined }}
             >
               {/* Container matching Messages scrollbar layout exactly */}

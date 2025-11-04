@@ -5,6 +5,7 @@ export type ChatModel = {
   name: string;
   description?: string;
   provider: string;
+  category?: "general" | "image" | "code";
 };
 
 // Fallback models in case API fetching fails
@@ -43,20 +44,31 @@ const FALLBACK_MODELS: ChatModel[] = [
     id: "gemini-2.5-flash-lite",
     name: "Gemini 2.5 Flash-Lite",
   description: "",
-    provider: "google"
+    provider: "google",
+    category: "general"
+  },
+  {
+    id: "imagen-4.0-generate-001",
+    name: "Imagen 4.0 (Image Gen)",
+  description: "",
+    provider: "google",
+    category: "image"
   },
   {
     id: "openai/gpt-oss-120b:novita",
     name: "GPT-OSS 120B (HF)",
   description: "",
-    provider: "hf"
+    provider: "hf",
+    category: "general"
   },
   {
     id: "openai/gpt-oss-20b:novita",
     name: "GPT-OSS 20B (HF)",
   description: "",
-    provider: "hf"
-  }
+    provider: "hf",
+    category: "general"
+  },
+  
 ];
 
 // Check which providers have API keys configured

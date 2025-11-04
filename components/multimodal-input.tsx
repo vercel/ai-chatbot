@@ -16,10 +16,12 @@ import {
   useRef,
   useState,
 } from "react";
+import useSWR from "swr";
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { SelectItem } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { chatModels, isVisionModel, getFirstVisionModelId } from "@/lib/ai/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { LanguageModel } from "ai";
@@ -320,7 +322,7 @@ function PureMultimodalInput({
           />{" "}
           <Context {...contextProps} />
         </div>
-        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
+  <PromptInputToolbar className="border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -418,14 +420,46 @@ function PureModelSelectorCompact({
     setOptimisticModelId(selectedModelId);
   }, [selectedModelId]);
 
-  const selectedModel = chatModels().find(
-    (model) => model.id === optimisticModelId
+  // Fetch server-side model list so Stability models appear (server env)
+  const fetcher = (url: string) => fetch(url).then((r) => r.json());
+  const { data } = useSWR<{ models: Array<{ id: string; name: string; description?: string; provider: string; category?: string }> }>(
+    "/api/models",
+    fetcher
   );
+  const serverModels = data?.models ?? [];
+  const allModels = serverModels.length > 0 ? serverModels : chatModels();
+
+  const selectedModel = useMemo(
+    () => allModels.find((m) => m.id === optimisticModelId) || allModels[0],
+    [optimisticModelId, allModels]
+  );
+
+  const grouped = useMemo(() => {
+    const list = allModels;
+    return {
+      general: list.filter((m) => (m.category || "general") === "general"),
+      image: list.filter((m) => m.category === "image"),
+      code: list.filter((m) => m.category === "code"),
+    } as Record<"general" | "image" | "code", typeof allModels>;
+  }, [allModels]);
+
+  const [activeTab, setActiveTab] = useState<"general" | "image" | "code">("general");
+  useEffect(() => {
+    // Switch to the selected model's category when dropdown opens or selection changes
+    const category = (selectedModel?.category as any) || ("general" as const);
+    if (["general", "image", "code"].includes(category)) {
+      setActiveTab(category as any);
+    } else if ((grouped.image?.length || 0) > 0) {
+      setActiveTab("image");
+    } else {
+      setActiveTab("general");
+    }
+  }, [selectedModel?.category, grouped.image?.length]);
 
   return (
     <PromptInputModelSelect
       onValueChange={(modelName) => {
-        const model = chatModels().find((m) => m.name === modelName);
+        const model = allModels.find((m) => m.name === modelName);
         if (model) {
           setOptimisticModelId(model.id);
           onModelChange?.(model.id);
@@ -446,16 +480,42 @@ function PureModelSelectorCompact({
         </span>
         <ChevronDownIcon size={16} />
       </Trigger>
-      <PromptInputModelSelectContent className="min-w-[260px] p-0">
-        <div className="flex flex-col gap-px">
-          {chatModels().map((model) => (
-            <SelectItem key={model.id} value={model.name}>
-              <div className="truncate font-medium text-xs">{model.name}</div>
-              <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
-                {model.description}
+      <PromptInputModelSelectContent className="min-w-[220px] p-0">
+        <div className="flex flex-col gap-1">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <TabsList className="mx-2 my-1">
+              <TabsTrigger value="general">Text</TabsTrigger>
+              <TabsTrigger value="image">Image</TabsTrigger>
+              <TabsTrigger value="code">Code</TabsTrigger>
+            </TabsList>
+            <TabsContent value="general" className="px-2 py-1">
+              <div className="flex flex-col gap-0.5">
+                {grouped.general.map((model) => (
+                  <SelectItem key={model.id} value={model.name} className="py-1.5 pl-6 pr-2">
+                    <div className="truncate font-medium text-[11px] leading-4">{model.name}</div>
+                  </SelectItem>
+                ))}
               </div>
-            </SelectItem>
-          ))}
+            </TabsContent>
+            <TabsContent value="image" className="px-2 py-1">
+              <div className="flex flex-col gap-0.5">
+                {grouped.image.map((model) => (
+                  <SelectItem key={model.id} value={model.name} className="py-1.5 pl-6 pr-2">
+                    <div className="truncate font-medium text-[11px] leading-4">{model.name}</div>
+                  </SelectItem>
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="code" className="px-2 py-1">
+              <div className="flex flex-col gap-0.5">
+                {grouped.code.map((model) => (
+                  <SelectItem key={model.id} value={model.name} className="py-1.5 pl-6 pr-2">
+                    <div className="truncate font-medium text-[11px] leading-4">{model.name}</div>
+                  </SelectItem>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </PromptInputModelSelectContent>
     </PromptInputModelSelect>

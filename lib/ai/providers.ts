@@ -61,10 +61,34 @@ function createLanguageModels() {
       if (model.provider === "mistral" && providers.mistral) {
         languageModels[model.id] = providers.mistral(model.id);
       } else if (model.provider === "google" && providers.google) {
-        languageModels[model.id] = providers.google(model.id);
+        // Map Imagen model ID to a valid Google LLM endpoint to satisfy the interface.
+        // The actual image generation is handled by the createImage tool, not by this LM call.
+        const mapped = model.id === "imagen-4.0-generate-001" ? "gemini-2.5-flash" : model.id;
+        languageModels[model.id] = providers.google(mapped);
       } else if ((model.provider === "hf" || model.provider === "huggingface") && providers.hf) {
-        // OpenAI-compatible models served via Hugging Face router
-        languageModels[model.id] = providers.hf(model.id);
+        // Special-case HF image model: route to a proper chat LM that supports tool calling
+        if (model.id === "hf/stable-diffusion-2-1") {
+          if (providers.google) {
+            languageModels[model.id] = providers.google("gemini-2.5-flash");
+          } else if (providers.mistral) {
+            languageModels[model.id] = providers.mistral("mistral-large-2407");
+          } else {
+            // Fallback to an HF chat model id
+            languageModels[model.id] = providers.hf("openai/gpt-oss-20b:novita");
+          }
+        } else {
+          // OpenAI-compatible models served via Hugging Face router
+          languageModels[model.id] = providers.hf(model.id);
+        }
+  } else if (model.provider === "stability") {
+        // Stability image models aren't chat-capable; map to an existing LM for tool routing
+        if (providers.google) {
+          languageModels[model.id] = providers.google("gemini-2.5-flash");
+        } else if (providers.mistral) {
+          languageModels[model.id] = providers.mistral("mistral-large-2407");
+        } else if (providers.hf) {
+          languageModels[model.id] = providers.hf("openai/gpt-oss-20b:novita");
+        }
       } else {
       }
     } catch (error) {}

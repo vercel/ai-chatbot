@@ -19,11 +19,18 @@ export function DataStreamHandler() {
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;
 
+    // Track kind changes within this batch so subsequent deltas use the new artifact immediately
+    let batchKind = artifact.kind;
+
     for (const delta of newDeltas) {
-      const artifactDefinition = artifactDefinitions.find(
-        (currentArtifactDefinition) =>
-          currentArtifactDefinition.kind === artifact.kind
-      );
+      const effectiveKind = delta.type === "data-kind" ? delta.data : batchKind;
+      // We no longer handle image artifact streams here (images render inline in chat)
+      const artifactDefinition = effectiveKind === "image"
+        ? undefined
+        : artifactDefinitions.find(
+            (currentArtifactDefinition) =>
+              currentArtifactDefinition.kind === effectiveKind
+          );
 
       if (artifactDefinition?.onStreamPart) {
         artifactDefinition.onStreamPart({
@@ -53,12 +60,16 @@ export function DataStreamHandler() {
               status: "streaming",
             };
 
-          case "data-kind":
+          case "data-kind": {
+            // Do not switch to image kind; keep artifact hidden for images
+            batchKind = delta.data as any;
+            const nextKind = delta.data === "image" ? draftArtifact.kind : (delta.data as any);
             return {
               ...draftArtifact,
-              kind: delta.data,
+              kind: nextKind,
               status: "streaming",
             };
+          }
 
           case "data-clear":
             return {

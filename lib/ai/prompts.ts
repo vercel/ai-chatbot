@@ -113,6 +113,20 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
+  // Strong tool-calling guidance for Imagen
+  if (selectedChatModel === "imagen-4.0-generate-001") {
+    const IMAGE_TOOL_GUIDANCE = `\n\nIMAGE GENERATION MODE:\n- You MUST use the createImage tool to fulfill image requests.\n- Do NOT write a normal text reply describing an image.\n- Do NOT apologize or mention billing/permissions; just call the tool with the user's prompt.\n- Use the entire user message as the tool's prompt.\n- If the tool returns an error, briefly report the error and suggest trying again later.`;
+
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}${IMAGE_TOOL_GUIDANCE}`;
+  }
+
+  // Strong tool-calling guidance for HF Stable Diffusion image model
+  if (selectedChatModel === "hf/stable-diffusion-2-1") {
+    const IMAGE_TOOL_GUIDANCE = `\n\nIMAGE GENERATION MODE (HF):\n- You MUST use the createImageHF tool to fulfill image requests.\n- Do NOT write a normal text reply describing an image.\n- Use the entire user message as the tool's prompt.\n- If the tool errors, return a brief error.`;
+
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}${IMAGE_TOOL_GUIDANCE}`;
+  }
+
   if (selectedChatModel === "chat-model-reasoning" || selectedChatModel.includes("reasoning")) {
     return `${regularPrompt}\n\n${requestPrompt}`;
   }

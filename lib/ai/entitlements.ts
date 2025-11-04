@@ -1,6 +1,7 @@
 import type { UserType } from "@/app/(auth)/auth";
 import type { ChatModel } from "./models";
-import { getChatModels } from "./models";
+import { getChatModels, refreshModels } from "./models";
+import { refreshModelCache } from "./model-fetcher";
 
 type Entitlements = {
   maxMessagesPerDay: number;
@@ -9,13 +10,17 @@ type Entitlements = {
 
 // Get all available model IDs dynamically
 function getAllAvailableModelIds(): string[] {
-  const models = getChatModels();
+  // Refresh caches so new models (e.g., Imagen) appear without server restart
+  try { refreshModelCache(); } catch {}
+  const models = refreshModels();
   return models.map((model: ChatModel) => model.id);
 }
 
 // Get basic models (excluding experimental ones)
 function getBasicModelIds(): string[] {
-  const models = getChatModels();
+  // Refresh caches so list isn’t stale in the client bundle
+  try { refreshModelCache(); } catch {}
+  const models = refreshModels();
   return models
     .filter((model: ChatModel) => !model.name.toLowerCase().includes('experimental'))
     .map((model: ChatModel) => model.id);

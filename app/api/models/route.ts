@@ -1,14 +1,24 @@
 /** biome-ignore-all lint/style/useConsistentObjectDefinitions: <explanation> */
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
-import { getCachedAvailableModels } from "@/lib/ai/model-fetcher";
+import { getCachedAvailableModels, refreshModelCache } from "@/lib/ai/model-fetcher";
 
 export function GET() {
   try {
-    const models = getCachedAvailableModels();
+  try { refreshModelCache(); } catch {}
+  const models = getCachedAvailableModels();
+  const hasStabilityKey = !!(process.env.STABILITY_API_KEY || (process.env as any).STABILITY_KEY || (process.env as any).STABILITYAI_API_KEY);
+    const hasGoogleKey = !!(process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY);
+    const hasHfToken = !!process.env.HF_TOKEN;
 
     return NextResponse.json({
       models: models,
       timestamp: Date.now(),
+      env: {
+        hasStabilityKey,
+        hasGoogleKey,
+        hasHfToken,
+      },
     });
   } catch (error) {
     console.error("Failed to fetch models:", error);

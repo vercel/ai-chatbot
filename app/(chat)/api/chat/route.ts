@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { geolocation } from "@vercel/functions";
 import {
   convertToModelMessages,
@@ -25,7 +26,10 @@ import { myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
+import { createImage } from "@/lib/ai/tools/create-image";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+import { createImageHF } from "@/lib/ai/tools/create-image-hf";
+import { createImageStability } from "@/lib/ai/tools/create-image-stability";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -184,8 +188,17 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
-        const isOpenAICompat = selectedChatModel.startsWith("openai/");
-        const supportsTools = !isOpenAICompat;
+  const isOpenAICompat = selectedChatModel.startsWith("openai/");
+  const supportsTools = !isOpenAICompat;
+  const isImagen = selectedChatModel === "imagen-4.0-generate-001";
+  const isHFImage = selectedChatModel === "hf/stable-diffusion-2-1";
+  const isStability = selectedChatModel.startsWith("stability/") || [
+    "sd3.5-large",
+    "sd3.5-large-turbo",
+    "sd3.5-medium",
+    "sd3.5-flash",
+  ].includes(selectedChatModel);
+  const forceTool = isImagen || isHFImage || isStability;
         const useTransform = !isOpenAICompat;
 
         // For OpenAI-compatible (HF router), filter/transform messages to valid format
@@ -218,22 +231,35 @@ export async function POST(request: Request) {
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: isOpenAICompat ? messagesForModel : convertToModelMessages(messagesForModel),
-          stopWhen: !isOpenAICompat ? stepCountIs(5) : undefined,
+          // Do not early-stop when forcing tool usage
+          stopWhen: forceTool ? undefined : (!isOpenAICompat ? stepCountIs(5) : undefined),
           maxOutputTokens: isOpenAICompat ? 1024 : undefined,
+          // Require a tool call for image models so the model cannot respond with plain text
+          toolChoice: forceTool ? "required" : undefined,
           experimental_activeTools: supportsTools
             ? (
-                (selectedChatModel === "chat-model-reasoning" || selectedChatModel.includes("reasoning"))
-                  ? ["createDocument", "updateDocument"]
-                  : ["getWeather", "createDocument", "updateDocument", "requestSuggestions"]
+                isImagen
+                  ? ["createImage"]
+                  : isHFImage
+                    ? ["createImageHF"]
+                    : isStability
+                      ? ["createImageStability"]
+                    : (selectedChatModel === "chat-model-reasoning" || selectedChatModel.includes("reasoning"))
+                      ? ["createDocument", "updateDocument"]
+                      : ["getWeather", "createDocument", "updateDocument", "requestSuggestions"]
               )
             : [],
           experimental_transform: useTransform ? smoothStream({ chunking: "word" }) : undefined,
-          tools: supportsTools
+      tools: supportsTools
             ? {
                 getWeather,
                 createDocument: createDocument({ session, dataStream }),
                 updateDocument: updateDocument({ session, dataStream }),
                 requestSuggestions: requestSuggestions({ session, dataStream }),
+                createImage: createImage({ dataStream }),
+        createImageHF: createImageHF({ dataStream }),
+        createImageStability: createImageStability({ dataStream }),
+                
               }
             : undefined,
           experimental_telemetry: {
