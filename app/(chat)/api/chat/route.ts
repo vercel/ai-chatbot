@@ -14,6 +14,7 @@ import { getUsage } from "tokenlens/helpers";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
+import { getIndonesianNewsFeeds } from "@/lib/ai/tools/get-indonesian-news-feeds";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { searchIndonesianNews } from "@/lib/ai/tools/search-indonesian-news";
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
     }
 
     if (newsSearchEnabled) {
+      tools.getIndonesianNewsFeeds = getIndonesianNewsFeeds;
       tools.searchIndonesianNews = searchIndonesianNews;
       // Need google_search to actually perform the search
       if (!tools.google_search) {
@@ -115,6 +117,7 @@ export async function POST(request: Request) {
     }
 
     if (newsSearchEnabled) {
+      activeTools.push("getIndonesianNewsFeeds");
       activeTools.push("searchIndonesianNews");
       if (!activeTools.includes("google_search")) {
         activeTools.push("google_search");
