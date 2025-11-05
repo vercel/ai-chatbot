@@ -238,6 +238,7 @@ const PurePreviewMessage = ({
 
               // Lightbox state scoped to this image part
               const [open, setOpen] = useState(false);
+              const [isLoaded, setIsLoaded] = useState(false);
 
               // Copy and download helpers
               const dataUrl = `data:${mediaType};base64,${base64}`;
@@ -291,11 +292,24 @@ const PurePreviewMessage = ({
                       {/* biome-ignore lint/performance/noImgElement: runtime base64 image */}
                       <img
                         alt="Generated image"
-                        className="h-auto w-full object-cover"
+                        className={cn("h-auto w-full object-cover transition-opacity duration-150", {
+                          "opacity-0": !isLoaded,
+                          "opacity-100": isLoaded,
+                        })}
                         src={dataUrl}
-                        loading="lazy"
+                        onLoad={() => setIsLoaded(true)}
                       />
                     </button>
+
+                    {/* Image loading placeholder to avoid blank gap */}
+                    {!isLoaded && (
+                      <div className="absolute inset-0 grid place-items-center bg-muted/40">
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                          <div className="animate-spin"><LoaderIcon /></div>
+                          <span>Loading image…</span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Overlay actions top-right */}
                     <div className="pointer-events-none absolute right-1 top-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -452,6 +466,14 @@ const PurePreviewMessage = ({
             return null;
           })}
 
+          {/* Fallback placeholder when assistant has no parts yet */}
+          {message.role === "assistant" && isLoading && (!message.parts || message.parts.length === 0) && (
+            <div className="flex flex-row items-center gap-2 text-muted-foreground text-sm">
+              <div className="animate-spin"><LoaderIcon /></div>
+              <div>Thinking...</div>
+            </div>
+          )}
+
           {!isReadonly && (
             <>
               <MessageActions
@@ -572,22 +594,4 @@ export const ThinkingMessage = ({ variant = "text" }: { variant?: "text" | "imag
       </motion.div>
     );
   }
-
-  return (
-    <motion.div
-      animate={{ opacity: 1 }}
-      className="group/message w-full"
-      data-role={role}
-      data-testid="message-assistant-loading"
-      exit={{ opacity: 0, transition: { duration: 0.5 } }}
-      initial={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      <div className="flex items-start justify-start">
-        <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">Thinking...</div>
-        </div>
-      </div>
-    </motion.div>
-  );
 };

@@ -80,7 +80,7 @@ function PureMessages({
   }, [messages]);
 
   // Determine whether to show a loader and which variant, and where to place it
-  const { showLoader, loaderVariant, lastUserIndex, hasAssistantAfterUser } = useMemo(() => {
+  const { showLoader, loaderVariant, lastUserIndex, pendingAssistantIndex } = useMemo(() => {
     const hasAssistantContent = uniqueMessages.some(
       (m) =>
         m.role === "assistant" &&
@@ -118,10 +118,24 @@ function PureMessages({
       }
     }
 
-  // Determine if there is already an assistant right after this user
-  const hasAssistant = idx >= 0 && uniqueMessages[idx + 1]?.role === "assistant";
+    // Determine if there is any assistant after the last user that has no visible content yet
+    let pendingIdx = -1;
+    for (let i = idx + 1; i < uniqueMessages.length; i++) {
+      const m = uniqueMessages[i];
+      if (m.role !== "assistant") continue;
+      const hasVisible = (m.parts || []).some((p: any) =>
+        (p.type === "text" && typeof (p as any).text === "string" && (p as any).text.trim()) ||
+        (p as any).type === "image"
+      );
+      if (!hasVisible) {
+        pendingIdx = i;
+        break;
+      }
+      // If we encountered an assistant with visible content, no need to show loader at all
+      break;
+    }
 
-  return { showLoader: show, loaderVariant: variant, lastUserIndex: idx, hasAssistantAfterUser: !!hasAssistant };
+    return { showLoader: show, loaderVariant: variant, lastUserIndex: idx, pendingAssistantIndex: pendingIdx };
   }, [uniqueMessages, selectedModelId, status]);
 
   return (
@@ -169,8 +183,8 @@ function PureMessages({
               />
 
               <AnimatePresence mode="wait">
-                {showLoader && !hasAssistantAfterUser && index === lastUserIndex && (
-      <ThinkingMessage key={`thinking-${message.id}`} variant={loaderVariant} />
+                {showLoader && pendingAssistantIndex === -1 && index === lastUserIndex && (
+                  <ThinkingMessage key={`thinking-${message.id}`} variant={loaderVariant} />
                 )}
               </AnimatePresence>
     </Fragment>
