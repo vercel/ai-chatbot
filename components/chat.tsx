@@ -117,8 +117,32 @@ export function Chat({
         // If the server sends a complete assistant message, append it to chat immediately
         if (dataPart.type === "data-appendMessage") {
           try {
-            const message: ChatMessage = JSON.parse(dataPart.data as any);
-            setMessages((prev) => [...prev, message]);
+            const appended: ChatMessage = JSON.parse(dataPart.data as any);
+            setMessages((prev) => {
+              // de-dup by id if it already exists
+              if (prev.some((m) => m.id === appended.id)) return prev;
+
+              // find last user message index
+              let insertIdx = -1;
+              for (let i = prev.length - 1; i >= 0; i--) {
+                if (prev[i].role === "user") { insertIdx = i; break; }
+              }
+
+              if (insertIdx === -1) {
+                // no user found; append to end as fallback
+                return [...prev, appended];
+              }
+
+              // If there is already an assistant right after that user, insert after it
+              const nextIdx = insertIdx + 1;
+              const out = [...prev];
+              if (nextIdx < out.length && out[nextIdx].role === "assistant") {
+                out.splice(nextIdx + 1, 0, appended);
+              } else {
+                out.splice(nextIdx, 0, appended);
+              }
+              return out;
+            });
           } catch (e) {
             console.warn("Failed to parse appended message:", e);
           }

@@ -106,7 +106,7 @@ export const CodeBlock = ({
           }}
         >
           <SyntaxHighlighter
-            className="!min-w-0 !max-w-full !overflow-x-auto"
+            className="min-w-0! max-w-full! overflow-x-auto!"
             codeTagProps={{ className: "font-mono text-sm" }}
             customStyle={{
               margin: 0,

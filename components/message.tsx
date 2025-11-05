@@ -41,6 +41,7 @@ import { MessageReasoning } from "./message-reasoning";
 import { MessageVersionSwitcher } from "./message-version-switcher";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { LoaderIcon } from "./icons";
 
 // MessageContent component (moved from elements/message.tsx)
 export type MessageContentProps = HTMLAttributes<HTMLDivElement>;
@@ -192,7 +193,14 @@ const PurePreviewMessage = ({
                           : undefined
                       }
                     >
-                      <Response>{sanitizeText(part.text)}</Response>
+                      {message.role === "assistant" && isLoading && !(part.text && part.text.trim()) ? (
+                        <div className="flex flex-row items-center gap-2 text-muted-foreground text-sm">
+                          <div className="animate-spin"><LoaderIcon /></div>
+                          <div>Thinking...</div>
+                        </div>
+                      ) : (
+                        <Response>{sanitizeText(part.text)}</Response>
+                      )}
                     </MessageContent>
                   </div>
                 );
@@ -228,6 +236,38 @@ const PurePreviewMessage = ({
               const base64 = typeof partAny.image === "string" ? partAny.image : undefined;
               if (!base64) return null;
 
+              // Lightbox state scoped to this image part
+              const [open, setOpen] = useState(false);
+
+              // Copy and download helpers
+              const dataUrl = `data:${mediaType};base64,${base64}`;
+              const handleCopy = async () => {
+                try {
+                  // Prefer ClipboardItem when available
+                  if (typeof window !== "undefined" && (window as any).ClipboardItem) {
+                    const blob = await (await fetch(dataUrl)).blob();
+                    const ClipboardItemCtor = (window as any).ClipboardItem;
+                    await navigator.clipboard.write([new ClipboardItemCtor({ [blob.type]: blob })]);
+                  } else {
+                    await navigator.clipboard.writeText(dataUrl);
+                  }
+                } catch (e) {
+                  try {
+                    await navigator.clipboard.writeText(dataUrl);
+                  } catch {}
+                }
+              };
+              const handleDownload = () => {
+                try {
+                  const a = document.createElement("a");
+                  a.href = dataUrl;
+                  a.download = `image-${message.id}.png`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                } catch {}
+              };
+
               return (
                 <div
                   className={cn("flex w-full", {
@@ -236,13 +276,76 @@ const PurePreviewMessage = ({
                   })}
                   key={key}
                 >
-                  <div className={cn("max-w-full", { "user-bubble inline-block max-w-[85%] md:max-w-[70%] rounded-2xl p-1": message.role === "user" })}>
-                    {/* biome-ignore lint/performance/noImgElement: runtime base64 image */}
-                    <img
-                      alt="Generated image"
-                      className="h-auto max-w-full overflow-hidden rounded-md"
-                      src={`data:${mediaType};base64,${base64}`}
-                    />
+                  <div
+                    className={cn(
+                      "relative group max-w-[280px] md:max-w-[360px] rounded-lg overflow-hidden border bg-card",
+                      { "user-bubble inline-block p-1": message.role === "user" }
+                    )}
+                  >
+                    <button
+                      type="button"
+                      aria-label="Open image"
+                      className="block focus:outline-none"
+                      onClick={() => setOpen(true)}
+                    >
+                      {/* biome-ignore lint/performance/noImgElement: runtime base64 image */}
+                      <img
+                        alt="Generated image"
+                        className="h-auto w-full object-cover"
+                        src={dataUrl}
+                        loading="lazy"
+                      />
+                    </button>
+
+                    {/* Overlay actions top-right */}
+                    <div className="pointer-events-none absolute right-1 top-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="pointer-events-auto inline-flex items-center gap-1 rounded-md bg-background/80 px-1.5 py-1 shadow-md backdrop-blur-md">
+                        <button
+                          type="button"
+                          className="text-xs hover:underline"
+                          onClick={handleDownload}
+                          aria-label="Download image"
+                        >
+                          Download
+                        </button>
+                        <span className="text-muted-foreground/60">|</span>
+                        <button
+                          type="button"
+                          className="text-xs hover:underline"
+                          onClick={handleCopy}
+                          aria-label="Copy image"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Simple lightbox */}
+                    {open && (
+                      <div
+                        className="fixed inset-0 z-50 bg-black/80 p-4 md:p-8 flex items-center justify-center"
+                        onClick={() => setOpen(false)}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Image preview"
+                      >
+                        <div className="relative max-h-full max-w-full">
+                          {/* biome-ignore lint/performance/noImgElement: base64 preview */}
+                          <img
+                            alt="Generated image preview"
+                            className="max-h-[85vh] max-w-[95vw] rounded-lg shadow-2xl"
+                            src={dataUrl}
+                          />
+                          <div className="absolute right-2 top-2 inline-flex items-center gap-2 rounded-md bg-background/80 px-2 py-1 shadow-md backdrop-blur-md">
+                            <button type="button" className="text-xs hover:underline" onClick={(e) => { e.stopPropagation(); handleDownload(); }}>Download</button>
+                            <span className="text-muted-foreground/60">|</span>
+                            <button type="button" className="text-xs hover:underline" onClick={(e) => { e.stopPropagation(); handleCopy(); }}>Copy</button>
+                            <span className="text-muted-foreground/60">|</span>
+                            <button type="button" className="text-xs hover:underline" onClick={(e) => { e.stopPropagation(); setOpen(false); }}>Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -444,8 +547,31 @@ export const PreviewMessage = memo(
   }
 );
 
-export const ThinkingMessage = () => {
+export const ThinkingMessage = ({ variant = "text" }: { variant?: "text" | "image" }) => {
   const role = "assistant";
+
+  if (variant === "image") {
+    return (
+      <motion.div
+        animate={{ opacity: 1 }}
+        className="group/message w-full"
+        data-role={role}
+        data-testid="message-assistant-loading-image"
+        exit={{ opacity: 0, transition: { duration: 0.2 } }}
+        initial={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        <div className="flex items-start justify-start">
+          <div className="flex w-full flex-col gap-2">
+            <div className="flex flex-row items-center gap-3 text-muted-foreground text-sm">
+              <div className="animate-spin"><LoaderIcon /></div>
+              <div>Generating Image...</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
