@@ -133,6 +133,7 @@ const MAX_ITEMS_PER_FEED = 5;
 const FETCH_TIMEOUT_MS = 8000;
 const DEFAULT_INSTRUCTIONS =
   "Summarize key developments from the fetched Indonesian headlines. Cite feed sources by name and URL. If important topics are missing, fall back to google_search + url_context.";
+const FEED_URL_SUFFIX_PATTERN = /\/(feed|rss)$/i;
 
 type FeedArticle = {
   title?: string;
@@ -150,6 +151,15 @@ type FeedResult = {
 type FeedError = {
   feed: FeedDef | null;
   message: string;
+};
+
+type FeedSource = {
+  feedId: string;
+  feedName: string;
+  feedReliability: FeedReliability;
+  articleTitle?: string;
+  articleUrl: string;
+  publishedAt?: string;
 };
 
 const parser = new XMLParser({
@@ -235,9 +245,50 @@ const parseDate = (value: string | undefined): string | undefined => {
   return new Date(timestamp).toISOString();
 };
 
+const looksLikeFeedUrl = (url: string, feed: FeedDef): boolean => {
+  const normalized = url.split("?")[0] ?? url;
+  if (normalized === feed.url) {
+    return true;
+  }
+  return FEED_URL_SUFFIX_PATTERN.test(normalized);
+};
+
+const resolveArticleLink = (
+  feed: FeedDef,
+  entryRecord: Record<string, unknown>
+): string | undefined => {
+  const candidates = [
+    getText(entryRecord.link),
+    getText(entryRecord.guid),
+    getText(entryRecord.id),
+    getText((entryRecord.source as Record<string, unknown> | undefined)?.url),
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+    const trimmed = candidate.trim();
+    if (!trimmed) {
+      continue;
+    }
+    if (!trimmed.startsWith("http")) {
+      continue;
+    }
+    if (looksLikeFeedUrl(trimmed, feed)) {
+      continue;
+    }
+
+    return trimmed;
+  }
+
+  return;
+};
+
 const normalizeArticles = (
   xml: string,
-  itemsPerFeed: number
+  itemsPerFeed: number,
+  feed: FeedDef
 ): FeedArticle[] => {
   const parsed = parser.parse(xml) as Record<string, unknown>;
 
@@ -270,29 +321,7 @@ const normalizeArticles = (
 
     const entryRecord = entry as Record<string, unknown>;
     const title = getText(entryRecord.title);
-    const rawLink = entryRecord.link;
-    let link: string | undefined = getText(rawLink);
-    if (!link && rawLink && typeof rawLink === "object") {
-      if (Array.isArray(rawLink)) {
-        for (const candidate of rawLink) {
-          const candidateText = getText(candidate);
-          if (candidateText) {
-            link = candidateText;
-            break;
-          }
-        }
-      } else if (
-        "href" in rawLink &&
-        typeof (rawLink as { href?: unknown }).href === "string"
-      ) {
-        link = (rawLink as { href: string }).href;
-      } else if (
-        "@_href" in rawLink &&
-        typeof (rawLink as { "@_href"?: unknown })["@_href"] === "string"
-      ) {
-        link = (rawLink as { "@_href": string })["@_href"];
-      }
-    }
+    const link = resolveArticleLink(feed, entryRecord);
     const description =
       getText(entryRecord.description) ??
       getText(entryRecord.summary) ??
@@ -346,7 +375,7 @@ const fetchWithTimeout = async (
     }
 
     const xml = await response.text();
-    const articles = normalizeArticles(xml, itemsPerFeed);
+    const articles = normalizeArticles(xml, itemsPerFeed, feed);
 
     return {
       feed,
@@ -418,6 +447,7 @@ export const getIndonesianNewsFeeds = tool({
         requestedFeeds: [],
         itemsPerFeed,
         instructions: DEFAULT_INSTRUCTIONS,
+        sources: [] as FeedSource[],
       };
     }
 
@@ -427,6 +457,7 @@ export const getIndonesianNewsFeeds = tool({
 
     const feeds: FeedResult[] = [];
     const errors: FeedError[] = [];
+    const sources: FeedSource[] = [];
 
     for (let index = 0; index < settledResults.length; index += 1) {
       const result = settledResults[index];
@@ -434,6 +465,19 @@ export const getIndonesianNewsFeeds = tool({
 
       if (result.status === "fulfilled") {
         feeds.push(result.value);
+        for (const article of result.value.articles) {
+          if (!article.link) {
+            continue;
+          }
+          sources.push({
+            feedId: result.value.feed.id,
+            feedName: result.value.feed.name,
+            feedReliability: result.value.feed.reliability,
+            articleTitle: article.title,
+            articleUrl: article.link,
+            publishedAt: article.publishedAt,
+          });
+        }
         continue;
       }
 
@@ -453,6 +497,7 @@ export const getIndonesianNewsFeeds = tool({
       requestedFeeds: feedsToFetch.map((feed) => feed.id),
       itemsPerFeed,
       instructions: DEFAULT_INSTRUCTIONS,
+      sources,
     };
   },
 } as any);
