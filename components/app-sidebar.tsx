@@ -17,6 +17,9 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -113,6 +116,51 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
+          {/* Legal Assistant Section */}
+          {user && (
+            <>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link
+                      href="/legal"
+                      onClick={() => setOpenMobile(false)}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="text-lg">⚖️</span>
+                      <span>Lawyer Mate</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link
+                      href="/pricing"
+                      onClick={() => setOpenMobile(false)}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="text-lg">💰</span>
+                      <span>Pricing</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link
+                      href="/account"
+                      onClick={() => setOpenMobile(false)}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="text-lg">👤</span>
+                      <span>Account</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+              <SidebarSeparator />
+            </>
+          )}
+          
           <SidebarHistory user={user} />
         </SidebarContent>
         <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>

@@ -17,6 +17,10 @@ export const user = pgTable("User", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   email: varchar("email", { length: 64 }).notNull(),
   password: varchar("password", { length: 64 }),
+  fullName: text("fullName"),
+  avatarUrl: text("avatarUrl"),
+  billingAddress: jsonb("billingAddress"),
+  paymentMethod: jsonb("paymentMethod"),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -171,3 +175,78 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// Stripe-related tables
+export const customer = pgTable("Customer", {
+  id: uuid("id")
+    .primaryKey()
+    .notNull()
+    .references(() => user.id),
+  stripeCustomerId: text("stripeCustomerId"),
+});
+
+export type Customer = InferSelectModel<typeof customer>;
+
+export const product = pgTable("Product", {
+  id: text("id").primaryKey().notNull(),
+  active: boolean("active"),
+  name: text("name"),
+  description: text("description"),
+  image: text("image"),
+  metadata: jsonb("metadata"),
+});
+
+export type Product = InferSelectModel<typeof product>;
+
+export const price = pgTable("Price", {
+  id: text("id").primaryKey().notNull(),
+  productId: text("productId")
+    .notNull()
+    .references(() => product.id),
+  active: boolean("active"),
+  description: text("description"),
+  unitAmount: varchar("unitAmount", { length: 255 }),
+  currency: text("currency"),
+  type: varchar("type", { enum: ["one_time", "recurring"] }),
+  interval: varchar("interval", { enum: ["day", "week", "month", "year"] }),
+  intervalCount: varchar("intervalCount", { length: 255 }),
+  trialPeriodDays: varchar("trialPeriodDays", { length: 255 }),
+  metadata: jsonb("metadata"),
+});
+
+export type Price = InferSelectModel<typeof price>;
+
+export const subscription = pgTable("Subscription", {
+  id: text("id").primaryKey().notNull(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => user.id),
+  status: varchar("status", {
+    enum: [
+      "trialing",
+      "active",
+      "canceled",
+      "incomplete",
+      "incomplete_expired",
+      "past_due",
+      "unpaid",
+      "paused",
+    ],
+  }),
+  metadata: jsonb("metadata"),
+  priceId: text("priceId")
+    .notNull()
+    .references(() => price.id),
+  quantity: varchar("quantity", { length: 255 }),
+  cancelAtPeriodEnd: boolean("cancelAtPeriodEnd"),
+  created: timestamp("created").notNull().defaultNow(),
+  currentPeriodStart: timestamp("currentPeriodStart").notNull().defaultNow(),
+  currentPeriodEnd: timestamp("currentPeriodEnd").notNull().defaultNow(),
+  endedAt: timestamp("endedAt"),
+  cancelAt: timestamp("cancelAt"),
+  canceledAt: timestamp("canceledAt"),
+  trialStart: timestamp("trialStart"),
+  trialEnd: timestamp("trialEnd"),
+});
+
+export type Subscription = InferSelectModel<typeof subscription>;

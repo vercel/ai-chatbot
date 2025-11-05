@@ -1,0 +1,133 @@
+{
+  "_meta": {
+    "template_version": 0
+  },
+  "fixtures": [
+    {
+      "name": "prod_starter",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "Starter",
+        "description": "Perfect for individuals getting started",
+        "metadata": {
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "price_starter_month",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_starter:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 999,
+        "recurring": {
+          "interval": "month",
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "name": "price_starter_year",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_starter:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 9999,
+        "recurring": {
+          "interval": "year",
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "name": "prod_pro",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "Pro",
+        "description": "For professionals who need more power",
+        "metadata": {
+          "index": 1
+        }
+      }
+    },
+    {
+      "name": "price_pro_month",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_pro:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 1999,
+        "recurring": {
+          "interval": "month",
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "name": "price_pro_year",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_pro:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 19999,
+        "recurring": {
+          "interval": "year",
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "name": "prod_enterprise",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "Enterprise",
+        "description": "For teams and organizations",
+        "metadata": {
+          "index": 2
+        }
+      }
+    },
+    {
+      "name": "price_enterprise_month",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_enterprise:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 4999,
+        "recurring": {
+          "interval": "month",
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "name": "price_enterprise_year",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_enterprise:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 49999,
+        "recurring": {
+          "interval": "year",
+          "interval_count": 1
+        }
+      }
+    }
+  ]
+}
