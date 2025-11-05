@@ -131,6 +131,8 @@ const MAX_FEED_LIMIT = 10;
 const DEFAULT_ITEMS_PER_FEED = 3;
 const MAX_ITEMS_PER_FEED = 5;
 const FETCH_TIMEOUT_MS = 8000;
+const DEFAULT_INSTRUCTIONS =
+  "Summarize key developments from the fetched Indonesian headlines. Cite feed sources by name and URL. If important topics are missing, fall back to google_search + url_context.";
 
 type FeedArticle = {
   title?: string;
@@ -413,6 +415,9 @@ export const getIndonesianNewsFeeds = tool({
         success: false,
         feeds: [] as FeedResult[],
         errors: [{ message: "No feeds selected", feed: null }],
+        requestedFeeds: [],
+        itemsPerFeed,
+        instructions: DEFAULT_INSTRUCTIONS,
       };
     }
 
@@ -447,8 +452,7 @@ export const getIndonesianNewsFeeds = tool({
       errors: errors.length > 0 ? errors : undefined,
       requestedFeeds: feedsToFetch.map((feed) => feed.id),
       itemsPerFeed,
-      instructions:
-        "Summarize key developments from the fetched Indonesian headlines. Cite feed sources by name and URL. If important topics are missing, fall back to google_search + url_context.",
+      instructions: DEFAULT_INSTRUCTIONS,
     };
   },
-});
+} as any);
