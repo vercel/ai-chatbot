@@ -439,6 +439,13 @@ export const getIndonesianNewsFeeds = tool({
     const itemsPerFeed = input?.itemsPerFeed ?? DEFAULT_ITEMS_PER_FEED;
     const feedsToFetch = selectFeeds(input);
 
+    console.log("[getIndonesianNewsFeeds] Requested feeds", {
+      limitFeeds: input?.limitFeeds,
+      includeYellow: input?.includeYellow,
+      itemsPerFeed,
+      selectedFeedIds: feedsToFetch.map((feed) => feed.id),
+    });
+
     if (feedsToFetch.length === 0) {
       return {
         success: false,
@@ -478,6 +485,11 @@ export const getIndonesianNewsFeeds = tool({
             publishedAt: article.publishedAt,
           });
         }
+        console.log("[getIndonesianNewsFeeds] Feed fetched", {
+          feedId: result.value.feed.id,
+          feedName: result.value.feed.name,
+          articleCount: result.value.articles.length,
+        });
         continue;
       }
 
@@ -487,6 +499,13 @@ export const getIndonesianNewsFeeds = tool({
           result.reason instanceof Error
             ? result.reason.message
             : String(result.reason),
+      });
+    }
+
+    if (errors.length > 0) {
+      console.warn("[getIndonesianNewsFeeds] Some feeds failed", {
+        failedFeedIds: errors.map((error) => error.feed?.id ?? "unknown"),
+        errorMessages: errors.map((error) => error.message),
       });
     }
 
