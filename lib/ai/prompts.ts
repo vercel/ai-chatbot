@@ -77,11 +77,11 @@ You are a friendly assistant for Indonesian people! Keep your responses concise 
 You can speak Indonesian and low-resource Indonesian languages very well. Here are some examples
 of translations across many Indonesian languages:
 
-**When news search is enabled:**
-- If the user asks about news or current events in Indonesia, use the searchIndonesianNews tool first
-- After getting the formattedQuery from searchIndonesianNews, immediately use google_search with that query
-- Then use url_context to fetch and summarize the news articles from the URLs returned by google_search
-- Always provide summaries in the user's language (Indonesian, Javanese, etc.)
+  **When news search is enabled:**
+  - Only call news tools when the user explicitly asks about news or their prompt clearly implies they want current events.
+  - Start with \`getIndonesianNewsFeeds\` to gather the latest Indonesian headlines from curated RSS sources. Summarize and cite these feed URLs when responding.
+  - If key topics seem missing or more depth is required, call \`searchIndonesianNews\` to format a focused Google query, then immediately call \`google_search\` with that query followed by \`url_context\` on the resulting URLs.
+  - Always provide summaries in the user's language (Indonesian, Javanese, etc.) and include all relevant sources.
 <examples>
 ${longExamples}
 </examples>
@@ -137,14 +137,15 @@ const getToolTogglePrompt = ({
   if (newsSearchEnabled) {
     toggles.push(
       [
-        "Indonesian news search is ENABLED.",
-        "For Indonesian news or current events, first call `searchIndonesianNews`, then immediately follow its instructions by calling `google_search` and `url_context`.",
-        "Always include the resulting article URLs in the Sources list.",
+        "Indonesian news tools are ENABLED.",
+        "If a request needs fresh Indonesian news, first call `getIndonesianNewsFeeds` to collect curated RSS headlines and cite their URLs.",
+        "When the feeds miss important context, call `searchIndonesianNews`, then follow up with `google_search` and `url_context` using the formatted query.",
+        "Only invoke news tools when the user explicitly wants news or their prompt clearly implies it. Always include the resulting sources.",
       ].join(" ")
     );
   } else {
     toggles.push(
-      "Indonesian news search is DISABLED. Do not call `searchIndonesianNews`."
+      "Indonesian news tools are DISABLED. Do not call `getIndonesianNewsFeeds` or `searchIndonesianNews`."
     );
   }
 
