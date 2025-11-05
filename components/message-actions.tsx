@@ -124,7 +124,7 @@ export function PureMessageActions({
   }
 
   return (
-    <Actions className="ml-1 gap-0.5 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 transition-opacity">
+    <Actions className="gap-0.5 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 transition-opacity">
   <Action className="p-0 size-8 rounded-sm" onClick={handleCopy} tooltip="Copy">
         <Copy />
       </Action>

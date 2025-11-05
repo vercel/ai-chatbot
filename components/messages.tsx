@@ -4,7 +4,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
-import { memo, useEffect, useMemo, useRef } from "react";
+import { Fragment, memo, useEffect, useMemo, useRef } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
@@ -132,19 +132,32 @@ function PureMessages({
         style={{ overflowAnchor: "none" }}
       >
         <ConversationContent className="flex flex-col gap-2 md:gap-2 py-2 pb-32">
-    {uniqueMessages.map((message, index) => (
-            <>
+    {uniqueMessages.map((message, index) => {
+            // Determine if this assistant message has visible content yet
+            const hasVisibleAssistantContent =
+              message.role !== "assistant"
+                ? false
+                : (message.parts || []).some((p: any) =>
+                    (p.type === "text" && typeof (p as any).text === "string" && (p as any).text.trim()) ||
+                    (p as any).type === "image"
+                  );
+
+            const isAssistantPending = message.role === "assistant" && !hasVisibleAssistantContent;
+            const isLast = uniqueMessages.length - 1 === index;
+            const rowIsLoading = message.role === "assistant"
+              ? isAssistantPending || (status === "streaming" && isLast)
+              : (status === "streaming" && isLast);
+
+            return (
+            <Fragment key={`row-${message.id}-${index}`}>
               <PreviewMessage
                 chatId={chatId}
-                isLoading={
-                  status === "streaming" && uniqueMessages.length - 1 === index
-                }
+                isLoading={rowIsLoading}
                 isReadonly={isReadonly}
-                key={`${message.id}-${index}`}
                 message={message}
                 regenerate={regenerate}
                 requiresScrollPadding={
-                  hasSentMessage && index === uniqueMessages.length - 1
+                  hasSentMessage && isLast
                 }
                 setMessages={setMessages}
                 userId={userId}
@@ -157,11 +170,11 @@ function PureMessages({
 
               <AnimatePresence mode="wait">
                 {showLoader && !hasAssistantAfterUser && index === lastUserIndex && (
-                  <ThinkingMessage key="thinking" variant={loaderVariant} />
+      <ThinkingMessage key={`thinking-${message.id}`} variant={loaderVariant} />
                 )}
               </AnimatePresence>
-            </>
-          ))}
+    </Fragment>
+          );})}
 
           <div
             className="min-h-6 min-w-6 shrink-0"
