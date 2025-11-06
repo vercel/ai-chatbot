@@ -1,3 +1,5 @@
 {
-  "recommendations": ["biomejs.biome"]
+  "recommendations": [
+    "denoland.vscode-deno"
+  ]
 }
