@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { deleteAllChats } from "@/app/actions/history/delete";
+import { UserButton } from "@/components/custom/user-button";
 import { PlusIcon, TrashIcon } from "@/components/icons";
 import {
   getChatHistoryPaginationKey,
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   useSidebar,
@@ -123,6 +125,9 @@ export const AppSidebar = ({ user }: AppSidebarProps) => {
         <SidebarContent>
           <SidebarHistory user={user} />
         </SidebarContent>
+        <SidebarFooter>
+          <UserButton />
+        </SidebarFooter>
       </Sidebar>
 
       <AlertDialog

@@ -1,4 +1,4 @@
-import { Loader2Icon } from "lucide-react";
+import { ChevronUpIcon, Loader2Icon, LogOutIcon, SettingsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authclient } from "@/lib/auth-client";
@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
@@ -19,12 +20,13 @@ export const UserButton = () => {
   if (isPending) {
     return (
       <Button
+        className="w-full justify-start gap-2"
         data-testid="user-nav-button"
         disabled
-        size="icon"
         variant="ghost"
       >
         <Loader2Icon className="size-4 animate-spin" />
+        <span>loading...</span>
       </Button>
     );
   }
@@ -34,46 +36,62 @@ export const UserButton = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button data-testid="user-nav-button" size="icon" variant="ghost">
-          <Avatar>
-            <AvatarImage src={data?.user?.image ?? ""} />
-            <AvatarFallback>
-              {data?.user?.email?.slice(0, 2) ?? "??"}
-            </AvatarFallback>
-          </Avatar>
+        <Button
+          className="w-full justify-between gap-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+          data-testid="user-nav-button"
+          variant="ghost"
+        >
+          <div className="flex items-center gap-2">
+            {!isGuest && (
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={data?.user?.image ?? ""} />
+                <AvatarFallback className="text-xs">
+                  {data?.user?.email?.slice(0, 2) ?? "??"}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <span className="truncate text-sm">
+              {isGuest ? "Guest" : data?.user?.email}
+            </span>
+          </div>
+          <ChevronUpIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-(--radix-popper-anchor-width)"
+        align="end"
+        className="w-56"
         data-testid="user-nav-menu"
         side="top"
       >
-        <DropdownMenuItem asChild data-testid="user-nav-item-auth">
-          <button
-            className="w-full cursor-pointer"
-            onClick={async () => {
-              if (isPending) {
-                toast({
-                  type: "error",
-                  description:
-                    "checking authentication status, please try again",
-                });
+        <DropdownMenuItem disabled>
+          <SettingsIcon className="mr-2 h-4 w-4" />
+          <span>settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          data-testid="user-nav-item-auth"
+          onClick={async () => {
+            if (isPending) {
+              toast({
+                type: "error",
+                description:
+                  "checking authentication status, please try again",
+              });
 
-                return;
-              }
+              return;
+            }
 
-              if (isGuest) {
-                router.push("/login");
-              } else {
-                await authclient.signOut();
-                router.push("/");
-                router.refresh();
-              }
-            }}
-            type="button"
-          >
-            {isGuest ? "Login" : "Sign out"}
-          </button>
+            if (isGuest) {
+              router.push("/login");
+            } else {
+              await authclient.signOut();
+              router.push("/");
+              router.refresh();
+            }
+          }}
+        >
+          <LogOutIcon className="mr-2 h-4 w-4" />
+          <span>{isGuest ? "login" : "logout"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

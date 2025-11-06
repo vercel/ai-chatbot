@@ -9,6 +9,7 @@ import {
   ModelSelectorCommandList,
   ModelSelector as ModelSelectorComponent,
   ModelSelectorContent,
+  ModelSelectorHeader,
   ModelSelectorTrigger,
 } from "../ai-elements/model-selector";
 import { Button } from "../ui/button";
@@ -42,6 +43,7 @@ export const ModelSelector = ({ model, onModelChange }: ModelSelectorProps) => {
         </Button>
       </ModelSelectorTrigger>
       <ModelSelectorContent>
+        <ModelSelectorHeader />
         <ModelSelectorCommand>
           <ModelSelectorCommandInput />
           <ModelSelectorCommandList>

@@ -262,7 +262,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                 return (
                   <div className="flex flex-col gap-6">
                     {groupedChats.today.length > 0 && (
-                      <div>
+                      <div key="today">
                         <div className="px-2 py-1 text-sidebar-foreground/50 text-xs">
                           Today
                         </div>
@@ -282,7 +282,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     )}
 
                     {groupedChats.yesterday.length > 0 && (
-                      <div>
+                      <div key="yesterday">
                         <div className="px-2 py-1 text-sidebar-foreground/50 text-xs">
                           Yesterday
                         </div>
@@ -302,7 +302,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     )}
 
                     {groupedChats.lastWeek.length > 0 && (
-                      <div>
+                      <div key="lastweek">
                         <div className="px-2 py-1 text-sidebar-foreground/50 text-xs">
                           Last 7 days
                         </div>
@@ -322,7 +322,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     )}
 
                     {groupedChats.lastMonth.length > 0 && (
-                      <div>
+                      <div key="lastmonth">
                         <div className="px-2 py-1 text-sidebar-foreground/50 text-xs">
                           Last 30 days
                         </div>
@@ -342,7 +342,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     )}
 
                     {groupedChats.older.length > 0 && (
-                      <div>
+                      <div key="older">
                         <div className="px-2 py-1 text-sidebar-foreground/50 text-xs">
                           Older than last month
                         </div>

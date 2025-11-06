@@ -6,7 +6,6 @@ import { memo } from "react";
 import { useWindowSize } from "usehooks-ts";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./custom/theme-toggle";
-import { UserButton } from "./custom/user-button";
 import { PlusIcon, VercelIcon } from "./icons";
 import { SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { VisibilitySelector, type VisibilityType } from "./visibility-selector";
@@ -54,17 +53,16 @@ function PureChatHeader({
         />
       )}
 
-      <Button asChild size="sm">
+      <Button asChild className="h-8 gap-2" size="sm" variant="ghost">
         <Link
           href={"https://vercel.com/templates/next.js/nextjs-ai-chatbot"}
           rel="noreferrer"
-          target="_noblank"
+          target="_blank"
         >
           <VercelIcon size={16} />
-          Deploy with Vercel
+          <span className="text-sm">Deploy</span>
         </Link>
       </Button>
-      <UserButton />
     </header>
   );
 }

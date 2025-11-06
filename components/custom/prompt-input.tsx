@@ -1,7 +1,6 @@
 "use client";
 
 import type { ChatStatus } from "ai";
-import { GlobeIcon } from "lucide-react";
 import { useRef } from "react";
 import {
   PromptInputActionAddAttachments,
@@ -11,13 +10,11 @@ import {
   PromptInputAttachment,
   PromptInputAttachments,
   PromptInputBody,
-  PromptInputButton,
   PromptInput as PromptInputComponent,
   PromptInputFooter,
   PromptInputHeader,
   type PromptInputMessage,
   PromptInputProvider,
-  PromptInputSpeechButton,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
@@ -67,11 +64,6 @@ export const PromptInput = ({
                 <PromptInputActionAddAttachments />
               </PromptInputActionMenuContent>
             </PromptInputActionMenu>
-            <PromptInputSpeechButton textareaRef={textareaRef} />
-            <PromptInputButton>
-              <GlobeIcon size={16} />
-              <span>Search</span>
-            </PromptInputButton>
             <ModelSelector model={model} onModelChange={onModelChange} />
           </PromptInputTools>
           <PromptInputSubmit status={status} />
