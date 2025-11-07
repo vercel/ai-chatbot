@@ -58,5 +58,13 @@
       "tag": "0007_flowery_ben_parker",
       "breakpoints": true
     }
+    ,
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1762454400000,
+      "tag": "0008_add_user_role",
+      "breakpoints": true
+    }
   ]
 }
