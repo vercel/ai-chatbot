@@ -113,6 +113,10 @@ export async function POST(request: Request) {
     if (!session?.user) {
       return new ChatSDKError("unauthorized:chat").toResponse();
     }
+    // Block users without permission to use chat (e.g., banned)
+    if (session.user.role === "banned") {
+      return new ChatSDKError("forbidden:chat").toResponse();
+    }
 
     const userType: UserType = session.user.type;
 

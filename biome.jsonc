@@ -9,6 +9,13 @@
       "!hooks/use-mobile.ts"
     ]
   },
+  "assist": {
+    "actions": {
+      "source": {
+        "useSortedAttributes": "off"
+      }
+    }
+  },
   "linter": {
     "rules": {
       "suspicious": {
@@ -33,7 +40,8 @@
       },
       "nursery": {
         /* Too many false positives */
-        "noUnnecessaryConditions": "off"
+        "noUnnecessaryConditions": "off",
+        "useSortedClasses": "off"
       },
       "complexity": {
         /* Needs more work to fix */
