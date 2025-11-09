@@ -5,6 +5,7 @@ import {
   wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
+import { supportsWebSearch } from "./models";
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -34,3 +35,24 @@ export const myProvider = isTestEnvironment
         "artifact-model": gateway.languageModel("xai/grok-2-1212"),
       },
     });
+
+/**
+ * Builds provider-specific options based on model capabilities
+ */
+export function buildProviderOptions(modelId: string) {
+  if (!supportsWebSearch(modelId)) {
+    return;
+  }
+
+  const options = {
+    xai: {
+      searchParameters: {
+        mode: "auto" as const,
+        returnCitations: true,
+        maxSearchResults: 10,
+      },
+    },
+  };
+
+  return options;
+}
