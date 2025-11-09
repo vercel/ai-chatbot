@@ -98,14 +98,30 @@ export function sanitizeText(text: string) {
 }
 
 export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
-  return messages.map((message) => ({
-    id: message.id,
-    role: message.role as 'user' | 'assistant' | 'system',
-    parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
-    metadata: {
-      createdAt: formatISO(message.createdAt),
-    },
-  }));
+  return messages.map((message) => {
+    const parts = [...(message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[])];
+
+    if (message.searchResults) {
+      // Handle both old format {query, sources} and new format [sources]
+      const searchResultsData = Array.isArray(message.searchResults)
+        ? message.searchResults
+        : (message.searchResults as any).sources || [];
+
+      parts.push({
+        type: 'data-searchResults',
+        data: searchResultsData,
+      } as UIMessagePart<CustomUIDataTypes, ChatTools>);
+    }
+
+    return {
+      id: message.id,
+      role: message.role as 'user' | 'assistant' | 'system',
+      parts,
+      metadata: {
+        createdAt: formatISO(message.createdAt),
+      },
+    };
+  });
 }
 
 export function getTextFromMessage(message: ChatMessage | UIMessage): string {

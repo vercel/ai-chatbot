@@ -21,7 +21,7 @@ import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
-import { myProvider } from "@/lib/ai/providers";
+import { buildProviderOptions, myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
@@ -39,7 +39,7 @@ import {
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, SearchSource } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
@@ -168,6 +168,7 @@ export async function POST(request: Request) {
           parts: message.parts,
           attachments: [],
           createdAt: new Date(),
+          searchResults: null,
         },
       ],
     });
@@ -176,6 +177,7 @@ export async function POST(request: Request) {
     await createStreamId({ streamId, chatId: id });
 
     let finalMergedUsage: AppUsage | undefined;
+    let searchResultsData: SearchSource[] | null = null;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -203,6 +205,7 @@ export async function POST(request: Request) {
               dataStream,
             }),
           },
+          providerOptions: buildProviderOptions(selectedChatModel),
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",
@@ -241,6 +244,46 @@ export async function POST(request: Request) {
           },
         });
 
+        (async () => {
+          try {
+            const sources = await result.sources;
+
+            if (sources && sources.length > 0) {
+
+              const validSources = sources.filter(
+                (source): source is typeof source & { url: string } =>
+                  "url" in source && typeof source.url === "string"
+              );
+
+              // Deduplicate by URL - workaround for AI SDK duplicate sources issue
+              // TODO: Remove once https://github.com/vercel/ai/issues/9771 is fixed
+              const seenUrls = new Set<string>();
+              const uniqueSources = validSources.filter((source) => {
+                if (seenUrls.has(source.url)) {
+                  return false;
+                }
+                seenUrls.add(source.url);
+                return true;
+              });
+
+              if (uniqueSources.length > 0) {
+                searchResultsData = uniqueSources.map((source) => ({
+                  title: source.title || source.url,
+                  url: source.url,
+                  favicon: `https://www.google.com/s2/favicons?domain=${new URL(source.url).hostname}&sz=32`,
+                }));
+
+                dataStream.write({
+                  type: "data-searchResults",
+                  data: searchResultsData,
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Error processing search results:", error);
+          }
+        })();
+
         result.consumeStream();
 
         dataStream.merge(
@@ -259,6 +302,9 @@ export async function POST(request: Request) {
             createdAt: new Date(),
             attachments: [],
             chatId: id,
+            // Add search results to assistant messages
+            searchResults:
+              currentMessage.role === "assistant" ? searchResultsData : null,
           })),
         });
 
