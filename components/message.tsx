@@ -126,6 +126,33 @@ const extractSourcesFromMessage = (message: ChatMessage): SourceItem[] => {
           );
         }
       }
+      continue;
+    }
+
+    if (
+      part.type === "dynamic-tool" &&
+      part.toolName === "getIndonesianNewsFeeds" &&
+      part.state === "output-available"
+    ) {
+      const output = (part.output ?? {}) as {
+        sources?: Array<{
+          articleUrl?: string;
+          articleTitle?: string;
+          feedName?: string;
+        }>;
+      };
+
+      if (Array.isArray(output.sources)) {
+        for (const source of output.sources) {
+          if (source.articleUrl) {
+            addSource(
+              source.articleUrl,
+              source.articleTitle ?? source.feedName ?? undefined
+            );
+          }
+        }
+      }
+      continue;
     }
   }
 

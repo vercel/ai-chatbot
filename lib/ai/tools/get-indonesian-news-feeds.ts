@@ -290,7 +290,15 @@ const normalizeArticles = (
   itemsPerFeed: number,
   feed: FeedDef
 ): FeedArticle[] => {
-  const parsed = parser.parse(xml) as Record<string, unknown>;
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = parser.parse(xml) as Record<string, unknown>;
+  } catch (error) {
+    console.error(`[getIndonesianNewsFeeds] XML parsing error for ${feed.name}:`, error);
+    throw new Error(
+      `Failed to parse XML from ${feed.name} (${feed.url}): ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 
   const rssChannel =
     parsed && typeof parsed === "object" && "rss" in parsed
@@ -371,10 +379,28 @@ const fetchWithTimeout = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      throw new Error(
+        `Request failed with status ${response.status} for ${feed.name} (${feed.url})`
+      );
     }
 
     const xml = await response.text();
+    if (!xml || xml.trim().length === 0) {
+      throw new Error(`Empty response from ${feed.name} (${feed.url})`);
+    }
+
+    // Check if the response is HTML instead of XML
+    const trimmedXml = xml.trim();
+    if (
+      trimmedXml.startsWith("<!DOCTYPE") ||
+      trimmedXml.startsWith("<html") ||
+      trimmedXml.startsWith("<!doctype")
+    ) {
+      throw new Error(
+        `Received HTML instead of XML from ${feed.name} (${feed.url}). The feed URL may be incorrect.`
+      );
+    }
+
     const articles = normalizeArticles(xml, itemsPerFeed, feed);
 
     return {
@@ -382,6 +408,18 @@ const fetchWithTimeout = async (
       fetchedAt: new Date().toISOString(),
       articles,
     };
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        throw new Error(
+          `Request timeout after ${FETCH_TIMEOUT_MS}ms for ${feed.name} (${feed.url})`
+        );
+      }
+      throw error;
+    }
+    throw new Error(
+      `Unknown error fetching ${feed.name} (${feed.url}): ${String(error)}`
+    );
   } finally {
     clearTimeout(timeoutId);
   }
