@@ -11,8 +11,36 @@ import {
   useContext,
 } from "react";
 
+type ToolUIPartApproval =
+  | {
+      id: string;
+      approved?: never;
+      reason?: never;
+    }
+  | {
+      id: string;
+      approved: boolean;
+      reason?: string;
+    }
+  | {
+      id: string;
+      approved: true;
+      reason?: string;
+    }
+  | {
+      id: string;
+      approved: true;
+      reason?: string;
+    }
+  | {
+      id: string;
+      approved: false;
+      reason?: string;
+    }
+  | undefined;
+
 type ConfirmationContextValue = {
-  approval: ToolUIPart["approval"];
+  approval: ToolUIPartApproval;
   state: ToolUIPart["state"];
 };
 
@@ -31,7 +59,7 @@ const useConfirmation = () => {
 };
 
 export type ConfirmationProps = ComponentProps<typeof Alert> & {
-  approval?: ToolUIPart["approval"];
+  approval?: ToolUIPartApproval;
   state: ToolUIPart["state"];
 };
 

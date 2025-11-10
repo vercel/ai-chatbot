@@ -10,14 +10,14 @@ import { cn } from "@/lib/utils";
 import { BrainIcon, ChevronDownIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { createContext, memo, useContext, useEffect, useState } from "react";
-import { Response } from "./response";
+import { Streamdown } from "streamdown";
 import { Shimmer } from "./shimmer";
 
 type ReasoningContextValue = {
   isStreaming: boolean;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  duration: number;
+  duration: number | undefined;
 };
 
 const ReasoningContext = createContext<ReasoningContextValue | null>(null);
@@ -59,7 +59,7 @@ export const Reasoning = memo(
     });
     const [duration, setDuration] = useControllableState({
       prop: durationProp,
-      defaultProp: 0,
+      defaultProp: undefined,
     });
 
     const [hasAutoClosed, setHasAutoClosed] = useState(false);
@@ -168,7 +168,7 @@ export const ReasoningContent = memo(
       )}
       {...props}
     >
-      <Response className="grid gap-2">{children}</Response>
+      <Streamdown {...props}>{children}</Streamdown>
     </CollapsibleContent>
   )
 );

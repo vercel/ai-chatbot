@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Element } from "hast";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import {
   type ComponentProps,
@@ -31,7 +30,7 @@ const CodeBlockContext = createContext<CodeBlockContextType>({
 
 const lineNumberTransformer: ShikiTransformer = {
   name: "line-numbers",
-  line(node: Element, line: number) {
+  line(node, line) {
     node.children.unshift({
       type: "element",
       tagName: "span",
