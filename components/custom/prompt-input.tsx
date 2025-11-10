@@ -74,7 +74,7 @@ export const PromptInput = ({
     modelsByProvider[provider].push(m);
   }
 
-  const [chef, modelId] = model.split("/");
+  const [chef] = model.split("/");
 
   return (
     <PromptInputComponent globalDrop multiple onSubmit={handleSubmit}>
