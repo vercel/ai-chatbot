@@ -3,6 +3,7 @@
 import type { ChatStatus } from "ai";
 import { CheckIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import {
   ModelSelector,
   ModelSelectorContent,
@@ -102,7 +103,7 @@ export const PromptInput = ({
             <ModelSelectorTrigger asChild>
               <Button className="w-[200px] justify-between" variant="ghost">
                 {chef && <ModelSelectorLogo provider={chef} />}
-                {modelId && <ModelSelectorName>{modelId}</ModelSelectorName>}
+                <ModelSelectorName>{model}</ModelSelectorName>
               </Button>
             </ModelSelectorTrigger>
             <ModelSelectorContent>
@@ -122,6 +123,7 @@ export const PromptInput = ({
                           onSelect={() => {
                             onModelChange(modelItem.id);
                             setModelSelectorOpen(false);
+                            saveChatModelAsCookie(modelItem.id);
                           }}
                           value={modelItem.id}
                         >
