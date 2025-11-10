@@ -1,8 +1,10 @@
 "use client";
 
+import type { UseChatHelpers } from "@ai-sdk/react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
+import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
@@ -41,6 +43,7 @@ export function ChatSidebarContent({
   isReadonly,
   autoResume,
   onMessagesChange,
+  onArtifactPropsReady,
 }: {
   chatId: string;
   initialChatModel: string;
@@ -49,6 +52,23 @@ export function ChatSidebarContent({
   isReadonly: boolean;
   autoResume: boolean;
   onMessagesChange?: (messages: ChatMessage[]) => void;
+  onArtifactPropsReady?: (props: {
+    attachments: Attachment[];
+    chatId: string;
+    input: string;
+    isReadonly: boolean;
+    messages: ChatMessage[];
+    regenerate: UseChatHelpers<ChatMessage>["regenerate"];
+    selectedModelId: string;
+    selectedVisibilityType: VisibilityType;
+    sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+    setAttachments: Dispatch<SetStateAction<Attachment[]>>;
+    setInput: Dispatch<SetStateAction<string>>;
+    setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+    status: UseChatHelpers<ChatMessage>["status"];
+    stop: UseChatHelpers<ChatMessage>["stop"];
+    votes: Vote[] | undefined;
+  }) => void;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId,
@@ -157,6 +177,46 @@ export function ChatSidebarContent({
     onMessagesChange?.(messages);
   }, [messages, onMessagesChange]);
 
+  useEffect(() => {
+    if (onArtifactPropsReady && isArtifactVisible) {
+      onArtifactPropsReady({
+        attachments,
+        chatId,
+        input,
+        isReadonly,
+        messages,
+        regenerate,
+        selectedModelId: currentModelId,
+        selectedVisibilityType: visibilityType,
+        sendMessage,
+        setAttachments,
+        setInput,
+        setMessages,
+        status,
+        stop,
+        votes,
+      });
+    }
+  }, [
+    attachments,
+    chatId,
+    input,
+    isArtifactVisible,
+    isReadonly,
+    messages,
+    onArtifactPropsReady,
+    regenerate,
+    currentModelId,
+    visibilityType,
+    sendMessage,
+    setAttachments,
+    setInput,
+    setMessages,
+    status,
+    stop,
+    votes,
+  ]);
+
   return (
     <>
       <div className="flex h-full flex-1 flex-col overflow-hidden bg-transparent">
@@ -202,24 +262,6 @@ export function ChatSidebarContent({
           )}
         </div>
       </div>
-
-      <Artifact
-        attachments={attachments}
-        chatId={chatId}
-        input={input}
-        isReadonly={isReadonly}
-        messages={messages}
-        regenerate={regenerate}
-        selectedModelId={currentModelId}
-        selectedVisibilityType={visibilityType}
-        sendMessage={sendMessage}
-        setAttachments={setAttachments}
-        setInput={setInput}
-        setMessages={setMessages}
-        status={status}
-        stop={stop}
-        votes={votes}
-      />
 
       <AlertDialog
         onOpenChange={setShowCreditCardAlert}

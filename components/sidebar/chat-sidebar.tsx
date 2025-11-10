@@ -2,7 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import type { User } from "next-auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { ChatSidebarContent } from "@/components/sidebar/chat-sidebar-content";
 import { DataStreamHandler } from "@/components/shared/data-stream-handler";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, Attachment } from "@/lib/types";
 import { generateUUID } from "@/lib/utils";
 import { PlusIcon, CrossIcon, ClockRewind } from "@/components/shared/icons";
 import { SidebarHistory } from "./sidebar-history";
@@ -25,6 +26,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useArtifactSelector } from "@/hooks/use-artifact";
+import { Artifact } from "@/components/artifact/artifact";
+import type { UseChatHelpers } from "@ai-sdk/react";
+import type { Vote } from "@/lib/db/schema";
 
 export function ChatSidebar({
   chatId: initialChatId,
@@ -48,10 +53,28 @@ export function ChatSidebar({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toggleSidebar } = useSidebar();
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   const chatIdFromUrl = searchParams.get("chatId");
   const chatId = chatIdFromUrl || initialChatId;
   const [hasMessages, setHasMessages] = useState(initialMessages.length > 0);
+  const [artifactProps, setArtifactProps] = useState<{
+    attachments: Attachment[];
+    chatId: string;
+    input: string;
+    isReadonly: boolean;
+    messages: ChatMessage[];
+    regenerate: UseChatHelpers<ChatMessage>["regenerate"];
+    selectedModelId: string;
+    selectedVisibilityType: VisibilityType;
+    sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
+    setAttachments: Dispatch<SetStateAction<Attachment[]>>;
+    setInput: Dispatch<SetStateAction<string>>;
+    setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+    status: UseChatHelpers<ChatMessage>["status"];
+    stop: UseChatHelpers<ChatMessage>["stop"];
+    votes: Vote[] | undefined;
+  } | null>(null);
 
   const handleNewChat = () => {
     const newChatId = generateUUID();
@@ -66,12 +89,18 @@ export function ChatSidebar({
     onMessagesChange?.(messages);
   };
 
+  useEffect(() => {
+    if (!isArtifactVisible) {
+      setArtifactProps(null);
+    }
+  }, [isArtifactVisible]);
+
   return (
     <>
-      <Sidebar variant="inset" side="right" className="md:order-last [&_[data-slot=sidebar-container]]:!p-0 [&_[data-sidebar=sidebar]]:!bg-transparent">
+      <Sidebar variant="inset" side="right" className="md:order-last **:data-[slot=sidebar-container]:p-0! **:data-[sidebar=sidebar]:bg-transparent!">
         <SidebarHeader>
           <SidebarMenu>
-            <div className="flex flex-row items-center justify-between gap-2 px-2 py-1">
+            <div className="flex flex-row items-center justify-between gap-2 p-1">
               <div className="flex flex-row items-center gap-1">
                 {hasMessages && (
                   <Tooltip>
@@ -133,15 +162,35 @@ export function ChatSidebar({
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent className="flex flex-col overflow-hidden">
-          <ChatSidebarContent
-            autoResume={!!chatIdFromUrl}
-            chatId={chatId}
-            initialChatModel={initialChatModel}
-            initialMessages={initialMessages}
-            initialVisibilityType={initialVisibilityType}
-            isReadonly={isReadonly}
-            onMessagesChange={handleMessagesChange}
-          />
+          {isArtifactVisible ? (
+            <div className="flex h-full flex-row overflow-hidden">
+              <div className="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border">
+                <ChatSidebarContent
+                  autoResume={!!chatIdFromUrl}
+                  chatId={chatId}
+                  initialChatModel={initialChatModel}
+                  initialMessages={initialMessages}
+                  initialVisibilityType={initialVisibilityType}
+                  isReadonly={isReadonly}
+                  onMessagesChange={handleMessagesChange}
+                  onArtifactPropsReady={setArtifactProps}
+                />
+              </div>
+              {artifactProps && (
+                <Artifact {...artifactProps} variant="sidebar" />
+              )}
+            </div>
+          ) : (
+            <ChatSidebarContent
+              autoResume={!!chatIdFromUrl}
+              chatId={chatId}
+              initialChatModel={initialChatModel}
+              initialMessages={initialMessages}
+              initialVisibilityType={initialVisibilityType}
+              isReadonly={isReadonly}
+              onMessagesChange={handleMessagesChange}
+            />
+          )}
         </SidebarContent>
       </Sidebar>
       <DataStreamHandler />

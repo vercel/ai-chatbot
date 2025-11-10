@@ -3,12 +3,13 @@ import Script from "next/script";
 import { Suspense } from "react";
 import { DataStreamProvider } from "@/components/shared/data-stream-provider";
 import { ChatSidebarWrapper } from "@/components/sidebar/chat-sidebar-wrapper";
+import { SidebarWidthManager } from "@/components/sidebar/sidebar-width-manager";
+import { ChatSidebarTrigger } from "@/components/sidebar/chat-sidebar-trigger";
+import TopNav from "@/components/custom/topnav";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { NavigationMenuDemo } from "@/components/custom/topnav";
 import { auth } from "../(auth)/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -34,6 +35,7 @@ async function SidebarWrapper({
         } as React.CSSProperties
       }
     >
+      <SidebarWidthManager />
       <Suspense
         fallback={
           <div className="flex h-full items-center justify-center p-4">
@@ -46,8 +48,8 @@ async function SidebarWrapper({
       <SidebarInset className="md:order-first">
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex w-full items-center gap-2 px-4">
-            <NavigationMenuDemo />
-            <SidebarTrigger className="ml-auto transition-opacity data-[state=open]:opacity-0 data-[state=open]:pointer-events-none" />
+            <TopNav />
+            <ChatSidebarTrigger />
           </div>
         </header>
         {children}
