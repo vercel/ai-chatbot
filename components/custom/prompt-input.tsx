@@ -101,7 +101,11 @@ export const PromptInput = ({
             open={modelSelectorOpen}
           >
             <ModelSelectorTrigger asChild>
-              <Button className="w-[200px] justify-between" variant="ghost">
+              <Button
+                className="w-[200px] justify-between"
+                size="sm"
+                variant="ghost"
+              >
                 {chef && <ModelSelectorLogo provider={chef} />}
                 <ModelSelectorName>{model}</ModelSelectorName>
               </Button>
