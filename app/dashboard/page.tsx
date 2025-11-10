@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/inset-sidebar";
+import { NavigationMenuDemo } from "@/components/custom/topnav";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,10 +21,8 @@ export default function Page() {
       <AppSidebar className="md:order-last" />
       <SidebarInset className="md:order-first">
         <header className="flex h-16 shrink-0 items-center gap-2">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
+          <div className="flex w-full items-center gap-2 px-4">
+            <Breadcrumb className="ml-2">
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
@@ -36,8 +35,11 @@ export default function Page() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+            {/* `ml-auto` pushes this to the far right of the row */}
+            <SidebarTrigger className="ml-auto" />
           </div>
         </header>
+
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
             <div className="aspect-video rounded-xl bg-muted/50" />
