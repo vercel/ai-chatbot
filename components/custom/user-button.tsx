@@ -70,7 +70,7 @@ export const UserButton = () => {
       >
         <DropdownMenuItem disabled>
           <SettingsIcon className="size-4" />
-          <span>settings</span>
+          <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -92,7 +92,7 @@ export const UserButton = () => {
           }}
         >
           <LogOutIcon className="size-4" />
-          <span>{isGuest ? "login" : "logout"}</span>
+          <span>{isGuest ? "Login" : "Logout"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
