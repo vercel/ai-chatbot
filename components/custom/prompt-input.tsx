@@ -1,5 +1,6 @@
 "use client";
 
+import type { UseChatHelpers } from "@ai-sdk/react";
 import type { ChatStatus } from "ai";
 import { CheckIcon } from "lucide-react";
 import { useRef, useState } from "react";
@@ -40,28 +41,21 @@ type PromptInputProps = {
   status: ChatStatus;
   model: string;
   onModelChange: (model: string) => void;
+  sendMessage: UseChatHelpers<never>["sendMessage"];
 };
 
 export const PromptInput = ({
   model,
   onModelChange,
   status,
+  sendMessage,
 }: PromptInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { models } = useGateway();
   const attachments = usePromptInputAttachments();
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
 
-  const handleSubmit = (message: PromptInputMessage) => {
-    const hasText = Boolean(message.text);
-    const hasAttachments = Boolean(message.files?.length);
-
-    if (!(hasText || hasAttachments)) {
-      return;
-    }
-
-    // submit.
-  };
+  const handleSubmit = (message: PromptInputMessage) => sendMessage(message);
 
   // Group models by their provider
   const modelsByProvider: Record<string, typeof models> = {};

@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { UseChatHelpers } from "@ai-sdk/react";
 import type { ChatStatus, FileUIPart } from "ai";
 import {
   CornerDownLeftIcon,
@@ -411,10 +412,7 @@ export const PromptInputActionAddAttachments = ({
   );
 };
 
-export type PromptInputMessage = {
-  text?: string;
-  files?: FileUIPart[];
-};
+export type PromptInputMessage = UseChatHelpers<never>["sendMessage"];
 
 export type PromptInputProps = Omit<
   HTMLAttributes<HTMLFormElement>,
