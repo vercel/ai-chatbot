@@ -9,7 +9,6 @@ import {
   type Dispatch,
   memo,
   type SetStateAction,
-  startTransition,
   useCallback,
   useEffect,
   useMemo,
@@ -18,12 +17,8 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
-import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { uploadFile as uploadFileAction } from "@/app/actions/files/upload";
 import { getavailablemodels } from "@/app/actions/models/get";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { SelectItem } from "@/components/ui/select";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
@@ -34,21 +29,11 @@ import { Context } from "./ai-elements/context";
 import {
   PromptInput,
   PromptInputFooter,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
-  PromptInputModelSelectTrigger,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
 } from "./ai-elements/prompt-input";
-import {
-  ArrowUpIcon,
-  ChevronDownIcon,
-  CpuIcon,
-  LockIcon,
-  PaperclipIcon,
-  StopIcon,
-} from "./icons";
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
@@ -545,96 +530,7 @@ function PureModelSelectorCompact({
     [filtered, isEnabled]
   );
 
-  return (
-    <PromptInputModelSelect
-      onValueChange={(modelName) => {
-        const model = chatModels.find((m) => m.name === modelName);
-        if (model) {
-          setOptimisticModelId(model.id);
-          onModelChange?.(model.id);
-          startTransition(() => {
-            saveChatModelAsCookie(model.id);
-          });
-        }
-      }}
-      value={selectedModel?.name}
-    >
-      <PromptInputModelSelectTrigger>
-        <Button className="h-8 px-2" variant="ghost">
-          <CpuIcon size={16} />
-          <span className="hidden font-medium text-xs sm:block">
-            {selectedModel?.name}
-          </span>
-          <ChevronDownIcon size={16} />
-        </Button>
-      </PromptInputModelSelectTrigger>
-      <PromptInputModelSelectContent className="max-h-[360px] min-w-[260px] overflow-y-auto p-0">
-        <div className="sticky top-0 z-10 border-b bg-popover/95 px-1.5 py-1 backdrop-blur supports-backdrop-filter:bg-popover/60">
-          <div className="relative">
-            <Input
-              autoFocus
-              className="h-8 rounded-md pr-7 pl-3 text-xs"
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search models..."
-              value={search}
-            />
-            {search && (
-              <button
-                className="-translate-y-1/2 absolute top-1/2 right-2 rounded px-1 text-muted-foreground hover:bg-accent"
-                onClick={() => setSearch("")}
-                type="button"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col gap-0.5 p-0.5">
-          {enabledModels.map((model) => (
-            <SelectItem className="pr-2 pl-2" key={model.id} value={model.name}>
-              <div className="flex w-full items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <ProviderIcon provider={model.id.split("/")[0]} />
-                  <div className="truncate font-medium text-[11px]">
-                    {model.name}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <Badge
-                    className="px-1.5 py-0 text-[10px]"
-                    variant="secondary"
-                  >
-                    free
-                  </Badge>
-                </div>
-              </div>
-            </SelectItem>
-          ))}
-
-          {disabledModels.map((model) => (
-            <SelectItem
-              className="pr-2 pl-2"
-              disabled
-              key={model.id}
-              value={model.name}
-            >
-              <div className="flex w-full items-center justify-between gap-2 opacity-60">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <ProviderIcon provider={model.id.split("/")[0]} />
-                  <div className="truncate font-medium text-[11px]">
-                    {model.name}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <LockIcon size={12} />
-                </div>
-              </div>
-            </SelectItem>
-          ))}
-        </div>
-      </PromptInputModelSelectContent>
-    </PromptInputModelSelect>
-  );
+  return null;
 }
 
 const ModelSelectorCompact = memo(PureModelSelectorCompact);
