@@ -1,3 +1,12 @@
+/**
+ * Database query functions using Drizzle ORM.
+ * 
+ * All database operations use snake_case column names.
+ * Functions are organized by entity (user, chat, message, vote, document, suggestion, stream).
+ * 
+ * @module lib/db/queries
+ */
+
 import "server-only";
 
 import {
@@ -14,8 +23,8 @@ import {
 } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import type { ArtifactKind } from "@/components/artifact";
-import type { VisibilityType } from "@/components/visibility-selector";
+import type { ArtifactKind } from "@/components/artifact/artifact";
+import type { VisibilityType } from "@/components/shared/visibility-selector";
 import { ChatSDKError } from "../errors";
 import type { AppUsage } from "../usage";
 import { generateUUID } from "../utils";
@@ -94,8 +103,8 @@ export async function saveChat({
   try {
     return await db.insert(chat).values({
       id,
-      createdAt: new Date(),
-      userId,
+      created_at: new Date(),
+      user_id: userId,
       title,
       visibility,
     });
@@ -106,9 +115,9 @@ export async function saveChat({
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
-    await db.delete(vote).where(eq(vote.chatId, id));
-    await db.delete(message).where(eq(message.chatId, id));
-    await db.delete(stream).where(eq(stream.chatId, id));
+    await db.delete(vote).where(eq(vote.chat_id, id));
+    await db.delete(message).where(eq(message.chat_id, id));
+    await db.delete(stream).where(eq(stream.chat_id, id));
 
     const [chatsDeleted] = await db
       .delete(chat)
@@ -128,7 +137,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
     const userChats = await db
       .select({ id: chat.id })
       .from(chat)
-      .where(eq(chat.userId, userId));
+      .where(eq(chat.user_id, userId));
 
     if (userChats.length === 0) {
       return { deletedCount: 0 };
@@ -136,13 +145,13 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 
     const chatIds = userChats.map(c => c.id);
 
-    await db.delete(vote).where(inArray(vote.chatId, chatIds));
-    await db.delete(message).where(inArray(message.chatId, chatIds));
-    await db.delete(stream).where(inArray(stream.chatId, chatIds));
+    await db.delete(vote).where(inArray(vote.chat_id, chatIds));
+    await db.delete(message).where(inArray(message.chat_id, chatIds));
+    await db.delete(stream).where(inArray(stream.chat_id, chatIds));
 
     const deletedChats = await db
       .delete(chat)
-      .where(eq(chat.userId, userId))
+      .where(eq(chat.user_id, userId))
       .returning();
 
     return { deletedCount: deletedChats.length };
@@ -174,10 +183,10 @@ export async function getChatsByUserId({
         .from(chat)
         .where(
           whereCondition
-            ? and(whereCondition, eq(chat.userId, id))
-            : eq(chat.userId, id)
+            ? and(whereCondition, eq(chat.user_id, id))
+            : eq(chat.user_id, id)
         )
-        .orderBy(desc(chat.createdAt))
+        .orderBy(desc(chat.created_at))
         .limit(extendedLimit);
 
     let filteredChats: Chat[] = [];
@@ -196,7 +205,7 @@ export async function getChatsByUserId({
         );
       }
 
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(gt(chat.created_at, selectedChat.created_at));
     } else if (endingBefore) {
       const [selectedChat] = await db
         .select()
@@ -211,7 +220,7 @@ export async function getChatsByUserId({
         );
       }
 
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(lt(chat.created_at, selectedChat.created_at));
     } else {
       filteredChats = await query();
     }
@@ -256,8 +265,8 @@ export async function getMessagesByChatId({ id }: { id: string }) {
     return await db
       .select()
       .from(message)
-      .where(eq(message.chatId, id))
-      .orderBy(asc(message.createdAt));
+      .where(eq(message.chat_id, id))
+      .orderBy(asc(message.created_at));
   } catch (_error) {
     throw new ChatSDKError(
       "bad_request:database",
@@ -279,18 +288,18 @@ export async function voteMessage({
     const [existingVote] = await db
       .select()
       .from(vote)
-      .where(and(eq(vote.messageId, messageId)));
+      .where(and(eq(vote.message_id, messageId)));
 
     if (existingVote) {
       return await db
         .update(vote)
-        .set({ isUpvoted: type === "up" })
-        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+        .set({ is_upvoted: type === "up" })
+        .where(and(eq(vote.message_id, messageId), eq(vote.chat_id, chatId)));
     }
     return await db.insert(vote).values({
-      chatId,
-      messageId,
-      isUpvoted: type === "up",
+      chat_id: chatId,
+      message_id: messageId,
+      is_upvoted: type === "up",
     });
   } catch (_error) {
     throw new ChatSDKError("bad_request:database", "Failed to vote message");
@@ -299,7 +308,7 @@ export async function voteMessage({
 
 export async function getVotesByChatId({ id }: { id: string }) {
   try {
-    return await db.select().from(vote).where(eq(vote.chatId, id));
+    return await db.select().from(vote).where(eq(vote.chat_id, id));
   } catch (_error) {
     throw new ChatSDKError(
       "bad_request:database",
@@ -329,8 +338,8 @@ export async function saveDocument({
         title,
         kind,
         content,
-        userId,
-        createdAt: new Date(),
+        user_id: userId,
+        created_at: new Date(),
       })
       .returning();
   } catch (_error) {
@@ -344,7 +353,7 @@ export async function getDocumentsById({ id }: { id: string }) {
       .select()
       .from(document)
       .where(eq(document.id, id))
-      .orderBy(asc(document.createdAt));
+      .orderBy(asc(document.created_at));
 
     return documents;
   } catch (_error) {
@@ -361,7 +370,7 @@ export async function getDocumentById({ id }: { id: string }) {
       .select()
       .from(document)
       .where(eq(document.id, id))
-      .orderBy(desc(document.createdAt));
+      .orderBy(desc(document.created_at));
 
     return selectedDocument;
   } catch (_error) {
@@ -384,14 +393,14 @@ export async function deleteDocumentsByIdAfterTimestamp({
       .delete(suggestion)
       .where(
         and(
-          eq(suggestion.documentId, id),
-          gt(suggestion.documentCreatedAt, timestamp)
+          eq(suggestion.document_id, id),
+          gt(suggestion.document_created_at, timestamp)
         )
       );
 
     return await db
       .delete(document)
-      .where(and(eq(document.id, id), gt(document.createdAt, timestamp)))
+      .where(and(eq(document.id, id), gt(document.created_at, timestamp)))
       .returning();
   } catch (_error) {
     throw new ChatSDKError(
@@ -425,7 +434,7 @@ export async function getSuggestionsByDocumentId({
     return await db
       .select()
       .from(suggestion)
-      .where(eq(suggestion.documentId, documentId));
+      .where(eq(suggestion.document_id, documentId));
   } catch (_error) {
     throw new ChatSDKError(
       "bad_request:database",
@@ -457,7 +466,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
       .select({ id: message.id })
       .from(message)
       .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp))
+        and(eq(message.chat_id, chatId), gte(message.created_at, timestamp))
       );
 
     const messageIds = messagesToDelete.map(
@@ -468,13 +477,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
       await db
         .delete(vote)
         .where(
-          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds))
+          and(eq(vote.chat_id, chatId), inArray(vote.message_id, messageIds))
         );
 
       return await db
         .delete(message)
         .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds))
+          and(eq(message.chat_id, chatId), inArray(message.id, messageIds))
         );
     }
   } catch (_error) {
@@ -513,10 +522,10 @@ export async function updateChatLastContextById({
   try {
     return await db
       .update(chat)
-      .set({ lastContext: context })
+      .set({ last_context: context })
       .where(eq(chat.id, chatId));
   } catch (error) {
-    console.warn("Failed to update lastContext for chat", chatId, error);
+    console.warn("Failed to update last_context for chat", chatId, error);
     return;
   }
 }
@@ -536,11 +545,11 @@ export async function getMessageCountByUserId({
     const [stats] = await db
       .select({ count: count(message.id) })
       .from(message)
-      .innerJoin(chat, eq(message.chatId, chat.id))
+      .innerJoin(chat, eq(message.chat_id, chat.id))
       .where(
         and(
-          eq(chat.userId, id),
-          gte(message.createdAt, twentyFourHoursAgo),
+          eq(chat.user_id, id),
+          gte(message.created_at, twentyFourHoursAgo),
           eq(message.role, "user")
         )
       )
@@ -565,7 +574,7 @@ export async function createStreamId({
   try {
     await db
       .insert(stream)
-      .values({ id: streamId, chatId, createdAt: new Date() });
+      .values({ id: streamId, chat_id: chatId, created_at: new Date() });
   } catch (_error) {
     throw new ChatSDKError(
       "bad_request:database",
@@ -579,8 +588,8 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     const streamIds = await db
       .select({ id: stream.id })
       .from(stream)
-      .where(eq(stream.chatId, chatId))
-      .orderBy(asc(stream.createdAt))
+      .where(eq(stream.chat_id, chatId))
+      .orderBy(asc(stream.created_at))
       .execute();
 
     return streamIds.map(({ id }) => id);

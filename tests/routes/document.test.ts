@@ -147,7 +147,7 @@ test.describe
       const [firstDocument, secondDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.delete(
-        `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`
+        `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.created_at}`
       );
       expect(response.status()).toBe(200);
 

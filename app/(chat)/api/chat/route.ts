@@ -17,7 +17,7 @@ import type { ModelCatalog } from "tokenlens/core";
 import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
 import { auth, type UserType } from "@/app/(auth)/auth";
-import type { VisibilityType } from "@/components/visibility-selector";
+import type { VisibilityType } from "@/components/shared/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
     let messagesFromDb: DBMessage[] = [];
 
     if (chat) {
-      if (chat.userId !== session.user.id) {
+      if (chat.user_id !== session.user.id) {
         return new ChatSDKError("forbidden:chat").toResponse();
       }
       // Only fetch messages if chat already exists
@@ -162,12 +162,12 @@ export async function POST(request: Request) {
     await saveMessages({
       messages: [
         {
-          chatId: id,
+          chat_id: id,
           id: message.id,
           role: "user",
           parts: message.parts,
           attachments: [],
-          createdAt: new Date(),
+          created_at: new Date(),
         },
       ],
     });
@@ -256,9 +256,9 @@ export async function POST(request: Request) {
             id: currentMessage.id,
             role: currentMessage.role,
             parts: currentMessage.parts,
-            createdAt: new Date(),
+            created_at: new Date(),
             attachments: [],
-            chatId: id,
+            chat_id: id,
           })),
         });
 
@@ -327,7 +327,7 @@ export async function DELETE(request: Request) {
 
   const chat = await getChatById({ id });
 
-  if (chat?.userId !== session.user.id) {
+  if (chat?.user_id !== session.user.id) {
     return new ChatSDKError("forbidden:chat").toResponse();
   }
 

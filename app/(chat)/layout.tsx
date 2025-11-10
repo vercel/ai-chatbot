@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import Script from "next/script";
 import { Suspense } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { DataStreamProvider } from "@/components/data-stream-provider";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { DataStreamProvider } from "@/components/shared/data-stream-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "../(auth)/auth";
 
@@ -38,11 +38,19 @@ export default function Layout({
           fallback={
             <SidebarProvider defaultOpen={true}>
               <AppSidebar user={undefined} />
-              <SidebarInset>{children}</SidebarInset>
+              <SidebarInset>
+                <div className="flex items-center justify-center p-4">
+                  <div className="animate-spin">Loading...</div>
+                </div>
+              </SidebarInset>
             </SidebarProvider>
           }
         >
-          <SidebarWrapper>{children}</SidebarWrapper>
+          <SidebarWrapper>
+            <Suspense fallback={<div className="p-4">Loading page...</div>}>
+              {children}
+            </Suspense>
+          </SidebarWrapper>
         </Suspense>
       </DataStreamProvider>
     </>

@@ -34,7 +34,7 @@ export const requestSuggestions = ({
 
       const suggestions: Omit<
         Suggestion,
-        "userId" | "createdAt" | "documentCreatedAt"
+        "user_id" | "created_at" | "document_created_at"
       >[] = [];
 
       const { elementStream } = streamObject({
@@ -53,12 +53,12 @@ export const requestSuggestions = ({
       for await (const element of elementStream) {
         // @ts-expect-error todo: fix type
         const suggestion: Suggestion = {
-          originalText: element.originalSentence,
-          suggestedText: element.suggestedSentence,
+          original_text: element.originalSentence,
+          suggested_text: element.suggestedSentence,
           description: element.description,
           id: generateUUID(),
-          documentId,
-          isResolved: false,
+          document_id: documentId,
+          is_resolved: false,
         };
 
         dataStream.write({
@@ -76,9 +76,9 @@ export const requestSuggestions = ({
         await saveSuggestions({
           suggestions: suggestions.map((suggestion) => ({
             ...suggestion,
-            userId,
-            createdAt: new Date(),
-            documentCreatedAt: document.createdAt,
+            user_id: userId,
+            created_at: new Date(),
+            document_created_at: document.created_at,
           })),
         });
       }

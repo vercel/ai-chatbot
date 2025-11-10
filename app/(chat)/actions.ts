@@ -2,7 +2,7 @@
 
 import { generateText, type UIMessage } from "ai";
 import { cookies } from "next/headers";
-import type { VisibilityType } from "@/components/visibility-selector";
+import type { VisibilityType } from "@/components/shared/visibility-selector";
 import { myProvider } from "@/lib/ai/providers";
 import { titlePrompt } from "@/lib/ai/prompts";
 import {
@@ -35,8 +35,8 @@ export async function deleteTrailingMessages({ id }: { id: string }) {
   const [message] = await getMessageById({ id });
 
   await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chatId,
-    timestamp: message.createdAt,
+    chatId: message.chat_id,
+    timestamp: message.created_at,
   });
 }
 

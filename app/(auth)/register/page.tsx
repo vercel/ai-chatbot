@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
-import { AuthForm } from "@/components/auth-form";
-import { SubmitButton } from "@/components/submit-button";
-import { toast } from "@/components/toast";
+import { AuthForm } from "@/components/auth/auth-form";
+import { SubmitButton } from "@/components/shared/submit-button";
+import { toast } from "@/components/shared/toast";
 import { type RegisterActionState, register } from "../actions";
 
 export default function Page() {

@@ -1,3 +1,12 @@
+/**
+ * Database schema definitions using Drizzle ORM.
+ * 
+ * All tables and columns use snake_case naming convention.
+ * This schema supports AI SDK 5 message parts format.
+ * 
+ * @module lib/db/schema
+ */
+
 import type { InferSelectModel } from "drizzle-orm";
 import {
   boolean,
@@ -13,7 +22,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AppUsage } from "../usage";
 
-export const user = pgTable("User", {
+export const user = pgTable("users", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   email: varchar("email", { length: 64 }).notNull(),
   password: varchar("password", { length: 64 }),
@@ -21,84 +30,48 @@ export const user = pgTable("User", {
 
 export type User = InferSelectModel<typeof user>;
 
-export const chat = pgTable("Chat", {
+export const chat = pgTable("chats", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  createdAt: timestamp("createdAt").notNull(),
+  created_at: timestamp("created_at").notNull(),
   title: text("title").notNull(),
-  userId: uuid("userId")
+  user_id: uuid("user_id")
     .notNull()
     .references(() => user.id),
   visibility: varchar("visibility", { enum: ["public", "private"] })
     .notNull()
     .default("private"),
-  lastContext: jsonb("lastContext").$type<AppUsage | null>(),
+  last_context: jsonb("last_context").$type<AppUsage | null>(),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
 
-// DEPRECATED: The following schema is deprecated and will be removed in the future.
-// Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
-export const messageDeprecated = pgTable("Message", {
+export const message = pgTable("messages", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  chatId: uuid("chatId")
-    .notNull()
-    .references(() => chat.id),
-  role: varchar("role").notNull(),
-  content: json("content").notNull(),
-  createdAt: timestamp("createdAt").notNull(),
-});
-
-export type MessageDeprecated = InferSelectModel<typeof messageDeprecated>;
-
-export const message = pgTable("Message_v2", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
-  chatId: uuid("chatId")
+  chat_id: uuid("chat_id")
     .notNull()
     .references(() => chat.id),
   role: varchar("role").notNull(),
   parts: json("parts").notNull(),
   attachments: json("attachments").notNull(),
-  createdAt: timestamp("createdAt").notNull(),
+  created_at: timestamp("created_at").notNull(),
 });
 
 export type DBMessage = InferSelectModel<typeof message>;
 
-// DEPRECATED: The following schema is deprecated and will be removed in the future.
-// Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
-export const voteDeprecated = pgTable(
-  "Vote",
-  {
-    chatId: uuid("chatId")
-      .notNull()
-      .references(() => chat.id),
-    messageId: uuid("messageId")
-      .notNull()
-      .references(() => messageDeprecated.id),
-    isUpvoted: boolean("isUpvoted").notNull(),
-  },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.chatId, table.messageId] }),
-    };
-  }
-);
-
-export type VoteDeprecated = InferSelectModel<typeof voteDeprecated>;
-
 export const vote = pgTable(
-  "Vote_v2",
+  "votes",
   {
-    chatId: uuid("chatId")
+    chat_id: uuid("chat_id")
       .notNull()
       .references(() => chat.id),
-    messageId: uuid("messageId")
+    message_id: uuid("message_id")
       .notNull()
       .references(() => message.id),
-    isUpvoted: boolean("isUpvoted").notNull(),
+    is_upvoted: boolean("is_upvoted").notNull(),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.chatId, table.messageId] }),
+      pk: primaryKey({ columns: [table.chat_id, table.message_id] }),
     };
   }
 );
@@ -106,22 +79,22 @@ export const vote = pgTable(
 export type Vote = InferSelectModel<typeof vote>;
 
 export const document = pgTable(
-  "Document",
+  "documents",
   {
     id: uuid("id").notNull().defaultRandom(),
-    createdAt: timestamp("createdAt").notNull(),
+    created_at: timestamp("created_at").notNull(),
     title: text("title").notNull(),
     content: text("content"),
     kind: varchar("text", { enum: ["text", "code", "image", "sheet"] })
       .notNull()
       .default("text"),
-    userId: uuid("userId")
+    user_id: uuid("user_id")
       .notNull()
       .references(() => user.id),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.id, table.createdAt] }),
+      pk: primaryKey({ columns: [table.id, table.created_at] }),
     };
   }
 );
@@ -129,25 +102,25 @@ export const document = pgTable(
 export type Document = InferSelectModel<typeof document>;
 
 export const suggestion = pgTable(
-  "Suggestion",
+  "suggestions",
   {
     id: uuid("id").notNull().defaultRandom(),
-    documentId: uuid("documentId").notNull(),
-    documentCreatedAt: timestamp("documentCreatedAt").notNull(),
-    originalText: text("originalText").notNull(),
-    suggestedText: text("suggestedText").notNull(),
+    document_id: uuid("document_id").notNull(),
+    document_created_at: timestamp("document_created_at").notNull(),
+    original_text: text("original_text").notNull(),
+    suggested_text: text("suggested_text").notNull(),
     description: text("description"),
-    isResolved: boolean("isResolved").notNull().default(false),
-    userId: uuid("userId")
+    is_resolved: boolean("is_resolved").notNull().default(false),
+    user_id: uuid("user_id")
       .notNull()
       .references(() => user.id),
-    createdAt: timestamp("createdAt").notNull(),
+    created_at: timestamp("created_at").notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.id] }),
     documentRef: foreignKey({
-      columns: [table.documentId, table.documentCreatedAt],
-      foreignColumns: [document.id, document.createdAt],
+      columns: [table.document_id, table.document_created_at],
+      foreignColumns: [document.id, document.created_at],
     }),
   })
 );
@@ -155,16 +128,16 @@ export const suggestion = pgTable(
 export type Suggestion = InferSelectModel<typeof suggestion>;
 
 export const stream = pgTable(
-  "Stream",
+  "streams",
   {
     id: uuid("id").notNull().defaultRandom(),
-    chatId: uuid("chatId").notNull(),
-    createdAt: timestamp("createdAt").notNull(),
+    chat_id: uuid("chat_id").notNull(),
+    created_at: timestamp("created_at").notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.id] }),
     chatRef: foreignKey({
-      columns: [table.chatId],
+      columns: [table.chat_id],
       foreignColumns: [chat.id],
     }),
   })

@@ -78,7 +78,7 @@ export function getDocumentTimestampByIndex(
   if (!documents) { return new Date(); }
   if (index > documents.length) { return new Date(); }
 
-  return documents[index].createdAt;
+  return documents[index].created_at;
 }
 
 export function getTrailingMessageId({
@@ -103,7 +103,7 @@ export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
     role: message.role as 'user' | 'assistant' | 'system',
     parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
     metadata: {
-      createdAt: formatISO(message.createdAt),
+      createdAt: formatISO(message.created_at),
     },
   }));
 }

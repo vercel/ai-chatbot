@@ -2,7 +2,7 @@
 
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { useEffect } from "react";
-import { useDataStream } from "@/components/data-stream-provider";
+import { useDataStream } from "@/components/shared/data-stream-provider";
 import type { ChatMessage } from "@/lib/types";
 
 export type UseAutoResumeParams = {

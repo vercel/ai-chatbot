@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/inset-sidebar";
+import { AppSidebar } from "@/components/sidebar/inset-sidebar";
 import { NavigationMenuDemo } from "@/components/custom/topnav";
 import {
   Breadcrumb,
