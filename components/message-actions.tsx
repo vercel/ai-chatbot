@@ -6,7 +6,10 @@ import { useCopyToClipboard } from "usehooks-ts";
 import { voteOnMessage } from "@/app/actions/vote/patch";
 import type { Vote_v2 as Vote } from "@/generated/client";
 import type { ChatMessage } from "@/lib/types";
-import { Action, Actions } from "./ai-elements/actions";
+import {
+  MessageAction,
+  MessageActions as MessageActionsContainer,
+} from "./ai-elements/message";
 import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
 
 export function PureMessageActions({
@@ -48,33 +51,33 @@ export function PureMessageActions({
   // User messages get edit (on hover) and copy actions
   if (message.role === "user") {
     return (
-      <Actions className="-mr-0.5 justify-end">
+      <MessageActionsContainer className="-mr-0.5 justify-end">
         <div className="relative">
           {setMode && (
-            <Action
+            <MessageAction
               className="-left-10 absolute top-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover/message:opacity-100"
               data-testid="message-edit-button"
               onClick={() => setMode("edit")}
               tooltip="Edit"
             >
               <PencilEditIcon />
-            </Action>
+            </MessageAction>
           )}
-          <Action onClick={handleCopy} tooltip="Copy">
+          <MessageAction onClick={handleCopy} tooltip="Copy">
             <CopyIcon />
-          </Action>
+          </MessageAction>
         </div>
-      </Actions>
+      </MessageActionsContainer>
     );
   }
 
   return (
-    <Actions className="-ml-0.5">
-      <Action onClick={handleCopy} tooltip="Copy">
+    <MessageActionsContainer className="-ml-0.5">
+      <MessageAction onClick={handleCopy} tooltip="Copy">
         <CopyIcon />
-      </Action>
+      </MessageAction>
 
-      <Action
+      <MessageAction
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
         onClick={() => {
@@ -118,9 +121,9 @@ export function PureMessageActions({
         tooltip="Upvote Response"
       >
         <ThumbUpIcon />
-      </Action>
+      </MessageAction>
 
-      <Action
+      <MessageAction
         data-testid="message-downvote"
         disabled={vote && !vote.isUpvoted}
         onClick={() => {
@@ -164,8 +167,8 @@ export function PureMessageActions({
         tooltip="Downvote Response"
       >
         <ThumbDownIcon />
-      </Action>
-    </Actions>
+      </MessageAction>
+    </MessageActionsContainer>
   );
 }
 

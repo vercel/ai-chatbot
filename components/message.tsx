@@ -6,8 +6,7 @@ import { memo, useState } from "react";
 import type { Vote_v2 as Vote } from "@/generated/client";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
-import { MessageContent } from "./ai-elements/message";
-import { Response } from "./ai-elements/response";
+import { MessageContent, MessageResponse } from "./ai-elements/message";
 import {
   Tool,
   ToolContent,
@@ -138,7 +137,7 @@ const PurePreviewMessage = ({
                           : undefined
                       }
                     >
-                      <Response>{sanitizeText(part.text)}</Response>
+                      <MessageResponse>{sanitizeText(part.text)}</MessageResponse>
                     </MessageContent>
                   </div>
                 );
