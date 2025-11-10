@@ -1,0 +1,86 @@
+import { cookies } from "next/headers";
+import Script from "next/script";
+import { Suspense } from "react";
+import { DataStreamProvider } from "@/components/shared/data-stream-provider";
+import { ChatSidebarWrapper } from "@/components/sidebar/chat-sidebar-wrapper";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { NavigationMenuDemo } from "@/components/custom/topnav";
+import { auth } from "../(auth)/auth";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const SIDEBAR_WIDTH_CHAT = "24rem";
+
+async function SidebarWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [session, cookieStore] = await Promise.all([
+    auth(),
+    cookies(),
+  ]);
+  const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
+
+  return (
+    <SidebarProvider
+      defaultOpen={!isCollapsed}
+      style={
+        {
+          "--sidebar-width": SIDEBAR_WIDTH_CHAT,
+        } as React.CSSProperties
+      }
+    >
+      <Suspense
+        fallback={
+          <div className="flex h-full items-center justify-center p-4">
+            <Skeleton className="h-8 w-full" />
+          </div>
+        }
+      >
+        <ChatSidebarWrapper user={session?.user} />
+      </Suspense>
+      <SidebarInset className="md:order-first">
+        <header className="flex h-16 shrink-0 items-center gap-2">
+          <div className="flex w-full items-center gap-2 px-4">
+            <NavigationMenuDemo />
+            <SidebarTrigger className="ml-auto transition-opacity data-[state=open]:opacity-0 data-[state=open]:pointer-events-none" />
+          </div>
+        </header>
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
+
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <Script
+        src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
+        strategy="beforeInteractive"
+      />
+      <DataStreamProvider>
+        <Suspense
+          fallback={
+            <div className="flex min-h-screen items-center justify-center">
+              <div className="animate-spin">Loading...</div>
+            </div>
+          }
+        >
+          <SidebarWrapper>
+            {children}
+          </SidebarWrapper>
+        </Suspense>
+      </DataStreamProvider>
+    </>
+  );
+}
+

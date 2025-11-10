@@ -97,7 +97,13 @@ export function getChatHistoryPaginationKey(
   return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
 }
 
-export function SidebarHistory({ user }: { user: User | undefined }) {
+export function SidebarHistory({ 
+  user, 
+  initialHistory 
+}: { 
+  user: User | undefined;
+  initialHistory?: ChatHistory | null;
+}) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
 
@@ -108,7 +114,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     isLoading,
     mutate,
   } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
-    fallbackData: [],
+    fallbackData: initialHistory ? [initialHistory] : [],
   });
 
   const router = useRouter();
@@ -164,7 +170,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     );
   }
 
-  if (isLoading) {
+  // Only show loading skeleton if we don't have initial history data
+  if (isLoading && !initialHistory) {
     return (
       <SidebarGroup>
         <div className="px-2 py-1 text-sidebar-foreground/50 text-xs">
