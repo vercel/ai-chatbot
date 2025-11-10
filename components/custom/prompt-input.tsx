@@ -2,7 +2,7 @@
 
 import type { ChatStatus } from "ai";
 import { CheckIcon } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   ModelSelector,
   ModelSelectorContent,
@@ -27,10 +27,10 @@ import {
   PromptInputFooter,
   PromptInputHeader,
   type PromptInputMessage,
-  PromptInputProvider,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
+  usePromptInputAttachments,
 } from "@/components/ai-elements/prompt-input";
 import { Button } from "@/components/ui/button";
 import { useGateway } from "@/providers/gateway/client";
@@ -47,6 +47,9 @@ export const PromptInput = ({
   status,
 }: PromptInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { models } = useGateway();
+  const attachments = usePromptInputAttachments();
+  const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
 
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -58,8 +61,6 @@ export const PromptInput = ({
 
     // submit.
   };
-
-  const { models } = useGateway();
 
   // Group models by their provider
   const modelsByProvider: Record<string, typeof models> = {};
@@ -75,73 +76,76 @@ export const PromptInput = ({
   const [chef, modelId] = model.split("/");
 
   return (
-    <PromptInputProvider>
-      <PromptInputComponent globalDrop multiple onSubmit={handleSubmit}>
+    <PromptInputComponent globalDrop multiple onSubmit={handleSubmit}>
+      {attachments.files.length > 0 && (
         <PromptInputHeader>
           <PromptInputAttachments>
             {(attachment) => <PromptInputAttachment data={attachment} />}
           </PromptInputAttachments>
         </PromptInputHeader>
-        <PromptInputBody>
-          <PromptInputTextarea ref={textareaRef} />
-        </PromptInputBody>
-        <PromptInputFooter>
-          <PromptInputTools>
-            <PromptInputActionMenu>
-              <PromptInputActionMenuTrigger />
-              <PromptInputActionMenuContent>
-                <PromptInputActionAddAttachments />
-              </PromptInputActionMenuContent>
-            </PromptInputActionMenu>
-            <ModelSelector>
-              <ModelSelectorTrigger asChild>
-                <Button className="w-[200px] justify-between" variant="outline">
-                  {chef && <ModelSelectorLogo provider={chef} />}
-                  {modelId && <ModelSelectorName>{modelId}</ModelSelectorName>}
-                  <CheckIcon className="ml-2 size-4 shrink-0 opacity-50" />
-                </Button>
-              </ModelSelectorTrigger>
-              <ModelSelectorContent>
-                <ModelSelectorInput placeholder="Search models..." />
-                <ModelSelectorList>
-                  <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
-                  {Object.keys(modelsByProvider).map((modelChef) => (
-                    <ModelSelectorGroup heading={modelChef} key={modelChef}>
-                      {modelsByProvider[modelChef]
-                        .filter(
-                          (modelItem) =>
-                            modelItem.specification.provider === modelChef
-                        )
-                        .map((modelItem) => (
-                          <ModelSelectorItem
-                            key={modelItem.id}
-                            onSelect={() => {
-                              onModelChange(modelItem.id);
-                            }}
-                            value={modelItem.id}
-                          >
-                            <ModelSelectorLogo
-                              provider={modelItem.specification.provider}
-                            />
-                            <ModelSelectorName>
-                              {modelItem.name}
-                            </ModelSelectorName>
-                            {modelItem.id === model ? (
-                              <CheckIcon className="ml-auto size-4" />
-                            ) : (
-                              <div className="ml-auto size-4" />
-                            )}
-                          </ModelSelectorItem>
-                        ))}
-                    </ModelSelectorGroup>
-                  ))}
-                </ModelSelectorList>
-              </ModelSelectorContent>
-            </ModelSelector>
-          </PromptInputTools>
-          <PromptInputSubmit status={status} />
-        </PromptInputFooter>
-      </PromptInputComponent>
-    </PromptInputProvider>
+      )}
+      <PromptInputBody>
+        <PromptInputTextarea ref={textareaRef} />
+      </PromptInputBody>
+      <PromptInputFooter>
+        <PromptInputTools>
+          <PromptInputActionMenu>
+            <PromptInputActionMenuTrigger />
+            <PromptInputActionMenuContent>
+              <PromptInputActionAddAttachments />
+            </PromptInputActionMenuContent>
+          </PromptInputActionMenu>
+          <ModelSelector
+            onOpenChange={setModelSelectorOpen}
+            open={modelSelectorOpen}
+          >
+            <ModelSelectorTrigger asChild>
+              <Button className="w-[200px] justify-between" variant="ghost">
+                {chef && <ModelSelectorLogo provider={chef} />}
+                {modelId && <ModelSelectorName>{modelId}</ModelSelectorName>}
+              </Button>
+            </ModelSelectorTrigger>
+            <ModelSelectorContent>
+              <ModelSelectorInput placeholder="Search models..." />
+              <ModelSelectorList>
+                <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
+                {Object.keys(modelsByProvider).map((modelChef) => (
+                  <ModelSelectorGroup heading={modelChef} key={modelChef}>
+                    {modelsByProvider[modelChef]
+                      .filter(
+                        (modelItem) =>
+                          modelItem.specification.provider === modelChef
+                      )
+                      .map((modelItem) => (
+                        <ModelSelectorItem
+                          key={modelItem.id}
+                          onSelect={() => {
+                            onModelChange(modelItem.id);
+                            setModelSelectorOpen(false);
+                          }}
+                          value={modelItem.id}
+                        >
+                          <ModelSelectorLogo
+                            provider={modelItem.specification.provider}
+                          />
+                          <ModelSelectorName>
+                            {modelItem.name}
+                          </ModelSelectorName>
+                          {modelItem.id === model ? (
+                            <CheckIcon className="ml-auto size-4" />
+                          ) : (
+                            <div className="ml-auto size-4" />
+                          )}
+                        </ModelSelectorItem>
+                      ))}
+                  </ModelSelectorGroup>
+                ))}
+              </ModelSelectorList>
+            </ModelSelectorContent>
+          </ModelSelector>
+        </PromptInputTools>
+        <PromptInputSubmit status={status} />
+      </PromptInputFooter>
+    </PromptInputComponent>
   );
 };
