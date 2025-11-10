@@ -1,4 +1,9 @@
-import { ChevronUpIcon, Loader2Icon, LogOutIcon, SettingsIcon } from "lucide-react";
+import {
+  ChevronUpIcon,
+  Loader2Icon,
+  LogOutIcon,
+  SettingsIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authclient } from "@/lib/auth-client";
@@ -64,7 +69,7 @@ export const UserButton = () => {
         side="top"
       >
         <DropdownMenuItem disabled>
-          <SettingsIcon className="mr-2 h-4 w-4" />
+          <SettingsIcon className="size-4" />
           <span>settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -72,11 +77,7 @@ export const UserButton = () => {
           data-testid="user-nav-item-auth"
           onClick={async () => {
             if (isPending) {
-              toast({
-                type: "error",
-                description:
-                  "checking authentication status, please try again",
-              });
+              toast.error("checking authentication status, please try again");
 
               return;
             }
@@ -90,7 +91,7 @@ export const UserButton = () => {
             }
           }}
         >
-          <LogOutIcon className="mr-2 h-4 w-4" />
+          <LogOutIcon className="size-4" />
           <span>{isGuest ? "login" : "logout"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
