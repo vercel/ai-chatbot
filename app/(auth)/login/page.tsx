@@ -25,6 +25,7 @@ export default function Page() {
 
   const { update: updateSession } = useSession();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fix infinite loop on login
   useEffect(() => {
     if (state.status === "failed") {
       toast({
@@ -42,7 +43,7 @@ export default function Page() {
       router.refresh();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, router, updateSession]);
+  }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
