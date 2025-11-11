@@ -35,18 +35,35 @@ export async function completeOnboarding(
       name: formData.get("name"),
     });
 
-    // Update user record
+    // Update user record (create if doesn't exist)
     const client = postgres(process.env.POSTGRES_URL!);
     const db = drizzle(client);
 
-    await db
-      .update(user)
-      .set({
-        onboarding_completed: true,
-      })
-      .where(eq(user.id, authUser.id));
+    // Check if user exists
+    const [existingUser] = await db
+      .select()
+      .from(user)
+      .where(eq(user.id, authUser.id))
+      .limit(1);
 
-    redirect("/dashboard");
+    if (!existingUser) {
+      // Create user if doesn't exist
+      await db.insert(user).values({
+        id: authUser.id,
+        email: authUser.email ?? "",
+        onboarding_completed: true,
+      });
+    } else {
+      // Update existing user
+      await db
+        .update(user)
+        .set({
+          onboarding_completed: true,
+        })
+        .where(eq(user.id, authUser.id));
+    }
+
+    redirect("/");
   } catch (error) {
     if (error instanceof z.ZodError) {
       return {

@@ -11,7 +11,7 @@ const ARTIFACT_WIDTH_REM = 30;
 const COMBINED_WIDTH_REM = CHAT_WIDTH_REM + ARTIFACT_WIDTH_REM;
 
 // Responsive width constants
-const LAPTOP_SIDEBAR_WIDTH_PERCENT = 36; // Increased from 33% for more chat space
+const LAPTOP_SIDEBAR_WIDTH_PERCENT = 33; // Increased from 33% for more chat space
 const LAPTOP_SIDEBAR_WITH_ARTIFACT_PERCENT = 66;
 const LAPTOP_EXPANDED_NO_ARTIFACT_PERCENT = 60; // Max 60% when no artifact
 const LARGE_DESKTOP_MAX_PERCENT = 33.33; // 1/3 of screen

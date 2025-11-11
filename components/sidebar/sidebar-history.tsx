@@ -108,7 +108,7 @@ export function SidebarHistory({
   const params = useParams();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  const isDashboardRoute = pathname === "/";
   
   // Get chatId from URL params (main chat route) or search params (dashboard route)
   const id = isDashboardRoute 

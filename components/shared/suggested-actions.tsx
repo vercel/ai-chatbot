@@ -16,7 +16,7 @@ type SuggestedActionsProps = {
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   const pathname = usePathname();
-  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  const isDashboardRoute = pathname === "/";
   
   const suggestedActions = [
     "What are the advantages of using Next.js?",

@@ -108,8 +108,9 @@ export async function proxy(request: NextRequest) {
   });
 
   if (!token) {
-    // If no Supabase user and no NextAuth token, redirect to signin
-    if (!isSupabaseAuthRoute) {
+    // If no Supabase user and no NextAuth token, allow root route for marketing page
+    // Otherwise redirect to signin for protected routes
+    if (!isSupabaseAuthRoute && pathname !== "/") {
       const url = request.nextUrl.clone();
       url.pathname = "/signin";
       return NextResponse.redirect(url);

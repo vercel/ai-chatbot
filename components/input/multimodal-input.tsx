@@ -74,7 +74,7 @@ function PureMultimodalInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
   const pathname = usePathname();
-  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  const isDashboardRoute = pathname === "/";
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {

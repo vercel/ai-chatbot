@@ -13,7 +13,7 @@ export async function ChatSidebarWrapper({
   user: User | undefined;
 }) {
   if (!user) {
-    redirect("/api/auth/guest");
+    redirect("/signin");
   }
 
   const chatId = generateUUID();

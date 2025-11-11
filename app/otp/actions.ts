@@ -75,7 +75,7 @@ export async function verifyOTP(
       redirect("/onboarding");
     }
 
-    redirect("/dashboard");
+    redirect("/");
   } catch (error) {
     if (error instanceof z.ZodError) {
       return {

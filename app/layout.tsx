@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { DevBar } from "@/components/shared/dev-bar";
+import {
+  isDevelopmentEnvironment,
+  isStagingEnvironment,
+} from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
@@ -71,7 +77,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body
+        className={cn(
+          "antialiased",
+          (isDevelopmentEnvironment || isStagingEnvironment) && "pb-7"
+        )}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -79,7 +90,10 @@ export default function RootLayout({
           enableSystem
         >
           <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>
+            {children}
+            <DevBar />
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

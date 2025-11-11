@@ -160,7 +160,7 @@ export function ChatSidebarContent({
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  const isDashboardRoute = pathname === "/";
   const query = searchParams.get("query");
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);

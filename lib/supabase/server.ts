@@ -28,3 +28,31 @@ export async function createClient() {
   );
 }
 
+/**
+ * Check if user is authenticated by verifying the session
+ * Returns null if not authenticated or session is invalid
+ */
+export async function getAuthenticatedUser() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  // If there's an error or no user, return null
+  if (error || !user) {
+    return null;
+  }
+
+  // Verify session is still valid
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    return null;
+  }
+
+  return user;
+}
+

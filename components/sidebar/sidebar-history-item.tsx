@@ -41,7 +41,7 @@ const PureChatItem = ({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  const isDashboardRoute = pathname === "/";
   
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,

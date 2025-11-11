@@ -2,8 +2,10 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { signOut } from "next-auth/react"
-import { useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import type { User } from "@supabase/supabase-js"
+import { signOut } from "@/app/(app)/actions"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -40,10 +42,30 @@ const buildOptions: { title: string; href: string; description: string }[] = [
 
 export function NavigationMenuDemo() {
   const isMobile = useIsMobile()
-  const { data: session } = useSession()
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    
+    // Get initial user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+    })
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/" })
+    await signOut()
   }
 
   return (
@@ -74,7 +96,7 @@ export function NavigationMenuDemo() {
                 </NavigationMenuLink>
               </li>
               <li className="my-1 h-px bg-border" />
-              {session?.user ? (
+              {user ? (
                 <>
                   <li>
                     <NavigationMenuLink asChild>
@@ -82,7 +104,7 @@ export function NavigationMenuDemo() {
                         href="/profile"
                         className="block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                       >
-                        {session.user.email || "Profile"}
+                        {user.email || "Profile"}
                       </Link>
                     </NavigationMenuLink>
                   </li>
@@ -102,7 +124,7 @@ export function NavigationMenuDemo() {
                 <li>
                   <NavigationMenuLink asChild>
                     <Link
-                      href="/login"
+                      href="/signin"
                       className="block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
                       Log In...
