@@ -24,6 +24,7 @@ export default function Page() {
 
   const { update: updateSession } = useSession();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fix infinite loop on register
   useEffect(() => {
     if (state.status === "user_exists") {
       toast({ type: "error", description: "Account already exists!" });

@@ -231,28 +231,34 @@ function PureMultimodalInput({
     },
     [setAttachments, uploadFile]
   );
-  
+
   const handlePaste = useCallback(
     async (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
-      if (!items) return;
+      if (!items) {
+        return;
+      }
 
       const imageItems = Array.from(items).filter((item) =>
-        item.type.startsWith('image/'),
+        item.type.startsWith("image/")
       );
 
-      if (imageItems.length === 0) return;
+      if (imageItems.length === 0) {
+        return;
+      }
 
       // Prevent default paste behavior for images
       event.preventDefault();
 
-      setUploadQueue((prev) => [...prev, 'Pasted image']);
+      setUploadQueue((prev) => [...prev, "Pasted image"]);
 
       try {
         const uploadPromises = imageItems.map(async (item) => {
           const file = item.getAsFile();
-          if (!file) return;
-          return uploadFile(file);
+          if (!file) {
+            return;
+          }
+          return await uploadFile(file);
         });
 
         const uploadedAttachments = await Promise.all(uploadPromises);
@@ -260,7 +266,7 @@ function PureMultimodalInput({
           (attachment) =>
             attachment !== undefined &&
             attachment.url !== undefined &&
-            attachment.contentType !== undefined,
+            attachment.contentType !== undefined
         );
 
         setAttachments((curr) => [
@@ -268,22 +274,24 @@ function PureMultimodalInput({
           ...(successfullyUploadedAttachments as Attachment[]),
         ]);
       } catch (error) {
-        console.error('Error uploading pasted images:', error);
-        toast.error('Failed to upload pasted image(s)');
+        console.error("Error uploading pasted images:", error);
+        toast.error("Failed to upload pasted image(s)");
       } finally {
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments, uploadFile]
   );
 
   // Add paste event listener to textarea
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      return;
+    }
 
-    textarea.addEventListener('paste', handlePaste);
-    return () => textarea.removeEventListener('paste', handlePaste);
+    textarea.addEventListener("paste", handlePaste);
+    return () => textarea.removeEventListener("paste", handlePaste);
   }, [handlePaste]);
 
   return (
@@ -367,7 +375,7 @@ function PureMultimodalInput({
           />{" "}
           <Context {...contextProps} />
         </div>
-        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
+        <PromptInputToolbar className="border-top-0! border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -385,9 +393,9 @@ function PureMultimodalInput({
           ) : (
             <PromptInputSubmit
               className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              data-testid="send-button"
               disabled={!input.trim() || uploadQueue.length > 0}
               status={status}
-	      data-testid="send-button"
             >
               <ArrowUpIcon size={14} />
             </PromptInputSubmit>
@@ -482,7 +490,7 @@ function PureModelSelectorCompact({
       value={selectedModel?.name}
     >
       <Trigger asChild>
-        <Button variant="ghost" className="h-8 px-2">
+        <Button className="h-8 px-2" variant="ghost">
           <CpuIcon size={16} />
           <span className="hidden font-medium text-xs sm:block">
             {selectedModel?.name}

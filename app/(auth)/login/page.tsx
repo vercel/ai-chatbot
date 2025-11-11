@@ -25,6 +25,7 @@ export default function Page() {
 
   const { update: updateSession } = useSession();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fix infinite loop on login
   useEffect(() => {
     if (state.status === "failed") {
       toast({
