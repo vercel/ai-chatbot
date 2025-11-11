@@ -26,6 +26,7 @@ export const user = pgTable("users", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   email: varchar("email", { length: 64 }).notNull(),
   password: varchar("password", { length: 64 }),
+  onboarding_completed: boolean("onboarding_completed").notNull().default(false),
 });
 
 export type User = InferSelectModel<typeof user>;

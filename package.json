@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.7",
+    "@ai-sdk/openai": "^2.0.0",
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/react": "2.0.88",
     "@ai-sdk/xai": "2.0.31",
@@ -43,6 +44,8 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@radix-ui/react-visually-hidden": "^1.2.4",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.81.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/blob": "^2.0.0",
     "@vercel/functions": "^3.2.0",

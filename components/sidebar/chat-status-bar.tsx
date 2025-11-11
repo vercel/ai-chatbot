@@ -233,7 +233,7 @@ function PersonalizationButton() {
           type="button"
           variant="ghost"
         >
-          <SignatureIcon size={12} />
+          <SignatureIcon size={12} /> Personalise
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">

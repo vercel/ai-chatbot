@@ -83,6 +83,12 @@ importers:
       '@radix-ui/react-visually-hidden':
         specifier: ^1.2.4
         version: 1.2.4(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@supabase/ssr':
+        specifier: ^0.7.0
+        version: 0.7.0(@supabase/supabase-js@2.81.0(bufferutil@4.0.9))
+      '@supabase/supabase-js':
+        specifier: ^2.81.0
+        version: 2.81.0(bufferutil@4.0.9)
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@16.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
@@ -2093,6 +2099,35 @@ packages:
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
 
+  '@supabase/auth-js@2.81.0':
+    resolution: {integrity: sha512-mWyRPO+XUo19MHNBFg5qdH8cMIyxRNj9HXhwkwToxDHYRZWru96hWZFCVb7trOrTpPVe4TgLer2yy3KMvYBMPw==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/functions-js@2.81.0':
+    resolution: {integrity: sha512-yxxIGbXm1TtRpP5VwXKEZIdQMd2XUrWS1xt3zPF3jMItX5dXfdpbz5YRPY3IfebR8gXB113d/APWvYLiNuzI1Q==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/postgrest-js@2.81.0':
+    resolution: {integrity: sha512-HdybTRf5Sy+gBxzgwkag+WkvV8QqMXhnKQ383YG51lCbm8p82CuCcUTzGy2xFHiA2ZXnnlkSzrfw8uKFAiAiog==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/realtime-js@2.81.0':
+    resolution: {integrity: sha512-WCL9kMbmHQNGAG4ep+jfU22+h9OiQVv7bbkOmLy4gwlqtE+SJszkAtRp3l3xthqYkbxHbIqGc/BlHv3Dh79cXg==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/ssr@0.7.0':
+    resolution: {integrity: sha512-G65t5EhLSJ5c8hTCcXifSL9Q/ZRXvqgXeNo+d3P56f4U1IxwTqjB64UfmfixvmMcjuxnq2yGqEWVJqUcO+AzAg==}
+    peerDependencies:
+      '@supabase/supabase-js': ^2.43.4
+
+  '@supabase/storage-js@2.81.0':
+    resolution: {integrity: sha512-gj9u+EyEVLgDA9jW8JOsAgEc8H79zg01STK5KLv9EU45kf5Qh7kAoCmG090Jkp/YEGvSiaR/Ta7Xs/gUTLqflw==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/supabase-js@2.81.0':
+    resolution: {integrity: sha512-FkiqUYCzsT92V/mfvoFueszkQrPqSTHgXhN9ADqeMpY5j0tUqeAZu8g2ptLYiDmx1pBbh4xoiqxWAf3UDIv4Bw==}
+    engines: {node: '>=20.0.0'}
+
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
@@ -2344,6 +2379,9 @@ packages:
   '@types/pg@8.11.6':
     resolution: {integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==}
 
+  '@types/phoenix@1.6.6':
+    resolution: {integrity: sha512-PIzZZlEppgrpoT2QgbnDU+MMzuR6BbCjllj0bM70lWoejMeNJAxCchxnv7J3XFkI8MpygtRpzXrIlmWUBclP5A==}
+
   '@types/prismjs@1.26.5':
     resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
 
@@ -2369,6 +2407,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -2571,6 +2612,10 @@ packages:
   consola@3.4.2:
     resolution: {integrity: sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==}
     engines: {node: ^14.18.0 || >=16.10.0}
+
+  cookie@1.0.2:
+    resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
+    engines: {node: '>=18'}
 
   cose-base@1.0.3:
     resolution: {integrity: sha512-s9whTXInMSgAp/NVXVNuVxVKzGH2qck3aQlVHxDCdAEPgtMKwc4Wq6/QKhgdEdgbLSi9rBTAcPoRa6JpiG4ksg==}
@@ -4207,6 +4252,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.18.3:
+    resolution: {integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   zod@4.1.12:
     resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
 
@@ -5807,6 +5864,48 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
+  '@supabase/auth-js@2.81.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@supabase/functions-js@2.81.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@supabase/postgrest-js@2.81.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@supabase/realtime-js@2.81.0(bufferutil@4.0.9)':
+    dependencies:
+      '@types/phoenix': 1.6.6
+      '@types/ws': 8.18.1
+      tslib: 2.8.1
+      ws: 8.18.3(bufferutil@4.0.9)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@supabase/ssr@0.7.0(@supabase/supabase-js@2.81.0(bufferutil@4.0.9))':
+    dependencies:
+      '@supabase/supabase-js': 2.81.0(bufferutil@4.0.9)
+      cookie: 1.0.2
+
+  '@supabase/storage-js@2.81.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@supabase/supabase-js@2.81.0(bufferutil@4.0.9)':
+    dependencies:
+      '@supabase/auth-js': 2.81.0
+      '@supabase/functions-js': 2.81.0
+      '@supabase/postgrest-js': 2.81.0
+      '@supabase/realtime-js': 2.81.0(bufferutil@4.0.9)
+      '@supabase/storage-js': 2.81.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   '@swc/helpers@0.5.15':
     dependencies:
       tslib: 2.8.1
@@ -6073,6 +6172,8 @@ snapshots:
       pg-types: 4.0.2
     optional: true
 
+  '@types/phoenix@1.6.6': {}
+
   '@types/prismjs@1.26.5': {}
 
   '@types/react-dom@19.2.2(@types/react@19.2.2)':
@@ -6095,6 +6196,10 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 24.10.0
 
   '@ungap/structured-clone@1.3.0': {}
 
@@ -6254,6 +6359,8 @@ snapshots:
   confbox@0.2.2: {}
 
   consola@3.4.2: {}
+
+  cookie@1.0.2: {}
 
   cose-base@1.0.3:
     dependencies:
@@ -8322,6 +8429,10 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.9
     optional: true
+
+  ws@8.18.3(bufferutil@4.0.9):
+    optionalDependencies:
+      bufferutil: 4.0.9
 
   zod@4.1.12: {}
 
