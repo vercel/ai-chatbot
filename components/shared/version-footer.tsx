@@ -37,7 +37,7 @@ export const VersionFooter = ({
   return (
     <motion.div
       animate={{ y: 0 }}
-      className="absolute bottom-0 z-50 flex w-full flex-col justify-between gap-4 border-t bg-background p-4 lg:flex-row"
+      className="sticky bottom-0 z-50 flex w-full flex-col justify-between gap-4 border-t bg-background p-4 lg:flex-row"
       exit={{ y: isMobile ? 200 : 77 }}
       initial={{ y: isMobile ? 200 : 77 }}
       transition={{ type: "spring", stiffness: 140, damping: 20 }}

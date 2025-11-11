@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ChatMessage, Attachment } from "@/lib/types";
-import { generateUUID } from "@/lib/utils";
-import { PlusIcon, CrossIcon, ClockRewind } from "@/components/shared/icons";
+import { generateUUID, cn } from "@/lib/utils";
+import { PlusIcon, ClockRewind, CrossIcon } from "@/components/shared/icons";
+import { Maximize2, Minimize2, FileXCorner } from "lucide-react";
 import { SidebarHistory } from "./sidebar-history";
 import type { VisibilityType } from "@/components/shared/visibility-selector";
 import type { ChatHistory } from "./sidebar-history";
@@ -26,7 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useArtifactSelector } from "@/hooks/use-artifact";
+import { useArtifactSelector, useArtifact, initialArtifactData } from "@/hooks/use-artifact";
 import { Artifact } from "@/components/artifact/artifact";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import type { Vote } from "@/lib/db/schema";
@@ -52,8 +53,62 @@ export function ChatSidebar({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, open } = useSidebar();
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const { setArtifact } = useArtifact();
+  const [isExpandedMode, setIsExpandedMode] = useState(false);
+
+  // Load expanded mode from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebar-expanded-mode");
+    if (stored === "true") {
+      setIsExpandedMode(true);
+      // Dispatch event to sync with SidebarWidthManager
+      window.dispatchEvent(
+        new CustomEvent("sidebar-expanded-toggle", { detail: true })
+      );
+    }
+  }, []);
+
+  const handleExpandedToggle = () => {
+    const newMode = !isExpandedMode;
+    setIsExpandedMode(newMode);
+    localStorage.setItem("sidebar-expanded-mode", newMode ? "true" : "false");
+    
+    // Dispatch custom event to notify SidebarWidthManager
+    window.dispatchEvent(
+      new CustomEvent("sidebar-expanded-toggle", { detail: newMode })
+    );
+  };
+
+  const handleCloseClick = () => {
+    if (isArtifactVisible) {
+      // Close artifact when artifact is visible
+      setArtifact((currentArtifact) =>
+        currentArtifact.status === "streaming"
+          ? {
+              ...currentArtifact,
+              isVisible: false,
+            }
+          : { ...initialArtifactData, status: "idle" }
+      );
+    } else {
+      // Close chat sidebar when no artifact
+      toggleSidebar();
+    }
+  };
+
+  // Reset expanded mode when sidebar is closed
+  useEffect(() => {
+    if (!open && isExpandedMode) {
+      setIsExpandedMode(false);
+      localStorage.setItem("sidebar-expanded-mode", "false");
+      // Dispatch event to notify SidebarWidthManager
+      window.dispatchEvent(
+        new CustomEvent("sidebar-expanded-toggle", { detail: false })
+      );
+    }
+  }, [open, isExpandedMode]);
 
   const chatIdFromUrl = searchParams.get("chatId");
   const chatId = chatIdFromUrl || initialChatId;
@@ -148,21 +203,49 @@ export function ChatSidebar({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <Tooltip delayDuration={1000}>
-                <TooltipTrigger asChild>
-                  <Button
-                    className="h-8 p-1 opacity-50 hover:opacity-100 md:h-fit md:p-2"
-                    onClick={toggleSidebar}
-                    type="button"
-                    variant="ghost"
-                  >
-                    <CrossIcon />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent align="end" className="hidden md:block">
-                  Close Sidebar
-                </TooltipContent>
-              </Tooltip>
+              <div className="flex flex-row items-center gap-1">
+                <Tooltip delayDuration={1000}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      className={cn(
+                        "h-8 p-1 opacity-50 hover:opacity-100 md:h-fit md:p-2",
+                        isExpandedMode && "opacity-100 bg-accent"
+                      )}
+                      onClick={handleExpandedToggle}
+                      type="button"
+                      variant="ghost"
+                    >
+                      {isExpandedMode ? (
+                        <Minimize2 className="h-4 w-4" />
+                      ) : (
+                        <Maximize2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent align="end" className="hidden md:block">
+                    {isExpandedMode ? "Exit Expanded" : "Expand Chat"}
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={1000}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      className="h-8 p-1 opacity-50 hover:opacity-100 md:h-fit md:p-2"
+                      onClick={handleCloseClick}
+                      type="button"
+                      variant="ghost"
+                    >
+                      {isArtifactVisible ? (
+                        <FileXCorner className="h-4 w-4" />
+                      ) : (
+                        <CrossIcon />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent align="end" className="hidden md:block">
+                    {isArtifactVisible ? "Close Artifact" : "Close Sidebar"}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
           </SidebarMenu>
         </SidebarHeader>
@@ -182,7 +265,7 @@ export function ChatSidebar({
               />
             </div>
             {isArtifactVisible && artifactProps && (
-              <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+              <div className="flex min-w-0 flex-[2] flex-col overflow-hidden">
                 <Artifact {...artifactProps} variant="sidebar" />
               </div>
             )}

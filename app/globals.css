@@ -318,3 +318,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide main content when sidebar is in expanded mode on laptop */
+[data-expanded-laptop="true"] [data-slot="sidebar-inset"] {
+  display: none !important;
+}

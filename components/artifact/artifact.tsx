@@ -21,7 +21,6 @@ import type { Document, Vote } from "@/lib/db/schema";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { fetcher } from "@/lib/utils";
 import { ArtifactActions } from "./artifact-actions";
-import { ArtifactCloseButton } from "./artifact-close-button";
 import { ArtifactMessages } from "./artifact-messages";
 import { MultimodalInput } from "../input/multimodal-input";
 import { Toolbar } from "../shared/toolbar";
@@ -274,12 +273,10 @@ function PureArtifact({
             initial={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <div className="flex flex-row items-start justify-between border-b border-border p-2">
-              <div className="flex flex-row items-start gap-4">
-                <ArtifactCloseButton />
-
-                <div className="flex flex-col">
-                  <div className="font-medium">{artifact.title}</div>
+            <div className="flex flex-col gap-2 border-b border-border p-2">
+              <div className="flex flex-row items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="truncate font-medium">{artifact.title}</div>
 
                   {isContentDirty ? (
                     <div className="text-muted-foreground text-sm">
@@ -299,39 +296,41 @@ function PureArtifact({
                     <div className="mt-2 h-3 w-32 animate-pulse rounded-md bg-muted-foreground/20" />
                   )}
                 </div>
-              </div>
 
-              <ArtifactActions
-                artifact={artifact}
-                currentVersionIndex={currentVersionIndex}
-                handleVersionChange={handleVersionChange}
-                isCurrentVersion={isCurrentVersion}
-                metadata={metadata}
-                mode={mode}
-                setMetadata={setMetadata}
-              />
+                <ArtifactActions
+                  artifact={artifact}
+                  currentVersionIndex={currentVersionIndex}
+                  handleVersionChange={handleVersionChange}
+                  isCurrentVersion={isCurrentVersion}
+                  metadata={metadata}
+                  mode={mode}
+                  setMetadata={setMetadata}
+                />
+              </div>
             </div>
 
-            <div className="flex h-full min-w-0 flex-1 flex-col overflow-y-scroll bg-sidebar">
-              <artifactDefinition.content
-                content={
-                  isCurrentVersion
-                    ? artifact.content
-                    : getDocumentContentById(currentVersionIndex)
-                }
-                currentVersionIndex={currentVersionIndex}
-                getDocumentContentById={getDocumentContentById}
-                isCurrentVersion={isCurrentVersion}
-                isInline={false}
-                isLoading={isDocumentsFetching && !artifact.content}
-                metadata={metadata}
-                mode={mode}
-                onSaveContent={saveContent}
-                setMetadata={setMetadata}
-                status={artifact.status}
-                suggestions={[]}
-                title={artifact.title}
-              />
+            <div className="flex h-full min-w-0 flex-1 flex-col overflow-y-auto bg-sidebar">
+              <div className="flex-1">
+                <artifactDefinition.content
+                  content={
+                    isCurrentVersion
+                      ? artifact.content
+                      : getDocumentContentById(currentVersionIndex)
+                  }
+                  currentVersionIndex={currentVersionIndex}
+                  getDocumentContentById={getDocumentContentById}
+                  isCurrentVersion={isCurrentVersion}
+                  isInline={false}
+                  isLoading={isDocumentsFetching && !artifact.content}
+                  metadata={metadata}
+                  mode={mode}
+                  onSaveContent={saveContent}
+                  setMetadata={setMetadata}
+                  status={artifact.status}
+                  suggestions={[]}
+                  title={artifact.title}
+                />
+              </div>
 
               <AnimatePresence>
                 {isCurrentVersion && (
@@ -346,17 +345,17 @@ function PureArtifact({
                   />
                 )}
               </AnimatePresence>
-            </div>
 
-            <AnimatePresence>
-              {!isCurrentVersion && (
-                <VersionFooter
-                  currentVersionIndex={currentVersionIndex}
-                  documents={documents}
-                  handleVersionChange={handleVersionChange}
-                />
-              )}
-            </AnimatePresence>
+              <AnimatePresence>
+                {!isCurrentVersion && (
+                  <VersionFooter
+                    currentVersionIndex={currentVersionIndex}
+                    documents={documents}
+                    handleVersionChange={handleVersionChange}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
