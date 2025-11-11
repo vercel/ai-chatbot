@@ -269,7 +269,7 @@ function PureArtifact({
         {artifact.isVisible && (
           <motion.div
             animate={{ opacity: 1, x: 0 }}
-            className="flex h-full w-[28rem] shrink-0 flex-col overflow-hidden border-l border-border bg-background"
+            className="flex h-full w-full shrink-0 flex-col overflow-hidden rounded-xl border-l border-border bg-sidebar shadow-sm"
             exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
             initial={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
@@ -312,7 +312,7 @@ function PureArtifact({
               />
             </div>
 
-            <div className="flex h-full min-w-0 flex-1 flex-col overflow-y-scroll bg-background">
+            <div className="flex h-full min-w-0 flex-1 flex-col overflow-y-scroll bg-sidebar">
               <artifactDefinition.content
                 content={
                   isCurrentVersion

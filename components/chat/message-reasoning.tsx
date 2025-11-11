@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,
-} from "../elements/reasoning";
+} from "@/components/ai-elements/reasoning";
 
 type MessageReasoningProps = {
   isLoading: boolean;
@@ -16,22 +15,22 @@ export function MessageReasoning({
   isLoading,
   reasoning,
 }: MessageReasoningProps) {
-  const [hasBeenStreaming, setHasBeenStreaming] = useState(isLoading);
+  // Show reasoning component immediately when streaming starts, even with empty content
+  // This ensures the "Thinking..." state appears right away
+  const shouldShow = isLoading || reasoning.trim().length > 0;
 
-  useEffect(() => {
-    if (isLoading) {
-      setHasBeenStreaming(true);
-    }
-  }, [isLoading]);
+  if (!shouldShow) {
+    return null;
+  }
 
   return (
     <Reasoning
       data-testid="message-reasoning"
-      defaultOpen={hasBeenStreaming}
+      defaultOpen={true}
       isStreaming={isLoading}
     >
       <ReasoningTrigger />
-      <ReasoningContent>{reasoning}</ReasoningContent>
+      <ReasoningContent>{reasoning || ""}</ReasoningContent>
     </Reasoning>
   );
 }

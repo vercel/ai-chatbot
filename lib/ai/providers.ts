@@ -49,12 +49,10 @@ export const myProvider = isTestEnvironment
       // Default chat model with vision and text capabilities
       "chat-model": openai("gpt-5-mini"),
 
-      // Reasoning model with chain-of-thought reasoning extraction
-      // Uses extractReasoningMiddleware to extract reasoning from <think> tags
-      "chat-model-reasoning": wrapLanguageModel({
-        model: openai("gpt-5-mini"),
-        middleware: extractReasoningMiddleware({ tagName: "think" }),
-      }),
+      // Reasoning model - uses OpenAI's native reasoning support
+      // Reasoning visibility is controlled via providerOptions.reasoningSummary
+      // Remove extractReasoningMiddleware as OpenAI handles reasoning natively
+      "chat-model-reasoning": openai("gpt-5-mini"),
 
       // Title generation model (optimized for concise output)
       "title-model": openai("gpt-5-mini"),

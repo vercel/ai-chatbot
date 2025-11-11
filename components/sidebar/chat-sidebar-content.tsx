@@ -3,7 +3,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
@@ -88,6 +88,23 @@ export function ChatSidebarContent({
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
 
+  // Load messages when chatId changes (for existing chats from URL)
+  // Fetch messages if autoResume is true (meaning chatId came from URL)
+  const { data: fetchedMessages } = useSWR<ChatMessage[]>(
+    autoResume ? `/api/chat/${chatId}/messages` : null,
+    async (url: string) => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        return [];
+      }
+      const data = await response.json() as { messages?: ChatMessage[] };
+      return data.messages || [];
+    }
+  );
+
+  // Use fetched messages if available, otherwise use initialMessages
+  const messagesToUse = autoResume && fetchedMessages ? fetchedMessages : initialMessages;
+
   const {
     messages,
     setMessages,
@@ -98,7 +115,7 @@ export function ChatSidebarContent({
     resumeStream,
   } = useChat<ChatMessage>({
     id: chatId,
-    messages: initialMessages,
+    messages: messagesToUse,
     experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
@@ -142,6 +159,8 @@ export function ChatSidebarContent({
   });
 
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const isDashboardRoute = pathname?.startsWith("/dashboard");
   const query = searchParams.get("query");
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
@@ -154,9 +173,12 @@ export function ChatSidebarContent({
       });
 
       setHasAppendedQuery(true);
-      window.history.replaceState({}, "", `/chat/${chatId}`);
+      // Only navigate if not on dashboard route
+      if (!isDashboardRoute) {
+        window.history.replaceState({}, "", `/chat/${chatId}`);
+      }
     }
-  }, [query, sendMessage, hasAppendedQuery, chatId]);
+  }, [query, sendMessage, hasAppendedQuery, chatId, isDashboardRoute]);
 
   const { data: votes } = useSWR<Vote[]>(
     messages.length >= 2 ? `/api/vote?chatId=${chatId}` : null,
@@ -166,9 +188,20 @@ export function ChatSidebarContent({
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
+  // Update messages when fetched messages load (for existing chats)
+  useEffect(() => {
+    if (autoResume && fetchedMessages && fetchedMessages.length > 0) {
+      // Only update if current messages are empty or different
+      // This handles the case where messages load after useChat initializes
+      if (messages.length === 0 || messages.length !== fetchedMessages.length) {
+        setMessages(fetchedMessages);
+      }
+    }
+  }, [fetchedMessages, autoResume, setMessages, messages.length]);
+
   useAutoResume({
     autoResume,
-    initialMessages,
+    initialMessages: messagesToUse,
     resumeStream,
     setMessages,
   });

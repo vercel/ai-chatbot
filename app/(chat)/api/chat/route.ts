@@ -20,6 +20,7 @@ import { auth, type UserType } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/shared/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
+import { getReasoningOpenAIOptions } from "@/lib/ai/openai-config";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
@@ -193,6 +194,12 @@ export async function POST(request: Request) {
               "requestSuggestions",
             ],
           experimental_transform: smoothStream({ chunking: "word" }),
+          // Enable reasoning visibility for reasoning models
+          providerOptions: selectedChatModel === "chat-model-reasoning"
+            ? {
+              openai: getReasoningOpenAIOptions(),
+            }
+            : undefined,
           tools: {
             getWeather,
             createDocument: createDocument({ session, dataStream }),
@@ -242,6 +249,7 @@ export async function POST(request: Request) {
 
         result.consumeStream();
 
+        // Merge the UI message stream (no per-chunk logging)
         dataStream.merge(
           result.toUIMessageStream({
             sendReasoning: true,
@@ -250,6 +258,46 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {
+        // Log complete messages after streaming finishes
+        console.log(
+          "[Complete Messages]",
+          JSON.stringify(
+            messages.map((m) => ({
+              id: m.id,
+              role: m.role,
+              parts: m.parts.map((p) => {
+                if (p.type === "reasoning") {
+                  return {
+                    type: p.type,
+                    textLength: p.text?.length ?? 0,
+                    textPreview: p.text?.substring(0, 150) +
+                      (p.text && p.text.length > 150 ? "..." : ""),
+                  };
+                }
+                if (p.type === "text") {
+                  return {
+                    type: p.type,
+                    textLength: p.text?.length ?? 0,
+                    textPreview: p.text?.substring(0, 150) +
+                      (p.text && p.text.length > 150 ? "..." : ""),
+                  };
+                }
+                if (p.type?.startsWith("tool-")) {
+                  const toolPart = p as { state?: string; toolCallId?: string };
+                  return {
+                    type: p.type,
+                    state: toolPart.state,
+                    toolCallId: toolPart.toolCallId,
+                  };
+                }
+                return { type: p.type };
+              }),
+            })),
+            null,
+            2,
+          ),
+        );
+
         await saveMessages({
           messages: messages.map((currentMessage) => ({
             id: currentMessage.id,

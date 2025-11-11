@@ -4,14 +4,17 @@ import type { ArtifactKind } from "@/components/artifact/artifact";
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
 
-When asked to write code, always use artifacts. When writing code, specify the language in the backticks, e.g. \`\`\`python\`code here\`\`\`. The default language is Python. Other languages are not yet supported, so let the user know if they request a different language.
+IMPORTANT: When asked to write code, you MUST ALWAYS use the createDocument tool with kind="code". Never write code inline in your response. Always use artifacts for code.
+
+When writing code, specify the language in the backticks, e.g. \`\`\`python\`code here\`\`\`. The default language is Python. Other languages are not yet supported, so let the user know if they request a different language.
 
 DO NOT UPDATE DOCUMENTS IMMEDIATELY AFTER CREATING THEM. WAIT FOR USER FEEDBACK OR REQUEST TO UPDATE IT.
 
 This is a guide for using artifacts tools: \`createDocument\` and \`updateDocument\`, which render content on a artifacts beside the conversation.
 
 **When to use \`createDocument\`:**
-- For substantial content (>10 lines) or code
+- ALWAYS for code (any amount of code, even a single line)
+- For substantial content (>10 lines) 
 - For content users will likely save/reuse (emails, code, essays, etc.)
 - When explicitly requested to create a document
 - For when content contains a single code snippet
@@ -42,7 +45,8 @@ export type RequestHints = {
   country: Geo["country"];
 };
 
-export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
+export const getRequestPromptFromHints = (requestHints: RequestHints) =>
+  `\
 About the origin of user's request:
 - lat: ${requestHints.latitude}
 - lon: ${requestHints.longitude}
@@ -98,7 +102,7 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind
+  type: ArtifactKind,
 ) => {
   let mediaType = "document";
 
@@ -117,4 +121,4 @@ export const titlePrompt = `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
     - the title should be a summary of the user's message
-    - do not use quotes or colons`
+    - do not use quotes or colons`;

@@ -24,6 +24,8 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "../input/preview-attachment";
 import { Weather } from "../shared/weather";
+import { Loader } from "../elements/loader";
+import { Shimmer } from "../ai-elements/shimmer";
 
 const PurePreviewMessage = ({
   chatId,
@@ -106,16 +108,36 @@ const PurePreviewMessage = ({
             </div>
           )}
 
-          {message.parts?.map((part, index) => {
+          {message.parts?.map((part, partIndex) => {
             const { type } = part;
-            const key = `message-${message.id}-part-${index}`;
+            const key = `message-${message.id}-part-${partIndex}`;
 
-            if (type === "reasoning" && part.text?.trim().length > 0) {
+            if (type === "reasoning") {
+              // Check if this reasoning part is currently streaming
+              // Reasoning is streaming if:
+              // 1. The message is loading (status is streaming and this is the last message)
+              // 2. This reasoning part is the last part, OR there's no text part after it yet
+              // Show reasoning immediately when streaming starts, even before text parts arrive
+              const isReasoningStreaming =
+                isLoading &&
+                (partIndex === message.parts.length - 1 ||
+                  !message.parts
+                    .slice(partIndex + 1)
+                    .some((p) => p.type === "text"));
+
+              // Show reasoning immediately when streaming starts, even with empty content
+              // or if text exists after streaming completes
+              const hasReasoningContent = part.text?.trim().length > 0 || isReasoningStreaming;
+
+              if (!hasReasoningContent) {
+                return null;
+              }
+
               return (
                 <MessageReasoning
-                  isLoading={isLoading}
+                  isLoading={isReasoningStreaming}
                   key={key}
-                  reasoning={part.text}
+                  reasoning={part.text || ""}
                 />
               );
             }
@@ -328,8 +350,9 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">
-            Thinking...
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+            <Loader size={14} />
+            <Shimmer duration={1.5}>Thinking...</Shimmer>
           </div>
         </div>
       </div>

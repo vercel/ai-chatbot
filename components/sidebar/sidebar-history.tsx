@@ -2,7 +2,7 @@
 
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { motion } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { User } from "next-auth";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -105,7 +105,15 @@ export function SidebarHistory({
   initialHistory?: ChatHistory | null;
 }) {
   const { setOpenMobile } = useSidebar();
-  const { id } = useParams();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  
+  // Get chatId from URL params (main chat route) or search params (dashboard route)
+  const id = isDashboardRoute 
+    ? searchParams.get("chatId") 
+    : params.id as string | undefined;
 
   const {
     data: paginatedChatHistories,

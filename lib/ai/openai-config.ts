@@ -51,6 +51,7 @@ export const getDefaultOpenAIOptions = (): OpenAIResponsesProviderOptions => ({
  * OpenAI provider options for reasoning models
  *
  * Use this for chat-model-reasoning to enable reasoning capabilities.
+ * Set reasoningSummary to 'detailed' for full reasoning content visibility.
  */
 export const getReasoningOpenAIOptions = (): OpenAIResponsesProviderOptions => ({
   ...getDefaultOpenAIOptions(),
@@ -61,8 +62,8 @@ export const getReasoningOpenAIOptions = (): OpenAIResponsesProviderOptions => (
 
   // Reasoning summary - enables reasoning output visibility
   // 'auto' for condensed summary, 'detailed' for comprehensive reasoning
-  // undefined (default) for no reasoning summaries
-  reasoningSummary: "auto",
+  // 'detailed' is required to see the actual reasoning content streamed
+  reasoningSummary: "detailed",
 
   // Max tool calls - limit total tool calls across all tools
   maxToolCalls: 5,

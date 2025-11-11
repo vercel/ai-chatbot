@@ -13,8 +13,6 @@ import {
 import { auth } from "../(auth)/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const SIDEBAR_WIDTH_CHAT = "24rem";
-
 async function SidebarWrapper({
   children,
 }: {
@@ -31,7 +29,7 @@ async function SidebarWrapper({
       defaultOpen={!isCollapsed}
       style={
         {
-          "--sidebar-width": SIDEBAR_WIDTH_CHAT,
+          "--sidebar-width": "30rem",
         } as React.CSSProperties
       }
     >

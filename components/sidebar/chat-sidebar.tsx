@@ -95,6 +95,11 @@ export function ChatSidebar({
     }
   }, [isArtifactVisible]);
 
+  // Clear artifact props when chatId changes
+  useEffect(() => {
+    setArtifactProps(null);
+  }, [chatId]);
+
   return (
     <>
       <Sidebar variant="inset" side="right" className="md:order-last **:data-[slot=sidebar-container]:p-0! **:data-[sidebar=sidebar]:bg-transparent!">
@@ -162,35 +167,26 @@ export function ChatSidebar({
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent className="flex flex-col overflow-hidden">
-          {isArtifactVisible ? (
-            <div className="flex h-full flex-row overflow-hidden">
-              <div className="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border">
-                <ChatSidebarContent
-                  autoResume={!!chatIdFromUrl}
-                  chatId={chatId}
-                  initialChatModel={initialChatModel}
-                  initialMessages={initialMessages}
-                  initialVisibilityType={initialVisibilityType}
-                  isReadonly={isReadonly}
-                  onMessagesChange={handleMessagesChange}
-                  onArtifactPropsReady={setArtifactProps}
-                />
-              </div>
-              {artifactProps && (
-                <Artifact {...artifactProps} variant="sidebar" />
-              )}
+          <div className={isArtifactVisible ? "flex h-full flex-row overflow-hidden" : "flex h-full flex-col overflow-hidden"}>
+            <div className={isArtifactVisible ? "flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border" : "flex h-full flex-1 flex-col overflow-hidden"}>
+              <ChatSidebarContent
+                key={chatId}
+                autoResume={!!chatIdFromUrl}
+                chatId={chatId}
+                initialChatModel={initialChatModel}
+                initialMessages={initialMessages}
+                initialVisibilityType={initialVisibilityType}
+                isReadonly={isReadonly}
+                onMessagesChange={handleMessagesChange}
+                onArtifactPropsReady={setArtifactProps}
+              />
             </div>
-          ) : (
-            <ChatSidebarContent
-              autoResume={!!chatIdFromUrl}
-              chatId={chatId}
-              initialChatModel={initialChatModel}
-              initialMessages={initialMessages}
-              initialVisibilityType={initialVisibilityType}
-              isReadonly={isReadonly}
-              onMessagesChange={handleMessagesChange}
-            />
-          )}
+            {isArtifactVisible && artifactProps && (
+              <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+                <Artifact {...artifactProps} variant="sidebar" />
+              </div>
+            )}
+          </div>
         </SidebarContent>
       </Sidebar>
       <DataStreamHandler />

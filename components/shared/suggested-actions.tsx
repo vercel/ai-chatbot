@@ -3,6 +3,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
 import { memo } from "react";
+import { usePathname } from "next/navigation";
 import type { ChatMessage } from "@/lib/types";
 import { Suggestion } from "../elements/suggestion";
 import type { VisibilityType } from "./visibility-selector";
@@ -14,6 +15,9 @@ type SuggestedActionsProps = {
 };
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
+  const pathname = usePathname();
+  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  
   const suggestedActions = [
     "What are the advantages of using Next.js?",
     "Write code to demonstrate Dijkstra's algorithm",
@@ -37,7 +41,10 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
           <Suggestion
             className="h-auto max-w-[calc(100%-1rem)] whitespace-normal rounded-lg px-3 py-2 text-left"
             onClick={(suggestion) => {
-              window.history.replaceState({}, "", `/chat/${chatId}`);
+              // Only navigate if not on dashboard route
+              if (!isDashboardRoute) {
+                window.history.replaceState({}, "", `/chat/${chatId}`);
+              }
               sendMessage({
                 role: "user",
                 parts: [{ type: "text", text: suggestion }],

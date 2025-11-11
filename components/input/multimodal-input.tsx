@@ -16,6 +16,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import type { Attachment, ChatMessage } from "@/lib/types";
@@ -72,6 +73,8 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const pathname = usePathname();
+  const isDashboardRoute = pathname?.startsWith("/dashboard");
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -120,7 +123,10 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
 
   const submitForm = useCallback(() => {
-    window.history.pushState({}, "", `/chat/${chatId}`);
+    // Only navigate if not on dashboard route
+    if (!isDashboardRoute) {
+      window.history.pushState({}, "", `/chat/${chatId}`);
+    }
 
     sendMessage({
       role: "user",
@@ -156,6 +162,7 @@ function PureMultimodalInput({
     width,
     chatId,
     resetHeight,
+    isDashboardRoute,
   ]);
 
   const uploadFile = useCallback(async (file: File) => {

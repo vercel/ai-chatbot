@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { memo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/db/schema";
 import {
@@ -37,15 +38,30 @@ const PureChatItem = ({
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
 }) => {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isDashboardRoute = pathname?.startsWith("/dashboard");
+  
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibilityType: chat.visibility,
   });
 
+  const handleClick = (e: React.MouseEvent) => {
+    setOpenMobile(false);
+    if (isDashboardRoute) {
+      e.preventDefault();
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("chatId", chat.id);
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }
+  };
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+        <Link href={isDashboardRoute ? "#" : `/chat/${chat.id}`} onClick={handleClick}>
           <span>{chat.title}</span>
         </Link>
       </SidebarMenuButton>
