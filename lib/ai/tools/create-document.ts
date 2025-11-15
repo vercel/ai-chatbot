@@ -16,10 +16,10 @@ type CreateDocumentProps = {
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
   tool({
     description:
-      "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.",
+      "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.\n\nAvailable kinds:\n- 'text': For essays, articles, and general text content\n- 'code': For code snippets and programming examples\n- 'sheet': For spreadsheets and tabular data\n- 'markdown': For legal documents like petitions (petições), powers of attorney (procurações), contracts, and other legal documents. ALWAYS use 'markdown' when the user requests petições, procurações, or any legal document.",
     inputSchema: z.object({
-      title: z.string(),
-      kind: z.enum(artifactKinds),
+      title: z.string().describe("The title or description of the document to create"),
+      kind: z.enum(artifactKinds).describe("The type of document. Use 'markdown' for legal documents (petições, procurações, contracts). Use 'text' for essays/articles. Use 'code' for code snippets. Use 'sheet' for spreadsheets."),
     }),
     execute: async ({ title, kind }) => {
       const id = generateUUID();

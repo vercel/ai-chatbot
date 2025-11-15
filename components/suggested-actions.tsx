@@ -19,6 +19,7 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
     "Write code to demonstrate Dijkstra's algorithm",
     "Help me write an essay about Silicon Valley",
     "What is the weather in San Francisco?",
+    "Cria uma petição de exemplo",
   ];
 
   return (
