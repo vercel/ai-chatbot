@@ -10,7 +10,7 @@ export const markdownArtifact = new Artifact<"markdown">({
   initialize: () => {
     // No metadata needed for markdown artifacts
   },
-  onStreamPart: ({ streamPart, setArtifact }) => {
+  onStreamPart: ({ streamPart, setArtifact, setMetadata }) => {
     if (streamPart.type === "data-markdownDelta") {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
@@ -21,6 +21,34 @@ export const markdownArtifact = new Artifact<"markdown">({
           draftArtifact.content.length < 450
             ? true
             : draftArtifact.isVisible,
+        status: "streaming",
+      }));
+    }
+    if (streamPart.type === "data-markdownEdit") {
+      const edit = streamPart.data as {
+        from: number;
+        to: number;
+        oldText: string;
+        newText: string;
+      };
+      
+      // Log for debugging
+      console.log("Edit received in client:", {
+        from: edit.from,
+        to: edit.to,
+        oldText: edit.oldText,
+        oldTextLength: edit.oldText.length,
+        newText: edit.newText,
+        newTextLength: edit.newText.length,
+        newTextPreview: edit.newText.substring(0, 50),
+      });
+      
+      setMetadata((currentMetadata: { pendingEdits?: typeof edit[] }) => ({
+        ...currentMetadata,
+        pendingEdits: [...(currentMetadata?.pendingEdits || []), edit],
+      }));
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
         status: "streaming",
       }));
     }

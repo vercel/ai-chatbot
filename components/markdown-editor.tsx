@@ -27,9 +27,10 @@ import {
   Undo,
 } from "lucide-react";
 import { marked } from "marked";
-import { memo, useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import type { Suggestion } from "@/lib/db/schema";
+import type { MarkdownEdit } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type EditorProps = {
@@ -39,6 +40,7 @@ type EditorProps = {
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Suggestion[];
+  metadata?: { pendingEdits?: MarkdownEdit[] };
 };
 
 type TiptapToolbarProps = {
@@ -328,7 +330,12 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
   );
 }
 
-function PureMarkdownEditor({ content, onSaveContent, status }: EditorProps) {
+function PureMarkdownEditor({
+  content,
+  onSaveContent,
+  status,
+  metadata,
+}: EditorProps) {
   const htmlContent = useMemo(() => {
     if (!content) {
       return "";
@@ -339,6 +346,8 @@ function PureMarkdownEditor({ content, onSaveContent, status }: EditorProps) {
       return content;
     }
   }, [content]);
+
+  const processedEditsRef = useRef<Set<string>>(new Set());
 
   const editor = useEditor({
     extensions: [
@@ -365,15 +374,202 @@ function PureMarkdownEditor({ content, onSaveContent, status }: EditorProps) {
     },
   });
 
+  // Process pending edits from metadata
+  // Apply edits directly to markdown content, then update the editor
+  useEffect(() => {
+    if (
+      !editor ||
+      !metadata?.pendingEdits ||
+      metadata.pendingEdits.length === 0 ||
+      !content
+    ) {
+      return;
+    }
+
+    const pendingEdits = metadata.pendingEdits;
+
+    // Process each edit in reverse order to maintain correct positions
+    const sortedEdits = [...pendingEdits].sort((a, b) => b.from - a.from);
+
+    let updatedMarkdown = content;
+    let hasChanges = false;
+
+    for (const edit of sortedEdits) {
+      const editKey = `${edit.from}-${edit.to}-${edit.newText}`;
+
+      // Skip if already processed
+      if (processedEditsRef.current.has(editKey)) {
+        continue;
+      }
+
+      try {
+        // Log edit before processing
+        console.log("Processing edit in editor:", {
+          from: edit.from,
+          to: edit.to,
+          oldText: edit.oldText,
+          oldTextLength: edit.oldText.length,
+          newText: edit.newText,
+          newTextLength: edit.newText.length,
+          newTextPreview: edit.newText.substring(0, 100),
+        });
+
+        // Validate newText is not empty
+        if (!edit.newText || edit.newText.trim().length === 0) {
+          console.warn("Edit has empty newText, skipping:", edit);
+          continue;
+        }
+
+        // Verify the edit matches the current content
+        // First check if positions are valid
+        if (
+          edit.from < 0 ||
+          edit.to > updatedMarkdown.length ||
+          edit.from >= edit.to
+        ) {
+          console.warn("Invalid edit positions:", edit);
+          // Try to find by text content instead
+          const searchPos = updatedMarkdown.indexOf(edit.oldText);
+          if (searchPos !== -1) {
+            const before = updatedMarkdown.slice(0, searchPos);
+            const after = updatedMarkdown.slice(
+              searchPos + edit.oldText.length
+            );
+            updatedMarkdown = before + edit.newText + after;
+            hasChanges = true;
+            processedEditsRef.current.add(editKey);
+            continue;
+          }
+          continue;
+        }
+
+        const textAtPosition = updatedMarkdown.slice(edit.from, edit.to);
+
+        // Normalize text for comparison (remove extra whitespace, normalize parentheses)
+        const normalizeText = (text: string) =>
+          text.replace(/\s+/g, " ").replace(/[()]/g, "").trim().toLowerCase();
+
+        const normalizedTextAtPosition = normalizeText(textAtPosition);
+        const normalizedOldText = normalizeText(edit.oldText);
+
+        // Check if the oldText matches (allowing for some flexibility)
+        if (
+          textAtPosition === edit.oldText ||
+          normalizedTextAtPosition === normalizedOldText ||
+          textAtPosition.includes(edit.oldText) ||
+          edit.oldText.includes(textAtPosition)
+        ) {
+          // Apply the edit to markdown
+          const before = updatedMarkdown.slice(0, edit.from);
+          const after = updatedMarkdown.slice(edit.to);
+          updatedMarkdown = before + edit.newText + after;
+          hasChanges = true;
+          processedEditsRef.current.add(editKey);
+        } else {
+          // Try to find the text in the content (fallback with better matching)
+          let searchPos = updatedMarkdown.indexOf(edit.oldText);
+
+          // If exact match not found, try to find a partial match
+          if (searchPos === -1) {
+            // Try without parentheses and with normalized whitespace
+            const searchText = edit.oldText.replace(/[()]/g, "").trim();
+            const contentWithoutParens = updatedMarkdown.replace(/[()]/g, "");
+
+            // Find position in normalized content, then map back to original
+            const normalizedPos = contentWithoutParens.indexOf(searchText);
+            if (normalizedPos !== -1) {
+              // Count parentheses before this position to find actual position
+              const beforeNormalized = updatedMarkdown.slice(0, normalizedPos);
+              const parensCount = (beforeNormalized.match(/[()]/g) || [])
+                .length;
+              searchPos = normalizedPos + parensCount;
+            }
+          }
+
+          if (searchPos !== -1 && searchPos < updatedMarkdown.length) {
+            // Verify we found a reasonable match
+            const foundText = updatedMarkdown.slice(
+              searchPos,
+              searchPos + edit.oldText.length
+            );
+            const foundNormalized = normalizeText(foundText);
+
+            if (
+              foundText === edit.oldText ||
+              foundNormalized === normalizedOldText ||
+              foundText.includes(edit.oldText) ||
+              edit.oldText.includes(foundText)
+            ) {
+              const before = updatedMarkdown.slice(0, searchPos);
+              const after = updatedMarkdown.slice(
+                searchPos + edit.oldText.length
+              );
+              updatedMarkdown = before + edit.newText + after;
+              hasChanges = true;
+              processedEditsRef.current.add(editKey);
+            } else {
+              console.warn("Found position but text doesn't match:", {
+                oldText: edit.oldText,
+                foundText,
+                textAtPosition,
+                from: edit.from,
+                to: edit.to,
+                newText: edit.newText,
+              });
+            }
+          } else {
+            console.warn("Could not find edit text in content:", {
+              oldText: edit.oldText,
+              textAtPosition,
+              from: edit.from,
+              to: edit.to,
+              newText: edit.newText,
+            });
+          }
+        }
+      } catch (error) {
+        // If mapping fails, skip this edit
+        console.warn("Failed to apply edit:", error, edit);
+      }
+    }
+
+    // If we made changes, update the editor with the new markdown content
+    if (hasChanges) {
+      const newHtmlContent = marked(updatedMarkdown) as string;
+      editor.commands.setContent(newHtmlContent);
+      // Save the updated markdown content (not HTML)
+      onSaveContent(updatedMarkdown, false);
+    }
+  }, [editor, metadata?.pendingEdits, content, onSaveContent]);
+
+  // Clear processed edits when streaming finishes
+  useEffect(() => {
+    if (status === "idle" && metadata?.pendingEdits) {
+      // Edits have been processed, clear them
+      // This will be handled by the parent component when content updates
+    }
+  }, [status, metadata?.pendingEdits]);
+
   useEffect(() => {
     if (editor && htmlContent) {
       const currentContent = editor.getHTML();
 
-      if (status === "streaming" || currentContent !== htmlContent) {
+      // Only set content if not processing edits
+      if (
+        status === "streaming" &&
+        (!metadata?.pendingEdits || metadata.pendingEdits.length === 0) &&
+        currentContent !== htmlContent
+      ) {
+        editor.commands.setContent(htmlContent);
+      } else if (
+        status === "idle" &&
+        currentContent !== htmlContent &&
+        (!metadata?.pendingEdits || metadata.pendingEdits.length === 0)
+      ) {
         editor.commands.setContent(htmlContent);
       }
     }
-  }, [htmlContent, status, editor]);
+  }, [htmlContent, status, editor, metadata?.pendingEdits]);
 
   useEffect(() => {
     return () => {

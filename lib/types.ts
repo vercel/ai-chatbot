@@ -30,12 +30,20 @@ export type ChatTools = {
   requestSuggestions: requestSuggestionsTool;
 };
 
+export type MarkdownEdit = {
+  from: number;
+  to: number;
+  oldText: string;
+  newText: string;
+};
+
 export type CustomUIDataTypes = {
   textDelta: string;
   imageDelta: string;
   sheetDelta: string;
   codeDelta: string;
   markdownDelta: string;
+  markdownEdit: MarkdownEdit;
   suggestion: Suggestion;
   appendMessage: string;
   id: string;

@@ -163,6 +163,34 @@ export const updateDocumentPrompt = (
 ${currentContent}`;
 };
 
+export const updateMarkdownDocumentPrompt = (
+  currentContent: string | null
+) => {
+  return `You are a precise document editor. Your task is to identify ONLY the specific parts of the document that need to be changed based on the user's request, and provide structured edit instructions.
+
+CRITICAL RULES:
+1. DO NOT regenerate the entire document - only identify what needs to change
+2. Find the exact text that needs to be modified in the current document
+3. Provide the character positions (from/to) where the change should occur
+4. Only change what the user specifically requested - preserve everything else
+5. Maintain all formatting, structure, and content that is not being modified
+6. ALWAYS provide the newText field with the actual replacement text - NEVER leave it empty
+7. The newText must contain the complete replacement text, not just a placeholder
+
+The current document content:
+${currentContent || ""}
+
+You will receive a user request to modify this document. Analyze the request carefully and identify:
+- The exact text segment(s) that need to be changed (oldText)
+- The character position where each change starts (from)
+- The character position where each change ends (to)
+- The complete new text that should replace the old text (newText) - this MUST be a complete, non-empty string
+
+IMPORTANT: The newText field is REQUIRED and must contain the actual replacement text. For example, if the user asks to change "Nome do Autor" to "William Farias", the newText should be "William Farias", not empty or a placeholder.
+
+Return structured edit instructions that specify only the minimal changes needed.`;
+};
+
 export const titlePrompt = `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
