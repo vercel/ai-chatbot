@@ -170,23 +170,61 @@ export const updateMarkdownDocumentPrompt = (
 
 CRITICAL RULES:
 1. DO NOT regenerate the entire document - only identify what needs to change
-2. Find the exact text that needs to be modified in the current document
+2. Find the EXACT text that needs to be modified in the current document
 3. Provide the character positions (from/to) where the change should occur
 4. Only change what the user specifically requested - preserve everything else
 5. Maintain all formatting, structure, and content that is not being modified
 6. ALWAYS provide the newText field with the actual replacement text - NEVER leave it empty
 7. The newText must contain the complete replacement text, not just a placeholder
 
+CRITICAL: CAPTURING THE EXACT TEXT (oldText)
+The oldText field MUST include ALL characters that will be replaced, including:
+- Brackets: [ ] and ( )
+- Quotes: " " and ' '
+- Spaces before and after if they are part of what needs to be replaced
+- Any formatting characters that are part of the text to be replaced
+
+STEP-BY-STEP VERIFICATION PROCESS:
+1. Find the text in the document that needs to be changed
+2. Check the characters BEFORE and AFTER the identified text
+3. Capture the COMPLETE text including ALL formatting characters (brackets, parentheses, quotes, spaces, etc.)
+4. Verify that oldText matches EXACTLY the text in the document, character by character
+5. Double-check that you haven't cut off any characters (especially brackets, parentheses, or quotes)
+
+EXAMPLES OF CORRECT TEXT IDENTIFICATION:
+
+Example 1:
+- Document contains: "Processo nº: [Número do Processo]"
+- User wants to change to: "99887766"
+- CORRECT oldText: "[Número do Processo]" (includes both brackets)
+- INCORRECT oldText: "Número do Processo" (missing brackets - this will cause errors)
+
+Example 2:
+- Document contains: "Autor: [Nome do Autor]"
+- User wants to change to: "William Farias"
+- CORRECT oldText: "[Nome do Autor]" (includes both brackets)
+- INCORRECT oldText: "Nome do Autor" (missing brackets)
+
+Example 3:
+- Document contains: "Data: [Data da Petição]"
+- User wants to change to: "15/01/2024"
+- CORRECT oldText: "[Data da Petição]" (includes both brackets)
+- INCORRECT oldText: "Data da Petição" (missing brackets)
+
 The current document content:
 ${currentContent || ""}
 
 You will receive a user request to modify this document. Analyze the request carefully and identify:
-- The exact text segment(s) that need to be changed (oldText)
+- The exact text segment(s) that need to be changed (oldText) - MUST include ALL characters including brackets, parentheses, quotes, etc.
 - The character position where each change starts (from)
 - The character position where each change ends (to)
 - The complete new text that should replace the old text (newText) - this MUST be a complete, non-empty string
 
-IMPORTANT: The newText field is REQUIRED and must contain the actual replacement text. For example, if the user asks to change "Nome do Autor" to "William Farias", the newText should be "William Farias", not empty or a placeholder.
+IMPORTANT REMINDERS:
+- The oldText field is REQUIRED and must contain the EXACT text from the document, including all formatting characters
+- The newText field is REQUIRED and must contain the actual replacement text
+- Before returning, verify that oldText matches the document text at positions from/to, character by character
+- If the text in the document has brackets like [text], the oldText MUST include those brackets: [text]
 
 Return structured edit instructions that specify only the minimal changes needed.`;
 };

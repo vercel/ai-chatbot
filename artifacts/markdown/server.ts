@@ -41,17 +41,29 @@ export const markdownDocumentHandler = createDocumentHandler<"markdown">({
           z.object({
             from: z
               .number()
-              .describe("Character position where the edit starts"),
-            to: z.number().describe("Character position where the edit ends"),
+              .describe(
+                "Character position where the edit starts (0-based index). Example: If the text '[Número do Processo]' starts at position 57, from should be 57."
+              ),
+            to: z
+              .number()
+              .describe(
+                "Character position where the edit ends (exclusive, 0-based index). Example: If '[Número do Processo]' ends at position 76, to should be 76. This position should be AFTER the last character of oldText."
+              ),
             oldText: z
               .string()
-              .describe("The text that will be replaced (for verification)"),
+              .describe(
+                "The EXACT text that will be replaced, including ALL characters (brackets, parentheses, quotes, spaces, etc.). Example: If the document contains '[Número do Processo]', oldText must be '[Número do Processo]' (with brackets), NOT 'Número do Processo' (without brackets). This must match the document text at positions from/to character by character."
+              ),
             newText: z
               .string()
-              .describe("The new text that will replace the old text"),
+              .describe(
+                "The complete new text that will replace the old text. This must be a complete, non-empty string. Example: If replacing '[Número do Processo]' with '99887766', newText should be '99887766' (without brackets, unless brackets are part of the new value)."
+              ),
           })
         )
-        .describe("Array of edits to apply to the document"),
+        .describe(
+          "Array of edits to apply to the document. Each edit must have oldText that exactly matches the document text at the specified positions."
+        ),
     });
 
     let finalContent = document.content || "";
@@ -59,7 +71,20 @@ export const markdownDocumentHandler = createDocumentHandler<"markdown">({
     const { fullStream, object } = streamObject({
       model: myProvider.languageModel("artifact-model"),
       system: updateMarkdownDocumentPrompt(document.content),
-      prompt: `User request: ${description}\n\nAnalyze the current document and identify ONLY the specific parts that need to be changed. Return structured edit instructions with character positions.\n\nIMPORTANT: For each edit, the newText field MUST contain the complete replacement text. Do not leave it empty.`,
+      prompt: `User request: ${description}
+
+Analyze the current document and identify ONLY the specific parts that need to be changed. Return structured edit instructions with character positions.
+
+CRITICAL INSTRUCTIONS FOR TEXT IDENTIFICATION:
+1. The oldText field MUST include ALL characters that will be replaced, including brackets [ ], parentheses ( ), quotes " ", spaces, and any other formatting characters
+2. Before returning, verify that oldText matches EXACTLY the text in the document at positions from/to, character by character
+3. If the text contains brackets like [text], the oldText MUST include those brackets: [text]
+4. Double-check that you haven't cut off any characters, especially closing brackets, parentheses, or quotes
+
+IMPORTANT: For each edit:
+- The newText field MUST contain the complete replacement text. Do not leave it empty.
+- The oldText field MUST contain the EXACT text from the document, including all formatting characters.
+- Verify that oldText matches the document text at positions from/to before returning.`,
       schema: editSchema,
     });
 
