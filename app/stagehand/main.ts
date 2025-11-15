@@ -2,55 +2,100 @@
 
 import { Stagehand } from "@browserbasehq/stagehand";
 import { Browserbase } from "@browserbasehq/sdk";
-import { z } from "zod"; 
+import { z } from "zod/v3";
 
-// Main Stagehand script – parameterized by a natural-language instruction
-async function main(stagehand: Stagehand, instruction: string) {
-  // get the first page from the context
-  const page = stagehand.context.pages()[0];
+export type BrowserStepResult = {
+  summary: string;
+};
 
-  // Navigate to a starting URL
-  await page.goto("https://www.google.com");
+async function runSingleStep(
+  stagehand: Stagehand,
+  userQuestion: string,
+  stepInstruction: string,
+): Promise<BrowserStepResult> {
+  // Get the first page or create one
+  const page = stagehand.context.pages()[0] ?? (await stagehand.context.newPage());
 
-  if (instruction.trim().length > 0) {
-    // act is on the stagehand instance, with optional { page }
-    await stagehand.act(instruction, { page });
+  const currentUrl = page.url();
+  if (!currentUrl || currentUrl === "about:blank") {
+    // Start with a Google search for the *full* user question
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+      userQuestion,
+    )}`;
+    await page.goto(searchUrl, {
+      waitUntil: "domcontentloaded",
+    });
   }
 
-  // extract is also on the stagehand instance
-  const { title } = await stagehand.extract(
-    "extract the main heading or title of the page",
+  await stagehand.act(
+    `
+You are using a real web browser to help answer the user's question:
+
+"${userQuestion}"
+
+Your current sub-task is:
+
+"${stepInstruction}"
+
+Starting from the current page:
+- Use search results or navigation to find relevant information.
+- Click links, scroll, and read content as needed.
+- Prefer authoritative sources when possible.
+`,
+    { page },
+  );
+
+  const { summary } = await stagehand.extract(
+    `
+Summarize ONLY the new facts you just learned that help answer:
+
+"${userQuestion}"
+
+Focus on concrete information (e.g., numbers, trends, dates, key names).
+Do not restate everything on the page, just the key points.
+If you did not learn anything new, return an empty string.
+`,
     z.object({
-      title: z.string(),
+      summary: z.string(),
     }),
   );
 
-  return { title };
+  return { summary };
 }
 
 /**
- * Initialize and run the main() function
+ * Run a generic browser step on a given Browserbase session.
  */
-export async function runStagehand(sessionId: string, instruction: string) {
+export async function runBrowserStep(
+  sessionId: string,
+  userQuestion: string,
+  stepInstruction: string,
+): Promise<BrowserStepResult> {
   const stagehand = new Stagehand({
     env: "BROWSERBASE",
+
     apiKey: process.env.BROWSERBASE_API_KEY,
     projectId: process.env.BROWSERBASE_PROJECT_ID,
+
+    model: "openai/gpt-4o",
+
+    browserbaseSessionID: sessionId,
     verbose: 1,
     logger: console.log,
-    browserbaseSessionID: sessionId,
     disablePino: true,
   });
 
   await stagehand.init();
-  const result = await main(stagehand, instruction);
-  await stagehand.close();
 
-  return result;
-}
+  try {
+    return await runSingleStep(stagehand, userQuestion, stepInstruction);
+  } finally {
+    await stagehand.close();
+  }
+} 
 
 /**
- * Start a Browserbase session and return the sessionId + fullscreen debugger URL
+ * Start a Browserbase session and return the sessionId + fullscreen debugger URL.
  */
 export async function startBBSSession() {
   const browserbase = new Browserbase({
@@ -63,8 +108,14 @@ export async function startBBSSession() {
 
   const debug = await browserbase.sessions.debug(session.id);
 
+  // Browserbase exposes a session page URL; if types don’t include it, fall back to pattern.
+  const sessionUrl =
+    (session as any).url ??
+    `https://www.browserbase.com/sessions/${session.id}`;
+
   return {
     sessionId: session.id,
     debugUrl: debug.debuggerFullscreenUrl,
+    sessionUrl,
   };
 }

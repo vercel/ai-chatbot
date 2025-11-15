@@ -1,62 +1,89 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { startBBSSession, runStagehand } from "@/app/stagehand/main";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { useDataStream } from "./data-stream-provider";
 
-type Status = "idle" | "starting" | "ready" | "running" | "done" | "error";
+type Status = "idle" | "running" | "done";
+
+type BrowserSessionInitData = {
+  chatId: string;
+  sessionId: string;
+  debugUrl: string;
+  sessionUrl?: string;
+  instruction: string;
+};
+
+type BrowserSessionFinalData = {
+  chatId: string;
+  sessionId: string;
+  sessionUrl: string;
+};
+
+type BrowserSessionInitEvent = {
+  type: "data-browser-session";
+  data: BrowserSessionInitData;
+};
+
+type BrowserSessionFinalEvent = {
+  type: "data-browser-session-final";
+  data: BrowserSessionFinalData;
+};
 
 export function BrowserViewport() {
+  const { dataStream } = useDataStream();
   const [status, setStatus] = useState<Status>("idle");
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [debugUrl, setDebugUrl] = useState<string | null>(null);
-  const [instruction, setInstruction] = useState<string>("");
-  const [lastResult, setLastResult] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [liveUrl, setLiveUrl] = useState<string | null>(null);
+  const [finalUrl, setFinalUrl] = useState<string | null>(null);
+  const [lastInstruction, setLastInstruction] = useState<string | null>(null);
 
-  const handleStartSession = useCallback(async () => {
-    try {
-      setStatus("starting");
-      setErrorMessage(null);
+  useEffect(() => {
+    if (!dataStream) return;
 
-      const { sessionId, debugUrl } = await startBBSSession();
-      setSessionId(sessionId);
-      setDebugUrl(debugUrl);
+    // live DevTools URL
+    const initEvents = (dataStream
+      .filter(
+        (part: any) =>
+          part &&
+          part.type === "data-browser-session" &&
+          part.data &&
+          typeof part.data.debugUrl === "string",
+      ) as unknown) as BrowserSessionInitEvent[];
 
-      setStatus("ready");
-    } catch (err: any) {
-      console.error("Failed to start Browserbase session", err);
-      setErrorMessage("Failed to start browser session.");
-      setStatus("error");
-    }
-  }, []);
+    const lastInit = initEvents.at(-1);
+    if (lastInit && lastInit.data) {
+      const { debugUrl, instruction } = lastInit.data;
 
-  const handleRun = useCallback(async () => {
-    if (!sessionId) return;
-
-    try {
-      setStatus("running");
-      setErrorMessage(null);
-      setLastResult(null);
-
-      const result = await runStagehand(sessionId, instruction || "Explore this page");
-
-      if (result && typeof result.title === "string") {
-        setLastResult(`Stagehand result: "${result.title}"`);
-      } else {
-        setLastResult("Stagehand finished without a structured result.");
+      if (debugUrl) {
+        setLiveUrl(debugUrl);
+        setStatus("running");
       }
 
-      setStatus("done");
-    } catch (err: any) {
-      console.error("Stagehand run failed", err);
-      setErrorMessage("Stagehand run failed.");
-      setStatus("error");
+      if (instruction) {
+        setLastInstruction(instruction);
+      }
     }
-  }, [sessionId, instruction]);
 
-  const disabled = status === "starting" || status === "running";
+    // switch to static viewer URL
+    const finalEvents = (dataStream
+      .filter(
+        (part: any) =>
+          part &&
+          part.type === "data-browser-session-final" &&
+          part.data &&
+          typeof part.data.sessionUrl === "string",
+      ) as unknown) as BrowserSessionFinalEvent[];
+
+    const lastFinal = finalEvents.at(-1);
+    if (lastFinal && lastFinal.data) {
+      const { sessionUrl } = lastFinal.data;
+      if (sessionUrl) {
+        setFinalUrl(sessionUrl);
+        setStatus("done");
+      }
+    }
+  }, [dataStream]);
+
+  const iframeSrc = finalUrl ?? liveUrl;
 
   return (
     <div className="flex h-full flex-col">
@@ -65,74 +92,43 @@ export function BrowserViewport() {
         <div className="flex flex-col gap-0.5">
           <h2 className="text-sm font-semibold">AI Browser</h2>
           <p className="text-[11px] text-muted-foreground">
-            Powered by Stagehand + Browserbase
+            Linked to the AI Browser chat
           </p>
         </div>
         <span className="text-xs text-muted-foreground">
           Status:{" "}
           {status === "idle"
             ? "Idle"
-            : status === "starting"
-            ? "Starting…"
-            : status === "ready"
-            ? "Ready"
             : status === "running"
             ? "Running…"
-            : status === "done"
-            ? "Done"
-            : "Error"}
+            : "Done"}
         </span>
       </div>
 
-      {/* Controls */}
-      <div className="flex flex-col gap-2 border-b px-3 py-2">
-        {!sessionId && (
-          <Button
-            size="sm"
-            className="w-fit"
-            onClick={handleStartSession}
-            disabled={disabled}
-          >
-            {status === "starting" ? "Starting…" : "Start Browser Session"}
-          </Button>
-        )}
+      {/* Context about what it’s doing */}
+      {lastInstruction && (
+        <div className="border-b px-3 py-2">
+          <p className="text-[11px] text-muted-foreground">
+            Latest instruction:{" "}
+            <span className="font-medium text-foreground">
+              {lastInstruction}
+            </span>
+          </p>
+        </div>
+      )}
 
-        {sessionId && (
-          <>
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Describe what you want the browser to do…"
-                value={instruction}
-                onChange={(e) => setInstruction(e.target.value)}
-                disabled={disabled}
-              />
-              <Button size="sm" onClick={handleRun} disabled={disabled || !instruction.trim()}>
-                {status === "running" ? "Running…" : "Run"}
-              </Button>
-            </div>
-            {lastResult && (
-              <p className="text-[11px] text-muted-foreground">
-                {lastResult}
-              </p>
-            )}
-            {errorMessage && (
-              <p className="text-[11px] text-destructive">{errorMessage}</p>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Live browser iframe */}
+      {/* Live / final browser iframe */}
       <div className="flex-1 bg-muted/30">
-        {sessionId && debugUrl ? (
+        {iframeSrc ? (
           <iframe
-            src={debugUrl}
+            src={iframeSrc}
             className="h-full w-full border-0"
-            title="Browserbase Live Session"
+            title="Browserbase Session"
           />
         ) : (
           <div className="flex h-full items-center justify-center px-4 text-center text-xs text-muted-foreground">
-            Start a session to see the live browser here.
+            Send a message in the AI Browser chat to start a browser session and
+            watch it work here.
           </div>
         )}
       </div>

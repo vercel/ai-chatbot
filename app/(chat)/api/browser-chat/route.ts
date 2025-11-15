@@ -44,6 +44,7 @@ import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
+import { browserAutomationTool } from "@/lib/ai/tools/browser-automation";
 
 export const maxDuration = 60;
 
@@ -87,6 +88,11 @@ export function getStreamContext() {
 
 export async function POST(request: Request) {
   let requestBody: PostRequestBody;
+
+  // Track the Browserbase session for this request so we can emit a final event
+  let browserSessionInfo:
+    | { sessionId: string; debugUrl: string; sessionUrl: string }
+    | null = null;
 
   try {
     const json = await request.json();
@@ -132,6 +138,7 @@ export async function POST(request: Request) {
       if (chat.userId !== session.user.id) {
         return new ChatSDKError("forbidden:chat").toResponse();
       }
+      // Only fetch messages if chat already exists
       messagesFromDb = await getMessagesByChatId({ id });
     } else {
       const title = await generateTitleFromUserMessage({
@@ -144,6 +151,7 @@ export async function POST(request: Request) {
         title,
         visibility: selectedVisibilityType,
       });
+      // New chat - no need to fetch messages, it's empty
     }
 
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
@@ -173,19 +181,50 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Extract raw user text from the last message (used by browserAutomation tool & system prompt)
+    const textPart = message.parts.find((p: any) => p.type === "text");
+    const userText =
+      textPart && typeof (textPart as any).text === "string"
+        ? (textPart as any).text
+        : "";
+
     let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        // Extend base system prompt with instructions for browserAutomation
+        const baseSystem = systemPrompt({ selectedChatModel, requestHints });
+
+        const systemWithBrowser = `${baseSystem}
+
+You are the AI Browser Assistant.
+
+You have access to a powerful tool called "browserAutomation" that uses a real browser (via Stagehand) to browse the web.
+Use this tool whenever:
+- The user asks for up-to-date information.
+- The user references a specific website (e.g. "according to Crunchbase", "on LinkedIn", "from their homepage").
+- You need to verify facts or gather detailed information from the web.
+
+You may call "browserAutomation" MULTIPLE TIMES for multi-step research.
+For each call:
+- Provide a clear, concrete sub-task in the "instruction" parameter (e.g. "Open Crunchbase and search for Pozalabs", "On this page, find the company description and summarize it", "Scroll to the funding section and summarize the funding history").
+- Carefully read the "summary" returned by the tool and use it to decide your next step.
+- Continue calling "browserAutomation" until you have enough evidence to confidently answer the user's question.
+
+Only provide a final answer AFTER you have used browserAutomation as needed.
+Do NOT guess facts that should come from external sites; instead, say if information is not available or visible in the pages you visited.
+`;
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemWithBrowser,
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
             selectedChatModel === "chat-model-reasoning"
-              ? []
+              ? ["browserAutomation"]
               : [
+                  "browserAutomation",
                   "getWeather",
                   "createDocument",
                   "updateDocument",
@@ -199,6 +238,15 @@ export async function POST(request: Request) {
             requestSuggestions: requestSuggestions({
               session,
               dataStream,
+            }),
+            browserAutomation: browserAutomationTool({
+              dataStream,
+              chatId: id,
+              userQuestion: userText,
+              // Capture session info when the first Browserbase session is created
+              onSessionInit: (info) => {
+                browserSessionInfo = info;
+              },
             }),
           },
           experimental_telemetry: {
@@ -216,25 +264,39 @@ export async function POST(request: Request) {
                   type: "data-usage",
                   data: finalMergedUsage,
                 });
-                return;
-              }
-
-              if (!providers) {
+              } else if (!providers) {
                 finalMergedUsage = usage;
                 dataStream.write({
                   type: "data-usage",
                   data: finalMergedUsage,
                 });
-                return;
+              } else {
+                const summary = getUsage({ modelId, usage, providers });
+                finalMergedUsage = { ...usage, ...summary, modelId } as AppUsage;
+                dataStream.write({
+                  type: "data-usage",
+                  data: finalMergedUsage,
+                });
               }
-
-              const summary = getUsage({ modelId, usage, providers });
-              finalMergedUsage = { ...usage, ...summary, modelId } as AppUsage;
-              dataStream.write({ type: "data-usage", data: finalMergedUsage });
             } catch (err) {
               console.warn("TokenLens enrichment failed", err);
               finalMergedUsage = usage;
-              dataStream.write({ type: "data-usage", data: finalMergedUsage });
+              dataStream.write({
+                type: "data-usage",
+                data: finalMergedUsage,
+              });
+            } finally {
+              // After the model is done, tell the client to switch to the final, non-DevTools URL
+              if (browserSessionInfo) {
+                dataStream.write({
+                  type: "data-browser-session-final",
+                  data: {
+                    chatId: id,
+                    sessionId: browserSessionInfo.sessionId,
+                    sessionUrl: browserSessionInfo.sessionUrl,
+                  },
+                });
+              }
             }
           },
         });
@@ -280,7 +342,6 @@ export async function POST(request: Request) {
       },
     });
 
-
     return new Response(stream.pipeThrough(new JsonToSseTransformStream()));
   } catch (error) {
     const vercelId = request.headers.get("x-vercel-id");
@@ -302,6 +363,7 @@ export async function POST(request: Request) {
     return new ChatSDKError("offline:chat").toResponse();
   }
 }
+
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
