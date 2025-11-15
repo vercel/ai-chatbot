@@ -12,6 +12,17 @@ Documentação completa sobre o editor de markdown com Tiptap, incluindo:
 - Fluxo de funcionamento
 - Extensões e configurações
 
+### [Edições Parciais no Markdown Editor](./markdown-partial-edits.md)
+Documentação sobre a implementação de edições parciais, permitindo modificar apenas partes específicas do documento sem regenerar o conteúdo completo:
+- Problema resolvido e solução implementada
+- Arquitetura e componentes envolvidos
+- Fluxo detalhado de edição parcial
+- Schema de edições e tipos
+- Prompts e instruções da IA
+- Validações e tratamento de erros
+- Exemplos de uso e troubleshooting
+- Melhorias implementadas
+
 ## Como Contribuir com Documentação
 
 Ao adicionar novas funcionalidades ou fazer mudanças significativas:
