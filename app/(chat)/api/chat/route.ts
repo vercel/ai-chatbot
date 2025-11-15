@@ -211,7 +211,9 @@ export async function POST(request: Request) {
             try {
               const providers = await getTokenlensCatalog();
               const modelId =
-                myProvider.languageModel(selectedChatModel).modelId;
+                "getModelId" in myProvider
+                  ? myProvider.getModelId(selectedChatModel)
+                  : selectedChatModel;
               if (!modelId) {
                 finalMergedUsage = usage;
                 dataStream.write({
