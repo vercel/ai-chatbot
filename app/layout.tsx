@@ -79,8 +79,8 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          "antialiased",
-          (isDevelopmentEnvironment || isStagingEnvironment) && "pb-7"
+          "bg-background min-h-dvh overflow-hidden antialiased",
+          (isDevelopmentEnvironment || isStagingEnvironment)
         )}
       >
         <ThemeProvider
@@ -92,7 +92,8 @@ export default function RootLayout({
           <Toaster position="top-center" />
           <SessionProvider>
             {children}
-            <DevBar />
+            {/* <div className="pb-7"></div> */}
+            {/* <DevBar /> */}
           </SessionProvider>
         </ThemeProvider>
       </body>

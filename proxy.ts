@@ -3,12 +3,37 @@ import { getToken } from "next-auth/jwt";
 import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
 import { createServerClient } from "@supabase/ssr";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 import { user } from "@/lib/db/schema";
+import {
+  resolveTenantContext,
+  getAppMode,
+} from "@/lib/server/tenant/context";
+import { getResourceStore } from "@/lib/server/tenant/resource-store";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Set workspace ID header for tenant context resolution
+  const mode = getAppMode();
+  const requestHeaders = new Headers(request.headers);
+
+  let workspaceId =
+    requestHeaders.get("x-workspace-id") ??
+    request.cookies.get("workspace_id")?.value ??
+    request.nextUrl.searchParams.get("workspaceId") ??
+    null;
+
+  if (mode === "local") {
+    workspaceId =
+      workspaceId ??
+      process.env.DEFAULT_WORKSPACE_ID ??
+      process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID ??
+      null;
+  }
+
+  if (workspaceId) {
+    requestHeaders.set("x-workspace-id", workspaceId);
+  }
 
   /*
    * Playwright starts the dev server and requires a 200 status to
@@ -19,7 +44,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next();
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   // Handle Supabase auth routes
@@ -29,7 +58,9 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/onboarding");
 
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   });
 
   const supabase = createServerClient(
@@ -75,20 +106,26 @@ export async function proxy(request: NextRequest) {
       pathname !== "/onboarding"
     ) {
       try {
-        const client = postgres(process.env.POSTGRES_URL!);
-        const db = drizzle(client);
+        const tenant = await resolveTenantContext({
+          headers: requestHeaders,
+        });
+        const store = await getResourceStore(tenant);
+        try {
+          const [userRecord] = await store.withSqlClient((db) =>
+            db
+              .select()
+              .from(user)
+              .where(eq(user.id, supabaseUser.id))
+              .limit(1)
+          );
 
-        const [userRecord] = await db
-          .select()
-          .from(user)
-          .where(eq(user.id, supabaseUser.id))
-          .limit(1);
-
-        // If user exists but hasn't completed onboarding, redirect to onboarding
-        if (userRecord && !userRecord.onboarding_completed) {
-          const url = request.nextUrl.clone();
-          url.pathname = "/onboarding";
-          return NextResponse.redirect(url);
+          if (userRecord && !userRecord.onboarding_completed) {
+            const url = request.nextUrl.clone();
+            url.pathname = "/onboarding";
+            return NextResponse.redirect(url);
+          }
+        } finally {
+          await store.dispose();
         }
       } catch {
         // If database check fails, allow the request to proceed
@@ -124,7 +161,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {

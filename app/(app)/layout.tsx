@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner"
 import type { User } from "next-auth";
 
 async function SidebarWrapper({
@@ -58,13 +59,15 @@ async function SidebarWrapper({
         <ChatSidebarWrapper user={user} />
       </Suspense>
       <SidebarInset className="md:order-first">
-        <header className="flex h-16 shrink-0 items-center gap-2">
-          <div className="flex w-full items-center gap-2 px-4">
+        <header className="flex h-16 shrink-0 items-center gap-2 px-6">
+          <div className="flex w-full items-center gap-2">
             <TopNav />
             <ChatSidebarTrigger />
           </div>
         </header>
-        {children}
+        <div className="flex-1 overflow-auto px-6 pb-12">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
@@ -93,7 +96,7 @@ async function LayoutContent({
         <Suspense
           fallback={
             <div className="flex min-h-screen items-center justify-center">
-              <div className="animate-spin">Loading...</div>
+              <Spinner />
             </div>
           }
         >

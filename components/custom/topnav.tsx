@@ -19,24 +19,14 @@ import {
 
 const buildOptions: { title: string; href: string; description: string }[] = [
   {
-    title: "New Project",
-    href: "/build/new",
-    description: "Start a new project from scratch",
+    title: "Data",
+    href: "/build/data",
+    description: "Browse and manage your workspace data tables",
   },
   {
-    title: "Templates",
-    href: "/build/templates",
-    description: "Browse project templates",
-  },
-  {
-    title: "Import",
-    href: "/build/import",
-    description: "Import an existing project",
-  },
-  {
-    title: "Settings",
-    href: "/build/settings",
-    description: "Configure build settings",
+    title: "Config",
+    href: "/build/config",
+    description: "View and manage workspace configuration tables",
   },
 ]
 
@@ -78,20 +68,20 @@ export function NavigationMenuDemo() {
               <li>
                 <NavigationMenuLink asChild>
                   <Link
-                    href="/"
+                    href="/preferences"
                     className="block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                   >
-                    Dashboard
+                    Preferences
                   </Link>
                 </NavigationMenuLink>
               </li>
               <li>
                 <NavigationMenuLink asChild>
                   <Link
-                    href="/preferences"
+                    href="/workspace-settings"
                     className="block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                   >
-                    Preferences...
+                    Workspace Settings
                   </Link>
                 </NavigationMenuLink>
               </li>
@@ -104,7 +94,7 @@ export function NavigationMenuDemo() {
                         href="/profile"
                         className="block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                       >
-                        {user.email || "Profile"}
+                        My Profile
                       </Link>
                     </NavigationMenuLink>
                   </li>
@@ -113,9 +103,9 @@ export function NavigationMenuDemo() {
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="w-full text-left block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        className="block w-full select-none rounded-sm px-3 py-2 text-left text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                       >
-                        Log Out
+                        Sign Out
                       </button>
                     </NavigationMenuLink>
                   </li>
@@ -127,7 +117,7 @@ export function NavigationMenuDemo() {
                       href="/signin"
                       className="block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      Log In...
+                      Sign In
                     </Link>
                   </NavigationMenuLink>
                 </li>

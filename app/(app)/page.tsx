@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 import { user } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import MarketingPage from "@/components/marketing/landing-page";
 import DashboardContent from "../dashboard-content";
+import { resolveTenantContext } from "@/lib/server/tenant/context";
+import { getResourceStore } from "@/lib/server/tenant/resource-store";
 
 async function RootPageContent() {
   const authUser = await getAuthenticatedUser();
@@ -17,18 +17,18 @@ async function RootPageContent() {
   }
 
   // If authenticated, check onboarding status
-  const client = postgres(process.env.POSTGRES_URL!);
-  const db = drizzle(client);
-
   let userRecord;
   try {
-    [userRecord] = await db
-      .select()
-      .from(user)
-      .where(eq(user.id, authUser.id))
-      .limit(1);
+    const tenant = await resolveTenantContext();
+    const store = await getResourceStore(tenant);
+    try {
+      [userRecord] = await store.withSqlClient((db) =>
+        db.select().from(user).where(eq(user.id, authUser.id)).limit(1)
+      );
+    } finally {
+      await store.dispose();
+    }
   } catch {
-    // If query fails, redirect to onboarding
     redirect("/onboarding");
   }
 

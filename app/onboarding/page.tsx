@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { user } from "@/lib/db/schema";
+import { user, workspace } from "@/lib/db/schema";
 import { OnboardingForm } from "@/components/auth/onboarding-form";
+import { resolveTenantContext } from "@/lib/server/tenant/context";
+import { getResourceStore } from "@/lib/server/tenant/resource-store";
+import { eq } from "drizzle-orm";
 
 async function OnboardingContent() {
   const supabase = await createClient();
@@ -18,30 +18,35 @@ async function OnboardingContent() {
   }
 
   // Check if user already completed onboarding
-  const client = postgres(process.env.POSTGRES_URL!);
-  const db = drizzle(client);
-
   let userRecord;
+  let workspaceRecord;
   try {
-    [userRecord] = await db
-      .select()
-      .from(user)
-      .where(eq(user.id, authUser.id))
-      .limit(1);
+    const tenant = await resolveTenantContext();
+    const store = await getResourceStore(tenant);
+    try {
+      [userRecord] = await store.withSqlClient((db) =>
+        db.select().from(user).where(eq(user.id, authUser.id)).limit(1),
+      );
 
-    // If user doesn't exist, create them
-    if (!userRecord) {
-      await db.insert(user).values({
-        id: authUser.id,
-        email: authUser.email ?? "",
-        onboarding_completed: false,
-      });
-      // Re-fetch the user record
-      [userRecord] = await db
-        .select()
-        .from(user)
-        .where(eq(user.id, authUser.id))
-        .limit(1);
+      if (!userRecord) {
+        await store.withSqlClient((db) =>
+          db.insert(user).values({
+            id: authUser.id,
+            email: authUser.email ?? "",
+            onboarding_completed: false,
+          }),
+        );
+
+        [userRecord] = await store.withSqlClient((db) =>
+          db.select().from(user).where(eq(user.id, authUser.id)).limit(1),
+        );
+      }
+
+      [workspaceRecord] = await store.withSqlClient((db) =>
+        db.select().from(workspace).where(eq(workspace.id, tenant.workspaceId)).limit(1),
+      );
+    } finally {
+      await store.dispose();
     }
   } catch {
     // If query fails, still show onboarding form
@@ -55,7 +60,25 @@ async function OnboardingContent() {
   return (
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-md">
-        <OnboardingForm />
+        <OnboardingForm
+          initialValues={{
+            firstname: userRecord?.firstname ?? "",
+            lastname: userRecord?.lastname ?? "",
+            job_title: userRecord?.job_title ?? "",
+            profile_pic_url: userRecord?.avatar_url ?? "",
+            role_experience: userRecord?.ai_context ?? "",
+            technical_proficiency: (userRecord?.proficiency as
+              | "less"
+              | "regular"
+              | "more"
+              | undefined) ?? "regular",
+            tone_of_voice: userRecord?.ai_tone ?? "",
+            ai_generation_guidance: userRecord?.ai_guidance ?? "",
+            workspace_name: workspaceRecord?.name ?? "My Workspace",
+            workspace_profile_pic_url: workspaceRecord?.avatar_url ?? "",
+            business_description: workspaceRecord?.description ?? "",
+          }}
+        />
       </div>
     </div>
   );

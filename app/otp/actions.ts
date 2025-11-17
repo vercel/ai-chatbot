@@ -3,10 +3,13 @@
 import { z } from "zod";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { eq } from "drizzle-orm";
+import { user, workspace, workspaceUser } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { user } from "@/lib/db/schema";
+import { getAppMode, resolveTenantContext } from "@/lib/server/tenant/context";
+import { getResourceStore } from "@/lib/server/tenant/resource-store";
+import { seedDefaultRoles } from "@/lib/server/tenant/default-roles";
 
 const otpSchema = z.object({
   email: z.string().email(),
@@ -20,7 +23,7 @@ export type VerifyOTPState = {
 
 export async function verifyOTP(
   _: VerifyOTPState,
-  formData: FormData
+  formData: FormData,
 ): Promise<VerifyOTPState> {
   try {
     const email = formData.get("email");
@@ -46,33 +49,137 @@ export async function verifyOTP(
       };
     }
 
-    // Sync user to users table
-    const client = postgres(process.env.POSTGRES_URL!);
-    const db = drizzle(client);
+    // Verify session is available after OTP verification
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-    const [existingUser] = await db
-      .select()
-      .from(user)
-      .where(eq(user.id, data.user.id))
-      .limit(1);
-
-    if (!existingUser) {
-      await db.insert(user).values({
-        id: data.user.id,
-        email: validatedData.email,
-        onboarding_completed: false,
-      });
+    if (sessionError || !session) {
+      console.error(
+        "Session not available after OTP verification:",
+        sessionError,
+      );
+      return {
+        status: "failed",
+        message: "Session could not be established. Please try again.",
+      };
     }
 
-    // Check onboarding status
-    const [userRecord] = await db
-      .select()
-      .from(user)
-      .where(eq(user.id, data.user.id))
-      .limit(1);
+    // Create user record and ensure workspace membership before resolving tenant context
+    const mode = getAppMode();
+    const sql = postgres(process.env.POSTGRES_URL!);
+    const db = drizzle(sql);
 
-    if (!userRecord?.onboarding_completed) {
-      redirect("/onboarding");
+    try {
+      // Create user record if it doesn't exist
+      const [existingUser] = await db
+        .select()
+        .from(user)
+        .where(eq(user.id, data.user.id))
+        .limit(1);
+
+      if (!existingUser) {
+        await db.insert(user).values({
+          id: data.user.id,
+          email: validatedData.email,
+          onboarding_completed: false,
+        });
+      }
+
+      // Ensure workspace membership exists (required for resolveTenantContext)
+      if (mode === "local") {
+        // In local mode, ensure membership in the default workspace
+        const DEFAULT_WORKSPACE_SLUG = "default";
+        const [defaultWorkspace] = await db
+          .select({ id: workspace.id })
+          .from(workspace)
+          .where(eq(workspace.slug, DEFAULT_WORKSPACE_SLUG))
+          .limit(1);
+
+        if (defaultWorkspace) {
+          await seedDefaultRoles(db, defaultWorkspace.id);
+          const [existingMembership] = await db
+            .select({ id: workspaceUser.id })
+            .from(workspaceUser)
+            .where(
+              and(
+                eq(workspaceUser.workspace_id, defaultWorkspace.id),
+                eq(workspaceUser.user_id, data.user.id),
+              ),
+            )
+            .limit(1);
+
+          if (!existingMembership) {
+            await db.insert(workspaceUser).values({
+              workspace_id: defaultWorkspace.id,
+              user_id: data.user.id,
+              role_id: "user",
+              metadata: {},
+            });
+          }
+        }
+      } else {
+        // In hosted mode, check if user has any workspace membership
+        const [membership] = await db
+          .select({ id: workspaceUser.id })
+          .from(workspaceUser)
+          .where(eq(workspaceUser.user_id, data.user.id))
+          .limit(1);
+
+        if (!membership) {
+          // Create a personal workspace for the user
+          const [newWorkspace] = await db
+            .insert(workspace)
+            .values({
+              name: `${validatedData.email}'s Workspace`,
+              slug: `user-${data.user.id}`,
+              owner_user_id: data.user.id,
+              mode: "hosted",
+              metadata: {},
+            })
+            .returning({ id: workspace.id });
+
+          await seedDefaultRoles(db, newWorkspace.id);
+
+          await db.insert(workspaceUser).values({
+            workspace_id: newWorkspace.id,
+            user_id: data.user.id,
+            role_id: "admin",
+            metadata: {},
+          });
+        }
+      }
+    } finally {
+      await sql.end({ timeout: 5 });
+    }
+
+    // Now resolve tenant context (should work since membership exists)
+    let tenant;
+    try {
+      tenant = await resolveTenantContext();
+    } catch (tenantError) {
+      console.error("Failed to resolve tenant context:", tenantError);
+      return {
+        status: "failed",
+        message: tenantError instanceof Error
+          ? tenantError.message
+          : "Failed to initialize workspace. Please try again.",
+      };
+    }
+
+    const store = await getResourceStore(tenant);
+    try {
+      const userId = data.user.id;
+      const [userRecord] = await store.withSqlClient((db) =>
+        db.select().from(user).where(eq(user.id, userId)).limit(1)
+      );
+
+      if (!userRecord?.onboarding_completed) {
+        redirect("/onboarding");
+      }
+    } finally {
+      await store.dispose();
     }
 
     redirect("/");
@@ -89,10 +196,14 @@ export async function verifyOTP(
       throw error;
     }
 
+    // Log the error for debugging
+    console.error("OTP verification error:", error);
+
     return {
       status: "failed",
-      message: "Failed to verify OTP code",
+      message: error instanceof Error
+        ? error.message
+        : "Failed to verify OTP code. Please try again.",
     };
   }
 }
-

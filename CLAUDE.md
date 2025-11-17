@@ -25,14 +25,16 @@ npm run dev
 # Build for production
 npm run build
 
-# Database operations (Drizzle ORM)
-pnpm db:generate    # Generate migrations from schema
-pnpm db:migrate     # Run migrations (executes src/lib/server/db/migrate.ts)
-pnpm db:push        # Push schema changes directly
-pnpm db:pull        # Pull schema from database
+# Database operations (Supabase migrations)
+pnpm db:migrate     # Apply pending Supabase migrations (supabase migration up)
+pnpm db:reset       # Reset database and apply all migrations (supabase db reset)
+pnpm db:generate    # Generate Drizzle migrations from schema (for reference only)
+pnpm db:push        # Push schema changes directly via Drizzle (for development only)
+pnpm db:pull        # Pull schema from database via Drizzle
 pnpm db:studio      # Open Drizzle Studio GUI
 pnpm db:check       # Check migration issues
-pnpm db:up          # Apply pending migrations
+pnpm db:up          # Apply pending migrations via Drizzle (legacy)
+pnpm provision:workspace  # Provision or update a workspace (scripts/provision-workspace.ts)
 ```
 
 ## Architecture Overview
@@ -41,17 +43,25 @@ pnpm db:up          # Apply pending migrations
 
 **Supabase Auth** handles user authentication with custom session management:
 
-- `src/hooks.server.ts` - Initializes Supabase client and session validation via `safeGetSession()`
-- `src/lib/server/auth/handle.ts` - Custom auth handle for session management
-- `locals.supabase` - Supabase client (respects RLS policies)
-- `locals.supabaseServiceRole` - Service role client (bypasses RLS, use carefully)
-- `locals.safeGetSession()` - Validates JWT and returns user session
+- `lib/supabase/server.ts` - Creates SSR Supabase client helpers
+- `proxy.ts` - Next.js middleware bridging Supabase sessions with onboarding checks
+- `middleware.ts` - Injects workspace headers for every request
+- `lib/server/tenant/context.ts` - Resolves tenant context, creates local workspaces, syncs memberships
+- `lib/server/tenant/resource-store.ts` - Factory that returns the correct resource adapter per workspace
 
 **Workspaces & Teams**:
-- Multi-tenant via `workspaces` table - each workspace has an `owner_user_id`
+- Multi-tenant via `workspaces` table - each workspace has optional `owner_user_id`
 - `workspace_users` - Junction table for workspace membership with roles
-- `user_roles` - Role assignments per user (admin, dev, config, staff, basic)
-- `role_permissions` - Permission definitions for each role
+- `workspace_invites` - Secure invitations with role grants
+- `workspace_apps` - External resource connections (postgres/neon/planetscale/zapier)
+
+### Tenant Data Access
+
+- `lib/server/tenant/resource-store.ts` - Creates adapters per workspace connection (`local`, `postgres`, `zapier`)
+- `lib/server/tenant/adapters/postgres.ts` - Drizzle/Postgres adapter using configurable credential refs
+- `lib/server/tenant/adapters/zapier.ts` - HTTP webhook adapter for Zapier integrations
+- `lib/db/queries.ts` - Uses `withTenantDb()` helper so every query executes within the current workspace context
+- `middleware.ts` + `resolveTenantContext()` ensure requests carry `x-workspace-id` headers and memberships are synced
 
 ### Role-Based Access Control (RBAC)
 
@@ -90,8 +100,8 @@ const roles = await getUserRoles(supabase, userId);
 - `sessions` - Auth sessions (managed by Supabase)
 - `workspaces` - Multi-tenant workspaces
 - `workspace_users` - Workspace membership with roles
-- `user_roles` - User role assignments
-- `role_permissions` - Permission definitions
+- `workspace_invites` - Invitation tokens + accepted metadata
+- `workspace_apps` - External connection metadata per workspace
 
 **Application Tables**:
 
@@ -102,6 +112,7 @@ const roles = await getUserRoles(supabase, userId);
 - `workflows`, `workflow_steps` - Visual workflow definitions
 - `functions` - Workflow function definitions with input/output schemas
 - `views` - Custom view layouts with JSONB blocks, settings, and layout configuration
+- All tenant tables include a `workspace_id` column and enforce Supabase RLS policies via helper functions (`user_is_workspace_member`, `user_has_workspace_role`)
 
 **Organization Settings**:
 - `organization_settings` - Singleton table (ID: `00000000-0000-0000-0000-000000000001`)
@@ -418,9 +429,9 @@ App types are extended in `src/app.d.ts` to include:
 ## Development Notes
 
 - **Package Manager**: Uses pnpm (version `10.11.1`)
-- **Adapter**: Vercel adapter (`@sveltejs/adapter-vercel`)
-- **Type Safety**: Full TypeScript with strict checking (`svelte-check`)
-- **Database Migrations**: Always generate migrations with `pnpm db:generate` before running `pnpm db:migrate`
-- **Migration Files**: Located in `supabase/migrations/` with numbered prefixes (e.g., `20250101000001_*.sql`)
-- **Debugging**: Console logs are available throughout; check browser console and server logs
-- **Supabase Functions**: All workflow functions are Postgres functions prefixed with `wf_`
+- **Framework**: Next.js 16 App Router with server components
+- **Type Safety**: TypeScript 5.9 + Biome linting (`pnpm lint`)
+- **Database Migrations**: All migrations are consolidated in Supabase SQL files (`supabase/migrations/`). The initial schema (`20251111000000_initial_schema.sql`) creates all base tables, followed by workspace RBAC (`20251111000100_workspace_rbac.sql`), workspace_id columns (`20251111000200_add_workspace_ids.sql`), and RLS policies (`20251111000300_workspace_rls.sql`). Drizzle migrations in `lib/db/migrations/` are kept for reference but are no longer executed.
+- **Provisioning**: Run `pnpm provision:workspace` to bootstrap a workspace, owner membership, and default connection
+- **Debugging**: Console logs available throughout; check browser console and server logs
+- **Supabase Functions**: Workflow functions remain Postgres functions prefixed with `wf_`
