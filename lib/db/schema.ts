@@ -195,6 +195,30 @@ export const page = pgTable("pages", {
 
 export type Page = InferSelectModel<typeof page>;
 
+export type TableConfig = Record<string, unknown>;
+
+export const table = pgTable("tables", {
+  id: text("id").primaryKey().notNull(),
+  workspace_id: uuid("workspace_id")
+    .notNull()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  config: jsonb("config")
+    .$type<TableConfig>()
+    .notNull()
+    .default({}),
+  created_by: uuid("created_by").references(() => user.id),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type Table = InferSelectModel<typeof table>;
+
 export const chat = pgTable("chats", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   created_at: timestamp("created_at").notNull(),

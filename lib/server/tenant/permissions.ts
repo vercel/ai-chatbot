@@ -1,10 +1,29 @@
 import type { TenantContext } from "./context";
 
 const ROLE_CAPABILITIES: Record<string, readonly string[]> = {
-  admin: ["*", "pages.view", "pages.edit"],
-  dev: ["pages.view", "pages.edit"],
-  staff: ["pages.view"],
-  user: ["pages.view"],
+  admin: [
+    "*",
+    "pages.view",
+    "pages.edit",
+    "tables.view",
+    "tables.edit",
+    "data.view",
+    "data.create",
+    "data.edit",
+    "data.delete",
+  ],
+  dev: [
+    "pages.view",
+    "pages.edit",
+    "tables.view",
+    "tables.edit",
+    "data.view",
+    "data.create",
+    "data.edit",
+    "data.delete",
+  ],
+  staff: ["pages.view", "tables.view", "data.view"],
+  user: ["pages.view", "tables.view", "data.view"],
 };
 
 export function hasCapability(
