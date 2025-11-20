@@ -46,6 +46,8 @@ import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
+import { ArrowDownIcon } from "lucide-react";
+import { useScrollToBottomPersist } from "@/hooks/use-scroll-to-bottom";
 
 function PureMultimodalInput({
   chatId,
@@ -82,24 +84,7 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
-
-  const adjustHeight = useCallback(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "44px";
-    }
-  }, []);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      adjustHeight();
-    }
-  }, [adjustHeight]);
-
-  const resetHeight = useCallback(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "44px";
-    }
-  }, []);
+  const { isAtBottom, scrollToBottom } = useScrollToBottomPersist(true);
 
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     "input",
@@ -112,11 +97,10 @@ function PureMultimodalInput({
       // Prefer DOM value over localStorage to handle hydration
       const finalValue = domValue || localStorageInput || "";
       setInput(finalValue);
-      adjustHeight();
     }
     // Only run once after hydration
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adjustHeight, localStorageInput, setInput]);
+  }, [localStorageInput, setInput]);
 
   useEffect(() => {
     setLocalStorageInput(input);
@@ -150,7 +134,6 @@ function PureMultimodalInput({
 
     setAttachments([]);
     setLocalStorageInput("");
-    resetHeight();
     setInput("");
 
     if (width && width > 768) {
@@ -165,7 +148,6 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
-    resetHeight,
   ]);
 
   const uploadFile = useCallback(async (file: File) => {
@@ -288,6 +270,18 @@ function PureMultimodalInput({
 
   return (
     <div className={cn("relative flex w-full flex-col gap-4", className)}>
+
+      {!isAtBottom && (
+        <button
+          aria-label="Scroll to bottom"
+          className="animate-floating-action mx-auto cursor-pointer -translate-x-1/2 -translate-y-14 absolute bottom-[inherit] left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
+          onClick={() => scrollToBottom("smooth")}
+          type="button"
+        >
+          <ArrowDownIcon className="size-4" />
+        </button>
+      )}
+      
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
