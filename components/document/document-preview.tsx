@@ -94,6 +94,7 @@ export function DocumentPreview({
           id: artifact.documentId,
           created_at: new Date(),
           user_id: "noop",
+          workspace_id: documents?.[0]?.workspace_id ?? "00000000-0000-0000-0000-000000000000",
         }
       : null;
 

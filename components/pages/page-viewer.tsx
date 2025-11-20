@@ -58,12 +58,15 @@ function renderBlock(
       return <ReportBlockView block={block} />;
     case "trigger":
       return <TriggerBlockView block={block} />;
-    default:
+    default: {
+      // TypeScript exhaustiveness check narrows to 'never', but we need to handle runtime cases
+      const blockType = (block as { type: string }).type;
       return (
         <div className="p-4 text-sm text-muted-foreground">
-          Unsupported block type: {String(block.type)}
+          Unsupported block type: {String(blockType)}
         </div>
       );
+    }
   }
 }
 

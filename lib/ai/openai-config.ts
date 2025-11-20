@@ -4,7 +4,7 @@ import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
  * OpenAI Provider Options Configuration
  *
  * This file documents and provides helper functions for OpenAI provider options
- * that can be used with gpt-5-mini and other OpenAI models.
+ * that can be used with gpt-5.1-mini and other OpenAI models.
  *
  * Provider options are passed to generateText, streamText, generateObject, etc.
  * via the `providerOptions` parameter:
@@ -22,7 +22,7 @@ import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
  */
 
 /**
- * Default OpenAI provider options for gpt-5-mini
+ * Default OpenAI provider options for gpt-5.1-mini
  *
  * These options are optimized for the default chat model.
  * You can override specific options when calling generateText/streamText.
@@ -114,7 +114,7 @@ export const getArtifactOpenAIOptions = (): OpenAIResponsesProviderOptions => ({
  * - strictJsonSchema: boolean - Use strict JSON schema validation (default: false)
  * - serviceTier: 'auto' | 'flex' | 'priority' | 'default' - Service tier (default: 'auto')
  *   - 'flex': 50% cheaper processing with increased latency (available for o3, o4-mini, gpt-5)
- *   - 'priority': Faster processing with Enterprise access (available for gpt-4, gpt-5, gpt-5-mini, o3, o4-mini)
+ *   - 'priority': Faster processing with Enterprise access (available for gpt-4, gpt-5, gpt-5.1-mini, o3, o4-mini)
  * - textVerbosity: 'low' | 'medium' | 'high' - Controls response verbosity (default: 'medium')
  * - include: string[] - Additional content to include (e.g., ['file_search_call.results'])
  * - truncation: string - Truncation strategy ('auto' or 'disabled')

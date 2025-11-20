@@ -9,6 +9,7 @@ import {
   isDevelopmentEnvironment,
   isStagingEnvironment,
   getEnvironmentType,
+  type EnvironmentType,
 } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,9 +77,10 @@ export function DevBar() {
     }
   };
 
-  const envColors = {
+  const envColors: Record<EnvironmentType, string> = {
     development: "bg-blue-950/50 border-blue-800/50 text-blue-200",
     staging: "bg-amber-950/50 border-amber-800/50 text-amber-200",
+    production: "bg-green-950/50 border-green-800/50 text-green-200",
   };
 
   const envColor = envColors[envType];

@@ -19,8 +19,8 @@ export const pageBlockSchema = z.object({
   id: z.string().min(1, "Block id is required"),
   type: pageBlockTypeSchema,
   position: pageBlockPositionSchema.optional(),
-  dataSource: z.record(z.unknown()).optional(),
-  displayConfig: z.record(z.unknown()).optional(),
+  dataSource: z.record(z.string(), z.unknown()).optional(),
+  displayConfig: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const pageUrlParamSchema = z.object({
@@ -43,7 +43,7 @@ export const pageSettingsSchema = z
   .catchall(z.unknown())
   .default({});
 
-export const pageLayoutSchema = z.record(z.unknown()).default({});
+export const pageLayoutSchema = z.record(z.string(), z.unknown()).default({});
 
 export const createPageSchema = z.object({
   id: pageIdSchema,

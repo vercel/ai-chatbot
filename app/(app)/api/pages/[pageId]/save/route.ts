@@ -5,9 +5,9 @@ import { requireCapability } from "@/lib/server/tenant/permissions";
 import { PageNotFoundError, updatePage } from "@/lib/server/pages";
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     pageId: string;
-  };
+  }>;
 };
 
 export async function PUT(request: Request, context: RouteParams) {
@@ -15,7 +15,8 @@ export async function PUT(request: Request, context: RouteParams) {
     const tenant = await resolveTenantContext();
     requireCapability(tenant, "pages.edit");
     const payload = await request.json();
-    const page = await updatePage(tenant, context.params.pageId, payload);
+    const { pageId } = await context.params;
+    const page = await updatePage(tenant, pageId, payload);
     return NextResponse.json({ page });
   } catch (error) {
     return handleError(error);

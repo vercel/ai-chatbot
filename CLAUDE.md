@@ -185,7 +185,7 @@ const roles = await getUserRoles(supabase, userId);
 Uses Vercel AI SDK with custom provider wrapping OpenAI models:
 
 - `title-model` - Fast title generation (gpt-5-nano, minimal reasoning)
-- `chat-model` - Standard chat (gpt-5-mini, medium reasoning)
+- `chat-model` - Standard chat (gpt-5.1-mini, medium reasoning)
 - `chat-model-reasoning` - Chat with detailed reasoning summary
 - `code-generation`, `planning`, `migration-generation`, `schema-analysis` - Specialized models
 - All models use OpenAI's reasoning effort and summary features

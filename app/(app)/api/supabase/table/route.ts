@@ -138,7 +138,7 @@ function parseQuery(searchParams: URLSearchParams) {
 }
 
 function applyFilter(
-  query: PostgrestFilterBuilder<any, any, any>,
+  query: PostgrestFilterBuilder<any, any, any, any>,
   column: string,
   operator: string,
   value: string | null

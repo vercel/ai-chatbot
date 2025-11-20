@@ -31,8 +31,8 @@ export const fieldMetadataSchema = z.object({
   is_required: z.boolean().optional(),
   is_unique: z.boolean().optional(),
   default_value: z.unknown().optional(),
-  validation_rules: z.record(z.unknown()).optional(),
-  ui_hints: z.record(z.unknown()).optional(),
+  validation_rules: z.record(z.string(), z.unknown()).optional(),
+  ui_hints: z.record(z.string(), z.unknown()).optional(),
   visibility_rules: z
     .object({
       roles: z.array(z.string()).optional(),
@@ -96,7 +96,15 @@ export const createTableSchema = z.object({
     .string()
     .max(512, "Description must be 512 characters or fewer")
     .optional(),
-  config: tableConfigSchema.optional().default({}),
+  config: tableConfigSchema.optional().default(() => ({
+    label_fields: [],
+    relationships: [],
+    field_metadata: [],
+    rls_policy_templates: [],
+    rls_policy_groups: [],
+    table_type: "base_table" as const,
+    indexes: [],
+  })),
 });
 
 export const updateTableSchema = z.object({

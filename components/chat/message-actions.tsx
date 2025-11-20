@@ -92,9 +92,12 @@ export function PureMessageActions({
               mutate<Vote[]>(
                 `/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
-                  if (!currentVotes) {
+                  if (!currentVotes || currentVotes.length === 0) {
                     return [];
                   }
+
+                  // Get workspace_id from existing votes (they should all have the same workspace_id)
+                  const workspaceId = currentVotes[0]?.workspace_id;
 
                   const votesWithoutCurrent = currentVotes.filter(
                     (currentVote) => currentVote.message_id !== message.id
@@ -103,6 +106,7 @@ export function PureMessageActions({
                   return [
                     ...votesWithoutCurrent,
                     {
+                      workspace_id: workspaceId,
                       chat_id: chatId,
                       message_id: message.id,
                       is_upvoted: true,
@@ -141,9 +145,12 @@ export function PureMessageActions({
               mutate<Vote[]>(
                 `/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
-                  if (!currentVotes) {
+                  if (!currentVotes || currentVotes.length === 0) {
                     return [];
                   }
+
+                  // Get workspace_id from existing votes (they should all have the same workspace_id)
+                  const workspaceId = currentVotes[0]?.workspace_id;
 
                   const votesWithoutCurrent = currentVotes.filter(
                     (currentVote) => currentVote.message_id !== message.id
@@ -152,6 +159,7 @@ export function PureMessageActions({
                   return [
                     ...votesWithoutCurrent,
                     {
+                      workspace_id: workspaceId,
                       chat_id: chatId,
                       message_id: message.id,
                       is_upvoted: false,

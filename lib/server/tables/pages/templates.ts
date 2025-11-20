@@ -1,5 +1,5 @@
 import type { PageBlock, PageSettings } from "@/lib/server/pages/schema";
-import type { TableRecord } from "../../schema";
+import type { TableRecord } from "../schema";
 
 /**
  * Generates a list page block for a table

@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 import { resolveTenantContext } from "@/lib/server/tenant/context";
 import { requireCapability } from "@/lib/server/tenant/permissions";
 import { getResourceStore } from "@/lib/server/tenant/resource-store";
-import { createTableConfig, listTableConfigs } from "@/lib/server/tables";
+import { createTableConfig } from "@/lib/server/tables";
 
 const SYSTEM_TABLES = new Set([
     "users",
@@ -82,13 +82,7 @@ export async function GET(request: Request) {
         const url = new URL(request.url);
         const type = url.searchParams.get("type") ?? "data"; // "data" or "config"
 
-        // If requesting configs, return table configurations
-        if (type === "config") {
-            const configs = await listTableConfigs(tenant);
-            return NextResponse.json({ tables: configs });
-        }
-
-        // Otherwise, return actual database tables
+        // Query actual database tables from the connected database
         const store = await getResourceStore(tenant);
 
         try {
@@ -117,7 +111,11 @@ export async function GET(request: Request) {
             });
 
             const filtered = tables.filter((table) => {
-                const isSystemTable = SYSTEM_TABLES.has(table.name);
+                // Case-insensitive check for system tables
+                const isSystemTable = SYSTEM_TABLES.has(
+                    table.name.toLowerCase(),
+                );
+                // For data type, return non-system tables; otherwise return system tables
                 return type === "data" ? !isSystemTable : isSystemTable;
             });
 

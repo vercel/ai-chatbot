@@ -1,6 +1,6 @@
 import { createPage } from "@/lib/server/pages";
 import type { TenantContext } from "@/lib/server/tenant/context";
-import type { TableRecord } from "../../schema";
+import type { TableRecord } from "../schema";
 import {
   generateListPageBlock,
   generateDetailPageBlock,

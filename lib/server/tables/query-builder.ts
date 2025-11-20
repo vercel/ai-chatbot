@@ -122,7 +122,7 @@ export async function buildSelectQuery(
   `) as Array<{ column_name: string }>;
 
   const columns = columnsResult.map((row) => row.column_name);
-  const selectColumns = columns
+  let selectColumns = columns
     .map((col) => `${escapedMainAlias}.${escapeIdentifier(col)}`)
     .join(", ");
 

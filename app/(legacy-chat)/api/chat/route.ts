@@ -40,6 +40,7 @@ import {
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
+import { resolveTenantContext } from "@/lib/server/tenant/context";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
@@ -128,14 +129,20 @@ export async function POST(request: Request) {
 
     const chat = await getChatById({ id });
     let messagesFromDb: DBMessage[] = [];
+    let workspaceId: string;
 
     if (chat) {
       if (chat.user_id !== session.user.id) {
         return new ChatSDKError("forbidden:chat").toResponse();
       }
+      workspaceId = chat.workspace_id;
       // Only fetch messages if chat already exists
       messagesFromDb = await getMessagesByChatId({ id });
     } else {
+      // Get workspace_id from tenant context for new chat
+      const tenant = await resolveTenantContext();
+      workspaceId = tenant.workspaceId;
+
       const title = await generateTitleFromUserMessage({
         message,
       });
@@ -169,6 +176,7 @@ export async function POST(request: Request) {
           parts: message.parts,
           attachments: [],
           created_at: new Date(),
+          workspace_id: workspaceId,
         },
       ],
     });
@@ -306,6 +314,7 @@ export async function POST(request: Request) {
             created_at: new Date(),
             attachments: [],
             chat_id: id,
+            workspace_id: workspaceId,
           })),
         });
 

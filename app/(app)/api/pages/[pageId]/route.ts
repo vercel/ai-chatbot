@@ -5,16 +5,17 @@ import { requireCapability } from "@/lib/server/tenant/permissions";
 import { getPageById } from "@/lib/server/pages";
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     pageId: string;
-  };
+  }>;
 };
 
 export async function GET(_request: Request, context: RouteParams) {
   try {
     const tenant = await resolveTenantContext();
     requireCapability(tenant, "pages.view");
-    const page = await getPageById(tenant, context.params.pageId);
+    const { pageId } = await context.params;
+    const page = await getPageById(tenant, pageId);
 
     if (!page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });

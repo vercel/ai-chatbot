@@ -135,7 +135,7 @@ export async function completeOnboarding(
     if (error instanceof z.ZodError) {
       return {
         status: "invalid_data",
-        message: error.errors[0]?.message ?? "Invalid form data",
+        message: error.issues[0]?.message ?? "Invalid form data",
       };
     }
 

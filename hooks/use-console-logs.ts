@@ -18,7 +18,7 @@ export function useConsoleLogs() {
     error: typeof console.error;
     warn: typeof console.warn;
     info: typeof console.info;
-  }>();
+  } | undefined>(undefined);
 
   const addLog = useCallback((level: LogLevel, ...args: unknown[]) => {
     const message = args

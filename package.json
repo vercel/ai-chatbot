@@ -1,11 +1,14 @@
 {
-  "name": "ai-chatbot",
-  "version": "3.1.0",
+  "name": "suplex-studio",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
+    "check": "tsc --noEmit && npm run lint",
     "lint": "npx ultracite@latest check",
     "format": "npx ultracite@latest fix",
     "db:generate": "drizzle-kit generate",

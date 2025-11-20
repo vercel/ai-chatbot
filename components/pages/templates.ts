@@ -1,4 +1,4 @@
-import type { PageBlockDraft, PageDraft } from "./types";
+import type { ListBlockDraft, PageBlockDraft, PageDraft } from "./types";
 
 export type PageTemplate = {
   id: string;
@@ -17,7 +17,7 @@ export type TemplateRow = {
   }>;
 };
 
-const defaultListBlock = (id: string, tableName: string): PageBlockDraft => ({
+const defaultListBlock = (id: string, tableName: string): ListBlockDraft => ({
   id,
   type: "list",
   position: { x: 0, y: 0, width: 12, height: 4 },

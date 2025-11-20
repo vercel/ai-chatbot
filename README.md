@@ -63,9 +63,9 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 3. Download your environment variables: `vercel env pull`
 
 ```bash
-pnpm install
-pnpm db:migrate # Setup database or apply latest database changes
-pnpm dev
+npm install
+supabase db up # Setup database or apply latest database changes
+npm run dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).

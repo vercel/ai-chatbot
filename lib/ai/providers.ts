@@ -9,7 +9,7 @@ import { isTestEnvironment } from "../constants";
 /**
  * OpenAI Provider Configuration
  *
- * All models use gpt-5-mini, which supports:
+ * All models use gpt-5.1-mini, which supports:
  * - Image inputs (multimodal vision capabilities)
  * - Tool usage (function calling)
  * - Object generation (structured outputs)
@@ -47,17 +47,17 @@ export const myProvider = isTestEnvironment
   : customProvider({
     languageModels: {
       // Default chat model with vision and text capabilities
-      "chat-model": openai("gpt-5-mini"),
+      "chat-model": openai("gpt-5.1-mini"),
 
       // Reasoning model - uses OpenAI's native reasoning support
       // Reasoning visibility is controlled via providerOptions.reasoningSummary
       // Remove extractReasoningMiddleware as OpenAI handles reasoning natively
-      "chat-model-reasoning": openai("gpt-5-mini"),
+      "chat-model-reasoning": openai("gpt-5.1-mini"),
 
       // Title generation model (optimized for concise output)
-      "title-model": openai("gpt-5-mini"),
+      "title-model": openai("gpt-5.1-mini"),
 
       // Artifact/document generation model
-      "artifact-model": openai("gpt-5-mini"),
+      "artifact-model": openai("gpt-5.1-mini"),
     },
   });

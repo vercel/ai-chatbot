@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { PageRecord } from "@/lib/server/pages";
+import type { PageBlock, PageRecord } from "@/lib/server/pages";
 import type {
   GridPosition,
   ListBlockDraft,
@@ -87,14 +87,14 @@ export function draftToSavePayload(draft: PageDraft): PageSavePayload {
 }
 
 function normalizeUrlParams(
-  params: unknown
+  params: unknown,
 ): PageUrlParamDraft[] {
   if (!Array.isArray(params)) {
     return [];
   }
 
   return params
-    .map((param) => {
+    .map((param): PageUrlParamDraft | null => {
       if (!param || typeof param !== "object") {
         return null;
       }
@@ -103,10 +103,12 @@ function normalizeUrlParams(
       if (!name) {
         return null;
       }
-      const required =
-        typeof record.required === "boolean" ? record.required : false;
-      const description =
-        typeof record.description === "string" ? record.description : undefined;
+      const required = typeof record.required === "boolean"
+        ? record.required
+        : false;
+      const description = typeof record.description === "string"
+        ? record.description
+        : undefined;
       return {
         id: nanoid(8),
         name,
@@ -144,13 +146,14 @@ function normalizeBlock(block: unknown): PageBlockDraft {
 
 function normalizeListBlock(
   id: string,
-  block: Record<string, unknown>
+  block: Record<string, unknown>,
 ): ListBlockDraft {
   const dataSource = (block.dataSource ?? {}) as Record<string, unknown>;
   const displayConfig = (block.displayConfig ?? {}) as Record<string, unknown>;
 
-  const tableName =
-    typeof dataSource.tableName === "string" ? dataSource.tableName : "";
+  const tableName = typeof dataSource.tableName === "string"
+    ? dataSource.tableName
+    : "";
 
   const filtersObj = (dataSource.filters ?? {}) as Record<
     string,
@@ -163,22 +166,20 @@ function normalizeListBlock(
       column: parseFilterColumn(rawKey),
       operator: parseListOperator(filterConfig.operator),
       value: inferFilterValue(filterConfig.value),
-    })
+    }),
   );
 
   const format = parseListFormat(displayConfig.format);
-  const showActions =
-    typeof displayConfig.showActions === "boolean"
-      ? displayConfig.showActions
-      : true;
-  const editable =
-    typeof displayConfig.editable === "boolean"
-      ? displayConfig.editable
-      : false;
+  const showActions = typeof displayConfig.showActions === "boolean"
+    ? displayConfig.showActions
+    : true;
+  const editable = typeof displayConfig.editable === "boolean"
+    ? displayConfig.editable
+    : false;
   const columns = Array.isArray(displayConfig.columns)
     ? displayConfig.columns.filter((column): column is string =>
-        typeof column === "string" && column.length > 0
-      )
+      typeof column === "string" && column.length > 0
+    )
     : [];
 
   return {
@@ -198,22 +199,24 @@ function normalizeListBlock(
 
 function normalizeRecordBlock(
   id: string,
-  block: Record<string, unknown>
+  block: Record<string, unknown>,
 ): RecordBlockDraft {
   const dataSource = (block.dataSource ?? {}) as Record<string, unknown>;
   const displayConfig = (block.displayConfig ?? {}) as Record<string, unknown>;
 
-  const tableName =
-    typeof dataSource.tableName === "string" ? dataSource.tableName : "";
-  const recordId =
-    typeof dataSource.recordId === "string" ? dataSource.recordId : "";
+  const tableName = typeof dataSource.tableName === "string"
+    ? dataSource.tableName
+    : "";
+  const recordId = typeof dataSource.recordId === "string"
+    ? dataSource.recordId
+    : "";
 
   const mode = parseRecordMode(displayConfig.mode);
   const format = parseRecordFormat(displayConfig.format);
   const columns = Array.isArray(displayConfig.columns)
     ? displayConfig.columns.filter((column): column is string =>
-        typeof column === "string" && column.length > 0
-      )
+      typeof column === "string" && column.length > 0
+    )
     : [];
 
   return {
@@ -232,16 +235,18 @@ function normalizeRecordBlock(
 
 function normalizeReportBlock(
   id: string,
-  block: Record<string, unknown>
+  block: Record<string, unknown>,
 ): ReportBlockDraft {
   const dataSource = (block.dataSource ?? {}) as Record<string, unknown>;
   const displayConfig = (block.displayConfig ?? {}) as Record<string, unknown>;
 
-  const reportId =
-    typeof dataSource.reportId === "string" ? dataSource.reportId : "";
+  const reportId = typeof dataSource.reportId === "string"
+    ? dataSource.reportId
+    : "";
   const chartType = parseReportChart(displayConfig.chartType);
-  const title =
-    typeof displayConfig.title === "string" ? displayConfig.title : "";
+  const title = typeof displayConfig.title === "string"
+    ? displayConfig.title
+    : "";
 
   return {
     id,
@@ -257,25 +262,24 @@ function normalizeReportBlock(
 
 function normalizeTriggerBlock(
   id: string,
-  block: Record<string, unknown>
+  block: Record<string, unknown>,
 ): TriggerBlockDraft {
   const displayConfig = (block.displayConfig ?? {}) as Record<string, unknown>;
 
-  const buttonText =
-    typeof displayConfig.buttonText === "string"
-      ? displayConfig.buttonText
-      : "Run action";
+  const buttonText = typeof displayConfig.buttonText === "string"
+    ? displayConfig.buttonText
+    : "Run action";
   const actionType = parseTriggerAction(displayConfig.actionType);
   const requireConfirmation =
     typeof displayConfig.requireConfirmation === "boolean"
       ? displayConfig.requireConfirmation
       : false;
-  const confirmationText =
-    typeof displayConfig.confirmationText === "string"
-      ? displayConfig.confirmationText
-      : "Are you sure?";
-  const hookName =
-    typeof displayConfig.hookName === "string" ? displayConfig.hookName : "";
+  const confirmationText = typeof displayConfig.confirmationText === "string"
+    ? displayConfig.confirmationText
+    : "Are you sure?";
+  const hookName = typeof displayConfig.hookName === "string"
+    ? displayConfig.hookName
+    : "";
 
   return {
     id,
@@ -455,7 +459,7 @@ function parseTriggerAction(action: unknown): TriggerActionType {
   return "default";
 }
 
-function serializeBlock(block: PageBlockDraft): Record<string, unknown> {
+function serializeBlock(block: PageBlockDraft): PageBlock {
   switch (block.type) {
     case "list":
       return serializeListBlock(block);
@@ -470,9 +474,7 @@ function serializeBlock(block: PageBlockDraft): Record<string, unknown> {
   }
 }
 
-function serializeListBlock(
-  block: ListBlockDraft
-): Record<string, unknown> {
+function serializeListBlock(block: ListBlockDraft): PageBlock {
   const filters = block.filters.reduce<Record<string, unknown>>(
     (accumulator, filter) => {
       if (!filter.column) {
@@ -485,7 +487,7 @@ function serializeListBlock(
       };
       return accumulator;
     },
-    {}
+    {},
   );
 
   return {
@@ -506,9 +508,7 @@ function serializeListBlock(
   };
 }
 
-function serializeRecordBlock(
-  block: RecordBlockDraft
-): Record<string, unknown> {
+function serializeRecordBlock(block: RecordBlockDraft): PageBlock {
   return {
     id: block.id,
     type: "record",
@@ -526,9 +526,7 @@ function serializeRecordBlock(
   };
 }
 
-function serializeReportBlock(
-  block: ReportBlockDraft
-): Record<string, unknown> {
+function serializeReportBlock(block: ReportBlockDraft): PageBlock {
   return {
     id: block.id,
     type: "report",
@@ -544,9 +542,7 @@ function serializeReportBlock(
   };
 }
 
-function serializeTriggerBlock(
-  block: TriggerBlockDraft
-): Record<string, unknown> {
+function serializeTriggerBlock(block: TriggerBlockDraft): PageBlock {
   return {
     id: block.id,
     type: "trigger",
@@ -576,4 +572,3 @@ export function createBlockDraft(type: PageBlockDraft["type"]): PageBlockDraft {
       return createDefaultListBlock();
   }
 }
-

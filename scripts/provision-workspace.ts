@@ -119,7 +119,7 @@ async function provisionWorkspace(options: ProvisionOptions) {
                     await db.insert(workspaceUser).values({
                         workspace_id: workspaceId,
                         user_id: ownerId,
-                        role: "admin",
+                        role_id: "admin",
                         metadata: {},
                     });
                 }

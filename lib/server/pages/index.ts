@@ -3,6 +3,7 @@ export {
   getPageById,
   createPage,
   updatePage,
+  PageNotFoundError,
 } from "./repository";
 export type {
   PageRecord,
