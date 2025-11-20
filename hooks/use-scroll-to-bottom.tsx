@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 
 type ScrollFlag = ScrollBehavior | false;
@@ -107,4 +107,34 @@ export function useScrollToBottom() {
     onViewportEnter,
     onViewportLeave,
   };
+}
+
+type ScrollToBottomContextValue = ReturnType<typeof useScrollToBottom> | null;
+
+const ScrollToBottomContext = createContext<ScrollToBottomContextValue>(null);
+
+export function ScrollToBottomProvider({ children }: { children: ReactNode }) {
+  const scrollToBottom = useScrollToBottom();
+
+  return (
+    <ScrollToBottomContext.Provider value={scrollToBottom}>
+      {children}
+    </ScrollToBottomContext.Provider>
+  );
+}
+
+export function useScrollToBottomPersist(singleton: boolean = false) {
+  const context = useContext(ScrollToBottomContext);
+  const localInstance = useScrollToBottom();
+
+  if (singleton) {
+    if (!context) {
+      throw new Error(
+        "useScrollToBottom(true) must be used within a ScrollToBottomProvider"
+      );
+    }
+    return context;
+  }
+
+  return localInstance;
 }

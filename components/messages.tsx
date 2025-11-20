@@ -36,11 +36,10 @@ function PureMessages({
   const {
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
-    isAtBottom,
-    scrollToBottom,
     hasSentMessage,
   } = useMessages({
     status,
+     useScrollContext: true,
   });
 
   useDataStream();
@@ -101,17 +100,6 @@ function PureMessages({
           />
         </ConversationContent>
       </Conversation>
-
-      {!isAtBottom && (
-        <button
-          aria-label="Scroll to bottom"
-          className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
-          onClick={() => scrollToBottom("smooth")}
-          type="button"
-        >
-          <ArrowDownIcon className="size-4" />
-        </button>
-      )}
     </div>
   );
 }

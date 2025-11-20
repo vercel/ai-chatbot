@@ -46,6 +46,8 @@ import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
+import { ArrowDownIcon } from "lucide-react";
+import { useScrollToBottomPersist } from "@/hooks/use-scroll-to-bottom";
 
 function PureMultimodalInput({
   chatId,
@@ -82,6 +84,7 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const { isAtBottom, scrollToBottom } = useScrollToBottomPersist(true);
 
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     "input",
@@ -267,6 +270,18 @@ function PureMultimodalInput({
 
   return (
     <div className={cn("relative flex w-full flex-col gap-4", className)}>
+
+      {!isAtBottom && (
+        <button
+          aria-label="Scroll to bottom"
+          className="animate-floating-action mx-auto cursor-pointer -translate-x-1/2 -translate-y-14 absolute bottom-[inherit] left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
+          onClick={() => scrollToBottom("smooth")}
+          type="button"
+        >
+          <ArrowDownIcon className="size-4" />
+        </button>
+      )}
+      
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
