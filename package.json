@@ -8,7 +8,8 @@
     "start": "bun --bun next start",
     "check": "npx ultracite@latest check",
     "fix": "npx ultracite@latest fix",
-    "migrate": "npx prisma format && npx prisma generate && npx prisma db push"
+    "migrate": "npx prisma format && npx prisma generate && npx prisma db push",
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.5",
