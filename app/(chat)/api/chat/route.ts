@@ -49,6 +49,8 @@ import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
 export const maxDuration = 60;
 
+const ENABLE_RATE_LIMITING = true;
+
 let globalStreamContext: ResumableStreamContext | null = null;
 
 const getTokenlensCatalog = cache(
@@ -116,17 +118,18 @@ export async function POST(request: Request) {
       return new ChatSDKError("unauthorized:chat").toResponse();
     }
 
-    // const userType: UserType = session.user.type;
+    const userType: UserType = session.user.type;
 
-    // RATE LIMITING DISABLED
-    // const messageCount = await getMessageCountByUserId({
-    //   id: session.user.id,
-    //   differenceInHours: 24,
-    // });
+    if (ENABLE_RATE_LIMITING) {
+      const messageCount = await getMessageCountByUserId({
+        id: session.user.id,
+        differenceInHours: 24,
+      });
 
-    // if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-    //   return new ChatSDKError("rate_limit:chat").toResponse();
-    // }
+      if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+        return new ChatSDKError("rate_limit:chat").toResponse();
+      }
+    }
 
     const chat = await getChatById({ id });
     let messagesFromDb: DBMessage[] = [];
