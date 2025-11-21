@@ -68,6 +68,8 @@ function PureArtifact({
   isReadonly,
   selectedVisibilityType,
   selectedModelId,
+  voiceAgentActive,
+  voiceAgentOverlay,
 }: {
   chatId: string;
   input: string;
@@ -84,6 +86,8 @@ function PureArtifact({
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   selectedModelId: string;
+  voiceAgentActive?: boolean;
+  voiceAgentOverlay?: React.ReactNode;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -331,21 +335,24 @@ function PureArtifact({
                 />
 
                 <div className="relative flex w-full flex-row items-end gap-2 px-4 pb-4">
-                  <MultimodalInput
-                    attachments={attachments}
-                    chatId={chatId}
-                    className="bg-background dark:bg-muted"
-                    input={input}
-                    messages={messages}
-                    selectedModelId={selectedModelId}
-                    selectedVisibilityType={selectedVisibilityType}
-                    sendMessage={sendMessage}
-                    setAttachments={setAttachments}
-                    setInput={setInput}
-                    setMessages={setMessages}
-                    status={status}
-                    stop={stop}
-                  />
+                  {!voiceAgentActive && (
+                    <MultimodalInput
+                      attachments={attachments}
+                      chatId={chatId}
+                      className="bg-background dark:bg-muted"
+                      input={input}
+                      messages={messages}
+                      selectedModelId={selectedModelId}
+                      selectedVisibilityType={selectedVisibilityType}
+                      sendMessage={sendMessage}
+                      setAttachments={setAttachments}
+                      setInput={setInput}
+                      setMessages={setMessages}
+                      status={status}
+                      stop={stop}
+                    />
+                  )}
+                  {voiceAgentActive && voiceAgentOverlay}
                 </div>
               </div>
             </motion.div>
@@ -522,6 +529,9 @@ export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
     return false;
   }
   if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType) {
+    return false;
+  }
+  if (prevProps.voiceAgentActive !== nextProps.voiceAgentActive) {
     return false;
   }
 

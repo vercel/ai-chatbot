@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
+/* Add KaTeX CSS for math rendering */
+@import "katex/dist/katex.min.css";
+
 /* include utility classes in streamdown */
 @source '../node_modules/streamdown/dist/index.js';
-
-/* Add KaTeX CSS for math rendering */
-@import 'katex/dist/katex.min.css';
 
 /* custom variant for setting dark mode programmatically */
 @custom-variant dark (&:is(.dark, .dark *));

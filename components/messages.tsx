@@ -4,6 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
 import { memo, useEffect } from "react";
 import { useMessages } from "@/hooks/use-messages";
+import type { usePlayer } from "@/hooks/use-player";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { useDataStream } from "./data-stream-provider";
@@ -21,6 +22,8 @@ type MessagesProps = {
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedModelId: string;
+  player?: ReturnType<typeof usePlayer>;
+  ttsEnabled?: boolean;
 };
 
 function PureMessages({
@@ -31,7 +34,9 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
-  selectedModelId,
+  selectedModelId: _selectedModelId,
+  player,
+  ttsEnabled,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -46,7 +51,7 @@ function PureMessages({
   useDataStream();
 
   useEffect(() => {
-    if (status === "submitted") {
+    if (status === "submitted" || status === "streaming") {
       requestAnimationFrame(() => {
         const container = messagesContainerRef.current;
         if (container) {
@@ -58,6 +63,21 @@ function PureMessages({
       });
     }
   }, [status, messagesContainerRef]);
+
+  // Also scroll when messages change (for voice agent)
+  useEffect(() => {
+    if (messages.length > 0) {
+      requestAnimationFrame(() => {
+        const container = messagesContainerRef.current;
+        if (container) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      });
+    }
+  }, [messages.length, messagesContainerRef]);
 
   return (
     <div
@@ -78,11 +98,13 @@ function PureMessages({
               isReadonly={isReadonly}
               key={message.id}
               message={message}
+              player={player}
               regenerate={regenerate}
               requiresScrollPadding={
                 hasSentMessage && index === messages.length - 1
               }
               setMessages={setMessages}
+              ttsEnabled={ttsEnabled}
               vote={
                 votes
                   ? votes.find((vote) => vote.messageId === message.id)

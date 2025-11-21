@@ -57,7 +57,11 @@ export const titleModel = new MockLanguageModelV2({
         {
           type: "finish",
           finishReason: "stop",
-          usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
+          usage: {
+            inputTokens: 3,
+            outputTokens: 10,
+            totalTokens: 13,
+          },
         },
       ],
     }),

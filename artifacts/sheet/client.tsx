@@ -70,7 +70,9 @@ export const sheetArtifact = new Artifact<"sheet", Metadata>({
       icon: <CopyIcon />,
       description: "Copy as .csv",
       onClick: ({ content }) => {
-        const parsed = parse<string[]>(content, { skipEmptyLines: true });
+        const parsed = parse<string[]>(content, {
+          skipEmptyLines: true,
+        });
 
         const nonEmptyRows = parsed.data.filter((row) =>
           row.some((cell) => cell.trim() !== "")
@@ -91,7 +93,10 @@ export const sheetArtifact = new Artifact<"sheet", Metadata>({
         sendMessage({
           role: "user",
           parts: [
-            { type: "text", text: "Can you please format and clean the data?" },
+            {
+              type: "text",
+              text: "Can you please format and clean the data?",
+            },
           ],
         });
       },

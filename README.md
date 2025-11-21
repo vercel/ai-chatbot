@@ -33,6 +33,11 @@
   - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
 - [Auth.js](https://authjs.dev)
   - Simple and secure authentication
+- Voice Agent (Optional)
+  - Real-time speech-to-text with Deepgram
+  - Natural text-to-speech with Cartesia
+  - Smart end-of-turn detection with graceful fallbacks
+  - See [VOICE_FEATURES.md](VOICE_FEATURES.md) for setup
 
 ## Model Providers
 
@@ -54,9 +59,9 @@ You can deploy your own version of the Next.js AI Chatbot to Vercel with one cli
 
 ## Running locally
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+You will need to use the environment variables [defined in `env.example`](env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env.local` file is all that is necessary.
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+> Note: You should not commit your `.env.local` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
 
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
@@ -69,3 +74,19 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+### Optional: Voice Features
+
+Voice features require additional API keys. See [VOICE_FEATURES.md](VOICE_FEATURES.md) for detailed setup instructions.
+
+```bash
+# Add to your .env.local file
+NEXT_PUBLIC_DEEPGRAM_API_KEY=your-deepgram-key
+NEXT_PUBLIC_CARTESIA_API_KEY=your-cartesia-key
+
+# Optional: Enhanced end-of-turn detection
+NLP_WORKER_URL=http://localhost:8097
+NLP_WORKER_API_KEY=your-api-key
+```
+
+The app works perfectly fine without these - voice features are completely optional.

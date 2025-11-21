@@ -6,9 +6,15 @@
       "**/*",
       "!components/ui",
       "!lib/utils.ts",
-      "!hooks/use-mobile.ts"
+      "!hooks/use-mobile.ts",
+      "!**/example*.tsx",
+      "!**/*.disabled.*"
     ]
   },
+  /* Enable if you want 4 instead of 2 tabs */
+  // "formatter": {
+  //   "indentWidth": 4
+  // },
   "linter": {
     "rules": {
       "suspicious": {

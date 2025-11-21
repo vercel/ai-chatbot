@@ -35,14 +35,16 @@ export default function Page() {
         description: "Failed validating your submission!",
       });
     } else if (state.status === "success") {
-      toast({ type: "success", description: "Account created successfully!" });
+      toast({
+        type: "success",
+        description: "Account created successfully!",
+      });
 
       setIsSuccessful(true);
       updateSession();
       router.refresh();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status]);
+  }, [state.status, updateSession, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

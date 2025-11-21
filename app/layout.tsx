@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { DeepgramContextProvider } from "./context/deepgram-context-provider";
+import { MicrophoneContextProvider } from "./context/microphone-context-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
@@ -79,7 +81,11 @@ export default function RootLayout({
           enableSystem
         >
           <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>
+            <DeepgramContextProvider>
+              <MicrophoneContextProvider>{children}</MicrophoneContextProvider>
+            </DeepgramContextProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

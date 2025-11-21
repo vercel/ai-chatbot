@@ -3,6 +3,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
 import { memo, useState } from "react";
+import type { usePlayer } from "@/hooks/use-player";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
@@ -34,6 +35,8 @@ const PurePreviewMessage = ({
   regenerate,
   isReadonly,
   requiresScrollPadding,
+  player,
+  ttsEnabled,
 }: {
   chatId: string;
   message: ChatMessage;
@@ -43,6 +46,8 @@ const PurePreviewMessage = ({
   regenerate: UseChatHelpers<ChatMessage>["regenerate"];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
+  player?: ReturnType<typeof usePlayer>;
+  ttsEnabled?: boolean;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
@@ -134,7 +139,9 @@ const PurePreviewMessage = ({
                       data-testid="message-content"
                       style={
                         message.role === "user"
-                          ? { backgroundColor: "#006cff" }
+                          ? {
+                              backgroundColor: "#006cff",
+                            }
                           : undefined
                       }
                     >
@@ -226,7 +233,10 @@ const PurePreviewMessage = ({
               return (
                 <div className="relative" key={toolCallId}>
                   <DocumentPreview
-                    args={{ ...part.output, isUpdate: true }}
+                    args={{
+                      ...part.output,
+                      isUpdate: true,
+                    }}
                     isReadonly={isReadonly}
                     result={part.output}
                   />
@@ -276,7 +286,9 @@ const PurePreviewMessage = ({
               isLoading={isLoading}
               key={`action-${message.id}`}
               message={message}
+              player={player}
               setMode={setMode}
+              ttsEnabled={ttsEnabled}
               vote={vote}
             />
           )}
@@ -328,12 +340,9 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">
-            Thinking...
-          </div>
+          <div className="p-0 text-muted-foreground text-sm">Thinking...</div>
         </div>
       </div>
     </motion.div>
   );
 };
-

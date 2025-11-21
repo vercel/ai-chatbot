@@ -5,28 +5,78 @@ import { format, isWithinInterval } from "date-fns";
 import { useEffect, useState } from "react";
 
 const SunIcon = ({ size = 40 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="5" fill="currentColor" />
-    <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" strokeWidth="2" />
-    <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" strokeWidth="2" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" strokeWidth="2" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" strokeWidth="2" />
-    <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" strokeWidth="2" />
-    <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" strokeWidth="2" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" strokeWidth="2" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" strokeWidth="2" />
+  <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
+    <circle cx="12" cy="12" fill="currentColor" r="5" />
+    <line stroke="currentColor" strokeWidth="2" x1="12" x2="12" y1="1" y2="3" />
+    <line
+      stroke="currentColor"
+      strokeWidth="2"
+      x1="12"
+      x2="12"
+      y1="21"
+      y2="23"
+    />
+    <line
+      stroke="currentColor"
+      strokeWidth="2"
+      x1="4.22"
+      x2="5.64"
+      y1="4.22"
+      y2="5.64"
+    />
+    <line
+      stroke="currentColor"
+      strokeWidth="2"
+      x1="18.36"
+      x2="19.78"
+      y1="18.36"
+      y2="19.78"
+    />
+    <line stroke="currentColor" strokeWidth="2" x1="1" x2="3" y1="12" y2="12" />
+    <line
+      stroke="currentColor"
+      strokeWidth="2"
+      x1="21"
+      x2="23"
+      y1="12"
+      y2="12"
+    />
+    <line
+      stroke="currentColor"
+      strokeWidth="2"
+      x1="4.22"
+      x2="5.64"
+      y1="19.78"
+      y2="18.36"
+    />
+    <line
+      stroke="currentColor"
+      strokeWidth="2"
+      x1="18.36"
+      x2="19.78"
+      y1="5.64"
+      y2="4.22"
+    />
   </svg>
 );
 
 const MoonIcon = ({ size = 40 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z" fill="currentColor" />
+  <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
+    <path
+      d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z"
+      fill="currentColor"
+    />
   </svg>
 );
 
 const CloudIcon = ({ size = 24 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" stroke="currentColor" strokeWidth="2" fill="none" />
+  <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
+    <path
+      d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
   </svg>
 );
 
@@ -77,9 +127,13 @@ const SAMPLE = {
   timezone: "GMT",
   timezone_abbreviation: "GMT",
   elevation: 18,
-  current_units: { time: "iso8601", interval: "seconds", temperature_2m: "°C" },
-  current: { time: "2024-10-07T19:30", interval: 900, temperature_2m: 29.3 },
-  hourly_units: { time: "iso8601", temperature_2m: "°C" },
+  current_units: {
+    time: "iso8601",
+    interval: "seconds",
+    temperature_2m: "°F",
+  },
+  current: { time: "2024-10-07T19:30", interval: 900, temperature_2m: 84.7 },
+  hourly_units: { time: "iso8601", temperature_2m: "°F" },
   hourly: {
     time: [
       "2024-10-07T00:00",
@@ -184,14 +238,14 @@ const SAMPLE = {
       "2024-10-11T03:00",
     ],
     temperature_2m: [
-      36.6, 32.8, 29.5, 28.6, 29.2, 28.2, 27.5, 26.6, 26.5, 26, 25, 23.5, 23.9,
-      24.2, 22.9, 21, 24, 28.1, 31.4, 33.9, 32.1, 28.9, 26.9, 25.2, 23, 21.1,
-      19.6, 18.6, 17.7, 16.8, 16.2, 15.5, 14.9, 14.4, 14.2, 13.7, 13.3, 12.9,
-      12.5, 13.5, 15.8, 17.7, 19.6, 21, 21.9, 22.3, 22, 20.7, 18.9, 17.9, 17.3,
-      17, 16.7, 16.2, 15.6, 15.2, 15, 15, 15.1, 14.8, 14.8, 14.9, 14.7, 14.8,
-      15.3, 16.2, 17.9, 19.6, 20.5, 21.6, 21, 20.7, 19.3, 18.7, 18.4, 17.9,
-      17.3, 17, 17, 16.8, 16.4, 16.2, 16, 15.8, 15.7, 15.4, 15.4, 16.1, 16.7,
-      17, 18.6, 19, 19.5, 19.4, 18.5, 17.9, 17.5, 16.7, 16.3, 16.1,
+      97.9, 91, 85.1, 83.5, 84.6, 82.8, 81.5, 79.9, 79.7, 78.8, 77, 74.3, 75,
+      75.6, 73.2, 69.8, 75.2, 82.6, 88.5, 93, 89.8, 84, 80.4, 77.4, 73.4, 70,
+      67.3, 65.5, 63.9, 62.2, 61.2, 59.9, 58.8, 57.9, 57.6, 56.7, 55.9, 55.2,
+      54.5, 56.3, 60.4, 63.9, 67.3, 69.8, 71.4, 72.1, 71.6, 69.3, 66, 64.2,
+      63.1, 62.6, 62.1, 61.2, 60.1, 59.4, 59, 59, 59.2, 58.6, 58.6, 58.8, 58.5,
+      58.6, 59.5, 61.2, 64.2, 67.3, 68.9, 70.9, 69.8, 69.3, 66.7, 65.7, 65.1,
+      64.2, 63.1, 62.6, 62.6, 62.2, 61.5, 61.2, 60.8, 60.4, 60.3, 59.7, 59.7,
+      61, 62.1, 62.6, 65.5, 66.2, 67.1, 66.9, 65.3, 64.2, 63.5, 62.1, 61.3, 61,
     ],
   },
   daily_units: {
@@ -233,16 +287,21 @@ export function Weather({
 }: {
   weatherAtLocation?: WeatherAtLocation;
 }) {
-  const currentHigh = Math.max(
-    ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
-  );
-  const currentLow = Math.min(
-    ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
-  );
+  // Validate that all required data is present, otherwise use SAMPLE data
+  const data: WeatherAtLocation =
+    weatherAtLocation?.hourly?.temperature_2m &&
+    weatherAtLocation?.current?.temperature_2m !== undefined &&
+    weatherAtLocation?.daily?.sunrise?.[0] &&
+    weatherAtLocation?.daily?.sunset?.[0]
+      ? weatherAtLocation
+      : SAMPLE;
 
-  const isDay = isWithinInterval(new Date(weatherAtLocation.current.time), {
-    start: new Date(weatherAtLocation.daily.sunrise[0]),
-    end: new Date(weatherAtLocation.daily.sunset[0]),
+  const currentHigh = Math.max(...data.hourly.temperature_2m.slice(0, 24));
+  const currentLow = Math.min(...data.hourly.temperature_2m.slice(0, 24));
+
+  const isDay = isWithinInterval(new Date(data.current.time), {
+    start: new Date(data.daily.sunrise[0]),
+    end: new Date(data.daily.sunset[0]),
   });
 
   const [isMobile, setIsMobile] = useState(false);
@@ -260,97 +319,105 @@ export function Weather({
 
   const hoursToShow = isMobile ? 5 : 6;
 
-  const currentTimeIndex = weatherAtLocation.hourly.time.findIndex(
-    (time) => new Date(time) >= new Date(weatherAtLocation.current.time)
+  const currentTimeIndex = data.hourly.time.findIndex(
+    (time) => new Date(time) >= new Date(data.current.time)
   );
 
-  const displayTimes = weatherAtLocation.hourly.time.slice(
+  const displayTimes = data.hourly.time.slice(
     currentTimeIndex,
     currentTimeIndex + hoursToShow
   );
-  const displayTemperatures = weatherAtLocation.hourly.temperature_2m.slice(
+  const displayTemperatures = data.hourly.temperature_2m.slice(
     currentTimeIndex,
     currentTimeIndex + hoursToShow
   );
 
-  const location = weatherAtLocation.cityName || 
-    `${weatherAtLocation.latitude?.toFixed(1)}°, ${weatherAtLocation.longitude?.toFixed(1)}°`;
+  const location =
+    data.cityName ||
+    `${data.latitude?.toFixed(1)}°, ${data.longitude?.toFixed(1)}°`;
 
   return (
     <div
       className={cx(
-        "relative flex w-full flex-col gap-6 rounded-3xl p-6 shadow-lg overflow-hidden backdrop-blur-sm",
+        "relative flex w-full flex-col gap-6 overflow-hidden rounded-3xl p-6 shadow-lg backdrop-blur-sm",
         {
-          "bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600": isDay,
+          "bg-linear-to-br from-sky-400 via-blue-500 to-blue-600": isDay,
         },
         {
-          "bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900": !isDay,
+          "bg-linear-to-br from-indigo-900 via-purple-900 to-slate-900": !isDay,
         }
       )}
     >
       <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
-      
+
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-white/80 text-sm font-medium">
-            {location}
-          </div>
+        <div className="mb-4 flex items-center justify-between">
+          <div className="font-medium text-sm text-white/80">{location}</div>
           <div className="text-white/60 text-xs">
-            {format(new Date(weatherAtLocation.current.time), "MMM d, h:mm a")}
+            {format(new Date(data.current.time), "MMM d, h:mm a")}
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className={cx("text-white/90", { "text-yellow-200": isDay, "text-blue-200": !isDay })}>
+            <div
+              className={cx("text-white/90", {
+                "text-yellow-200": isDay,
+                "text-blue-200": !isDay,
+              })}
+            >
               {isDay ? <SunIcon size={48} /> : <MoonIcon size={48} />}
             </div>
-            <div className="text-white text-5xl font-light">
-              {n(weatherAtLocation.current.temperature_2m)}
+            <div className="font-light text-5xl text-white">
+              {n(data.current.temperature_2m)}
               <span className="text-2xl text-white/80">
-                {weatherAtLocation.current_units.temperature_2m}
+                {data.current_units.temperature_2m}
               </span>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="text-white/90 text-sm font-medium">
+            <div className="font-medium text-sm text-white/90">
               H: {n(currentHigh)}°
             </div>
-            <div className="text-white/70 text-sm">
-              L: {n(currentLow)}°
-            </div>
+            <div className="text-sm text-white/70">L: {n(currentLow)}°</div>
           </div>
         </div>
 
-        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-          <div className="text-white/80 text-sm mb-3 font-medium">
+        <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+          <div className="mb-3 font-medium text-sm text-white/80">
             Hourly Forecast
           </div>
           <div className="flex justify-between gap-2">
             {displayTimes.map((time, index) => {
               const hourTime = new Date(time);
-              const isCurrentHour = hourTime.getHours() === new Date().getHours();
-              
+              const isCurrentHour =
+                hourTime.getHours() === new Date().getHours();
+
               return (
-                <div 
+                <div
                   className={cx(
-                    "flex flex-col items-center gap-2 py-2 px-1 rounded-lg min-w-0 flex-1",
+                    "flex min-w-0 flex-1 flex-col items-center gap-2 rounded-lg px-1 py-2",
                     {
                       "bg-white/20": isCurrentHour,
                     }
-                  )} 
+                  )}
                   key={time}
                 >
-                  <div className="text-white/70 text-xs font-medium">
+                  <div className="font-medium text-white/70 text-xs">
                     {index === 0 ? "Now" : format(hourTime, "ha")}
                   </div>
-                  
-                  <div className={cx("text-white/60", { "text-yellow-200": isDay, "text-blue-200": !isDay })}>
+
+                  <div
+                    className={cx("text-white/60", {
+                      "text-yellow-200": isDay,
+                      "text-blue-200": !isDay,
+                    })}
+                  >
                     <CloudIcon size={20} />
                   </div>
-                  
-                  <div className="text-white text-sm font-medium">
+
+                  <div className="font-medium text-sm text-white">
                     {n(displayTemperatures[index])}°
                   </div>
                 </div>
@@ -359,9 +426,11 @@ export function Weather({
           </div>
         </div>
 
-        <div className="flex justify-between text-white/60 text-xs mt-4">
-          <div>Sunrise: {format(new Date(weatherAtLocation.daily.sunrise[0]), "h:mm a")}</div>
-          <div>Sunset: {format(new Date(weatherAtLocation.daily.sunset[0]), "h:mm a")}</div>
+        <div className="mt-4 flex justify-between text-white/60 text-xs">
+          <div>
+            Sunrise: {format(new Date(data.daily.sunrise[0]), "h:mm a")}
+          </div>
+          <div>Sunset: {format(new Date(data.daily.sunset[0]), "h:mm a")}</div>
         </div>
       </div>
     </div>

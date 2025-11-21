@@ -1,12 +1,21 @@
 import equal from "fast-deep-equal";
-import { memo } from "react";
+import { Volume2 } from "lucide-react";
+import { memo, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
+import type { usePlayer } from "@/hooks/use-player";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { Action, Actions } from "./elements/actions";
-import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
+import {
+  CopyIcon,
+  LoaderIcon,
+  PencilEditIcon,
+  StopIcon,
+  ThumbDownIcon,
+  ThumbUpIcon,
+} from "./icons";
 
 export function PureMessageActions({
   chatId,
@@ -14,19 +23,20 @@ export function PureMessageActions({
   vote,
   isLoading,
   setMode,
+  player,
+  ttsEnabled,
 }: {
   chatId: string;
   message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
   setMode?: (mode: "view" | "edit") => void;
+  player?: ReturnType<typeof usePlayer>;
+  ttsEnabled?: boolean;
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
-
-  if (isLoading) {
-    return null;
-  }
+  const [isLoadingTTS, setIsLoadingTTS] = useState(false);
 
   const textFromParts = message.parts
     ?.filter((part) => part.type === "text")
@@ -34,7 +44,7 @@ export function PureMessageActions({
     .join("\n")
     .trim();
 
-  const handleCopy = async () => {
+  const handleCopy = useCallback(async () => {
     if (!textFromParts) {
       toast.error("There's no text to copy!");
       return;
@@ -42,7 +52,71 @@ export function PureMessageActions({
 
     await copyToClipboard(textFromParts);
     toast.success("Copied to clipboard!");
-  };
+  }, [textFromParts, copyToClipboard]);
+
+  const handlePlayTTS = useCallback(async () => {
+    if (!textFromParts || !player) {
+      console.log("TTS: Missing text or player", {
+        hasText: !!textFromParts,
+        hasPlayer: !!player,
+      });
+      return;
+    }
+
+    if (player.isPlaying) {
+      console.log("TTS: Stopping playback");
+      player.stop();
+      return;
+    }
+
+    console.log(
+      "TTS: Starting synthesis for text:",
+      `${textFromParts.substring(0, 50)}...`
+    );
+    setIsLoadingTTS(true);
+
+    try {
+      const response = await fetch("/api/voice/synthesize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: textFromParts }),
+      });
+
+      console.log("TTS: Response status:", response.status, response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("TTS: API error response:", errorText);
+        throw new Error(`TTS failed: ${errorText}`);
+      }
+
+      if (!response.body) {
+        console.error("TTS: No response body");
+        throw new Error("No response body");
+      }
+
+      console.log("TTS: Got audio stream, starting playback");
+      setIsLoadingTTS(false);
+
+      await player.play(response.body, () => {
+        console.log("TTS: Playback ended");
+      });
+
+      console.log("TTS: Playback started successfully");
+    } catch (error) {
+      console.error("TTS error:", error);
+      toast.error(
+        `Failed to play audio: ${error instanceof Error ? error.message : String(error)}`
+      );
+      setIsLoadingTTS(false);
+    }
+  }, [textFromParts, player]);
+
+  if (isLoading) {
+    return null;
+  }
 
   // User messages get edit (on hover) and copy actions
   if (message.role === "user") {
@@ -72,6 +146,29 @@ export function PureMessageActions({
       <Action onClick={handleCopy} tooltip="Copy">
         <CopyIcon />
       </Action>
+
+      {player && (
+        <Action
+          data-testid="message-tts-button"
+          disabled={isLoadingTTS || !ttsEnabled}
+          onClick={handlePlayTTS}
+          tooltip={
+            ttsEnabled
+              ? player.isPlaying
+                ? "Stop playback"
+                : "Play audio"
+              : "Enable TTS in voice settings to play audio"
+          }
+        >
+          {isLoadingTTS ? (
+            <LoaderIcon />
+          ) : player.isPlaying ? (
+            <StopIcon />
+          ) : (
+            <Volume2 size={16} />
+          )}
+        </Action>
+      )}
 
       <Action
         data-testid="message-upvote"
@@ -181,6 +278,16 @@ export const MessageActions = memo(
       return false;
     }
     if (prevProps.isLoading !== nextProps.isLoading) {
+      return false;
+    }
+    if (prevProps.ttsEnabled !== nextProps.ttsEnabled) {
+      return false;
+    }
+    if (prevProps.player?.isPlaying !== nextProps.player?.isPlaying) {
+      return false;
+    }
+    // Check if player changed from undefined to defined or vice versa
+    if ((prevProps.player === undefined) !== (nextProps.player === undefined)) {
       return false;
     }
 

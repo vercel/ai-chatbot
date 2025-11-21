@@ -38,8 +38,13 @@ import { generateHashedPassword } from "./utils";
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+if (!process.env.POSTGRES_URL) {
+  console.error("❌ POSTGRES_URL environment variable is not set!");
+  console.error("Please configure POSTGRES_URL in your .env.local file");
+  throw new Error("POSTGRES_URL environment variable is required");
+}
+
+const client = postgres(process.env.POSTGRES_URL);
 const db = drizzle(client);
 
 export async function getUser(email: string): Promise<User[]> {
@@ -99,7 +104,14 @@ export async function saveChat({
       title,
       visibility,
     });
-  } catch (_error) {
+  } catch (error: any) {
+    // Handle duplicate key error - if chat already exists, that's fine
+    if (error?.code === "23505" && error?.constraint_name === "Chat_pkey") {
+      console.log("Chat already exists, skipping insert:", id);
+      return;
+    }
+    console.error("Failed to save chat:", error);
+    console.error("Chat data:", { id, userId, title, visibility });
     throw new ChatSDKError("bad_request:database", "Failed to save chat");
   }
 }
@@ -134,7 +146,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
       return { deletedCount: 0 };
     }
 
-    const chatIds = userChats.map(c => c.id);
+    const chatIds = userChats.map((c) => c.id);
 
     await db.delete(vote).where(inArray(vote.chatId, chatIds));
     await db.delete(message).where(inArray(message.chatId, chatIds));
@@ -238,7 +250,9 @@ export async function getChatById({ id }: { id: string }) {
     }
 
     return selectedChat;
-  } catch (_error) {
+  } catch (error) {
+    console.error("Failed to get chat by id:", error);
+    console.error("Chat id:", id);
     throw new ChatSDKError("bad_request:database", "Failed to get chat by id");
   }
 }
@@ -246,7 +260,9 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({ messages }: { messages: DBMessage[] }) {
   try {
     return await db.insert(message).values(messages);
-  } catch (_error) {
+  } catch (error) {
+    console.error("Failed to save messages:", error);
+    console.error("Messages data:", messages);
     throw new ChatSDKError("bad_request:database", "Failed to save messages");
   }
 }

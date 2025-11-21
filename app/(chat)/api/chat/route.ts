@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/noUnusedImports: refactor testing */
 import { geolocation } from "@vercel/functions";
 import {
   convertToModelMessages,
@@ -25,6 +26,7 @@ import { myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
+import { searchWeb } from "@/lib/ai/tools/search-web";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
@@ -114,16 +116,17 @@ export async function POST(request: Request) {
       return new ChatSDKError("unauthorized:chat").toResponse();
     }
 
-    const userType: UserType = session.user.type;
+    // const userType: UserType = session.user.type;
 
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
-    });
+    // RATE LIMITING DISABLED
+    // const messageCount = await getMessageCountByUserId({
+    //   id: session.user.id,
+    //   differenceInHours: 24,
+    // });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError("rate_limit:chat").toResponse();
-    }
+    // if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    //   return new ChatSDKError("rate_limit:chat").toResponse();
+    // }
 
     const chat = await getChatById({ id });
     let messagesFromDb: DBMessage[] = [];
@@ -189,6 +192,7 @@ export async function POST(request: Request) {
               ? []
               : [
                   "getWeather",
+                  "searchWeb",
                   "createDocument",
                   "updateDocument",
                   "requestSuggestions",
@@ -196,6 +200,7 @@ export async function POST(request: Request) {
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
             getWeather,
+            searchWeb,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({
@@ -230,13 +235,27 @@ export async function POST(request: Request) {
                 return;
               }
 
-              const summary = getUsage({ modelId, usage, providers });
-              finalMergedUsage = { ...usage, ...summary, modelId } as AppUsage;
-              dataStream.write({ type: "data-usage", data: finalMergedUsage });
+              const summary = getUsage({
+                modelId,
+                usage,
+                providers,
+              });
+              finalMergedUsage = {
+                ...usage,
+                ...summary,
+                modelId,
+              } as AppUsage;
+              dataStream.write({
+                type: "data-usage",
+                data: finalMergedUsage,
+              });
             } catch (err) {
               console.warn("TokenLens enrichment failed", err);
               finalMergedUsage = usage;
-              dataStream.write({ type: "data-usage", data: finalMergedUsage });
+              dataStream.write({
+                type: "data-usage",
+                data: finalMergedUsage,
+              });
             }
           },
         });

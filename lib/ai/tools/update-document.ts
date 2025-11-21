@@ -50,7 +50,11 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         session,
       });
 
-      dataStream.write({ type: "data-finish", data: null, transient: true });
+      dataStream.write({
+        type: "data-finish",
+        data: null,
+        transient: true,
+      });
 
       return {
         id,
