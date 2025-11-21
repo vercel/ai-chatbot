@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { user, workspace } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { resolveTenantContext } from "@/lib/server/tenant/context";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { getAppMode, resolveTenantContext } from "@/lib/server/tenant/context";
 import { getResourceStore } from "@/lib/server/tenant/resource-store";
 
 const onboardingSchema = z.object({
@@ -77,45 +79,49 @@ export async function completeOnboarding(
       return trimmedValue.length === 0 ? null : trimmedValue;
     };
 
-    // Update user record (create if doesn't exist)
+    // In hosted mode, user and workspace are system tables in the main database
+    // In local mode, they're in the tenant database via resource store
+    const mode = getAppMode();
     const tenant = await resolveTenantContext();
-    const store = await getResourceStore(tenant);
-    try {
-      const [existingUser] = await store.withSqlClient((db) =>
-        db.select().from(user).where(eq(user.id, authUser.id)).limit(1),
-      );
 
-      const userPayload = {
-        firstname: validatedData.firstname,
-        lastname: validatedData.lastname,
-        avatar_url: normalizeNullable(validatedData.profile_pic_url),
-        job_title: normalizeNullable(validatedData.job_title),
-        ai_context: normalizeNullable(validatedData.role_experience),
-        proficiency: validatedData.technical_proficiency ?? "regular",
-        ai_tone: normalizeNullable(validatedData.tone_of_voice),
-        ai_guidance: normalizeNullable(validatedData.ai_generation_guidance),
-        onboarding_completed: true,
-      };
+    if (mode === "hosted") {
+      // Query/update user and workspace directly from main database
+      const sql = postgres(process.env.POSTGRES_URL!);
+      const db = drizzle(sql);
 
-      if (!existingUser) {
-        await store.withSqlClient((db) =>
-          db.insert(user).values({
+      try {
+        const [existingUser] = await db
+          .select()
+          .from(user)
+          .where(eq(user.id, authUser.id))
+          .limit(1);
+
+        const userPayload = {
+          firstname: validatedData.firstname,
+          lastname: validatedData.lastname,
+          avatar_url: normalizeNullable(validatedData.profile_pic_url),
+          job_title: normalizeNullable(validatedData.job_title),
+          ai_context: normalizeNullable(validatedData.role_experience),
+          proficiency: validatedData.technical_proficiency ?? "regular",
+          ai_tone: normalizeNullable(validatedData.tone_of_voice),
+          ai_guidance: normalizeNullable(validatedData.ai_generation_guidance),
+          onboarding_completed: true,
+        };
+
+        if (!existingUser) {
+          await db.insert(user).values({
             id: authUser.id,
             email: authUser.email ?? "",
             ...userPayload,
-          }),
-        );
-      } else {
-        await store.withSqlClient((db) =>
-          db
+          });
+        } else {
+          await db
             .update(user)
             .set(userPayload)
-            .where(eq(user.id, authUser.id)),
-        );
-      }
+            .where(eq(user.id, authUser.id));
+        }
 
-      await store.withSqlClient((db) =>
-        db
+        await db
           .update(workspace)
           .set({
             name: validatedData.workspace_name,
@@ -124,10 +130,62 @@ export async function completeOnboarding(
             ),
             description: normalizeNullable(validatedData.business_description),
           })
-          .where(eq(workspace.id, tenant.workspaceId)),
-      );
-    } finally {
-      await store.dispose();
+          .where(eq(workspace.id, tenant.workspaceId));
+      } finally {
+        await sql.end({ timeout: 5 });
+      }
+    } else {
+      // Local mode: use resource store
+      const store = await getResourceStore(tenant);
+      try {
+        const [existingUser] = await store.withSqlClient((db) =>
+          db.select().from(user).where(eq(user.id, authUser.id)).limit(1),
+        );
+
+        const userPayload = {
+          firstname: validatedData.firstname,
+          lastname: validatedData.lastname,
+          avatar_url: normalizeNullable(validatedData.profile_pic_url),
+          job_title: normalizeNullable(validatedData.job_title),
+          ai_context: normalizeNullable(validatedData.role_experience),
+          proficiency: validatedData.technical_proficiency ?? "regular",
+          ai_tone: normalizeNullable(validatedData.tone_of_voice),
+          ai_guidance: normalizeNullable(validatedData.ai_generation_guidance),
+          onboarding_completed: true,
+        };
+
+        if (!existingUser) {
+          await store.withSqlClient((db) =>
+            db.insert(user).values({
+              id: authUser.id,
+              email: authUser.email ?? "",
+              ...userPayload,
+            }),
+          );
+        } else {
+          await store.withSqlClient((db) =>
+            db
+              .update(user)
+              .set(userPayload)
+              .where(eq(user.id, authUser.id)),
+          );
+        }
+
+        await store.withSqlClient((db) =>
+          db
+            .update(workspace)
+            .set({
+              name: validatedData.workspace_name,
+              avatar_url: normalizeNullable(
+                validatedData.workspace_profile_pic_url,
+              ),
+              description: normalizeNullable(validatedData.business_description),
+            })
+            .where(eq(workspace.id, tenant.workspaceId)),
+        );
+      } finally {
+        await store.dispose();
+      }
     }
 
     redirect("/");

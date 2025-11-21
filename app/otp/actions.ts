@@ -7,8 +7,7 @@ import { user, workspace, workspaceUser } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { getAppMode, resolveTenantContext } from "@/lib/server/tenant/context";
-import { getResourceStore } from "@/lib/server/tenant/resource-store";
+import { getAppMode } from "@/lib/server/tenant/context";
 import { seedDefaultRoles } from "@/lib/server/tenant/default-roles";
 
 const otpSchema = z.object({
@@ -87,7 +86,7 @@ export async function verifyOTP(
         });
       }
 
-      // Ensure workspace membership exists (required for resolveTenantContext)
+      // Ensure workspace membership exists
       if (mode === "local") {
         // In local mode, ensure membership in the default workspace
         const DEFAULT_WORKSPACE_SLUG = "default";
@@ -148,38 +147,35 @@ export async function verifyOTP(
             role_id: "admin",
             metadata: {},
           });
+
+          // Note: In hosted mode, tenants must configure their own database connection
+          // via workspace_apps. The main database is only for system/configuration data.
+          // No automatic connection is created here - tenants will add their connection
+          // during onboarding or via settings.
         }
       }
     } finally {
       await sql.end({ timeout: 5 });
     }
 
-    // Now resolve tenant context (should work since membership exists)
-    let tenant;
+    // Query user from the main database (where it was just created)
+    // Don't use resource store here as it might connect to a different database in hosted mode
+    const userId = data.user.id;
+    const sqlForUserCheck = postgres(process.env.POSTGRES_URL!);
+    const dbForUserCheck = drizzle(sqlForUserCheck);
+    
     try {
-      tenant = await resolveTenantContext();
-    } catch (tenantError) {
-      console.error("Failed to resolve tenant context:", tenantError);
-      return {
-        status: "failed",
-        message: tenantError instanceof Error
-          ? tenantError.message
-          : "Failed to initialize workspace. Please try again.",
-      };
-    }
-
-    const store = await getResourceStore(tenant);
-    try {
-      const userId = data.user.id;
-      const [userRecord] = await store.withSqlClient((db) =>
-        db.select().from(user).where(eq(user.id, userId)).limit(1)
-      );
+      const [userRecord] = await dbForUserCheck
+        .select()
+        .from(user)
+        .where(eq(user.id, userId))
+        .limit(1);
 
       if (!userRecord?.onboarding_completed) {
         redirect("/onboarding");
       }
     } finally {
-      await store.dispose();
+      await sqlForUserCheck.end({ timeout: 5 });
     }
 
     redirect("/");

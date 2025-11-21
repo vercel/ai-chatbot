@@ -3,9 +3,11 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { user, workspace } from "@/lib/db/schema";
 import { OnboardingForm } from "@/components/auth/onboarding-form";
-import { resolveTenantContext } from "@/lib/server/tenant/context";
+import { getAppMode, resolveTenantContext } from "@/lib/server/tenant/context";
 import { getResourceStore } from "@/lib/server/tenant/resource-store";
 import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
 async function OnboardingContent() {
   const supabase = await createClient();
@@ -18,35 +20,76 @@ async function OnboardingContent() {
   }
 
   // Check if user already completed onboarding
+  // In hosted mode, user and workspace are system tables in main database
+  // In local mode, they're in tenant database via resource store
   let userRecord;
   let workspaceRecord;
-  try {
-    const tenant = await resolveTenantContext();
-    const store = await getResourceStore(tenant);
-    try {
-      [userRecord] = await store.withSqlClient((db) =>
-        db.select().from(user).where(eq(user.id, authUser.id)).limit(1),
-      );
+  const mode = getAppMode();
+  const tenant = await resolveTenantContext();
 
-      if (!userRecord) {
-        await store.withSqlClient((db) =>
-          db.insert(user).values({
+  try {
+    if (mode === "hosted") {
+      // Query from main database directly
+      const sql = postgres(process.env.POSTGRES_URL!);
+      const db = drizzle(sql);
+
+      try {
+        [userRecord] = await db
+          .select()
+          .from(user)
+          .where(eq(user.id, authUser.id))
+          .limit(1);
+
+        if (!userRecord) {
+          await db.insert(user).values({
             id: authUser.id,
             email: authUser.email ?? "",
             onboarding_completed: false,
-          }),
-        );
+          });
 
+          [userRecord] = await db
+            .select()
+            .from(user)
+            .where(eq(user.id, authUser.id))
+            .limit(1);
+        }
+
+        [workspaceRecord] = await db
+          .select()
+          .from(workspace)
+          .where(eq(workspace.id, tenant.workspaceId))
+          .limit(1);
+      } finally {
+        await sql.end({ timeout: 5 });
+      }
+    } else {
+      // Local mode: use resource store
+      const store = await getResourceStore(tenant);
+      try {
         [userRecord] = await store.withSqlClient((db) =>
           db.select().from(user).where(eq(user.id, authUser.id)).limit(1),
         );
-      }
 
-      [workspaceRecord] = await store.withSqlClient((db) =>
-        db.select().from(workspace).where(eq(workspace.id, tenant.workspaceId)).limit(1),
-      );
-    } finally {
-      await store.dispose();
+        if (!userRecord) {
+          await store.withSqlClient((db) =>
+            db.insert(user).values({
+              id: authUser.id,
+              email: authUser.email ?? "",
+              onboarding_completed: false,
+            }),
+          );
+
+          [userRecord] = await store.withSqlClient((db) =>
+            db.select().from(user).where(eq(user.id, authUser.id)).limit(1),
+          );
+        }
+
+        [workspaceRecord] = await store.withSqlClient((db) =>
+          db.select().from(workspace).where(eq(workspace.id, tenant.workspaceId)).limit(1),
+        );
+      } finally {
+        await store.dispose();
+      }
     }
   } catch {
     // If query fails, still show onboarding form
