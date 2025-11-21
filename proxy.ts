@@ -102,10 +102,13 @@ export async function proxy(request: NextRequest) {
   if (supabaseUser) {
     // User is authenticated via Supabase
     // Check onboarding status for protected routes
+    // Exclude API routes needed during onboarding (e.g., workspace slug check)
+    const isOnboardingApiRoute = pathname.startsWith("/api/workspace/check-slug");
     if (
       pathname !== "/signin" &&
       pathname !== "/otp" &&
-      pathname !== "/onboarding"
+      pathname !== "/onboarding" &&
+      !isOnboardingApiRoute
     ) {
       try {
         const mode = getAppMode();
