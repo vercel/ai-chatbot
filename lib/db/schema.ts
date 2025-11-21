@@ -351,3 +351,24 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const aiSkill = pgTable("ai_skills", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  workspace_id: uuid("workspace_id").references(() => workspace.id, {
+    onDelete: "cascade",
+  }),
+  name: text("name").notNull(),
+  description: text("description"),
+  prompt: text("prompt").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type AiSkill = InferSelectModel<typeof aiSkill>;
