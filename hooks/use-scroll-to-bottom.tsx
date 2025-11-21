@@ -9,7 +9,9 @@ export function useScrollToBottom() {
   const [isAtBottom, setIsAtBottom] = useState(true);
 
   const { data: scrollBehavior = false, mutate: setScrollBehavior } =
-    useSWR<ScrollFlag>("messages:should-scroll", null, { fallbackData: false });
+    useSWR<ScrollFlag>("messages:should-scroll", null, {
+      fallbackData: false,
+    });
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) {

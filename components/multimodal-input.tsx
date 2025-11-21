@@ -20,6 +20,8 @@ import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { SelectItem } from "@/components/ui/select";
+import { useVoiceInput } from "@/hooks/use-voice-input";
+import { useVoiceSettings } from "@/hooks/use-voice-settings";
 import { chatModels } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
 import type { Attachment, ChatMessage } from "@/lib/types";
@@ -45,7 +47,17 @@ import {
 import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
 import type { VisibilityType } from "./visibility-selector";
+import { VoiceControls } from "./voice-controls";
 
 function PureMultimodalInput({
   chatId,
@@ -82,6 +94,43 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+
+  // Voice functionality
+  const {
+    vadMode,
+    setVadMode,
+    ttsEnabled,
+    setTtsEnabled,
+    voiceAgentEnabled,
+    setVoiceAgentEnabled,
+  } = useVoiceSettings();
+  const [voiceSettingsOpen, setVoiceSettingsOpen] = useState(false);
+
+  const { isRecording, isTranscribing, toggleRecording } = useVoiceInput({
+    vadMode,
+    onTranscript: (transcript) => {
+      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+    },
+    onStop: () => {
+      // Optional: handle when recording stops
+    },
+  });
+
+  // Update visual indicator based on recording state
+  useEffect(() => {
+    const indicator = document.querySelector(
+      "[data-recording-indicator]"
+    ) as HTMLElement;
+    if (indicator) {
+      if (isRecording) {
+        indicator.style.opacity = "1";
+        indicator.style.transform = "scale(1.1)";
+      } else {
+        indicator.style.opacity = "0.3";
+        indicator.style.transform = "scale(1)";
+      }
+    }
+  }, [isRecording]);
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -231,36 +280,45 @@ function PureMultimodalInput({
     },
     [setAttachments, uploadFile]
   );
-  
+
   const handlePaste = useCallback(
     async (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
-      if (!items) return;
+      if (!items) {
+        return;
+      }
 
       const imageItems = Array.from(items).filter((item) =>
-        item.type.startsWith('image/'),
+        item.type.startsWith("image/")
       );
 
-      if (imageItems.length === 0) return;
+      if (imageItems.length === 0) {
+        return;
+      }
 
       // Prevent default paste behavior for images
       event.preventDefault();
 
-      setUploadQueue((prev) => [...prev, 'Pasted image']);
+      setUploadQueue((prev) => [...prev, "Pasted image"]);
 
       try {
-        const uploadPromises = imageItems.map(async (item) => {
-          const file = item.getAsFile();
-          if (!file) return;
-          return uploadFile(file);
-        });
+        const uploadPromises = imageItems
+          .map((item) => {
+            const file = item.getAsFile();
+            if (!file) {
+              return null;
+            }
+            return uploadFile(file);
+          })
+          .filter(Boolean);
 
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
           (attachment) =>
+            attachment !== null &&
             attachment !== undefined &&
             attachment.url !== undefined &&
-            attachment.contentType !== undefined,
+            attachment.contentType !== undefined
         );
 
         setAttachments((curr) => [
@@ -268,22 +326,24 @@ function PureMultimodalInput({
           ...(successfullyUploadedAttachments as Attachment[]),
         ]);
       } catch (error) {
-        console.error('Error uploading pasted images:', error);
-        toast.error('Failed to upload pasted image(s)');
+        console.error("Error uploading pasted images:", error);
+        toast.error("Failed to upload pasted image(s)");
       } finally {
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments, uploadFile]
   );
 
   // Add paste event listener to textarea
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      return;
+    }
 
-    textarea.addEventListener('paste', handlePaste);
-    return () => textarea.removeEventListener('paste', handlePaste);
+    textarea.addEventListener("paste", handlePaste);
+    return () => textarea.removeEventListener("paste", handlePaste);
   }, [handlePaste]);
 
   return (
@@ -367,12 +427,23 @@ function PureMultimodalInput({
           />{" "}
           <Context {...contextProps} />
         </div>
-        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
+        <PromptInputToolbar className="border-top-0! border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
               selectedModelId={selectedModelId}
               status={status}
+            />
+            <VoiceControls
+              isRecording={isRecording}
+              isTranscribing={isTranscribing}
+              onOpenSettings={() => setVoiceSettingsOpen(true)}
+              onToggleRecording={toggleRecording}
+              setTtsEnabled={setTtsEnabled}
+              setVadMode={setVadMode}
+              status={status}
+              ttsEnabled={ttsEnabled}
+              vadMode={vadMode}
             />
             <ModelSelectorCompact
               onModelChange={onModelChange}
@@ -385,15 +456,68 @@ function PureMultimodalInput({
           ) : (
             <PromptInputSubmit
               className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              data-testid="send-button"
               disabled={!input.trim() || uploadQueue.length > 0}
               status={status}
-	      data-testid="send-button"
             >
               <ArrowUpIcon size={14} />
             </PromptInputSubmit>
           )}
         </PromptInputToolbar>
       </PromptInput>
+
+      {/* Voice Settings Dialog */}
+      <Dialog onOpenChange={setVoiceSettingsOpen} open={voiceSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Voice Settings</DialogTitle>
+            <DialogDescription>
+              Configure voice input, text-to-speech, and Voice Agent options.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* TTS Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="tts-enabled">Text-to-Speech</Label>
+                <p className="text-muted-foreground text-sm">
+                  Enable audio playback for assistant messages
+                </p>
+              </div>
+              <Switch
+                checked={ttsEnabled}
+                id="tts-enabled"
+                onCheckedChange={setTtsEnabled}
+              />
+            </div>
+
+            {/* Voice Agent Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="voice-agent-enabled">Voice Agent Mode</Label>
+                <p className="text-muted-foreground text-sm">
+                  Continuous conversation with visual feedback
+                </p>
+              </div>
+              <Switch
+                checked={voiceAgentEnabled}
+                id="voice-agent-enabled"
+                onCheckedChange={setVoiceAgentEnabled}
+              />
+            </div>
+
+            {voiceAgentEnabled && (
+              <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-3 text-sm">
+                <p className="font-medium text-blue-300">Voice Agent Active</p>
+                <p className="mt-1 text-blue-200/80 text-xs">
+                  The floating orb will appear when you start a chat. Speak
+                  naturally and the AI will respond when you finish.
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -482,7 +606,7 @@ function PureModelSelectorCompact({
       value={selectedModel?.name}
     >
       <Trigger asChild>
-        <Button variant="ghost" className="h-8 px-2">
+        <Button className="h-8 px-2" variant="ghost">
           <CpuIcon size={16} />
           <span className="hidden font-medium text-xs sm:block">
             {selectedModel?.name}

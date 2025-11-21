@@ -16,6 +16,25 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // CORS headers required for ONNX/WASM (for VAD voice detection)
+  // biome-ignore lint/suspicious/useAwait: false positive
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

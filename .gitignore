@@ -1,5 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Generated AI artifacts
+.ai-docs/
+.playwright-mcp/
+.cursor/plans/
+.commit.msg.md
+
 # dependencies
 node_modules
 .pnp
@@ -42,3 +48,12 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/*
+
+# VAD model files (large binaries, served from public/)
+/public/*.onnx
+/public/*.wasm
+/public/*.mjs
+/public/vad.worklet.bundle.min.js
+
+*.disabled*
+**/*.disabled*

@@ -64,7 +64,11 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         session,
       });
 
-      dataStream.write({ type: "data-finish", data: null, transient: true });
+      dataStream.write({
+        type: "data-finish",
+        data: null,
+        transient: true,
+      });
 
       return {
         id,

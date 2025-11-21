@@ -157,7 +157,12 @@ export const codeArtifact = new Artifact<"code", Metadata>({
                   ...metadata.outputs.filter((output) => output.id !== runId),
                   {
                     id: runId,
-                    contents: [{ type: "text", value: message }],
+                    contents: [
+                      {
+                        type: "text",
+                        value: message,
+                      },
+                    ],
                     status: "loading_packages",
                   },
                 ],

@@ -195,7 +195,10 @@ const ReadingLevelSelector = ({
                 }
               )}
               drag="y"
-              dragConstraints={{ top: -dragConstraints, bottom: 0 }}
+              dragConstraints={{
+                top: -dragConstraints,
+                bottom: 0,
+              }}
               dragElastic={0}
               dragMomentum={false}
               onClick={() => {
@@ -394,7 +397,12 @@ const PureToolbar = ({
                   transition: { delay: 0 },
                   scale: 1,
                 }
-            : { opacity: 1, y: 0, height: 54, transition: { delay: 0 } }
+            : {
+                opacity: 1,
+                y: 0,
+                height: 54,
+                transition: { delay: 0 },
+              }
         }
         className="absolute right-6 bottom-6 flex cursor-pointer flex-col justify-end rounded-full border bg-background p-1.5 shadow-lg"
         exit={{ opacity: 0, y: -20, transition: { duration: 0.1 } }}
