@@ -3,9 +3,11 @@ import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import MarketingPage from "@/components/marketing/landing-page";
 import DashboardContent from "../dashboard-content";
-import { resolveTenantContext } from "@/lib/server/tenant/context";
+import { getAppMode, resolveTenantContext } from "@/lib/server/tenant/context";
 import { getResourceStore } from "@/lib/server/tenant/resource-store";
 
 async function RootPageContent() {
@@ -17,16 +19,37 @@ async function RootPageContent() {
   }
 
   // If authenticated, check onboarding status
+  // In hosted mode, user is a system table in main database
+  // In local mode, it's in tenant database via resource store
   let userRecord;
+  const mode = getAppMode();
+  
   try {
-    const tenant = await resolveTenantContext();
-    const store = await getResourceStore(tenant);
-    try {
-      [userRecord] = await store.withSqlClient((db) =>
-        db.select().from(user).where(eq(user.id, authUser.id)).limit(1)
-      );
-    } finally {
-      await store.dispose();
+    if (mode === "hosted") {
+      // Query from main database directly
+      const sql = postgres(process.env.POSTGRES_URL!);
+      const db = drizzle(sql);
+      
+      try {
+        [userRecord] = await db
+          .select()
+          .from(user)
+          .where(eq(user.id, authUser.id))
+          .limit(1);
+      } finally {
+        await sql.end({ timeout: 5 });
+      }
+    } else {
+      // Local mode: use resource store
+      const tenant = await resolveTenantContext();
+      const store = await getResourceStore(tenant);
+      try {
+        [userRecord] = await store.withSqlClient((db) =>
+          db.select().from(user).where(eq(user.id, authUser.id)).limit(1)
+        );
+      } finally {
+        await store.dispose();
+      }
     }
   } catch {
     redirect("/onboarding");

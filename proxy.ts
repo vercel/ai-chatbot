@@ -3,6 +3,8 @@ import { getToken } from "next-auth/jwt";
 import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
 import { createServerClient } from "@supabase/ssr";
 import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { user } from "@/lib/db/schema";
 import {
   resolveTenantContext,
@@ -106,26 +108,51 @@ export async function proxy(request: NextRequest) {
       pathname !== "/onboarding"
     ) {
       try {
-        const tenant = await resolveTenantContext({
-          headers: requestHeaders,
-        });
-        const store = await getResourceStore(tenant);
-        try {
-          const [userRecord] = await store.withSqlClient((db) =>
-            db
+        const mode = getAppMode();
+        
+        if (mode === "hosted") {
+          // In hosted mode, user is a system table in main database
+          const sql = postgres(process.env.POSTGRES_URL!);
+          const db = drizzle(sql);
+          
+          try {
+            const [userRecord] = await db
               .select()
               .from(user)
               .where(eq(user.id, supabaseUser.id))
-              .limit(1)
-          );
+              .limit(1);
 
-          if (userRecord && !userRecord.onboarding_completed) {
-            const url = request.nextUrl.clone();
-            url.pathname = "/onboarding";
-            return NextResponse.redirect(url);
+            if (userRecord && !userRecord.onboarding_completed) {
+              const url = request.nextUrl.clone();
+              url.pathname = "/onboarding";
+              return NextResponse.redirect(url);
+            }
+          } finally {
+            await sql.end({ timeout: 5 });
           }
-        } finally {
-          await store.dispose();
+        } else {
+          // Local mode: use resource store
+          const tenant = await resolveTenantContext({
+            headers: requestHeaders,
+          });
+          const store = await getResourceStore(tenant);
+          try {
+            const [userRecord] = await store.withSqlClient((db) =>
+              db
+                .select()
+                .from(user)
+                .where(eq(user.id, supabaseUser.id))
+                .limit(1)
+            );
+
+            if (userRecord && !userRecord.onboarding_completed) {
+              const url = request.nextUrl.clone();
+              url.pathname = "/onboarding";
+              return NextResponse.redirect(url);
+            }
+          } finally {
+            await store.dispose();
+          }
         }
       } catch {
         // If database check fails, allow the request to proceed
