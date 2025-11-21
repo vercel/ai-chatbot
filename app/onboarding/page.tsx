@@ -100,9 +100,13 @@ async function OnboardingContent() {
     redirect("/");
   }
 
+  const defaultWorkspaceName = userRecord?.firstname 
+    ? `${userRecord.firstname}'s workspace`
+    : "My Workspace";
+
   return (
-    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-      <div className="w-full max-w-md">
+    <div className="bg-background flex h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+      <div className="flex h-full w-full max-w-md flex-col">
         <OnboardingForm
           initialValues={{
             firstname: userRecord?.firstname ?? "",
@@ -117,7 +121,8 @@ async function OnboardingContent() {
               | undefined) ?? "regular",
             tone_of_voice: userRecord?.ai_tone ?? "",
             ai_generation_guidance: userRecord?.ai_guidance ?? "",
-            workspace_name: workspaceRecord?.name ?? "My Workspace",
+            workspace_name: workspaceRecord?.name ?? defaultWorkspaceName,
+            workspace_url: workspaceRecord?.slug ?? "",
             workspace_profile_pic_url: workspaceRecord?.avatar_url ?? "",
             business_description: workspaceRecord?.description ?? "",
           }}

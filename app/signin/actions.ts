@@ -12,7 +12,7 @@ export type SendOTPState = {
 
 export async function sendOTP(
   _: SendOTPState,
-  formData: FormData
+  formData: FormData,
 ): Promise<SendOTPState> {
   try {
     const email = formData.get("email");
@@ -28,6 +28,20 @@ export async function sendOTP(
     });
 
     if (error) {
+      // Handle rate limiting errors more gracefully
+      const errorMessage = error.message.toLowerCase();
+      if (
+        errorMessage.includes("rate limit") ||
+        errorMessage.includes("too many") ||
+        errorMessage.includes("for security reasons")
+      ) {
+        return {
+          status: "failed",
+          message:
+            "Too many requests. Please wait a moment before requesting another code.",
+        };
+      }
+
       return {
         status: "failed",
         message: error.message,
@@ -52,7 +66,3 @@ export async function sendOTP(
     };
   }
 }
-
-
-
-

@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import Link from "next/link";
-import { Settings } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type TableInfo = {
@@ -87,7 +87,7 @@ export function ConfigTablesView() {
     return (
       <div className="rounded-md border border-dashed border-border/60 bg-background p-3 text-xs text-muted-foreground">
         <div className="text-center py-12">
-          <Settings className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="font-semibold text-foreground mb-2">No config tables found</p>
           <p>Workspace configuration tables will appear here.</p>
         </div>

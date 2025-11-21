@@ -28,6 +28,7 @@ const onboardingSchema = z.object({
   tone_of_voice: z.string().trim().max(2000).optional(),
   ai_generation_guidance: z.string().trim().max(4000).optional(),
   workspace_name: z.string().min(1, "Workspace name is required"),
+  workspace_url: z.string().min(1, "Workspace URL is required"),
   workspace_profile_pic_url: z
     .string()
     .trim()
@@ -66,6 +67,7 @@ export async function completeOnboarding(
       tone_of_voice: formData.get("tone_of_voice"),
       ai_generation_guidance: formData.get("ai_generation_guidance"),
       workspace_name: formData.get("workspace_name"),
+      workspace_url: formData.get("workspace_url"),
       workspace_profile_pic_url: formData.get("workspace_profile_pic_url"),
       business_description: formData.get("business_description"),
     });
@@ -125,6 +127,7 @@ export async function completeOnboarding(
           .update(workspace)
           .set({
             name: validatedData.workspace_name,
+            slug: validatedData.workspace_url.trim(),
             avatar_url: normalizeNullable(
               validatedData.workspace_profile_pic_url,
             ),
@@ -176,6 +179,7 @@ export async function completeOnboarding(
             .update(workspace)
             .set({
               name: validatedData.workspace_name,
+              slug: validatedData.workspace_url.trim(),
               avatar_url: normalizeNullable(
                 validatedData.workspace_profile_pic_url,
               ),
