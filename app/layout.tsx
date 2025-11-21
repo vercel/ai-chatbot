@@ -12,10 +12,12 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
+const sitename = process.env.NODE_ENV === "production" ? "Suplex Studio" : "[DEV] Suplex Studio";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
   //todo add env prefix to title
-  title: `${process.env.NODE_ENV} Suplex Studio`,
+  title: sitename,
   description: "AI tag team partner for your systems.",
 };
 
@@ -90,7 +92,7 @@ export default function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
-          <Toaster position="top-center" />
+          <Toaster position="top-center" richColors/>
           <SessionProvider>
             {children}
             {/* <div className="pb-7"></div> */}
