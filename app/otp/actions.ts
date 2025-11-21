@@ -67,8 +67,27 @@ export async function verifyOTP(
 
     // Create user record and ensure workspace membership before resolving tenant context
     const mode = getAppMode();
-    const sql = postgres(process.env.POSTGRES_URL!);
-    const db = drizzle(sql);
+
+    if (!process.env.POSTGRES_URL) {
+      console.error("POSTGRES_URL environment variable is not set");
+      return {
+        status: "failed",
+        message: "Database configuration error. Please contact support.",
+      };
+    }
+
+    let sql;
+    let db;
+    try {
+      sql = postgres(process.env.POSTGRES_URL);
+      db = drizzle(sql);
+    } catch (connectionError) {
+      console.error("Failed to create database connection:", connectionError);
+      return {
+        status: "failed",
+        message: "Database connection error. Please check your configuration.",
+      };
+    }
 
     try {
       // Create user record if it doesn't exist
@@ -154,28 +173,43 @@ export async function verifyOTP(
           // during onboarding or via settings.
         }
       }
-    } finally {
-      await sql.end({ timeout: 5 });
-    }
 
-    // Query user from the main database (where it was just created)
-    // Don't use resource store here as it might connect to a different database in hosted mode
-    const userId = data.user.id;
-    const sqlForUserCheck = postgres(process.env.POSTGRES_URL!);
-    const dbForUserCheck = drizzle(sqlForUserCheck);
-    
-    try {
-      const [userRecord] = await dbForUserCheck
+      // Check onboarding status using the same connection before closing it
+      // In hosted mode, user is a system table in the main database
+      const [userRecord] = await db
         .select()
         .from(user)
-        .where(eq(user.id, userId))
+        .where(eq(user.id, data.user.id))
         .limit(1);
 
       if (!userRecord?.onboarding_completed) {
         redirect("/onboarding");
       }
+    } catch (dbError) {
+      // Log detailed error for debugging
+      console.error("Database query error:", dbError);
+
+      // Check if it's a connection/DNS error
+      if (
+        dbError instanceof Error &&
+        (dbError.message.includes("ENOTFOUND") ||
+          dbError.message.includes("getaddrinfo") ||
+          dbError.cause instanceof Error &&
+            (dbError.cause.message.includes("ENOTFOUND") ||
+              dbError.cause.message.includes("getaddrinfo")))
+      ) {
+        return {
+          status: "failed",
+          message:
+            "Database connection failed. Please verify your database connection string is using Supabase's connection pooler format (pooler.supabase.com) instead of the deprecated db.*.supabase.co format.",
+        };
+      }
+
+      throw dbError;
     } finally {
-      await sqlForUserCheck.end({ timeout: 5 });
+      if (sql) {
+        await sql.end({ timeout: 5 });
+      }
     }
 
     redirect("/");

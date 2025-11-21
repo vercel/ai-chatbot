@@ -14,8 +14,9 @@ import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
+  //todo add env prefix to title
+  title: `${process.env.NODE_ENV} Suplex Studio`,
+  description: "AI tag team partner for your systems.",
 };
 
 export const viewport = {
