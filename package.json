@@ -16,9 +16,7 @@
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test",
-    "test:eot": "npx tsx lib/test-eot.ts",
-    "voice:setup": "bash scripts/setup-voice.sh || echo 'Voice setup skipped'",
-    "postinstall": "npm run voice:setup"
+    "test:eot": "npx tsx lib/test-eot.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
@@ -40,8 +38,6 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@radix-ui/react-visually-hidden": "^1.1.0",
-    "@ricky0123/vad-react": "^0.0.35",
-    "@ricky0123/vad-web": "^0.0.29",
     "@tavily/core": "^0.5.13",
     "@vercel/analytics": "^1.3.1",
     "@vercel/blob": "^0.24.1",
@@ -68,7 +64,6 @@
     "next": "15.3.0-canary.31",
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.3.0",
-    "onnxruntime-web": "^1.23.2",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
     "postgres": "^3.4.4",

@@ -53,9 +53,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     * - *.onnx, *.wasm, *.mjs (VAD model files)
-     * - vad.worklet.bundle.min.js (VAD worklet)
      */
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.onnx$|.*\\.wasm$|.*\\.mjs$|vad\\.worklet\\.bundle\\.min\\.js$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };
