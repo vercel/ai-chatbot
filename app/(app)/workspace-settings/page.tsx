@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { SettingsLayout, type SettingsSection } from "@/components/settings/settings-layout";
 import { ConnectedAppsSettings } from "@/components/settings/connected-apps-section";
 import { Button } from "@/components/ui/button";
@@ -11,58 +12,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { AppMode } from "@/lib/app-mode";
 import { getAppMode } from "@/lib/server/tenant/context";
+import type { Workspace } from "@/lib/db/schema";
+import { WorkspaceProfileForm } from "./workspace-form";
+import { getWorkspaceData } from "./actions";
 
-function createSections(mode: AppMode): SettingsSection[] {
+function createSections(mode: AppMode, workspace: Workspace): SettingsSection[] {
   return [
   {
     id: "workspace-profile",
     title: "Workspace profile",
     description:
       "Update the details that represent your organisation across Splx.",
-    content: (
-      <form className="space-y-6" action="#">
-        <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="workspace-name">Workspace name</FieldLabel>
-            <Input
-              id="workspace-name"
-              name="workspace-name"
-              type="text"
-              defaultValue="Acme Operations"
-            />
-            <FieldDescription>
-              Displayed to all members and in shared documents.
-            </FieldDescription>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="workspace-slug">Workspace URL</FieldLabel>
-            <Input
-              id="workspace-slug"
-              name="workspace-slug"
-              type="text"
-              defaultValue="splx.app/acme-operations"
-            />
-            <FieldDescription>
-              Used for invite links and connecting integrations.
-            </FieldDescription>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="workspace-description">
-              Business description
-            </FieldLabel>
-            <Textarea
-              id="workspace-description"
-              name="workspace-description"
-              rows={4}
-              placeholder="Describe the work your organisation does to help teammates and AI features understand the context."
-            />
-          </Field>
-        </FieldGroup>
-        <div className="flex justify-end">
-          <Button type="submit">Save workspace profile</Button>
-        </div>
-      </form>
-    ),
+    content: <WorkspaceProfileForm workspace={workspace} />,
   },
   {
     id: "collaboration",
@@ -152,9 +113,15 @@ function createSections(mode: AppMode): SettingsSection[] {
 ];
 }
 
-export default function WorkplaceSettingsPage() {
+export default async function WorkplaceSettingsPage() {
   const mode = getAppMode();
-  const sections = createSections(mode);
+  const workspace = await getWorkspaceData();
+
+  if (!workspace) {
+    redirect("/signin");
+  }
+
+  const sections = createSections(mode, workspace);
 
   return (
     <SettingsLayout
