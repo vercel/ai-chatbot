@@ -4,19 +4,26 @@ export type ChatModel = {
   id: string;
   name: string;
   description: string;
+  icon: string;
+  useCases: string;
+  speed: "fast" | "thorough";
 };
 
 export const chatModels: ChatModel[] = [
   {
     id: "chat-model",
-    name: "Snappy",
-    description:
-      "Advanced multimodal model with vision, text, and tool usage capabilities",
+    name: "Everyday tasks",
+    description: "Fast, efficient responses",
+    icon: "⚡",
+    useCases: "Quick answers, code writing, general questions",
+    speed: "fast",
   },
   {
     id: "chat-model-reasoning",
-    name: "Thoughtful",
-    description:
-      "Uses advanced chain-of-thought reasoning for complex problems with reasoning visibility",
+    name: "Complex problems",
+    description: "Thorough reasoning, takes longer",
+    icon: "🧠",
+    useCases: "Multi-step planning, deep analysis, tough debugging",
+    speed: "thorough",
   },
 ];

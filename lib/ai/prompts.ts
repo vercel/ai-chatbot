@@ -45,6 +45,14 @@ export type RequestHints = {
   country: Geo["country"];
 };
 
+export type UserPreferences = {
+  aiContext?: string | null;
+  proficiency?: string | null;
+  aiTone?: string | null;
+  aiGuidance?: string | null;
+  personalizationEnabled?: boolean;
+};
+
 export const getRequestPromptFromHints = (requestHints: RequestHints) =>
   `\
 About the origin of user's request:
@@ -54,20 +62,61 @@ About the origin of user's request:
 - country: ${requestHints.country}
 `;
 
+export const getPersonalizationPrompt = (preferences: UserPreferences) => {
+  if (!preferences.personalizationEnabled) {
+    return "";
+  }
+
+  const parts: string[] = [];
+
+  if (preferences.aiContext) {
+    parts.push(`User's background and interests: ${preferences.aiContext}`);
+  }
+
+  if (preferences.proficiency) {
+    const proficiencyMap = {
+      less: "The user prefers simpler language with more explanations. Avoid overly technical jargon and provide step-by-step guidance.",
+      regular: "The user prefers a balanced approach with clear explanations and moderate technical detail.",
+      more: "The user prefers technical specifics and detailed information. You can use technical terminology and assume technical knowledge.",
+    };
+    parts.push(proficiencyMap[preferences.proficiency as keyof typeof proficiencyMap] || "");
+  }
+
+  if (preferences.aiTone) {
+    const toneMap = {
+      friendly: "Adopt a friendly, bubbly, and playful tone in your responses.",
+      balanced: "Maintain a professional yet approachable tone in your responses.",
+      efficient: "Be direct and concise in your responses. Get straight to the point.",
+    };
+    parts.push(toneMap[preferences.aiTone as keyof typeof toneMap] || "");
+  }
+
+  if (preferences.aiGuidance) {
+    parts.push(`Additional context about the user: ${preferences.aiGuidance}`);
+  }
+
+  return parts.length > 0 ? `\n\nPersonalization:\n${parts.join("\n")}` : "";
+};
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  userPreferences,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  userPreferences?: UserPreferences;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const personalizationPrompt = userPreferences
+    ? getPersonalizationPrompt(userPreferences)
+    : "";
 
   if (selectedChatModel === "chat-model-reasoning") {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${personalizationPrompt}`;
   }
 
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  return `${regularPrompt}\n\n${requestPrompt}${personalizationPrompt}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `

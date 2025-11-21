@@ -21,8 +21,12 @@ import type { VisibilityType } from "@/components/shared/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { getReasoningOpenAIOptions } from "@/lib/ai/openai-config";
-import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
+import { type RequestHints, type UserPreferences, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { user } from "@/lib/db/schema";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
@@ -103,17 +107,56 @@ export async function POST(request: Request) {
       message,
       selectedChatModel,
       selectedVisibilityType,
+      personalizationEnabled,
     }: {
       id: string;
       message: ChatMessage;
       selectedChatModel: ChatModel["id"];
       selectedVisibilityType: VisibilityType;
+      personalizationEnabled?: boolean;
     } = requestBody;
 
     const session = await auth();
 
     if (!session?.user) {
       return new ChatSDKError("unauthorized:chat").toResponse();
+    }
+
+    // Fetch user preferences for personalization
+    let userPreferences: UserPreferences | undefined;
+    if (personalizationEnabled) {
+      try {
+        const sql = postgres(process.env.POSTGRES_URL!);
+        const db = drizzle(sql);
+
+        try {
+          const [userData] = await db
+            .select({
+              ai_context: user.ai_context,
+              proficiency: user.proficiency,
+              ai_tone: user.ai_tone,
+              ai_guidance: user.ai_guidance,
+            })
+            .from(user)
+            .where(eq(user.id, session.user.id))
+            .limit(1);
+
+          if (userData) {
+            userPreferences = {
+              aiContext: userData.ai_context,
+              proficiency: userData.proficiency,
+              aiTone: userData.ai_tone,
+              aiGuidance: userData.ai_guidance,
+              personalizationEnabled: true,
+            };
+          }
+        } finally {
+          await sql.end({ timeout: 5 });
+        }
+      } catch (error) {
+        console.error("Error fetching user preferences:", error);
+        // Continue without personalization if fetch fails
+      }
     }
 
     const userType: UserType = session.user.type;
@@ -190,7 +233,7 @@ export async function POST(request: Request) {
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({ selectedChatModel, requestHints, userPreferences }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools: selectedChatModel === "chat-model-reasoning"

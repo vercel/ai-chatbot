@@ -84,9 +84,34 @@ export function ChatSidebarContent({
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
 
+  // Get personalization status from localStorage
+  const [personalizationEnabled, setPersonalizationEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("personalization-enabled") === "true";
+    }
+    return false;
+  });
+
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
+
+  // Listen for changes to personalization in localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const enabled = localStorage.getItem("personalization-enabled") === "true";
+      setPersonalizationEnabled(enabled);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    // Also listen for custom events from same-window updates
+    window.addEventListener("personalization-changed", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("personalization-changed", handleStorageChange);
+    };
+  }, []);
 
   // Load messages when chatId changes (for existing chats from URL)
   // Fetch messages if autoResume is true (meaning chatId came from URL)
@@ -128,6 +153,7 @@ export function ChatSidebarContent({
             message: request.messages.at(-1),
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
+            personalizationEnabled,
             ...request.body,
           },
         };
