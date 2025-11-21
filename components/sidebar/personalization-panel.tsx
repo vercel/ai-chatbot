@@ -51,10 +51,16 @@ export function PersonalizationPanel({
           throw new Error("Failed to save preferences");
         }
 
-        toast.success("Personalization preferences saved successfully");
+        toast({
+          type: "success",
+          description: "Personalization preferences saved successfully",
+        });
         onOpenChange(false);
       } catch (error) {
-        toast.error("Failed to save preferences. Please try again.");
+        toast({
+          type: "error",
+          description: "Failed to save preferences. Please try again.",
+        });
         console.error("Error saving preferences:", error);
       }
     });
