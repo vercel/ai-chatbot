@@ -1,17 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/components/shared/toast";
+import { X } from "lucide-react";
 
 type PersonalizationPanelProps = {
   open: boolean;
@@ -37,6 +32,16 @@ export function PersonalizationPanel({
     ai_tone: aiTone || "balanced",
     ai_guidance: aiGuidance || "",
   });
+
+  // Update form data when props change
+  useEffect(() => {
+    setFormData({
+      ai_context: aiContext || "",
+      proficiency: proficiency || "regular",
+      ai_tone: aiTone || "balanced",
+      ai_guidance: aiGuidance || "",
+    });
+  }, [aiContext, proficiency, aiTone, aiGuidance]);
 
   const handleSave = async () => {
     startTransition(async () => {
@@ -66,150 +71,121 @@ export function PersonalizationPanel({
     });
   };
 
-  const proficiencyOptions = [
-    {
-      value: "less",
-      label: "Prefer Guidance",
-      description: "Simpler language, more explanations",
-    },
-    {
-      value: "regular",
-      label: "Balanced",
-      description: "Mix of clarity and detail",
-    },
-    {
-      value: "more",
-      label: "Prefer Details",
-      description: "Technical specifics, less hand-holding",
-    },
-  ];
-
-  const toneOptions = [
-    {
-      value: "friendly",
-      label: "Friendly",
-      description: "Bubbly and playful",
-    },
-    {
-      value: "balanced",
-      label: "Balanced",
-      description: "Professional yet approachable",
-    },
-    {
-      value: "efficient",
-      label: "Efficient",
-      description: "Direct and concise",
-    },
-  ];
+  if (!open) return null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        className="w-full sm:max-w-md overflow-y-auto"
-        side="right"
-      >
-        <SheetHeader>
-          <SheetTitle>Personalization</SheetTitle>
-          <SheetDescription>
-            Help the AI tailor its responses to your preferences and working style
-          </SheetDescription>
-        </SheetHeader>
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50 z-50 animate-in fade-in duration-200"
+        onClick={() => onOpenChange(false)}
+      />
 
-        <div className="mt-6 space-y-6">
-          {/* About You */}
-          <div className="space-y-2">
-            <Label htmlFor="ai_context">
-              Who inspires you or shapes your taste?
-            </Label>
-            <Textarea
-              id="ai_context"
-              placeholder="e.g., Nilay Patel and The Verge / Vergecast"
-              value={formData.ai_context}
-              onChange={(e) =>
-                setFormData({ ...formData, ai_context: e.target.value })
-              }
-              className="min-h-[60px] resize-none text-sm"
-              maxLength={2000}
-            />
-            <p className="text-xs text-muted-foreground">
-              Help the AI understand your background and interests
-            </p>
+      {/* Panel */}
+      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pointer-events-none">
+        <div
+          className="bg-background border rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto pointer-events-auto animate-in fade-in zoom-in-95 duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="sticky top-0 bg-background border-b px-6 py-4 flex items-start justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Personalization</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Help the AI tailor its responses to your preferences and working style
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 -mt-1"
+              onClick={() => onOpenChange(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
 
-          {/* Technical Proficiency */}
-          <div className="space-y-3">
-            <Label>Technical proficiency</Label>
-            <div className="space-y-2">
-              {proficiencyOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, proficiency: option.value })
-                  }
-                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                    formData.proficiency === option.value
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-muted-foreground/50"
-                  }`}
-                >
-                  <div className="font-medium text-sm">{option.label}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {option.description}
-                  </div>
-                </button>
-              ))}
+          {/* Content */}
+          <div className="px-6 py-6 space-y-6">
+            {/* Background/Interests */}
+            <div className="space-y-3">
+              <Label htmlFor="ai_context" className="text-sm font-medium">
+                Who inspires you or shapes your taste?
+              </Label>
+              <Textarea
+                id="ai_context"
+                placeholder="e.g., Nilay Patel and The Verge / Vergecast"
+                value={formData.ai_context}
+                onChange={(e) =>
+                  setFormData({ ...formData, ai_context: e.target.value })
+                }
+                className="min-h-[80px] resize-none"
+                maxLength={2000}
+              />
+              <p className="text-xs text-muted-foreground">
+                Help the AI understand your background and interests
+              </p>
+            </div>
+
+            {/* Technical Proficiency */}
+            <div className="space-y-3">
+              <Label htmlFor="proficiency" className="text-sm font-medium">
+                Technical proficiency
+              </Label>
+              <Input
+                id="proficiency"
+                placeholder="e.g., less, regular, more"
+                value={formData.proficiency}
+                onChange={(e) =>
+                  setFormData({ ...formData, proficiency: e.target.value })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Options: "less" (prefer guidance), "regular" (balanced), "more" (prefer details)
+              </p>
+            </div>
+
+            {/* Tone of Voice */}
+            <div className="space-y-3">
+              <Label htmlFor="ai_tone" className="text-sm font-medium">
+                How do you want the AI to write?
+              </Label>
+              <Input
+                id="ai_tone"
+                placeholder="e.g., friendly, balanced, efficient"
+                value={formData.ai_tone}
+                onChange={(e) =>
+                  setFormData({ ...formData, ai_tone: e.target.value })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Options: "friendly" (bubbly), "balanced" (professional), "efficient" (direct)
+              </p>
+            </div>
+
+            {/* Additional Context */}
+            <div className="space-y-3">
+              <Label htmlFor="ai_guidance" className="text-sm font-medium">
+                What else should the AI know about you?
+              </Label>
+              <Textarea
+                id="ai_guidance"
+                placeholder="e.g., I'm a software engineer / product manager"
+                value={formData.ai_guidance}
+                onChange={(e) =>
+                  setFormData({ ...formData, ai_guidance: e.target.value })
+                }
+                className="min-h-[100px] resize-none"
+                maxLength={4000}
+              />
+              <p className="text-xs text-muted-foreground">
+                Any additional context that will help the AI assist you better
+              </p>
             </div>
           </div>
 
-          {/* Tone of Voice */}
-          <div className="space-y-3">
-            <Label>How do you want the AI to write?</Label>
-            <div className="space-y-2">
-              {toneOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, ai_tone: option.value })
-                  }
-                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                    formData.ai_tone === option.value
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-muted-foreground/50"
-                  }`}
-                >
-                  <div className="font-medium text-sm">{option.label}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {option.description}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* What else should AI know */}
-          <div className="space-y-2">
-            <Label htmlFor="ai_guidance">
-              What else should the AI know about you?
-            </Label>
-            <Textarea
-              id="ai_guidance"
-              placeholder="e.g., I'm a software engineer / product manager"
-              value={formData.ai_guidance}
-              onChange={(e) =>
-                setFormData({ ...formData, ai_guidance: e.target.value })
-              }
-              className="min-h-[80px] resize-none text-sm"
-              maxLength={4000}
-            />
-            <p className="text-xs text-muted-foreground">
-              Any additional context that will help the AI assist you better
-            </p>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex gap-2 pt-4 border-t">
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-background border-t px-6 py-4 flex gap-3">
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
@@ -227,7 +203,7 @@ export function PersonalizationPanel({
             </Button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </>
   );
 }
