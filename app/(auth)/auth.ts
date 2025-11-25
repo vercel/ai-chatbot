@@ -69,8 +69,16 @@ export const {
       id: "guest",
       credentials: {},
       async authorize() {
-        const [guestUser] = await createGuestUser()
-        return { ...guestUser, type: "guest" }
+        try {
+          console.log("[v0] Creating guest user...")
+          const [guestUser] = await createGuestUser()
+          console.log("[v0] Guest user created successfully:", guestUser.id)
+          return { ...guestUser, type: "guest" }
+        } catch (error) {
+          console.error("[v0] Failed to create guest user:", error)
+          // Return null to prevent redirect loop - NextAuth will handle the error
+          return null
+        }
       },
     }),
   ],
