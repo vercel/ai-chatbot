@@ -1,11 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-
-/* Add KaTeX CSS for math rendering */
-@source '../node_modules/katex/dist/katex.min.css';
-
-/* include utility classes in streamdown */
-@source '../node_modules/streamdown/dist/index.js';
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -81,8 +75,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -127,116 +121,5 @@
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
-    position: relative;
   }
-  html {
-    overflow-x: hidden;
-  }
-}
-
-/* Custom styles from original globals.css */
-@utility text-balance {
-  text-wrap: balance;
-}
-
-@utility -webkit-overflow-scrolling-touch {
-  -webkit-overflow-scrolling: touch;
-}
-
-@utility touch-pan-y {
-  touch-action: pan-y;
-}
-
-@utility overscroll-behavior-contain {
-  overscroll-behavior: contain;
-}
-
-.skeleton {
-  * {
-    pointer-events: none !important;
-  }
-
-  *[class^="text-"] {
-    color: transparent;
-    @apply rounded-md bg-foreground/20 select-none animate-pulse;
-  }
-
-  .skeleton-bg {
-    @apply bg-foreground/10;
-  }
-
-  .skeleton-div {
-    @apply bg-foreground/20 animate-pulse;
-  }
-}
-
-.ProseMirror {
-  outline: none;
-}
-
-.cm-editor,
-.cm-gutters {
-  @apply bg-background! dark:bg-zinc-800! outline-hidden! selection:bg-zinc-900!;
-}
-
-.ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
-.ͼo.cm-selectionBackground,
-.ͼo.cm-content::selection {
-  @apply bg-zinc-200! dark:bg-zinc-900!;
-}
-
-.cm-activeLine,
-.cm-activeLineGutter {
-  @apply bg-transparent!;
-}
-
-.cm-activeLine {
-  @apply rounded-r-sm!;
-}
-
-.cm-lineNumbers {
-  @apply min-w-7;
-}
-
-.cm-foldGutter {
-  @apply min-w-3;
-}
-
-.cm-lineNumbers .cm-activeLineGutter {
-  @apply rounded-l-sm!;
-}
-
-.suggestion-highlight {
-  @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
-}
-
-/* minimal scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-  transition: background 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: --alpha(var(--muted-foreground) / 0.5);
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* firefox scrollbar styling */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
 }

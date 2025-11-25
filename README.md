@@ -62,10 +62,10 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
 3. Download your environment variables: `vercel env pull`
 
-```bash
+\`\`\`bash
 pnpm install
 pnpm db:migrate # Setup database or apply latest database changes
 pnpm dev
-```
+\`\`\`
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).

@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig } from "next-auth"
 
 export const authConfig = {
   pages: {
@@ -10,4 +10,4 @@ export const authConfig = {
     // while this file is also used in non-Node.js environments
   ],
   callbacks: {},
-} satisfies NextAuthConfig;
+} satisfies NextAuthConfig
