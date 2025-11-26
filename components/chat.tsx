@@ -41,6 +41,7 @@ export function Chat({
   isReadonly,
   autoResume,
   initialLastContext,
+  onModelChange,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -49,6 +50,7 @@ export function Chat({
   isReadonly: boolean;
   autoResume: boolean;
   initialLastContext?: AppUsage;
+  onModelChange?: (modelId: string) => void;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -67,6 +69,11 @@ export function Chat({
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
+
+  const handleModelChange = (modelId: string) => {
+    setCurrentModelId(modelId);
+    onModelChange?.(modelId);
+  };
 
   const {
     messages,
@@ -182,7 +189,7 @@ export function Chat({
               chatId={id}
               input={input}
               messages={messages}
-              onModelChange={setCurrentModelId}
+              onModelChange={handleModelChange}
               selectedModelId={currentModelId}
               selectedVisibilityType={visibilityType}
               sendMessage={sendMessage}
