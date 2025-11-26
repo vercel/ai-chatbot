@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Chat } from "@/components/chat";
+import { ChatWrapper } from "@/components/chat-wrapper";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { generateUUID } from "@/lib/utils";
@@ -21,7 +21,7 @@ export default async function Page() {
   if (!modelIdFromCookie) {
     return (
       <>
-        <Chat
+        <ChatWrapper
           autoResume={false}
           id={id}
           initialChatModel={DEFAULT_CHAT_MODEL}
@@ -37,7 +37,7 @@ export default async function Page() {
 
   return (
     <>
-      <Chat
+      <ChatWrapper
         autoResume={false}
         id={id}
         initialChatModel={modelIdFromCookie.value}

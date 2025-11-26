@@ -4,6 +4,7 @@ export type ChatModel = {
   id: string;
   name: string;
   description: string;
+  isLocal?: boolean;
 };
 
 export const chatModels: ChatModel[] = [
@@ -18,4 +19,15 @@ export const chatModels: ChatModel[] = [
     description:
       "Uses advanced chain-of-thought reasoning for complex problems",
   },
+  {
+    id: "webllm",
+    name: "WebLLM (Local)",
+    description:
+      "Runs entirely in your browser - no API key required. Requires WebGPU.",
+    isLocal: true,
+  },
 ];
+
+export function isWebLLMModel(modelId: string): boolean {
+  return modelId === "webllm";
+}
