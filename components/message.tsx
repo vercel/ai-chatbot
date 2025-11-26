@@ -305,7 +305,7 @@ export const PreviewMessage = memo(
       return false;
     }
 
-    return false;
+    return true;
   }
 );
 

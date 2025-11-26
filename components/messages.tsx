@@ -137,5 +137,5 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
     return false;
   }
 
-  return false;
+  return true;
 });
