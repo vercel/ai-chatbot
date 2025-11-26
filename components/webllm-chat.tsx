@@ -9,6 +9,7 @@ import { ChatHeader } from "@/components/chat-header";
 import { useArtifactSelector } from "@/hooks/use-artifact";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { useWebLLMChat } from "@/hooks/use-webllm-chat";
+import { getWebLLMQuality } from "@/lib/ai/models";
 import type { Vote } from "@/lib/db/schema";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { fetcher } from "@/lib/utils";
@@ -44,6 +45,9 @@ export function WebLLMChat({
   const [input, setInput] = useState<string>("");
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
 
+  // Extract quality hint from the model ID
+  const quality = getWebLLMQuality(currentModelId);
+
   const {
     messages,
     setMessages,
@@ -55,6 +59,7 @@ export function WebLLMChat({
     error,
   } = useWebLLMChat({
     id,
+    quality,
     initialMessages,
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));

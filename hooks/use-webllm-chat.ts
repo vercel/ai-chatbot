@@ -1,6 +1,6 @@
 "use client";
 
-import { type CoreMessage, streamText, type UIMessage } from "ai";
+import { type CoreMessage, streamText } from "ai";
 import { useCallback, useRef, useState } from "react";
 import {
   createWebLLMModel,
@@ -8,6 +8,7 @@ import {
   type WebLLMAvailability,
   type WebLLMProgress,
 } from "@/lib/ai/webllm-client";
+import type { WebLLMQuality } from "@/lib/ai/models";
 import type { ChatMessage } from "@/lib/types";
 import { generateUUID } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ type WebLLMChatStatus =
 
 interface UseWebLLMChatOptions {
   id: string;
+  quality?: WebLLMQuality;
   initialMessages?: ChatMessage[];
   onFinish?: () => void;
   onError?: (error: Error) => void;
@@ -38,6 +40,7 @@ interface UseWebLLMChatReturn {
 
 export function useWebLLMChat({
   id,
+  quality = "standard",
   initialMessages = [],
   onFinish,
   onError,
@@ -66,7 +69,7 @@ export function useWebLLMChat({
       setError(null);
 
       try {
-        const availability = await getWebLLMAvailability();
+        const availability = await getWebLLMAvailability(quality);
         setModelStatus(availability);
 
         if (availability === "unavailable") {
@@ -79,8 +82,11 @@ export function useWebLLMChat({
           setModelStatus("loading");
         }
 
-        const model = createWebLLMModel((progress) => {
-          setDownloadProgress(progress);
+        const model = createWebLLMModel({
+          quality,
+          onProgress: (progress) => {
+            setDownloadProgress(progress);
+          },
         });
 
         setStatus("submitted");
@@ -149,7 +155,7 @@ export function useWebLLMChat({
         }
       }
     },
-    [messages, id, onFinish, onError]
+    [messages, id, quality, onFinish, onError]
   );
 
   const stop = useCallback(() => {
