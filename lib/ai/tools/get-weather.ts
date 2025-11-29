@@ -9,7 +9,9 @@ async function geocodeCity(
       `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
     );
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      return null;
+    }
 
     const data = await response.json();
 

@@ -230,13 +230,17 @@ function PureMultimodalInput({
   const handlePaste = useCallback(
     async (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
-      if (!items) return;
+      if (!items) {
+        return;
+      }
 
       const imageItems = Array.from(items).filter((item) =>
         item.type.startsWith("image/")
       );
 
-      if (imageItems.length === 0) return;
+      if (imageItems.length === 0) {
+        return;
+      }
 
       // Prevent default paste behavior for images
       event.preventDefault();
@@ -244,11 +248,10 @@ function PureMultimodalInput({
       setUploadQueue((prev) => [...prev, "Pasted image"]);
 
       try {
-        const uploadPromises = imageItems.map(async (item) => {
-          const file = item.getAsFile();
-          if (!file) return;
-          return uploadFile(file);
-        });
+        const uploadPromises = imageItems
+          .map((item) => item.getAsFile())
+          .filter((file): file is File => file !== null)
+          .map((file) => uploadFile(file));
 
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
@@ -269,13 +272,15 @@ function PureMultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments]
+    [setAttachments, uploadFile]
   );
 
   // Add paste event listener to textarea
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      return;
+    }
 
     textarea.addEventListener("paste", handlePaste);
     return () => textarea.removeEventListener("paste", handlePaste);
