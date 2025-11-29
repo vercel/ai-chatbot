@@ -69,6 +69,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: THEME_COLOR_SCRIPT,
           }}
+          <html lang="es">
         />
       </head>
       <body className="antialiased">
