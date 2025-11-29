@@ -22,7 +22,7 @@ export const Greeting = () => {
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.6 }}
       >
-        ¿en qué puedo ayudarte hoy?
+        ¿en qué puedo ayudarte?
       </motion.div>
     </div>
   );
