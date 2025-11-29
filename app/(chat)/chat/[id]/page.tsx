@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { auth } from "@/app/(auth)/auth";
 import { Chat } from "@/components/chat";
@@ -8,9 +9,16 @@ import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { convertToUIMessages } from "@/lib/utils";
 
-export default async function Page(props: { params: Promise<{ id: string }> }) {
-  const params = await props.params;
-  const { id } = params;
+export default function Page(props: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense fallback={<div className="flex h-dvh" />}>
+      <ChatPage params={props.params} />
+    </Suspense>
+  );
+}
+
+async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const chat = await getChatById({ id });
 
   if (!chat) {
