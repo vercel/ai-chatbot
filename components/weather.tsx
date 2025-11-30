@@ -330,7 +330,7 @@ export function Weather({
   return (
     <div
       className={cx(
-        "relative flex w-full flex-col gap-6 overflow-hidden rounded-3xl p-6 shadow-lg backdrop-blur-sm",
+        "relative flex w-full flex-col gap-3 overflow-hidden rounded-2xl p-4 shadow-lg backdrop-blur-sm",
         {
           "bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600": isDay,
         },
@@ -343,44 +343,44 @@ export function Weather({
       <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
 
       <div className="relative z-10">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="font-medium text-sm text-white/80">{location}</div>
+        <div className="mb-2 flex items-center justify-between">
+          <div className="font-medium text-white/80 text-xs">{location}</div>
           <div className="text-white/60 text-xs">
             {format(new Date(weatherAtLocation.current.time), "MMM d, h:mm a")}
           </div>
         </div>
 
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <div
               className={cx("text-white/90", {
                 "text-yellow-200": isDay,
                 "text-blue-200": !isDay,
               })}
             >
-              {isDay ? <SunIcon size={48} /> : <MoonIcon size={48} />}
+              {isDay ? <SunIcon size={32} /> : <MoonIcon size={32} />}
             </div>
-            <div className="font-light text-5xl text-white">
+            <div className="font-light text-3xl text-white">
               {n(weatherAtLocation.current.temperature_2m)}
-              <span className="text-2xl text-white/80">
+              <span className="text-lg text-white/80">
                 {weatherAtLocation.current_units.temperature_2m}
               </span>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="font-medium text-sm text-white/90">
+            <div className="font-medium text-white/90 text-xs">
               H: {n(currentHigh)}°
             </div>
-            <div className="text-sm text-white/70">L: {n(currentLow)}°</div>
+            <div className="text-white/70 text-xs">L: {n(currentLow)}°</div>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
-          <div className="mb-3 font-medium text-sm text-white/80">
+        <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
+          <div className="mb-2 font-medium text-white/80 text-xs">
             Hourly Forecast
           </div>
-          <div className="flex justify-between gap-2">
+          <div className="flex justify-between gap-1">
             {displayTimes.map((time, index) => {
               const hourTime = new Date(time);
               const isCurrentHour =
@@ -389,7 +389,7 @@ export function Weather({
               return (
                 <div
                   className={cx(
-                    "flex min-w-0 flex-1 flex-col items-center gap-2 rounded-lg px-1 py-2",
+                    "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-md px-1 py-1.5",
                     {
                       "bg-white/20": isCurrentHour,
                     }
@@ -406,10 +406,10 @@ export function Weather({
                       "text-blue-200": !isDay,
                     })}
                   >
-                    <CloudIcon size={20} />
+                    <CloudIcon size={16} />
                   </div>
 
-                  <div className="font-medium text-sm text-white">
+                  <div className="font-medium text-white text-xs">
                     {n(displayTemperatures[index])}°
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export function Weather({
           </div>
         </div>
 
-        <div className="mt-4 flex justify-between text-white/60 text-xs">
+        <div className="mt-2 flex justify-between text-white/60 text-xs">
           <div>
             Sunrise:{" "}
             {format(new Date(weatherAtLocation.daily.sunrise[0]), "h:mm a")}
