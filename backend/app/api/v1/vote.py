@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
 from uuid import UUID
 
-# TODO: Uncomment this when authentication is implemented
-# from app.api.deps import get_current_user
+from fastapi import APIRouter, Depends, Query, status
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.db.queries.chat_queries import get_chat_by_id
@@ -22,8 +22,7 @@ class VoteRequest(BaseModel):
 @router.get("")
 async def get_votes(
     chatId: UUID = Query(...),
-    # TODO: Uncomment this when authentication is implemented
-    # current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -34,9 +33,8 @@ async def get_votes(
     if not chat:
         raise ChatSDKError("not_found:chat", status_code=status.HTTP_404_NOT_FOUND)
 
-    # TODO: Uncomment this when authentication is implemented
-    # if str(chat.user_id) != current_user["id"]:
-    #     raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
+    if str(chat.userId) != current_user["id"]:
+        raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
 
     # Get votes
     votes = await get_votes_by_chat_id(db, chatId)
@@ -46,8 +44,7 @@ async def get_votes(
 @router.patch("")
 async def vote(
     request: VoteRequest,
-    # TODO: Uncomment this when authentication is implemented
-    # current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -66,9 +63,8 @@ async def vote(
     if not chat:
         raise ChatSDKError("not_found:vote", status_code=status.HTTP_404_NOT_FOUND)
 
-    # TODO: Uncomment this when authentication is implemented
-    # if str(chat.user_id) != current_user["id"]:
-    #     raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
+    if str(chat.userId) != current_user["id"]:
+        raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
 
     # Vote on message
     await vote_message(db, request.chatId, request.messageId, request.type)
