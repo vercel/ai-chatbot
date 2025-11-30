@@ -315,7 +315,7 @@ export const ThinkingMessage = () => {
       <div className="flex items-start justify-start gap-3">
         <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
           <div className="animate-pulse">
-          <SparklesIcon size={14} />
+            <SparklesIcon size={14} />
           </div>
         </div>
 

@@ -344,7 +344,7 @@ export function Weather({
 
       <div className="relative z-10">
         <div className="mb-2 flex items-center justify-between">
-          <div className="font-medium text-xs text-white/80">{location}</div>
+          <div className="font-medium text-white/80 text-xs">{location}</div>
           <div className="text-white/60 text-xs">
             {format(new Date(weatherAtLocation.current.time), "MMM d, h:mm a")}
           </div>
@@ -369,15 +369,15 @@ export function Weather({
           </div>
 
           <div className="text-right">
-            <div className="font-medium text-xs text-white/90">
+            <div className="font-medium text-white/90 text-xs">
               H: {n(currentHigh)}°
             </div>
-            <div className="text-xs text-white/70">L: {n(currentLow)}°</div>
+            <div className="text-white/70 text-xs">L: {n(currentLow)}°</div>
           </div>
         </div>
 
         <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
-          <div className="mb-2 font-medium text-xs text-white/80">
+          <div className="mb-2 font-medium text-white/80 text-xs">
             Hourly Forecast
           </div>
           <div className="flex justify-between gap-1">
@@ -409,7 +409,7 @@ export function Weather({
                     <CloudIcon size={16} />
                   </div>
 
-                  <div className="font-medium text-xs text-white">
+                  <div className="font-medium text-white text-xs">
                     {n(displayTemperatures[index])}°
                   </div>
                 </div>

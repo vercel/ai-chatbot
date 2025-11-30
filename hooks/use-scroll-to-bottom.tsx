@@ -33,7 +33,10 @@ export function useScrollToBottom() {
       requestAnimationFrame(() => {
         // Auto-scroll if user was at bottom before content changed
         if (wasAtBottom) {
-          container.scrollTo({ top: container.scrollHeight, behavior: "instant" });
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "instant",
+          });
         }
         handleScroll();
       });
@@ -43,11 +46,14 @@ export function useScrollToBottom() {
       // Capture whether we're at bottom before the scroll happens
       const { scrollTop, scrollHeight, clientHeight } = container;
       wasAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
-      
+
       requestAnimationFrame(() => {
         // Auto-scroll if user was at bottom before content changed
         if (wasAtBottom) {
-          container.scrollTo({ top: container.scrollHeight, behavior: "instant" });
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "instant",
+          });
         }
         handleScroll();
       });

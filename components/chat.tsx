@@ -51,7 +51,7 @@ export function Chat({
   initialLastContext?: AppUsage;
 }) {
   const router = useRouter();
-  
+
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
