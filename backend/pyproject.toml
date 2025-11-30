@@ -20,6 +20,7 @@ dependencies = [
     "httpx>=0.26.0",
     "python-dotenv>=1.0.0",
     "python-dateutil>=2.8.2",
+    "greenlet>=3.2.4",
 ]
 
 [project.optional-dependencies]

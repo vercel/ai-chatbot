@@ -21,7 +21,7 @@ class VoteRequest(BaseModel):
 @router.get("")
 async def get_votes(
     chatId: UUID = Query(...),
-    current_user: dict = Depends(get_current_user),
+    # current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -32,8 +32,8 @@ async def get_votes(
     if not chat:
         raise ChatSDKError("not_found:chat", status_code=status.HTTP_404_NOT_FOUND)
 
-    if str(chat.user_id) != current_user["id"]:
-        raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
+    # if str(chat.user_id) != current_user["id"]:
+    #     raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
 
     # Get votes
     votes = await get_votes_by_chat_id(db, chatId)

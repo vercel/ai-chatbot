@@ -7,14 +7,13 @@ from app.core.database import Base
 
 class Vote(Base):
     __tablename__ = "Vote_v2"
-    __table_args__ = (
-        PrimaryKeyConstraint('chat_id', 'message_id'),
-    )
+    __table_args__ = (PrimaryKeyConstraint("chatId", "messageId"),)
 
-    chat_id = Column(UUID(as_uuid=True), ForeignKey("Chat.id"), nullable=False, primary_key=True)
-    message_id = Column(UUID(as_uuid=True), ForeignKey("Message_v2.id"), nullable=False, primary_key=True)
-    is_upvoted = Column(Boolean, nullable=False)
+    chatId = Column(UUID(as_uuid=True), ForeignKey("Chat.id"), nullable=False, primary_key=True)
+    messageId = Column(
+        UUID(as_uuid=True), ForeignKey("Message_v2.id"), nullable=False, primary_key=True
+    )
+    isUpvoted = Column(Boolean, nullable=False)
 
     # Relationships
     chat = relationship("Chat", back_populates="votes")
-
