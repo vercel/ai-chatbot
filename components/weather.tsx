@@ -81,6 +81,7 @@ const CloudIcon = ({ size = 24 }: { size?: number }) => (
 );
 
 type WeatherAtLocation = {
+  error?: string;
   latitude: number;
   longitude: number;
   generationtime_ms: number;
@@ -283,6 +284,12 @@ export function Weather({
 }: {
   weatherAtLocation?: WeatherAtLocation;
 }) {
+  console.log("weatherAtLocation", weatherAtLocation);
+
+  if (weatherAtLocation.error) {
+    return <div className="text-white/60 text-xs">Error: {weatherAtLocation.error}</div>;
+  }
+
   const currentHigh = Math.max(
     ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
   );

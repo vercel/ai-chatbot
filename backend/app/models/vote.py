@@ -17,3 +17,4 @@ class Vote(Base):
 
     # Relationships
     chat = relationship("Chat", back_populates="votes")
+    message = relationship("Message", back_populates="votes")
