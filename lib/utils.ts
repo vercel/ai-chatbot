@@ -10,13 +10,14 @@ import { twMerge } from 'tailwind-merge';
 import type { DBMessage, Document } from '@/lib/db/schema';
 import { ChatSDKError, type ErrorCode } from './errors';
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from './types';
+import { apiFetch } from './api-client';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export const fetcher = async (url: string) => {
-  const response = await fetch(url);
+  const response = await apiFetch(url);
 
   if (!response.ok) {
     const { code, cause } = await response.json();
@@ -31,7 +32,7 @@ export async function fetchWithErrorHandlers(
   init?: RequestInit,
 ) {
   try {
-    const response = await fetch(input, init);
+    const response = await apiFetch(input, init);
 
     if (!response.ok) {
       const { code, cause } = await response.json();
