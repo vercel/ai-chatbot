@@ -89,6 +89,34 @@ async def get_chats_by_user_id(
     return {"chats": chats[:limit] if has_more else chats, "hasMore": has_more}
 
 
+async def delete_chat_by_id(session: AsyncSession, chat_id: UUID):
+    """
+    Delete a single chat by ID, including related votes, messages, and streams.
+    Returns: The deleted Chat object
+    """
+    # Delete related records (cascade delete)
+    # Delete votes
+    await session.execute(delete(Vote).where(Vote.chatId == chat_id))
+
+    # Delete messages
+    await session.execute(delete(Message).where(Message.chatId == chat_id))
+
+    # Delete streams
+    await session.execute(delete(Stream).where(Stream.chatId == chat_id))
+
+    # Delete chat and return the deleted chat
+    result = await session.execute(delete(Chat).where(Chat.id == chat_id).returning(Chat))
+    deleted_chat = result.scalar_one_or_none()
+
+    if not deleted_chat:
+        return None
+
+    # Commit all deletions
+    await session.commit()
+
+    return deleted_chat
+
+
 async def delete_all_chats_by_user_id(session: AsyncSession, user_id: UUID):
     """
     Delete all chats for a user, including related votes, messages, and streams.

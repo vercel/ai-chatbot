@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
-from typing import Optional
-from uuid import UUID
 import json
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
+from app.db.queries.chat_queries import delete_chat_by_id, get_chat_by_id
 
 router = APIRouter()
 
@@ -61,13 +62,29 @@ async def delete_chat(
 ):
     """
     Delete a chat by ID.
+    Returns the deleted chat object.
     """
-    # TODO: Implement chat deletion
-    # chat = await get_chat_by_id(db, chat_id)
-    # if not chat:
-    #     raise ChatSDKError("not_found:chat")
-    # if chat.user_id != current_user["id"]:
-    #     raise ChatSDKError("forbidden:chat")
-    # await delete_chat_by_id(db, chat_id)
+    # Validate chat exists
+    chat = await get_chat_by_id(db, chat_id)
+    if not chat:
+        raise ChatSDKError("not_found:chat", status_code=status.HTTP_404_NOT_FOUND)
 
-    return {"status": "deleted", "id": str(chat_id)}
+    # Validate user owns the chat
+    if str(chat.userId) != current_user["id"]:
+        raise ChatSDKError("forbidden:chat", status_code=status.HTTP_403_FORBIDDEN)
+
+    # Delete the chat (cascade deletes votes, messages, streams)
+    deleted_chat = await delete_chat_by_id(db, chat_id)
+
+    if not deleted_chat:
+        raise ChatSDKError("not_found:chat", status_code=status.HTTP_404_NOT_FOUND)
+
+    # Convert to dict format matching frontend expectations
+    return {
+        "id": str(deleted_chat.id),
+        "title": deleted_chat.title,
+        "createdAt": deleted_chat.createdAt.isoformat(),
+        "visibility": deleted_chat.visibility,
+        "userId": str(deleted_chat.userId),
+        "lastContext": deleted_chat.lastContext,
+    }
