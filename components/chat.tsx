@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
@@ -50,12 +50,25 @@ export function Chat({
   autoResume: boolean;
   initialLastContext?: AppUsage;
 }) {
+  const router = useRouter();
+  
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
   });
 
   const { mutate } = useSWRConfig();
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      // When user navigates back/forward, refresh to sync with URL
+      router.refresh();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [router]);
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>("");

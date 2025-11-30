@@ -27,18 +27,29 @@ export function useScrollToBottom() {
     }
 
     const container = containerRef.current;
+    let wasAtBottom = true;
 
     const resizeObserver = new ResizeObserver(() => {
       requestAnimationFrame(() => {
+        // Auto-scroll if user was at bottom before content changed
+        if (wasAtBottom) {
+          container.scrollTo({ top: container.scrollHeight, behavior: "instant" });
+        }
         handleScroll();
       });
     });
 
     const mutationObserver = new MutationObserver(() => {
+      // Capture whether we're at bottom before the scroll happens
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      wasAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          handleScroll();
-        });
+        // Auto-scroll if user was at bottom before content changed
+        if (wasAtBottom) {
+          container.scrollTo({ top: container.scrollHeight, behavior: "instant" });
+        }
+        handleScroll();
       });
     });
 
