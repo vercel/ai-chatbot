@@ -88,7 +88,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                     toast({
                       type: "error",
                       description:
-                        "Checking authentication status, please try again!",
+                        "Verificando el estado de autenticación, ¡por favor, inténtalo de nuevo!",
                     });
 
                     return;
@@ -104,7 +104,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                 }}
                 type="button"
               >
-                {isGuest ? "Login to your account" : "Sign out"}
+                {isGuest ? "Inicia sesión en tu cuenta y Cerrar sesión"}
               </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
