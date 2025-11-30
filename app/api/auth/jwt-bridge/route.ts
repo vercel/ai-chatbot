@@ -1,6 +1,6 @@
-import { auth } from "@/app/(auth)/auth";
-import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { NextResponse } from "next/server";
+import { auth } from "@/app/(auth)/auth";
 
 /**
  * JWT Bridge Endpoint
@@ -9,16 +9,14 @@ import jwt from "jsonwebtoken";
  * This endpoint:
  * 1. Gets the current NextAuth session
  * 2. Generates a JWT token with the same format expected by FastAPI
- * 3. Returns the token for use in FastAPI requests
+ * 3. Sets the token as an httpOnly cookie (secure, not accessible to JavaScript)
+ * 4. Returns success response
  */
 export async function GET() {
   const session = await auth();
 
   if (!session?.user) {
-    return NextResponse.json(
-      { error: "Not authenticated" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   // Get JWT secret from environment (must match FastAPI JWT_SECRET_KEY)
@@ -45,6 +43,23 @@ export async function GET() {
     }
   );
 
-  return NextResponse.json({ access_token: token });
-}
+  // Create response with token (for cross-origin requests to FastAPI)
+  // Also set httpOnly cookie (for same-origin requests)
+  const response = NextResponse.json({
+    success: true,
+    access_token: token, // Include token for cross-origin use
+  });
 
+  // Set httpOnly cookie (secure, not accessible to JavaScript)
+  // This works for same-origin requests (Next.js API routes)
+  const isProduction = process.env.NODE_ENV === "production";
+  response.cookies.set("auth_token", token, {
+    httpOnly: true, // Not accessible to JavaScript (XSS protection)
+    secure: isProduction, // Only send over HTTPS in production
+    sameSite: "lax", // CSRF protection
+    maxAge: 30 * 60, // 30 minutes (matches token expiration)
+    path: "/", // Available for all paths
+  });
+
+  return response;
+}

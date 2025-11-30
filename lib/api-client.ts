@@ -45,85 +45,33 @@ function getApiUrlInternal(endpoint: string): string {
 }
 
 /**
- * Check if a JWT token is expired
- * JWT tokens have an 'exp' claim (expiration timestamp in seconds)
+ * Get JWT token for FastAPI requests
+ * For cross-origin requests, we need to get the token from the bridge response
+ * and add it to the Authorization header (cookies won't be sent cross-origin)
  */
-function isTokenExpired(token: string): boolean {
-  try {
-    // Decode JWT payload (base64url encoded)
-    const parts = token.split(".");
-    if (parts.length !== 3) {
-      return true; // Invalid token format
-    }
-
-    // Decode payload (second part)
-    const payload = JSON.parse(
-      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
-    );
-
-    // Check expiration (exp is in seconds, Date.now() is in milliseconds)
-    if (!payload.exp) {
-      return true; // No expiration claim
-    }
-
-    const expirationTime = payload.exp * 1000; // Convert to milliseconds
-    const now = Date.now();
-
-    // Consider token expired if it expires within the next 60 seconds (refresh buffer)
-    return now >= expirationTime - 60_000;
-  } catch {
-    return true; // If we can't parse, consider it expired
-  }
-}
-
-/**
- * Fetch JWT token from NextAuth bridge endpoint
- */
-async function fetchJWTToken(): Promise<string | null> {
-  try {
-    const response = await fetch("/api/auth/jwt-bridge");
-    if (!response.ok) {
-      // If not authenticated, return null (don't throw)
-      if (response.status === 401) {
-        return null;
-      }
-      console.error("Failed to get JWT token:", response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
-    return data.access_token || null;
-  } catch (error) {
-    console.error("Error fetching JWT token:", error);
-    return null;
-  }
-}
-
-/**
- * Get authentication token for FastAPI requests
- * Fetches from NextAuth bridge and caches in localStorage
- */
-async function getAuthToken(): Promise<string | null> {
+async function getAuthTokenForFastAPI(): Promise<string | null> {
   if (typeof window === "undefined") {
     return null;
   }
 
-  // Check if we have a cached token
-  let token = localStorage.getItem("auth_token");
+  try {
+    // Call bridge endpoint to get token
+    // The endpoint sets a cookie (for same-origin) and returns token (for cross-origin)
+    const response = await fetch("/api/auth/jwt-bridge", {
+      credentials: "include", // Include cookies in request
+    });
 
-  // If no token or expired, fetch new one from bridge
-  if (!token || isTokenExpired(token)) {
-    token = await fetchJWTToken();
-    if (token) {
-      // Cache the new token
-      localStorage.setItem("auth_token", token);
-    } else {
-      // Remove expired/invalid token from cache
-      localStorage.removeItem("auth_token");
+    if (!response.ok) {
+      return null;
     }
-  }
 
-  return token;
+    const data = await response.json();
+    // Return token for use in Authorization header (cross-origin requests)
+    return data.access_token || null;
+  } catch (error) {
+    console.error("Error getting auth token:", error);
+    return null;
+  }
 }
 
 /**
@@ -144,12 +92,14 @@ export async function apiFetch(
   // Prepare headers
   const headers = new Headers(init?.headers);
 
-  // Add JWT token for FastAPI requests
+  // For FastAPI requests (cross-origin), get token and add to Authorization header
+  // Note: httpOnly cookies won't be sent cross-origin, so we use Authorization header
   if (shouldUseFastAPI(url)) {
-    const token = await getAuthToken();
+    const token = await getAuthTokenForFastAPI();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
+
     // Ensure Content-Type is set for FastAPI (but not for FormData - browser will set it)
     if (
       !headers.has("Content-Type") &&
@@ -161,9 +111,11 @@ export async function apiFetch(
   }
 
   // Create new request with updated URL and headers
+  // Include credentials to send cookies (for same-origin requests)
   const newInit: RequestInit = {
     ...init,
     headers,
+    credentials: "include", // Include cookies for same-origin requests
   };
 
   return fetch(fullUrl, newInit);

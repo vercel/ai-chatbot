@@ -1,18 +1,38 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from typing import Optional
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)  # Don't auto-raise error, we'll check cookies first
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: AsyncSession = Depends(get_db)
 ):
-    token = credentials.credentials
+    """
+    Get current user from JWT token.
+    Checks cookies first (httpOnly cookie), then Authorization header (backward compatibility).
+    """
+    token = None
+
+    # First, try to get token from httpOnly cookie (preferred method)
+    cookie_token = request.cookies.get("auth_token")
+    if cookie_token:
+        token = cookie_token
+    # Fallback to Authorization header (for backward compatibility)
+    elif credentials:
+        token = credentials.credentials
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+
     payload = decode_access_token(token)
 
     if payload is None:
@@ -37,15 +57,13 @@ async def get_current_user(
 
 
 async def get_optional_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: AsyncSession = Depends(get_db)
 ):
     """Optional authentication - returns None if no token provided"""
-    if credentials is None:
-        return None
-
     try:
-        return await get_current_user(credentials, db)
+        return await get_current_user(request, credentials, db)
     except HTTPException:
         return None
 
