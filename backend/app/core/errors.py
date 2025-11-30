@@ -17,8 +17,11 @@ class ChatSDKError(HTTPException):
         messages = {
             "bad_request:api": "The request couldn't be processed. Please check your input and try again.",
             "unauthorized:chat": "You need to sign in to view this chat. Please sign in and try again.",
+            "unauthorized:vote": "You need to sign in to vote. Please sign in and try again.",
             "forbidden:chat": "This chat belongs to another user. Please check the chat ID and try again.",
+            "forbidden:vote": "This chat belongs to another user. You cannot vote on messages in this chat.",
             "not_found:chat": "The requested chat was not found. Please check the chat ID and try again.",
+            "not_found:vote": "The requested chat or message was not found. Please check the IDs and try again.",
             "rate_limit:chat": "You have exceeded your maximum number of messages for the day. Please try again later.",
             "offline:chat": "We're having trouble sending your message. Please check your internet connection and try again.",
         }

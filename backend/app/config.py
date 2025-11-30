@@ -1,13 +1,18 @@
+from typing import List, Union
+
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
-from typing import List
 
 
 class Settings(BaseSettings):
-    # Database
-    POSTGRES_URL: str = "postgresql+asyncpg://user:password@localhost:5432/chatbot_db"
+    # Database - REQUIRED: Must be set in .env file
+    # Format: postgresql+asyncpg://user:password@host:port/database
+    POSTGRES_URL: str
     POSTGRES_URL_SYNC: str = ""
 
-    # JWT
+    # JWT - Optional: Only needed when using FastAPI auth endpoints
+    # For development/testing, you can use any random string
+    # For production, use: openssl rand -hex 32
     JWT_SECRET_KEY: str = "dev-secret-key-change-in-production"
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -18,17 +23,23 @@ class Settings(BaseSettings):
 
     # App
     ENVIRONMENT: str = "development"
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: Union[str, List[str]] = "http://localhost:3000"
 
     # Blob
     BLOB_READ_WRITE_TOKEN: str = ""
 
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            # Split comma-separated string and strip whitespace
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
+
     class Config:
         env_file = ".env"
         case_sensitive = True
-        # Allow reading from .env file even if it doesn't exist
         env_file_encoding = "utf-8"
 
 
 settings = Settings()
-
