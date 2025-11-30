@@ -72,8 +72,8 @@ export async function apiFetch(
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
-    // Ensure Content-Type is set for FastAPI
-    if (!headers.has('Content-Type') && init?.body) {
+    // Ensure Content-Type is set for FastAPI (but not for FormData - browser will set it)
+    if (!headers.has('Content-Type') && init?.body && !(init.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json');
     }
   }

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useSWRConfig } from "swr";
 import { useWindowSize } from "usehooks-ts";
 import { useArtifact } from "@/hooks/use-artifact";
+import { apiFetch } from "@/lib/api-client";
 import type { Document } from "@/lib/db/schema";
 import { getDocumentTimestampByIndex } from "@/lib/utils";
 import { LoaderIcon } from "./icons";
@@ -57,7 +58,7 @@ export const VersionFooter = ({
 
             mutate(
               `/api/document?id=${artifact.documentId}`,
-              await fetch(
+              await apiFetch(
                 `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
                   documents,
                   currentVersionIndex
