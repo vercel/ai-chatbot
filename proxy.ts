@@ -17,6 +17,20 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Check for internal API secret (from FastAPI backend)
+  // If present and valid, skip authentication check
+  const internalSecret = request.headers.get("x-internal-api-secret");
+  const expectedSecret = process.env.INTERNAL_API_SECRET;
+
+  if (
+    internalSecret &&
+    expectedSecret &&
+    internalSecret === expectedSecret
+  ) {
+    // Internal request from FastAPI - allow through without auth check
+    return NextResponse.next();
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,

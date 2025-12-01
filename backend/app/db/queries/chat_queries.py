@@ -1,7 +1,8 @@
-from typing import Optional
+from datetime import datetime, timedelta
+from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import and_, delete, desc, select
+from sqlalchemy import and_, asc, delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.chat import Chat
@@ -14,6 +15,139 @@ async def get_chat_by_id(session: AsyncSession, chat_id: UUID):
     """Get a chat by its ID."""
     result = await session.execute(select(Chat).where(Chat.id == chat_id))
     return result.scalar_one_or_none()
+
+
+async def get_messages_by_chat_id(session: AsyncSession, chat_id: UUID) -> List[Message]:
+    """
+    Get all messages for a chat, ordered by createdAt ascending.
+    Returns: List of Message objects
+    """
+    result = await session.execute(
+        select(Message).where(Message.chatId == chat_id).order_by(asc(Message.createdAt))
+    )
+    return list(result.scalars().all())
+
+
+async def save_chat(
+    session: AsyncSession,
+    chat_id: UUID,
+    user_id: UUID,
+    title: str,
+    visibility: str,
+) -> Chat:
+    """
+    Create a new chat.
+    Returns: The created Chat object
+    """
+    new_chat = Chat(
+        id=chat_id,
+        userId=user_id,
+        title=title,
+        visibility=visibility,
+    )
+    session.add(new_chat)
+    await session.commit()
+    await session.refresh(new_chat)
+    return new_chat
+
+
+async def save_messages(
+    session: AsyncSession,
+    messages: List[dict],
+) -> List[Message]:
+    """
+    Save multiple messages to the database.
+    messages: List of dicts with keys: id, chatId, role, parts, attachments, createdAt
+    Returns: List of saved Message objects
+    """
+    message_objects = []
+    for msg_data in messages:
+        message_obj = Message(
+            id=UUID(msg_data["id"]) if isinstance(msg_data["id"], str) else msg_data["id"],
+            chatId=UUID(msg_data["chatId"])
+            if isinstance(msg_data["chatId"], str)
+            else msg_data["chatId"],
+            role=msg_data["role"],
+            parts=msg_data["parts"],
+            attachments=msg_data.get("attachments", []),
+            createdAt=msg_data.get("createdAt", datetime.utcnow()),
+        )
+        message_objects.append(message_obj)
+        session.add(message_obj)
+
+    await session.commit()
+    # Refresh all messages
+    for msg in message_objects:
+        await session.refresh(msg)
+
+    return message_objects
+
+
+async def create_stream_id(
+    session: AsyncSession,
+    stream_id: UUID,
+    chat_id: UUID,
+) -> Stream:
+    """
+    Create a stream ID entry.
+    Returns: The created Stream object
+    """
+    new_stream = Stream(
+        id=stream_id,
+        chatId=chat_id,
+    )
+    session.add(new_stream)
+    await session.commit()
+    await session.refresh(new_stream)
+    return new_stream
+
+
+async def update_chat_last_context_by_id(
+    session: AsyncSession,
+    chat_id: UUID,
+    context: dict,
+) -> Optional[Chat]:
+    """
+    Update chat's lastContext field with usage/context data.
+    Returns: Updated Chat object or None if not found
+    """
+    chat = await get_chat_by_id(session, chat_id)
+    if not chat:
+        return None
+
+    chat.lastContext = context
+    await session.commit()
+    await session.refresh(chat)
+    return chat
+
+
+async def get_message_count_by_user_id(
+    session: AsyncSession,
+    user_id: UUID,
+    hours: int = 24,
+) -> int:
+    """
+    Count messages for a user in the last N hours.
+    Only counts user messages (role='user'), not assistant messages.
+    Returns: Count of messages
+    """
+    hours_ago = datetime.utcnow() - timedelta(hours=hours)
+
+    result = await session.execute(
+        select(func.count(Message.id))
+        .select_from(Message)
+        .join(Chat, Message.chatId == Chat.id)
+        .where(
+            and_(
+                Chat.userId == user_id,
+                Message.createdAt >= hours_ago,
+                Message.role == "user",
+            )
+        )
+    )
+
+    count_value = result.scalar() or 0
+    return count_value
 
 
 async def get_chats_by_user_id(

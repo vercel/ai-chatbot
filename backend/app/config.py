@@ -23,7 +23,11 @@ class Settings(BaseSettings):
 
     # App
     ENVIRONMENT: str = "development"
-    CORS_ORIGINS: Union[str, List[str]] = "http://localhost:3000"
+    CORS_ORIGINS: Union[str, List[str]] = "http://localhost:3001"
+    NEXTJS_URL: str = "http://localhost:3001"  # Next.js server URL for proxy requests
+    INTERNAL_API_SECRET: str = (
+        "dev-internal-secret-change-in-production"  # Secret for FastAPI → Next.js internal requests
+    )
 
     # Blob
     BLOB_READ_WRITE_TOKEN: str = ""

@@ -21,9 +21,24 @@ function shouldUseFastAPI(endpoint: string): boolean {
     return false;
   }
 
+  // Exclude stream resumption endpoints - these should stay in Next.js
+  // Pattern: /api/chat/{id}/stream
+  if (endpoint.includes("/stream")) {
+    return false;
+  }
+
   // If specific endpoints are configured, check if this endpoint matches
   if (FASTAPI_ENDPOINTS.length > 0) {
-    return FASTAPI_ENDPOINTS.some((ep) => endpoint.includes(`/api/${ep}`));
+    return FASTAPI_ENDPOINTS.some((ep) => {
+      // Match exact endpoint or endpoint with query params
+      // e.g., /api/chat or /api/chat?id=... but not /api/chat/{id}/stream
+      const pattern = `/api/${ep}`;
+      return (
+        endpoint === pattern ||
+        endpoint.startsWith(`${pattern}?`) ||
+        endpoint.startsWith(`${pattern}&`)
+      );
+    });
   }
 
   // Otherwise, use FastAPI for all endpoints if USE_FASTAPI is true
@@ -34,6 +49,11 @@ function shouldUseFastAPI(endpoint: string): boolean {
  * Get the full URL for an API request
  */
 function getApiUrlInternal(endpoint: string): string {
+  // If endpoint is already a full URL, return it as-is
+  if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+    return endpoint;
+  }
+
   if (shouldUseFastAPI(endpoint)) {
     // Ensure endpoint starts with /
     const normalizedEndpoint = endpoint.startsWith("/")
