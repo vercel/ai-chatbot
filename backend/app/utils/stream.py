@@ -143,6 +143,7 @@ async def stream_text(
     tool_definitions: Optional[Sequence[Dict[str, Any]]] = None,
     temperature: float = 0.7,
     max_tokens: Optional[int] = None,
+    sse_event_callback: Optional[Callable[[str], None]] = None,
 ):
     """
     Stream text using aisuite and format as Vercel AI SDK SSE events.
@@ -274,24 +275,60 @@ async def stream_text(
                         )
                         continue
 
+                    # Create SSE writer for tool execution
+                    tool_sse_events = []
+
+                    def tool_sse_writer(event: str):
+                        """Collect SSE events emitted by tools."""
+                        tool_sse_events.append(event)
+
+                    # Execute tool (async)
                     try:
-                        tool_result = tool_function(**parsed_arguments)
+                        # Try to call with _sse_writer parameter (tools that support it)
+                        tool_result = await tool_function(
+                            **parsed_arguments,
+                            _sse_writer=tool_sse_writer,
+                        )
+                    except TypeError as e:
+                        # Tool doesn't accept _sse_writer parameter, call without it
+                        if "_sse_writer" in str(e) or "unexpected keyword" in str(e).lower():
+                            try:
+                                tool_result = await tool_function(**parsed_arguments)
+                            except Exception as error:
+                                yield format_sse(
+                                    {
+                                        "type": "tool-output-error",
+                                        "toolCallId": tool_call_id,
+                                        "toolName": tool_name,
+                                        "errorText": str(error),
+                                    }
+                                )
+                                continue
+                        else:
+                            raise
                     except Exception as error:
                         yield format_sse(
                             {
                                 "type": "tool-output-error",
                                 "toolCallId": tool_call_id,
+                                "toolName": tool_name,
                                 "errorText": str(error),
                             }
                         )
-                    else:
-                        yield format_sse(
-                            {
-                                "type": "tool-output-available",
-                                "toolCallId": tool_call_id,
-                                "output": tool_result,
-                            }
-                        )
+                        continue
+
+                    # Yield any SSE events emitted by the tool
+                    for event in tool_sse_events:
+                        yield event
+
+                    # Yield tool result
+                    yield format_sse(
+                        {
+                            "type": "tool-output-available",
+                            "toolCallId": tool_call_id,
+                            "output": tool_result,
+                        }
+                    )
 
         if text_started and not text_finished:
             yield format_sse({"type": "text-end", "id": text_stream_id})

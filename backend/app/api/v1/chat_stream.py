@@ -14,6 +14,16 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.client import get_ai_client, get_model_name
+from app.ai.tools import (
+    CREATE_DOCUMENT_TOOL_DEFINITION,
+    GET_WEATHER_TOOL_DEFINITION,
+    REQUEST_SUGGESTIONS_TOOL_DEFINITION,
+    UPDATE_DOCUMENT_TOOL_DEFINITION,
+    create_document_tool,
+    get_weather,
+    request_suggestions_tool,
+    update_document_tool,
+)
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
@@ -199,11 +209,92 @@ async def stream_chat(
         client = get_ai_client()
         model = get_model_name(request.selectedChatModel)
 
-        # 5. Stream response
-        # TODO: Add tools (getWeather, createDocument, updateDocument, requestSuggestions)
-        # For now, streaming without tools
-        tool_definitions = None
-        tools = None
+        # 5. Prepare tools
+        # Create tool definitions and callable functions
+        tool_definitions = [
+            GET_WEATHER_TOOL_DEFINITION,
+            CREATE_DOCUMENT_TOOL_DEFINITION,
+            UPDATE_DOCUMENT_TOOL_DEFINITION,
+            REQUEST_SUGGESTIONS_TOOL_DEFINITION,
+        ]
+
+        # Create a closure to capture db_session and user_id for tools
+        def create_tool_wrapper(tool_name: str, tool_func):
+            """Wrap tool function to provide db_session and user_id."""
+
+            async def wrapper(**kwargs):
+                if tool_name == "getWeather":
+                    return await get_weather(**kwargs)
+                elif tool_name == "createDocument":
+                    return await create_document_tool(
+                        title=kwargs["title"],
+                        kind=kwargs["kind"],
+                        user_id=user_id,
+                        db_session=db,
+                        sse_writer=None,  # TODO: Pass SSE writer for real-time updates
+                    )
+                elif tool_name == "updateDocument":
+                    return await update_document_tool(
+                        document_id=kwargs["id"],
+                        description=kwargs["description"],
+                        user_id=user_id,
+                        db_session=db,
+                        sse_writer=None,  # TODO: Pass SSE writer for real-time updates
+                    )
+                elif tool_name == "requestSuggestions":
+                    return await request_suggestions_tool(
+                        document_id=kwargs["documentId"],
+                        user_id=user_id,
+                        db_session=db,
+                        sse_writer=None,  # TODO: Pass SSE writer for real-time updates
+                    )
+                else:
+                    raise ValueError(f"Unknown tool: {tool_name}")
+
+            return wrapper
+
+        # Create tools dict with async wrappers
+        # These will receive _sse_writer parameter from stream_text
+        async def get_weather_wrapper(**kwargs):
+            # Remove _sse_writer if present (weather doesn't need it)
+            kwargs.pop("_sse_writer", None)
+            return await get_weather(**kwargs)
+
+        async def create_document_wrapper(**kwargs):
+            sse_writer = kwargs.pop("_sse_writer", None)
+            return await create_document_tool(
+                title=kwargs["title"],
+                kind=kwargs["kind"],
+                user_id=str(user_id),
+                db_session=db,
+                sse_writer=sse_writer,
+            )
+
+        async def update_document_wrapper(**kwargs):
+            sse_writer = kwargs.pop("_sse_writer", None)
+            return await update_document_tool(
+                document_id=kwargs["id"],
+                description=kwargs["description"],
+                user_id=str(user_id),
+                db_session=db,
+                sse_writer=sse_writer,
+            )
+
+        async def request_suggestions_wrapper(**kwargs):
+            sse_writer = kwargs.pop("_sse_writer", None)
+            return await request_suggestions_tool(
+                document_id=kwargs["documentId"],
+                user_id=str(user_id),
+                db_session=db,
+                sse_writer=sse_writer,
+            )
+
+        tools = {
+            "getWeather": get_weather_wrapper,
+            "createDocument": create_document_wrapper,
+            "updateDocument": update_document_wrapper,
+            "requestSuggestions": request_suggestions_wrapper,
+        }
 
         # Track usage and messages for saving
         final_usage: Optional[Dict[str, Any]] = None

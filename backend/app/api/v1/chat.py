@@ -222,7 +222,8 @@ async def create_chat(
             yield "data: [DONE]\n\n"
 
     return StreamingResponse(
-        stream_from_nextjs(),
+        # stream_from_nextjs(),
+        stream_from_fastapi(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
