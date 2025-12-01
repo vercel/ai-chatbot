@@ -24,13 +24,13 @@ def get_model_name(model_id: str) -> str:
 
     Model mapping:
     - chat-model -> openai:gpt-4.1-mini (or openai:gpt-4.1-mini for vision)
-    - chat-model-reasoning -> openai:o4-mini (with reasoning)
+    - chat-model-reasoning -> openai:gpt-5-mini (with reasoning)
     - title-model -> openai:gpt-4.1-mini
     - artifact-model -> openai:gpt-4.1-mini
     """
     model_mapping = {
         "chat-model": "gpt-4.1-mini",
-        "chat-model-reasoning": "o4-mini",
+        "chat-model-reasoning": "gpt-5-mini",
         "title-model": "gpt-4.1-mini",
         "artifact-model": "gpt-4.1-mini",
     }
