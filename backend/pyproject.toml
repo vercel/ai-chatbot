@@ -16,11 +16,11 @@ dependencies = [
     "bcrypt>=4.1.2",
     "pydantic[email]>=2.5.3",
     "pydantic-settings>=2.1.0",
-    "aisuite>=0.1.0",
     "httpx>=0.26.0",
     "python-dotenv>=1.0.0",
     "python-dateutil>=2.8.2",
     "greenlet>=3.2.4",
+    "openai>=2.8.1",
 ]
 
 [project.optional-dependencies]

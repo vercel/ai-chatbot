@@ -2,6 +2,7 @@
 Streaming utility that adapts aisuite streaming to Vercel AI SDK format.
 Based on: https://raw.githubusercontent.com/vercel-labs/ai-sdk-preview-python-streaming/main/api/utils/stream.py
 """
+
 from __future__ import annotations
 
 import json
@@ -10,7 +11,8 @@ import uuid
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from fastapi.responses import StreamingResponse
-import aisuite as ai
+from openai import AsyncOpenAI
+from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 
 
 def format_sse(payload: dict) -> str:
@@ -34,31 +36,29 @@ def _process_chunk(
     finish_reason = None
 
     # Check if chunk has choices (OpenAI-like format)
-    if hasattr(chunk, 'choices') and chunk.choices:
+    if hasattr(chunk, "choices") and chunk.choices:
         for choice in chunk.choices:
-            if hasattr(choice, 'finish_reason') and choice.finish_reason is not None:
+            if hasattr(choice, "finish_reason") and choice.finish_reason is not None:
                 finish_reason = choice.finish_reason
 
-            delta = getattr(choice, 'delta', None)
+            delta = getattr(choice, "delta", None)
             if delta is None:
                 continue
 
             # Handle text content
-            content = getattr(delta, 'content', None)
+            content = getattr(delta, "content", None)
             if content is not None:
                 events.append(format_sse({"type": "text-start", "id": text_stream_id}))
                 text_started = True
                 events.append(
-                    format_sse(
-                        {"type": "text-delta", "id": text_stream_id, "delta": content}
-                    )
+                    format_sse({"type": "text-delta", "id": text_stream_id, "delta": content})
                 )
 
             # Handle tool calls
-            tool_calls = getattr(delta, 'tool_calls', None)
+            tool_calls = getattr(delta, "tool_calls", None)
             if tool_calls:
                 for tool_call_delta in tool_calls:
-                    index = getattr(tool_call_delta, 'index', 0)
+                    index = getattr(tool_call_delta, "index", 0)
                     state = tool_calls_state.setdefault(
                         index,
                         {
@@ -69,7 +69,7 @@ def _process_chunk(
                         },
                     )
 
-                    tool_call_id = getattr(tool_call_delta, 'id', None)
+                    tool_call_id = getattr(tool_call_delta, "id", None)
                     if tool_call_id is not None:
                         state["id"] = tool_call_id
                         if (
@@ -77,13 +77,15 @@ def _process_chunk(
                             and state["name"] is not None
                             and not state["started"]
                         ):
-                            events.append(format_sse(
-                                {
-                                    "type": "tool-input-start",
-                                    "toolCallId": state["id"],
-                                    "toolName": state["name"],
-                                }
-                            ))
+                            events.append(
+                                format_sse(
+                                    {
+                                        "type": "tool-input-start",
+                                        "toolCallId": state["id"],
+                                        "toolName": state["name"],
+                                    }
+                                )
+                            )
                             state["started"] = True
 
                     function_call = getattr(tool_call_delta, "function", None)
@@ -96,13 +98,15 @@ def _process_chunk(
                                 and state["name"] is not None
                                 and not state["started"]
                             ):
-                                events.append(format_sse(
-                                    {
-                                        "type": "tool-input-start",
-                                        "toolCallId": state["id"],
-                                        "toolName": state["name"],
-                                    }
-                                ))
+                                events.append(
+                                    format_sse(
+                                        {
+                                            "type": "tool-input-start",
+                                            "toolCallId": state["id"],
+                                            "toolName": state["name"],
+                                        }
+                                    )
+                                )
                                 state["started"] = True
 
                         function_arguments = getattr(function_call, "arguments", None)
@@ -112,51 +116,55 @@ def _process_chunk(
                                 and state["name"] is not None
                                 and not state["started"]
                             ):
-                                events.append(format_sse(
-                                    {
-                                        "type": "tool-input-start",
-                                        "toolCallId": state["id"],
-                                        "toolName": state["name"],
-                                    }
-                                ))
+                                events.append(
+                                    format_sse(
+                                        {
+                                            "type": "tool-input-start",
+                                            "toolCallId": state["id"],
+                                            "toolName": state["name"],
+                                        }
+                                    )
+                                )
                                 state["started"] = True
 
                             state["arguments"] += function_arguments
                             if state["id"] is not None:
-                                events.append(format_sse(
-                                    {
-                                        "type": "tool-input-delta",
-                                        "toolCallId": state["id"],
-                                        "inputTextDelta": function_arguments,
-                                    }
-                                ))
+                                events.append(
+                                    format_sse(
+                                        {
+                                            "type": "tool-input-delta",
+                                            "toolCallId": state["id"],
+                                            "inputTextDelta": function_arguments,
+                                        }
+                                    )
+                                )
 
     return events, text_started, finish_reason
 
 
 async def stream_text(
-    client: ai.Client,
+    client: AsyncOpenAI,
     model: str,
-    messages: Sequence[Dict[str, Any]],
+    messages: Sequence[ChatCompletionMessageParam],
     system: Optional[str] = None,
     tools: Optional[Mapping[str, Callable[..., Any]]] = None,
     tool_definitions: Optional[Sequence[Dict[str, Any]]] = None,
     temperature: float = 0.7,
-    max_tokens: Optional[int] = None,
+    max_completion_tokens: Optional[int] = None,
     sse_event_callback: Optional[Callable[[str], None]] = None,
 ):
     """
     Stream text using aisuite and format as Vercel AI SDK SSE events.
 
     Args:
-        client: aisuite Client instance
+        client: AsyncOpenAI instance
         model: Model name (e.g., "openai:gpt-4o")
         messages: Chat messages in OpenAI format
         system: System prompt (optional)
         tools: Dict of callable Python functions for tools
         tool_definitions: List of tool definitions in OpenAI format (if tools not provided)
         temperature: Sampling temperature
-        max_tokens: Maximum tokens to generate
+        max_completion_tokens: Maximum completion tokens to generate
 
     Yields:
         SSE-formatted strings compatible with Vercel AI SDK
@@ -181,37 +189,46 @@ async def stream_text(
         # Call aisuite with streaming
         # Note: Don't use max_turns - we want manual tool execution with SSE events
         # aisuite returns chunks in OpenAI-compatible format
-        stream = client.chat.completions.create(
+        # stream = client.chat.completions.create(
+        #     model=model,
+        #     messages=chat_messages,
+        #     stream=True,
+        #     temperature=temperature,
+        #     max_tokens=max_tokens,
+        #     tools=tool_definitions if tool_definitions else None,
+        #     # Don't set max_turns - we'll handle tool execution manually
+        # )
+
+        async with client.chat.completions.stream(
             model=model,
             messages=chat_messages,
-            stream=True,
             temperature=temperature,
-            max_tokens=max_tokens,
-            tools=tool_definitions if tool_definitions else None,
+            max_completion_tokens=max_completion_tokens,
+            # tools=tool_definitions if tool_definitions else None,
+            store=True,
             # Don't set max_turns - we'll handle tool execution manually
-        )
+        ) as stream:
+            # Process stream chunks
+            # aisuite should return an iterable of chunks
+            async for chunk in stream:
+                # Process chunk and yield events
+                events, chunk_text_started, chunk_finish_reason = _process_chunk(
+                    chunk, text_stream_id, tool_calls_state
+                )
 
-        # Process stream chunks
-        # aisuite should return an iterable of chunks
-        async for chunk in stream:
-            # Process chunk and yield events
-            events, chunk_text_started, chunk_finish_reason = _process_chunk(
-                chunk, text_stream_id, tool_calls_state
-            )
+                # Update state from chunk processing
+                if chunk_text_started:
+                    text_started = True
+                if chunk_finish_reason:
+                    finish_reason = chunk_finish_reason
 
-            # Update state from chunk processing
-            if chunk_text_started:
-                text_started = True
-            if chunk_finish_reason:
-                finish_reason = chunk_finish_reason
+                # Yield events
+                for event in events:
+                    yield event
 
-            # Yield events
-            for event in events:
-                yield event
-
-            # Check for usage data
-            if hasattr(chunk, 'usage') and chunk.usage is not None:
-                usage_data = chunk.usage
+                # Check for usage data
+                if hasattr(chunk, "usage") and chunk.usage is not None:
+                    usage_data = chunk.usage
 
         # Handle finish
         if finish_reason == "stop" and text_started and not text_finished:

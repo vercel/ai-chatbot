@@ -4,7 +4,7 @@ from typing import List
 from uuid import UUID, uuid4
 
 import httpx
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -56,6 +56,7 @@ class ChatRequest(BaseModel):
 @router.post("")
 async def create_chat(
     request: ChatRequest,
+    http_request: Request,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -189,12 +190,29 @@ async def create_chat(
             base_url = os.getenv("FASTAPI_INTERNAL_URL", "http://localhost:8001")
             stream_url = f"{base_url}/api/v1/chat/stream"
 
-            # For internal calls, we can pass auth via header
-            # The stream endpoint will use get_current_user which reads from cookies/headers
+            # Get auth token from request (cookie or Authorization header)
+            auth_token = None
+            # Try cookie first (httpOnly cookie)
+            auth_token = http_request.cookies.get("auth_token")
+            # Fallback to Authorization header
+            if not auth_token:
+                auth_header = http_request.headers.get("Authorization", "")
+                if auth_header.startswith("Bearer "):
+                    auth_token = auth_header[7:]
+
+            # Prepare headers with authentication
             headers = {
                 "Content-Type": "application/json",
-                # Auth will be handled by cookies (if same origin) or we can pass token
             }
+
+            # Add Authorization header if we have a token
+            if auth_token:
+                headers["Authorization"] = f"Bearer {auth_token}"
+
+            # Prepare cookies (for same-origin requests)
+            cookies = None
+            if auth_token:
+                cookies = {"auth_token": auth_token}
 
             async with httpx.AsyncClient(timeout=60.0) as client:
                 async with client.stream(
@@ -202,10 +220,7 @@ async def create_chat(
                     stream_url,
                     json=stream_request,
                     headers=headers,
-                    # Include cookies for authentication
-                    cookies={"auth_token": current_user.get("token", "")}
-                    if current_user.get("token")
-                    else None,
+                    cookies=cookies,
                 ) as response:
                     if response.status_code != 200:
                         error_text = await response.aread()
