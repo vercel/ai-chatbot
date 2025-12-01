@@ -27,6 +27,7 @@ class ChatSDKError(HTTPException):
             "forbidden:document": "This document belongs to another user. You cannot access this document.",
             "rate_limit:chat": "You have exceeded your maximum number of messages for the day. Please try again later.",
             "offline:chat": "We're having trouble sending your message. Please check your internet connection and try again.",
+            "offline:api": "We're having trouble processing your request. Please check your internet connection and try again.",
         }
         return messages.get(error_code, "Something went wrong. Please try again later.")
 
