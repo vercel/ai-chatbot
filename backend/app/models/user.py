@@ -14,4 +14,5 @@ class User(Base):
 
     # Relationships
     chats = relationship("Chat", back_populates="user")
+    documents = relationship("Document", back_populates="user")
 

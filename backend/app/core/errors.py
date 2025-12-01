@@ -22,6 +22,9 @@ class ChatSDKError(HTTPException):
             "forbidden:vote": "This chat belongs to another user. You cannot vote on messages in this chat.",
             "not_found:chat": "The requested chat was not found. Please check the chat ID and try again.",
             "not_found:vote": "The requested chat or message was not found. Please check the IDs and try again.",
+            "not_found:document": "The requested document was not found. Please check the document ID and try again.",
+            "unauthorized:document": "You need to sign in to access this document. Please sign in and try again.",
+            "forbidden:document": "This document belongs to another user. You cannot access this document.",
             "rate_limit:chat": "You have exceeded your maximum number of messages for the day. Please try again later.",
             "offline:chat": "We're having trouble sending your message. Please check your internet connection and try again.",
         }
