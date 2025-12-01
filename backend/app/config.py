@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # AI
-    XAI_API_KEY: str = ""
-    AI_GATEWAY_URL: str = ""
+    OPENAI_API_KEY: str = ""  # OpenAI API key for aisuite
+    XAI_API_KEY: str = ""  # Deprecated: kept for backward compatibility
+    AI_GATEWAY_URL: str = ""  # Deprecated: using aisuite instead
 
     # App
     ENVIRONMENT: str = "development"

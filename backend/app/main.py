@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api.v1 import chat, auth, history, vote, document, files
+from app.api.v1 import chat, chat_stream, auth, history, vote, document, files
 
 app = FastAPI(
     title="AI Chatbot API",
@@ -23,6 +23,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(chat_stream.router, prefix="/api/v1/chat", tags=["chat"])
 app.include_router(history.router, prefix="/api/history", tags=["history"])
 app.include_router(vote.router, prefix="/api/vote", tags=["vote"])
 app.include_router(document.router, prefix="/api/document", tags=["document"])

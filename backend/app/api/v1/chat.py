@@ -145,6 +145,7 @@ async def create_chat(
         "selectedVisibilityType": request.selectedVisibilityType,
         "existingMessages": existing_messages_dict,
     }
+    stream_request = proxy_request.copy()
 
     # Stream response from Next.js
     async def stream_from_nextjs():
@@ -175,6 +176,48 @@ async def create_chat(
         except Exception as e:
             # Handle connection errors
             error_msg = f"Failed to connect to Next.js: {str(e)}"
+            yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n"
+            yield "data: [DONE]\n\n"
+
+    # Stream response from FastAPI stream endpoint
+    async def stream_from_fastapi():
+        try:
+            # Get base URL for internal call
+            # In production, this could be configured via env var
+            import os
+
+            base_url = os.getenv("FASTAPI_INTERNAL_URL", "http://localhost:8001")
+            stream_url = f"{base_url}/api/v1/chat/stream"
+
+            # For internal calls, we can pass auth via header
+            # The stream endpoint will use get_current_user which reads from cookies/headers
+            headers = {
+                "Content-Type": "application/json",
+                # Auth will be handled by cookies (if same origin) or we can pass token
+            }
+
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                async with client.stream(
+                    "POST",
+                    stream_url,
+                    json=stream_request,
+                    headers=headers,
+                    # Include cookies for authentication
+                    cookies={"auth_token": current_user.get("token", "")}
+                    if current_user.get("token")
+                    else None,
+                ) as response:
+                    if response.status_code != 200:
+                        error_text = await response.aread()
+                        yield f"data: {json.dumps({'type': 'error', 'error': f'FastAPI stream error: {response.status_code} - {error_text.decode()}'})}\n\n"
+                        yield "data: [DONE]\n\n"
+                        return
+
+                    async for chunk in response.aiter_bytes():
+                        yield chunk
+        except Exception as e:
+            # Handle connection errors
+            error_msg = f"Failed to connect to FastAPI stream: {str(e)}"
             yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n"
             yield "data: [DONE]\n\n"
 
