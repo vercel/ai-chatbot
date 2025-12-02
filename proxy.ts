@@ -4,6 +4,11 @@ import { guestRegex, isDevelopmentEnvironment } from "./lib/constants"
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  console.log("[proxy] ========== Proxy Request Start ==========")
+  console.log(`[proxy] Path: ${pathname}`)
+  console.log(`[proxy] Method: ${request.method}`)
+  console.log(`[proxy] Full URL: ${request.url}`)
   console.log(`[proxy] Headers:`, Object.fromEntries(request.headers.entries()))
 
   /*
