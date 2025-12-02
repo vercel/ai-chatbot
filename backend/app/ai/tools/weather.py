@@ -2,8 +2,10 @@
 Weather tool - Get current weather for a location.
 Ported from lib/ai/tools/get-weather.ts
 """
+
+from typing import Any, Dict, Optional
+
 import httpx
-from typing import Dict, Any, Optional
 
 
 async def geocode_city(city: str) -> Optional[Dict[str, float]]:
@@ -11,7 +13,7 @@ async def geocode_city(city: str) -> Optional[Dict[str, float]]:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"https://geocoding-api.open-meteo.com/v1/search",
+                "https://geocoding-api.open-meteo.com/v1/search",
                 params={
                     "name": city,
                     "count": 1,
@@ -122,7 +124,8 @@ GET_WEATHER_TOOL_DEFINITION = {
                 },
             },
             "required": [],
+            "additionalProperties": False,
         },
     },
+    "strict": True,
 }
-

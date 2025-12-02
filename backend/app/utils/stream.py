@@ -205,7 +205,7 @@ async def stream_text(
             stream=True,
             temperature=temperature,
             max_completion_tokens=max_completion_tokens,
-            # tools=tool_definitions if tool_definitions else None,
+            tools=tool_definitions if tool_definitions else None,
             # Don't set max_turns - we'll handle tool execution manually
             store=True,
         )

@@ -221,9 +221,9 @@ async def stream_chat(
         # Create tool definitions and callable functions
         tool_definitions = [
             GET_WEATHER_TOOL_DEFINITION,
-            CREATE_DOCUMENT_TOOL_DEFINITION,
-            UPDATE_DOCUMENT_TOOL_DEFINITION,
-            REQUEST_SUGGESTIONS_TOOL_DEFINITION,
+            # CREATE_DOCUMENT_TOOL_DEFINITION,
+            # UPDATE_DOCUMENT_TOOL_DEFINITION,
+            # REQUEST_SUGGESTIONS_TOOL_DEFINITION,
         ]
 
         # Create a closure to capture db_session and user_id for tools
@@ -299,9 +299,9 @@ async def stream_chat(
 
         tools = {
             "getWeather": get_weather_wrapper,
-            "createDocument": create_document_wrapper,
-            "updateDocument": update_document_wrapper,
-            "requestSuggestions": request_suggestions_wrapper,
+            # "createDocument": create_document_wrapper,
+            # "updateDocument": update_document_wrapper,
+            # "requestSuggestions": request_suggestions_wrapper,
         }
 
         # Track usage and messages for saving
