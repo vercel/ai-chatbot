@@ -4,7 +4,7 @@ import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-console.log(pathname)
+return NextResponse.next();
 
   /*
    * Playwright starts the dev server and requires a 200 status to
