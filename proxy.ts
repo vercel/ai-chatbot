@@ -4,18 +4,21 @@ import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-return NextResponse.next();
 
   /*
    * Playwright starts the dev server and requires a 200 status to
    * begin the tests, so this ensures that the tests can start
    */
   if (pathname.startsWith("/ping")) {
-    return new Response("pong", { status: 200 });
+    const response = new Response("pong", { status: 200 });
+    console.log("Ping endpoint hit, returning 200");
+    return response;
   }
 
   if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    console.log("Auth endpoint hit, proceeding without checks");
+    return response;
   }
 
   const token = await getToken({
@@ -27,18 +30,24 @@ return NextResponse.next();
   if (!token) {
     const redirectUrl = encodeURIComponent(request.url);
 
-    return NextResponse.redirect(
+    const response = NextResponse.redirect(
       new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
     );
+    console.log("No token found, redirecting to guest auth");
+    return response;
   }
 
   const isGuest = guestRegex.test(token?.email ?? "");
 
   if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
+    const response = NextResponse.redirect(new URL("/", request.url));
+    console.log("User logged in and not guest, redirecting to home");
+    return response;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  console.log("Token valid, proceeding");
+  return response;
 }
 
 export const config = {
