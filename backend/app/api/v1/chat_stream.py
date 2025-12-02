@@ -4,6 +4,7 @@ This endpoint handles AI streaming and replaces the Next.js /api/chat/stream end
 """
 
 import json
+import traceback
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
@@ -170,20 +171,20 @@ async def stream_chat(
     try:
         user_id = UUID(current_user["id"])
 
-        # 1. Get existing messages from database
-        existing_messages = await get_messages_by_chat_id(db, request.id)
+        # 1. Get existing messages from request body
+        messages_from_db = request.existingMessages
 
         # 2. Convert messages to OpenAI format
         # Combine existing messages with the new user message
         all_messages = []
-        for msg in existing_messages:
+        for msg in messages_from_db:
             all_messages.append(
                 {
-                    "id": str(msg.id),
-                    "role": msg.role,
-                    "parts": msg.parts,
-                    "attachments": msg.attachments or [],
-                    "createdAt": msg.createdAt.isoformat(),
+                    "id": str(msg["id"]),
+                    "role": msg["role"],
+                    "parts": msg["parts"],
+                    "attachments": msg["attachments"] or [],
+                    "createdAt": msg["createdAt"],
                 }
             )
 
@@ -194,6 +195,7 @@ async def stream_chat(
                 "role": request.message.role,
                 "parts": [part.dict() for part in request.message.parts],
                 "attachments": [],
+                "createdAt": datetime.utcnow().isoformat(),
             }
         )
 
@@ -376,9 +378,14 @@ async def stream_chat(
             media_type="text/event-stream",
         )
         return patch_response_with_headers(response)
+        # return response
 
     except Exception as e:
-        print(f"Error in stream_chat: {e}")
+        stack_trace = traceback.format_exc()
         if isinstance(e, ChatSDKError):
             raise
-        raise ChatSDKError("offline:chat", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise ChatSDKError(
+            "offline:chat",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error in stream_chat: {e}\n{stack_trace} - {msg}",
+        )

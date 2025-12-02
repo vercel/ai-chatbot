@@ -5,7 +5,7 @@ Supports OpenAI and can be extended to other providers.
 
 from app.config import settings
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from openai import OpenAI
 
 load_dotenv(
     ".env",
@@ -13,9 +13,9 @@ load_dotenv(
 )
 
 
-def get_ai_client() -> AsyncOpenAI:
+def get_ai_client() -> OpenAI:
     """Get configured aisuite client."""
-    return AsyncOpenAI()
+    return OpenAI()
 
 
 def get_model_name(model_id: str) -> str:

@@ -21,6 +21,7 @@ dependencies = [
     "python-dateutil>=2.8.2",
     "greenlet>=3.2.4",
     "openai>=2.8.1",
+    "json5>=0.12.1",
 ]
 
 [project.optional-dependencies]
@@ -55,3 +56,8 @@ ignore = ["E501"]
 [tool.black]
 line-length = 100
 target-version = ["py310"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.7",
+]

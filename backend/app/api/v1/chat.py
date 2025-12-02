@@ -22,6 +22,7 @@ from app.db.queries.chat_queries import (
     save_chat,
     save_messages,
 )
+from app.utils.stream import patch_response_with_headers
 
 router = APIRouter()
 
@@ -80,7 +81,7 @@ async def create_chat(
 
     # 2. Get or create chat
     chat = await get_chat_by_id(db, request.id)
-    existing_messages = []
+    messages_from_db = []  # messagesFromDb
 
     if chat:
         # Validate ownership
@@ -88,7 +89,21 @@ async def create_chat(
             raise ChatSDKError("forbidden:chat", status_code=status.HTTP_403_FORBIDDEN)
 
         # Fetch existing messages
-        existing_messages = await get_messages_by_chat_id(db, request.id)
+        messages_from_db = await get_messages_by_chat_id(db, request.id)
+
+        # Prepare request for Next.js
+        # Convert existing messages to dict format
+        messages_from_db = [
+            {
+                "id": str(msg.id),
+                "role": msg.role,
+                "parts": msg.parts,
+                "attachments": msg.attachments,
+                "createdAt": msg.createdAt.isoformat(),
+            }
+            for msg in messages_from_db
+        ]
+
     else:
         # Create new chat (with placeholder title - can generate later)
         # TODO: Generate title from user message similar to Next.js: generateTitleFromUserMessage
@@ -122,19 +137,6 @@ async def create_chat(
     # 5. Proxy to Next.js for AI streaming
     proxy_url = f"{settings.NEXTJS_URL}/api/chat/stream"
 
-    # Prepare request for Next.js
-    # Convert existing messages to dict format
-    existing_messages_dict = [
-        {
-            "id": str(msg.id),
-            "role": msg.role,
-            "parts": msg.parts,
-            "attachments": msg.attachments,
-            "createdAt": msg.createdAt.isoformat(),
-        }
-        for msg in existing_messages
-    ]
-
     proxy_request = {
         "id": str(request.id),
         "message": {
@@ -144,7 +146,7 @@ async def create_chat(
         },
         "selectedChatModel": request.selectedChatModel,
         "selectedVisibilityType": request.selectedVisibilityType,
-        "existingMessages": existing_messages_dict,
+        "existingMessages": messages_from_db,
     }
     stream_request = proxy_request.copy()
 
@@ -236,15 +238,18 @@ async def create_chat(
             yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n"
             yield "data: [DONE]\n\n"
 
-    return StreamingResponse(
-        stream_from_nextjs(),
-        # stream_from_fastapi(),
+    response = StreamingResponse(
+        # stream_from_nextjs(),
+        stream_from_fastapi(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
         },
     )
+
+    return response
+    # return patch_response_with_headers(response)
 
 
 @router.delete("")

@@ -8,10 +8,10 @@ from __future__ import annotations
 import json
 import traceback
 import uuid
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 
 from fastapi.responses import StreamingResponse
-from openai import AsyncOpenAI
+from openai import OpenAI
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 
 
@@ -24,14 +24,19 @@ def _process_chunk(
     chunk: Any,
     text_stream_id: str,
     tool_calls_state: Dict[int, Dict[str, Any]],
-) -> Tuple[List[str], bool, Optional[str]]:
+):
     """
-    Process a single chunk from the stream and yield SSE events.
+    Process a single chunk from the stream and yield SSE events as they're created.
+
+    This is a generator function that yields events in real-time as they're processed,
+    rather than buffering them. This provides lower latency for streaming responses.
+
+    Yields:
+        SSE event strings as they're processed (text-start, text-delta, tool-input-start, etc.)
 
     Returns:
-        Tuple of (events, text_started, finish_reason)
+        Tuple of (text_started, finish_reason) via StopIteration.value (Python 3.3+)
     """
-    events = []
     text_started = False
     finish_reason = None
 
@@ -48,11 +53,13 @@ def _process_chunk(
             # Handle text content
             content = getattr(delta, "content", None)
             if content is not None:
-                events.append(format_sse({"type": "text-start", "id": text_stream_id}))
-                text_started = True
-                events.append(
-                    format_sse({"type": "text-delta", "id": text_stream_id, "delta": content})
-                )
+                text_stream_id = getattr(delta, "item_id", text_stream_id)
+                if not text_started:
+                    # Yield text-start event immediately
+                    yield format_sse({"type": "text-start", "id": text_stream_id})
+                    text_started = True
+                # Yield text-delta event immediately
+                yield format_sse({"type": "text-delta", "id": text_stream_id, "delta": content})
 
             # Handle tool calls
             tool_calls = getattr(delta, "tool_calls", None)
@@ -77,14 +84,13 @@ def _process_chunk(
                             and state["name"] is not None
                             and not state["started"]
                         ):
-                            events.append(
-                                format_sse(
-                                    {
-                                        "type": "tool-input-start",
-                                        "toolCallId": state["id"],
-                                        "toolName": state["name"],
-                                    }
-                                )
+                            # Yield tool-input-start event immediately
+                            yield format_sse(
+                                {
+                                    "type": "tool-input-start",
+                                    "toolCallId": state["id"],
+                                    "toolName": state["name"],
+                                }
                             )
                             state["started"] = True
 
@@ -98,14 +104,13 @@ def _process_chunk(
                                 and state["name"] is not None
                                 and not state["started"]
                             ):
-                                events.append(
-                                    format_sse(
-                                        {
-                                            "type": "tool-input-start",
-                                            "toolCallId": state["id"],
-                                            "toolName": state["name"],
-                                        }
-                                    )
+                                # Yield tool-input-start event immediately
+                                yield format_sse(
+                                    {
+                                        "type": "tool-input-start",
+                                        "toolCallId": state["id"],
+                                        "toolName": state["name"],
+                                    }
                                 )
                                 state["started"] = True
 
@@ -116,34 +121,33 @@ def _process_chunk(
                                 and state["name"] is not None
                                 and not state["started"]
                             ):
-                                events.append(
-                                    format_sse(
-                                        {
-                                            "type": "tool-input-start",
-                                            "toolCallId": state["id"],
-                                            "toolName": state["name"],
-                                        }
-                                    )
+                                # Yield tool-input-start event immediately
+                                yield format_sse(
+                                    {
+                                        "type": "tool-input-start",
+                                        "toolCallId": state["id"],
+                                        "toolName": state["name"],
+                                    }
                                 )
                                 state["started"] = True
 
                             state["arguments"] += function_arguments
                             if state["id"] is not None:
-                                events.append(
-                                    format_sse(
-                                        {
-                                            "type": "tool-input-delta",
-                                            "toolCallId": state["id"],
-                                            "inputTextDelta": function_arguments,
-                                        }
-                                    )
+                                # Yield tool-input-delta event immediately
+                                yield format_sse(
+                                    {
+                                        "type": "tool-input-delta",
+                                        "toolCallId": state["id"],
+                                        "inputTextDelta": function_arguments,
+                                    }
                                 )
 
-    return events, text_started, finish_reason
+    # Return state via generator return value (Python 3.3+)
+    return text_started, finish_reason
 
 
 async def stream_text(
-    client: AsyncOpenAI,
+    client: OpenAI,
     model: str,
     messages: Sequence[ChatCompletionMessageParam],
     system: Optional[str] = None,
@@ -186,51 +190,141 @@ async def stream_text(
             # Insert system message at the beginning
             chat_messages.insert(0, {"role": "system", "content": system})
 
-        # Call aisuite with streaming
-        # Note: Don't use max_turns - we want manual tool execution with SSE events
-        # aisuite returns chunks in OpenAI-compatible format
-        # stream = client.chat.completions.create(
-        #     model=model,
-        #     messages=chat_messages,
-        #     stream=True,
-        #     temperature=temperature,
-        #     max_tokens=max_tokens,
-        #     tools=tool_definitions if tool_definitions else None,
-        #     # Don't set max_turns - we'll handle tool execution manually
-        # )
-
-        async with client.chat.completions.stream(
+        # Call OpenAI with streaming
+        stream = client.chat.completions.create(
             model=model,
             messages=chat_messages,
+            stream=True,
             temperature=temperature,
             max_completion_tokens=max_completion_tokens,
             # tools=tool_definitions if tool_definitions else None,
-            store=True,
             # Don't set max_turns - we'll handle tool execution manually
-        ) as stream:
-            # Process stream chunks
-            # aisuite should return an iterable of chunks
-            async for chunk in stream:
-                # Process chunk and yield events
-                events, chunk_text_started, chunk_finish_reason = _process_chunk(
-                    chunk, text_stream_id, tool_calls_state
-                )
+            store=True,
+        )
 
-                # Update state from chunk processing
-                if chunk_text_started:
-                    text_started = True
-                if chunk_finish_reason:
-                    finish_reason = chunk_finish_reason
+        # async with client.chat.completions.stream(
+        #     model=model,
+        #     messages=chat_messages,
+        #     temperature=temperature,
+        #     max_completion_tokens=max_completion_tokens,
+        #     # tools=tool_definitions if tool_definitions else None,
+        #     store=True,
+        #     # Don't set max_turns - we'll handle tool execution manually
+        # ) as stream:
+        # Process stream chunks
 
-                # Yield events
-                for event in events:
-                    yield event
+        for chunk in stream:
+            text_stream_id = chunk.id
+            # Process chunk and yield events as they're created
+            # Check if chunk has choices (OpenAI-like format)
+            if hasattr(chunk, "choices") and chunk.choices:
+                for choice in chunk.choices:
+                    if hasattr(choice, "finish_reason") and choice.finish_reason is not None:
+                        finish_reason = choice.finish_reason
 
-                # Check for usage data
-                if hasattr(chunk, "usage") and chunk.usage is not None:
-                    usage_data = chunk.usage
+                    delta = getattr(choice, "delta", None)
+                    if delta is None:
+                        continue
 
-        # Handle finish
+                    # Handle text content
+                    content = getattr(delta, "content", None)
+                    if content is not None:
+                        if not text_started:
+                            # Yield text-start event immediately (only once)
+                            yield format_sse({"type": "text-start", "id": text_stream_id})
+                            text_started = True
+                        # Yield text-delta event immediately
+                        yield format_sse(
+                            {"type": "text-delta", "id": text_stream_id, "delta": content}
+                        )
+
+                    # Handle tool calls
+                    tool_calls = getattr(delta, "tool_calls", None)
+                    if tool_calls:
+                        for tool_call_delta in tool_calls:
+                            index = getattr(tool_call_delta, "index", 0)
+                            state = tool_calls_state.setdefault(
+                                index,
+                                {
+                                    "id": None,
+                                    "name": None,
+                                    "arguments": "",
+                                    "started": False,
+                                },
+                            )
+
+                            tool_call_id = getattr(tool_call_delta, "id", None)
+                            if tool_call_id is not None:
+                                state["id"] = tool_call_id
+                                if (
+                                    state["id"] is not None
+                                    and state["name"] is not None
+                                    and not state["started"]
+                                ):
+                                    # Yield tool-input-start event immediately
+                                    yield format_sse(
+                                        {
+                                            "type": "tool-input-start",
+                                            "toolCallId": state["id"],
+                                            "toolName": state["name"],
+                                        }
+                                    )
+                                    state["started"] = True
+
+                            function_call = getattr(tool_call_delta, "function", None)
+                            if function_call is not None:
+                                function_name = getattr(function_call, "name", None)
+                                if function_name is not None:
+                                    state["name"] = function_name
+                                    if (
+                                        state["id"] is not None
+                                        and state["name"] is not None
+                                        and not state["started"]
+                                    ):
+                                        # Yield tool-input-start event immediately
+                                        yield format_sse(
+                                            {
+                                                "type": "tool-input-start",
+                                                "toolCallId": state["id"],
+                                                "toolName": state["name"],
+                                            }
+                                        )
+                                        state["started"] = True
+
+                                function_arguments = getattr(function_call, "arguments", None)
+                                if function_arguments:
+                                    if (
+                                        state["id"] is not None
+                                        and state["name"] is not None
+                                        and not state["started"]
+                                    ):
+                                        # Yield tool-input-start event immediately
+                                        yield format_sse(
+                                            {
+                                                "type": "tool-input-start",
+                                                "toolCallId": state["id"],
+                                                "toolName": state["name"],
+                                            }
+                                        )
+                                        state["started"] = True
+
+                                    state["arguments"] += function_arguments
+                                    if state["id"] is not None:
+                                        # Yield tool-input-delta event immediately
+                                        yield format_sse(
+                                            {
+                                                "type": "tool-input-delta",
+                                                "toolCallId": state["id"],
+                                                "inputTextDelta": function_arguments,
+                                            }
+                                        )
+
+            # Check for usage data
+            if hasattr(chunk, "usage") and chunk.usage is not None:
+                usage_data = chunk.usage
+
+        # Handle text end - emit if text was started and stream finished
+        # (This will be handled again below, but we check here for early finish_reason == "stop")
         if finish_reason == "stop" and text_started and not text_finished:
             yield format_sse({"type": "text-end", "id": text_stream_id})
             text_finished = True
@@ -373,8 +467,10 @@ async def stream_text(
 
         yield "data: [DONE]\n\n"
     except Exception:
-        traceback.print_exc()
-        raise
+        stack_trace = traceback.format_exc()
+        print(f"Error in stream_text: {stack_trace}")
+        yield format_sse({"type": "error", "error": f"Error in stream_text: {stack_trace}"})
+        yield "data: [DONE]\n\n"
 
 
 def patch_response_with_headers(
