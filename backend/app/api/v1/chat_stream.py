@@ -4,12 +4,13 @@ This endpoint handles AI streaming and replaces the Next.js /api/chat/stream end
 """
 
 import json
+import logging
 import traceback
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,11 +30,12 @@ from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.db.queries.chat_queries import (
-    get_messages_by_chat_id,
     save_messages,
     update_chat_last_context_by_id,
 )
 from app.utils.stream import patch_response_with_headers, stream_text
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -161,6 +163,7 @@ def convert_messages_to_openai_format(messages: List[Dict[str, Any]]) -> List[Di
 @router.post("/stream")
 async def stream_chat(
     request: StreamRequest,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -168,6 +171,9 @@ async def stream_chat(
     Stream AI response for a chat.
     This replaces the Next.js /api/chat/stream endpoint.
     """
+    logger.info("=== STREAM CHAT ENDPOINT CALLED ===")
+    logger.info("Chat ID: %s", request.id)
+    logger.info("User ID: %s", current_user.get("id"))
     try:
         user_id = UUID(current_user["id"])
 
@@ -305,63 +311,51 @@ async def stream_chat(
         async def stream_generator():
             nonlocal final_usage, assistant_messages
 
+            logger.info("=== STREAM GENERATOR STARTED ===")
             message_buffer = ""
             current_message_id: Optional[str] = None
 
-            async for event in stream_text(
-                client=client,
-                model=model,
-                messages=openai_messages,
-                system=system,
-                tools=tools,
-                tool_definitions=tool_definitions,
-                temperature=0.7,
-            ):
-                # Parse SSE event to extract data
-                if event.startswith("data: "):
-                    data_str = event[6:].strip()
-                    if data_str == "[DONE]":
-                        yield event
-                        break
+            try:
+                logger.info("Starting stream_text iteration...")
+                async for event in stream_text(
+                    client=client,
+                    model=model,
+                    messages=openai_messages,
+                    system=system,
+                    tools=tools,
+                    tool_definitions=tool_definitions,
+                    temperature=0.7,
+                ):
+                    # Convert string to bytes for FastAPI StreamingResponse
+                    if isinstance(event, str):
+                        event_bytes = event.encode("utf-8")
+                    else:
+                        event_bytes = event
 
-                    try:
-                        data = json.loads(data_str)
-                        event_type = data.get("type")
+                    # Parse SSE event to extract data (only if it's a string)
+                    if isinstance(event, str) and event.startswith("data: "):
+                        data_str = event[6:].strip()
+                        if data_str == "[DONE]":
+                            yield event_bytes
+                            break
 
-                        # Track usage
-                        if event_type == "finish":
-                            metadata = data.get("messageMetadata", {})
-                            usage = metadata.get("usage")
-                            if usage:
-                                final_usage = usage
+                        try:
+                            data = json.loads(data_str)
+                            event_type = data.get("type")
 
-                        # Track text deltas for message saving
-                        if event_type == "text-delta":
-                            message_buffer += data.get("delta", "")
-                        elif event_type == "text-end":
-                            # Save accumulated message when text ends
-                            if message_buffer and current_message_id:
-                                assistant_messages.append(
-                                    {
-                                        "id": current_message_id,
-                                        "role": "assistant",
-                                        "parts": [{"type": "text", "text": message_buffer}],
-                                        "createdAt": datetime.utcnow(),
-                                        "attachments": [],
-                                        "chatId": str(request.id),
-                                    }
-                                )
-                                message_buffer = ""
-                        elif event_type == "start":
-                            current_message_id = data.get("messageId")
-                        elif event_type == "finish":
-                            # Fallback: Save any remaining message content when stream finishes
-                            # This ensures messages are saved even if text-end wasn't received
-                            if message_buffer and current_message_id:
-                                # Check if we haven't already saved this message
-                                if not any(
-                                    msg["id"] == current_message_id for msg in assistant_messages
-                                ):
+                            # Track usage
+                            if event_type == "finish":
+                                metadata = data.get("messageMetadata", {})
+                                usage = metadata.get("usage")
+                                if usage:
+                                    final_usage = usage
+
+                            # Track text deltas for message saving
+                            if event_type == "text-delta":
+                                message_buffer += data.get("delta", "")
+                            elif event_type == "text-end":
+                                # Save accumulated message when text ends
+                                if message_buffer and current_message_id:
                                     assistant_messages.append(
                                         {
                                             "id": current_message_id,
@@ -373,46 +367,81 @@ async def stream_chat(
                                         }
                                     )
                                     message_buffer = ""
+                            elif event_type == "start":
+                                current_message_id = data.get("messageId")
+                            elif event_type == "finish":
+                                # Fallback: Save any remaining message content when stream finishes
+                                # This ensures messages are saved even if text-end wasn't received
+                                if message_buffer and current_message_id:
+                                    # Check if we haven't already saved this message
+                                    if not any(
+                                        msg["id"] == current_message_id
+                                        for msg in assistant_messages
+                                    ):
+                                        assistant_messages.append(
+                                            {
+                                                "id": current_message_id,
+                                                "role": "assistant",
+                                                "parts": [{"type": "text", "text": message_buffer}],
+                                                "createdAt": datetime.utcnow(),
+                                                "attachments": [],
+                                                "chatId": str(request.id),
+                                            }
+                                        )
+                                        message_buffer = ""
 
-                        yield event
-                    except json.JSONDecodeError:
-                        # Not JSON, yield as-is
-                        yield event
-                else:
-                    yield event
+                            yield event_bytes
+                        except json.JSONDecodeError:
+                            # Not JSON, yield as-is
+                            yield event_bytes
+                    else:
+                        yield event_bytes
 
-            # Final fallback: Save any remaining message content
-            # This handles cases where the stream ended without text-end or finish events
-            if message_buffer and current_message_id:
-                if not any(msg["id"] == current_message_id for msg in assistant_messages):
-                    assistant_messages.append(
-                        {
-                            "id": current_message_id,
-                            "role": "assistant",
-                            "parts": [{"type": "text", "text": message_buffer}],
-                            "createdAt": datetime.utcnow(),
-                            "attachments": [],
-                            "chatId": str(request.id),
-                        }
-                    )
+                # Final fallback: Save any remaining message content
+                # This handles cases where the stream ended without text-end or finish events
+                if message_buffer and current_message_id:
+                    if not any(msg["id"] == current_message_id for msg in assistant_messages):
+                        assistant_messages.append(
+                            {
+                                "id": current_message_id,
+                                "role": "assistant",
+                                "parts": [{"type": "text", "text": message_buffer}],
+                                "createdAt": datetime.utcnow(),
+                                "attachments": [],
+                                "chatId": str(request.id),
+                            }
+                        )
 
-            # Save assistant messages after streaming completes
-            if assistant_messages:
-                print(
-                    f"DEBUG: Saving {len(assistant_messages)} assistant message(s) for chat {request.id}"
-                )
-                await save_messages(db, assistant_messages)
-            else:
-                print(
-                    f"WARNING: No assistant messages to save for chat {request.id} (buffer: '{message_buffer[:50] if message_buffer else 'empty'}', message_id: {current_message_id})"
-                )
-
-            # Update chat context with usage
-            if final_usage:
+            except GeneratorExit:
+                # Generator is being closed by client, re-raise to allow cleanup
+                raise
+            except Exception as stream_error:
+                # Log the error and send error event, then ensure stream closes properly
+                error_msg = f"Error in stream: {str(stream_error)}"
+                logger.error("Error in stream: %s", error_msg, exc_info=True)
                 try:
-                    await update_chat_last_context_by_id(db, request.id, final_usage)
-                except Exception as err:
-                    print(f"Warning: Unable to persist last usage for chat {request.id}: {err}")
+                    yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n".encode(
+                        "utf-8"
+                    )
+                    yield "data: [DONE]\n\n".encode("utf-8")
+                except Exception:
+                    # If we can't yield, connection is likely closed
+                    pass
+
+        # Add background tasks to save messages and update context
+        # These run after the response is sent to the client, so they don't block the stream
+        if assistant_messages:
+            logger.info(
+                f"DEBUG: Scheduling save of {len(assistant_messages)} assistant message(s) for chat {request.id}"
+            )
+            # Create a copy of the list for the background task
+            messages_copy = assistant_messages.copy()
+            background_tasks.add_task(save_messages, db, messages_copy)
+        else:
+            logger.warning("No assistant messages to save for chat %s", request.id)
+
+        if final_usage:
+            background_tasks.add_task(update_chat_last_context_by_id, db, request.id, final_usage)
 
         response = StreamingResponse(
             stream_generator(),

@@ -6,6 +6,7 @@ Based on: https://raw.githubusercontent.com/vercel-labs/ai-sdk-preview-python-st
 from __future__ import annotations
 
 import json
+import logging
 import traceback
 import uuid
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence
@@ -13,6 +14,8 @@ from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 from fastapi.responses import StreamingResponse
 from openai import OpenAI
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
+
+logger = logging.getLogger(__name__)
 
 
 def format_sse(payload: dict) -> str:
@@ -174,6 +177,8 @@ async def stream_text(
         SSE-formatted strings compatible with Vercel AI SDK
     """
     try:
+        logger.info("=== stream_text called ===")
+        logger.info("Model: %s", model)
         message_id = f"msg-{uuid.uuid4().hex}"
         text_stream_id = "text-1"
         text_started = False
@@ -182,6 +187,7 @@ async def stream_text(
         usage_data = None
         tool_calls_state: Dict[int, Dict[str, Any]] = {}
 
+        logger.info("Yielding start event with messageId: %s", message_id)
         yield format_sse({"type": "start", "messageId": message_id})
 
         # Prepare messages with system prompt if provided
@@ -191,6 +197,8 @@ async def stream_text(
             chat_messages.insert(0, {"role": "system", "content": system})
 
         # Call OpenAI with streaming
+        # Note: OpenAI client returns a sync iterator, but we're in an async generator
+        # We need to iterate synchronously but yield asynchronously
         stream = client.chat.completions.create(
             model=model,
             messages=chat_messages,
@@ -202,80 +210,58 @@ async def stream_text(
             store=True,
         )
 
-        # async with client.chat.completions.stream(
-        #     model=model,
-        #     messages=chat_messages,
-        #     temperature=temperature,
-        #     max_completion_tokens=max_completion_tokens,
-        #     # tools=tool_definitions if tool_definitions else None,
-        #     store=True,
-        #     # Don't set max_turns - we'll handle tool execution manually
-        # ) as stream:
         # Process stream chunks
+        # Note: This is a sync iterator, but we're in an async generator
+        # We yield after each chunk to allow other async operations
+        logger.info("Starting to iterate over stream chunks...")
+        chunk_count = 0
+        try:
+            for chunk in stream:
+                chunk_count += 1
+                if chunk_count == 1:
+                    logger.info("First chunk received")
+                text_stream_id = chunk.id
+                # Process chunk and yield events as they're created
+                # Check if chunk has choices (OpenAI-like format)
+                if hasattr(chunk, "choices") and chunk.choices:
+                    for choice in chunk.choices:
+                        if hasattr(choice, "finish_reason") and choice.finish_reason is not None:
+                            finish_reason = choice.finish_reason
 
-        for chunk in stream:
-            text_stream_id = chunk.id
-            # Process chunk and yield events as they're created
-            # Check if chunk has choices (OpenAI-like format)
-            if hasattr(chunk, "choices") and chunk.choices:
-                for choice in chunk.choices:
-                    if hasattr(choice, "finish_reason") and choice.finish_reason is not None:
-                        finish_reason = choice.finish_reason
+                        delta = getattr(choice, "delta", None)
+                        if delta is None:
+                            continue
 
-                    delta = getattr(choice, "delta", None)
-                    if delta is None:
-                        continue
-
-                    # Handle text content
-                    content = getattr(delta, "content", None)
-                    if content is not None:
-                        if not text_started:
-                            # Yield text-start event immediately (only once)
-                            yield format_sse({"type": "text-start", "id": text_stream_id})
-                            text_started = True
-                        # Yield text-delta event immediately
-                        yield format_sse(
-                            {"type": "text-delta", "id": text_stream_id, "delta": content}
-                        )
-
-                    # Handle tool calls
-                    tool_calls = getattr(delta, "tool_calls", None)
-                    if tool_calls:
-                        for tool_call_delta in tool_calls:
-                            index = getattr(tool_call_delta, "index", 0)
-                            state = tool_calls_state.setdefault(
-                                index,
-                                {
-                                    "id": None,
-                                    "name": None,
-                                    "arguments": "",
-                                    "started": False,
-                                },
+                        # Handle text content
+                        content = getattr(delta, "content", None)
+                        if content is not None:
+                            if not text_started:
+                                # Yield text-start event immediately (only once)
+                                yield format_sse({"type": "text-start", "id": text_stream_id})
+                                text_started = True
+                            # Yield text-delta event immediately
+                            yield format_sse(
+                                {"type": "text-delta", "id": text_stream_id, "delta": content}
                             )
 
-                            tool_call_id = getattr(tool_call_delta, "id", None)
-                            if tool_call_id is not None:
-                                state["id"] = tool_call_id
-                                if (
-                                    state["id"] is not None
-                                    and state["name"] is not None
-                                    and not state["started"]
-                                ):
-                                    # Yield tool-input-start event immediately
-                                    yield format_sse(
-                                        {
-                                            "type": "tool-input-start",
-                                            "toolCallId": state["id"],
-                                            "toolName": state["name"],
-                                        }
-                                    )
-                                    state["started"] = True
+                        # Handle tool calls
+                        tool_calls = getattr(delta, "tool_calls", None)
+                        if tool_calls:
+                            for tool_call_delta in tool_calls:
+                                index = getattr(tool_call_delta, "index", 0)
+                                state = tool_calls_state.setdefault(
+                                    index,
+                                    {
+                                        "id": None,
+                                        "name": None,
+                                        "arguments": "",
+                                        "started": False,
+                                    },
+                                )
 
-                            function_call = getattr(tool_call_delta, "function", None)
-                            if function_call is not None:
-                                function_name = getattr(function_call, "name", None)
-                                if function_name is not None:
-                                    state["name"] = function_name
+                                tool_call_id = getattr(tool_call_delta, "id", None)
+                                if tool_call_id is not None:
+                                    state["id"] = tool_call_id
                                     if (
                                         state["id"] is not None
                                         and state["name"] is not None
@@ -291,37 +277,61 @@ async def stream_text(
                                         )
                                         state["started"] = True
 
-                                function_arguments = getattr(function_call, "arguments", None)
-                                if function_arguments:
-                                    if (
-                                        state["id"] is not None
-                                        and state["name"] is not None
-                                        and not state["started"]
-                                    ):
-                                        # Yield tool-input-start event immediately
-                                        yield format_sse(
-                                            {
-                                                "type": "tool-input-start",
-                                                "toolCallId": state["id"],
-                                                "toolName": state["name"],
-                                            }
-                                        )
-                                        state["started"] = True
+                                function_call = getattr(tool_call_delta, "function", None)
+                                if function_call is not None:
+                                    function_name = getattr(function_call, "name", None)
+                                    if function_name is not None:
+                                        state["name"] = function_name
+                                        if (
+                                            state["id"] is not None
+                                            and state["name"] is not None
+                                            and not state["started"]
+                                        ):
+                                            # Yield tool-input-start event immediately
+                                            yield format_sse(
+                                                {
+                                                    "type": "tool-input-start",
+                                                    "toolCallId": state["id"],
+                                                    "toolName": state["name"],
+                                                }
+                                            )
+                                            state["started"] = True
 
-                                    state["arguments"] += function_arguments
-                                    if state["id"] is not None:
-                                        # Yield tool-input-delta event immediately
-                                        yield format_sse(
-                                            {
-                                                "type": "tool-input-delta",
-                                                "toolCallId": state["id"],
-                                                "inputTextDelta": function_arguments,
-                                            }
-                                        )
+                                    function_arguments = getattr(function_call, "arguments", None)
+                                    if function_arguments:
+                                        if (
+                                            state["id"] is not None
+                                            and state["name"] is not None
+                                            and not state["started"]
+                                        ):
+                                            # Yield tool-input-start event immediately
+                                            yield format_sse(
+                                                {
+                                                    "type": "tool-input-start",
+                                                    "toolCallId": state["id"],
+                                                    "toolName": state["name"],
+                                                }
+                                            )
+                                            state["started"] = True
 
-            # Check for usage data
-            if hasattr(chunk, "usage") and chunk.usage is not None:
-                usage_data = chunk.usage
+                                        state["arguments"] += function_arguments
+                                        if state["id"] is not None:
+                                            # Yield tool-input-delta event immediately
+                                            yield format_sse(
+                                                {
+                                                    "type": "tool-input-delta",
+                                                    "toolCallId": state["id"],
+                                                    "inputTextDelta": function_arguments,
+                                                }
+                                            )
+
+                # Check for usage data
+                if hasattr(chunk, "usage") and chunk.usage is not None:
+                    usage_data = chunk.usage
+        except Exception as stream_error:
+            # If stream iteration fails, log and continue to finish events
+            logger.error("Stream iteration failed: %s", stream_error, exc_info=True)
+            # Don't re-raise - we'll still send finish events
 
         # Handle text end - emit if text was started and stream finished
         # (This will be handled again below, but we check here for early finish_reason == "stop")
@@ -467,8 +477,8 @@ async def stream_text(
 
         yield "data: [DONE]\n\n"
     except Exception:
+        logger.error("Error in stream_text", exc_info=True)
         stack_trace = traceback.format_exc()
-        print(f"Error in stream_text: {stack_trace}")
         yield format_sse({"type": "error", "error": f"Error in stream_text: {stack_trace}"})
         yield "data: [DONE]\n\n"
 

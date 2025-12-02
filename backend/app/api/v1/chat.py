@@ -1,4 +1,5 @@
 import json
+import traceback
 from datetime import datetime
 from typing import List
 from uuid import UUID, uuid4
@@ -178,7 +179,8 @@ async def create_chat(
                         yield chunk
         except Exception as e:
             # Handle connection errors
-            error_msg = f"Failed to connect to Next.js: {str(e)}"
+            stack_trace = traceback.format_exc()
+            error_msg = f"Failed to connect to Next.js: {str(e)}\n{stack_trace}"
             yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n"
             yield "data: [DONE]\n\n"
 
@@ -234,7 +236,8 @@ async def create_chat(
                         yield chunk
         except Exception as e:
             # Handle connection errors
-            error_msg = f"Failed to connect to FastAPI stream: {str(e)}"
+            stack_trace = traceback.format_exc()
+            error_msg = f"Failed to connect to FastAPI stream: {str(e)}\n{stack_trace}"
             yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n"
             yield "data: [DONE]\n\n"
 

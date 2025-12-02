@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import UUID
@@ -9,6 +10,8 @@ from app.models.chat import Chat
 from app.models.message import Message
 from app.models.stream import Stream
 from app.models.vote import Vote
+
+logger = logging.getLogger(__name__)
 
 
 async def get_chat_by_id(session: AsyncSession, chat_id: UUID):
@@ -60,6 +63,8 @@ async def save_messages(
     messages: List of dicts with keys: id, chatId, role, parts, attachments, createdAt
     Returns: List of saved Message objects
     """
+    logger.info("=== save_messages called ===")
+    logger.info("Saving %d message(s)", len(messages))
     message_objects = []
     for msg_data in messages:
         message_obj = Message(
@@ -76,10 +81,12 @@ async def save_messages(
         session.add(message_obj)
 
     await session.commit()
+    logger.info("Messages committed to database")
     # Refresh all messages
     for msg in message_objects:
         await session.refresh(msg)
 
+    logger.info("save_messages completed successfully")
     return message_objects
 
 
@@ -111,12 +118,16 @@ async def update_chat_last_context_by_id(
     Update chat's lastContext field with usage/context data.
     Returns: Updated Chat object or None if not found
     """
+    logger.info("=== update_chat_last_context_by_id called ===")
+    logger.info("Chat ID: %s", chat_id)
     chat = await get_chat_by_id(session, chat_id)
     if not chat:
+        logger.warning("Chat not found: %s", chat_id)
         return None
 
     chat.lastContext = context
     await session.commit()
+    logger.info("Chat context updated successfully")
     await session.refresh(chat)
     return chat
 
