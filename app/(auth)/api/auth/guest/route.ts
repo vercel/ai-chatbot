@@ -14,10 +14,12 @@ export async function GET(request: Request) {
   });
 
   if (token) {
+    console.log("User already logged in, redirecting to home");
     return NextResponse.redirect(new URL("/", request.url));
   }
 const response = signIn("guest", { redirect: true, redirectTo: redirectUrl });
 
-console.log('JSON.stringify(response)', JSON.stringify(response))
+console.log('signIn response:', JSON.stringify(response));
+console.log(`Redirecting to: ${redirectUrl}`);
   return response
 }
