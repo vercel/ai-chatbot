@@ -29,7 +29,7 @@ router = APIRouter()
 
 # Rate limiting configuration
 ENTITLEMENTS = {
-    "guest": {"maxMessagesPerDay": 20},
+    "guest": {"maxMessagesPerDay": 50},
     "regular": {"maxMessagesPerDay": 100},
 }
 

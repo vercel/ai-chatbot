@@ -8,7 +8,7 @@ import logging
 import traceback
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.responses import StreamingResponse
@@ -310,6 +310,8 @@ async def stream_chat(
 
         async def stream_generator():
             nonlocal final_usage, assistant_messages
+            # Capture background_tasks in closure so we can use it in finally block
+            nonlocal background_tasks
 
             logger.info("=== STREAM GENERATOR STARTED ===")
             message_buffer = ""
@@ -368,7 +370,7 @@ async def stream_chat(
                                     )
                                     message_buffer = ""
                             elif event_type == "start":
-                                current_message_id = data.get("messageId")
+                                current_message_id = uuid4()
                             elif event_type == "finish":
                                 # Fallback: Save any remaining message content when stream finishes
                                 # This ensures messages are saved even if text-end wasn't received
@@ -412,6 +414,10 @@ async def stream_chat(
                             }
                         )
 
+                logger.info(
+                    f"=== STREAM GENERATOR ENDED with assistant messages: {len(assistant_messages)} message(s) ==="
+                )
+
             except GeneratorExit:
                 # Generator is being closed by client, re-raise to allow cleanup
                 raise
@@ -427,21 +433,36 @@ async def stream_chat(
                 except Exception:
                     # If we can't yield, connection is likely closed
                     pass
+            finally:
+                # Schedule background tasks AFTER stream completes
+                # This ensures assistant_messages and final_usage are populated
+                if assistant_messages:
+                    logger.info(
+                        f"DEBUG: Scheduling save of {len(assistant_messages)} assistant message(s) for chat {request.id}"
+                    )
+                    # Create a copy of the list for the background task
+                    messages_copy = assistant_messages.copy()
+                    # Get a fresh database session for the background task
+                    # Note: We need to create a new session since the original db session
+                    # might be closed when the background task runs
+                    from app.core.database import AsyncSessionLocal
 
-        # Add background tasks to save messages and update context
-        # These run after the response is sent to the client, so they don't block the stream
-        if assistant_messages:
-            logger.info(
-                f"DEBUG: Scheduling save of {len(assistant_messages)} assistant message(s) for chat {request.id}"
-            )
-            # Create a copy of the list for the background task
-            messages_copy = assistant_messages.copy()
-            background_tasks.add_task(save_messages, db, messages_copy)
-        else:
-            logger.warning("No assistant messages to save for chat %s", request.id)
+                    async def save_messages_task():
+                        async with AsyncSessionLocal() as session:
+                            await save_messages(session, messages_copy)
 
-        if final_usage:
-            background_tasks.add_task(update_chat_last_context_by_id, db, request.id, final_usage)
+                    background_tasks.add_task(save_messages_task)
+                else:
+                    logger.warning("No assistant messages to save for chat %s", request.id)
+
+                if final_usage:
+                    from app.core.database import AsyncSessionLocal
+
+                    async def update_context_task():
+                        async with AsyncSessionLocal() as session:
+                            await update_chat_last_context_by_id(session, request.id, final_usage)
+
+                    background_tasks.add_task(update_context_task)
 
         response = StreamingResponse(
             stream_generator(),
