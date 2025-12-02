@@ -199,11 +199,25 @@ function PureMultimodalInput({
     return myProvider.languageModel(selectedModelId);
   }, [selectedModelId]);
 
+  const [refreshedUsage, setRefreshedUsage] = useState<AppUsage | undefined>(
+    usage
+  );
+
+  useEffect(() => {
+    setRefreshedUsage(usage);
+  }, [usage]);
+
+  const handleUsageRefresh = useCallback((newUsage: AppUsage | undefined) => {
+    setRefreshedUsage(newUsage);
+  }, []);
+
   const contextProps = useMemo(
     () => ({
-      usage,
+      usage: refreshedUsage,
+      chatId,
+      onUsageRefresh: handleUsageRefresh,
     }),
-    [usage]
+    [refreshedUsage, chatId, handleUsageRefresh]
   );
 
   const handleFileChange = useCallback(

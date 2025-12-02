@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentProps } from "react";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,12 +9,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { RefreshCwIcon } from "@/components/icons";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
 
 export type ContextProps = ComponentProps<"button"> & {
   /** Optional full usage payload to enable breakdown view */
   usage?: AppUsage;
+  /** Optional chat ID for refreshing usage data */
+  chatId?: string;
+  /** Optional callback when usage is refreshed */
+  onUsageRefresh?: (usage: AppUsage | undefined) => void;
 };
 
 const _THOUSAND = 1000;
@@ -99,7 +106,14 @@ function InfoRow({
   );
 }
 
-export const Context = ({ className, usage, ...props }: ContextProps) => {
+export const Context = ({
+  className,
+  usage,
+  chatId,
+  onUsageRefresh,
+  ...props
+}: ContextProps) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const used = usage?.totalTokens ?? 0;
   const max =
     usage?.context?.totalMax ??
@@ -107,6 +121,26 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
     usage?.context?.inputMax;
   const hasMax = typeof max === "number" && Number.isFinite(max) && max > 0;
   const usedPercent = hasMax ? Math.min(100, (used / max) * 100) : 0;
+
+  const handleRefresh = async () => {
+    if (!chatId || !onUsageRefresh) return;
+
+    setIsRefreshing(true);
+    try {
+      const response = await fetch(`/api/usage?chatId=${chatId}`);
+      if (response.ok) {
+        const data = await response.json();
+        onUsageRefresh(data.usage);
+      } else {
+        console.error("Failed to refresh usage data");
+      }
+    } catch (error) {
+      console.error("Error refreshing usage:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -127,11 +161,32 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit p-3" side="top">
         <div className="min-w-[240px] space-y-2">
-          <div className="flex items-start justify-between text-sm">
+          <div className="flex items-start justify-between gap-2 text-sm">
             <span>{usedPercent.toFixed(1)}%</span>
-            <span className="text-muted-foreground">
-              {hasMax ? `${used} / ${max} tokens` : `${used} tokens`}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">
+                {hasMax ? `${used} / ${max} tokens` : `${used} tokens`}
+              </span>
+              {chatId && onUsageRefresh && (
+                <Button
+                  className="size-6 p-1 hover:bg-accent"
+                  disabled={isRefreshing}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRefresh();
+                  }}
+                  title="Refresh usage data"
+                  variant="ghost"
+                >
+                  <RefreshCwIcon
+                    size={14}
+                    style={{
+                      animation: isRefreshing ? "spin 1s linear infinite" : undefined,
+                    }}
+                  />
+                </Button>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <Progress className="h-2 bg-muted" value={usedPercent} />

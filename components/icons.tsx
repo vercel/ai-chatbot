@@ -1211,3 +1211,26 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const RefreshCwIcon = ({
+  size = 16,
+  ...props
+}: { size?: number } & React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      style={{ color: "currentcolor", ...props.style }}
+      viewBox="0 0 16 16"
+      width={size}
+      {...props}
+    >
+      <path
+        clipRule="evenodd"
+        d="M8 2.5C5.51472 2.5 3.5 4.51472 3.5 7H5.25L2.625 10.5L0 7H1.5C1.5 3.41015 4.41015 0.5 8 0.5C11.5899 0.5 14.5 3.41015 14.5 7H13C13 4.51472 10.9853 2.5 8 2.5ZM13.375 5.5L16 9H14.5C14.5 12.5899 11.5899 15.5 8 15.5C4.41015 15.5 1.5 12.5899 1.5 9H3C3 11.4853 5.01472 13.5 8 13.5C10.4853 13.5 12.5 11.4853 12.5 9H10.75L13.375 5.5Z"
+        fill="currentColor"
+        fillRule="evenodd"
+      />
+    </svg>
+  );
+};
