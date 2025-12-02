@@ -10,4 +10,16 @@ export const authConfig = {
     // while this file is also used in non-Node.js environments
   ],
   callbacks: {},
+  // in your NextAuth config
+cookies: {
+  sessionToken: {
+    name: "__Secure-next-auth.session-token",
+    options: {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    },
+  },
+}
+
 } satisfies NextAuthConfig;
