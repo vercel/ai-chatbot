@@ -5,6 +5,8 @@ import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  console.log(`Proxy handling request for path: ${pathname}`);
+
   return new Response()
   
   /*
@@ -23,6 +25,7 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  console.log("Fetching token...");
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
@@ -30,16 +33,19 @@ export async function proxy(request: NextRequest) {
   });
 
   if (!token) {
+    console.log("No token found.");
     const redirectUrl = encodeURIComponent(request.url);
 
     const response = NextResponse.redirect(
       new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
     );
-    console.log("No token found, redirecting to guest auth");
+    console.log("Redirecting to guest auth");
     return response;
   }
 
+  console.log("Token found:", token);
   const isGuest = guestRegex.test(token?.email ?? "");
+  console.log("Is guest user:", isGuest);
 
   if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
     const response = NextResponse.redirect(new URL("/", request.url));
