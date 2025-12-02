@@ -314,7 +314,7 @@ Ultracite enforces strict type safety, accessibility standards, and consistent c
 - `npx ultracite check` - Check for issues without fixing
 
 ## Example: Error Handling
-```typescript
+\`\`\`typescript
 // ✅ Good: Comprehensive error handling
 try {
   const result = await fetchData();
@@ -330,4 +330,4 @@ try {
 } catch (e) {
   console.log(e);
 }
-```
+\`\`\`
