@@ -327,6 +327,7 @@ async def stream_chat(
                     tools=tools,
                     tool_definitions=tool_definitions,
                     temperature=0.7,
+                    max_tool_turns=5,
                 ):
                     # Convert string to bytes for FastAPI StreamingResponse
                     if isinstance(event, str):
