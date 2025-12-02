@@ -7,11 +7,15 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const redirectUrl = searchParams.get("redirectUrl") || "/";
 
+  
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
     secureCookie: !isDevelopmentEnvironment,
   });
+
+  console.log(`[GUEST ROUTE] setting up token ${token}`)
 
   if (token) {
     return NextResponse.redirect(new URL("/", request.url));
