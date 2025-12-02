@@ -339,7 +339,7 @@ async def stream_chat(
                         if event_type == "text-delta":
                             message_buffer += data.get("delta", "")
                         elif event_type == "text-end":
-                            # Save accumulated message
+                            # Save accumulated message when text ends
                             if message_buffer and current_message_id:
                                 assistant_messages.append(
                                     {
@@ -354,6 +354,25 @@ async def stream_chat(
                                 message_buffer = ""
                         elif event_type == "start":
                             current_message_id = data.get("messageId")
+                        elif event_type == "finish":
+                            # Fallback: Save any remaining message content when stream finishes
+                            # This ensures messages are saved even if text-end wasn't received
+                            if message_buffer and current_message_id:
+                                # Check if we haven't already saved this message
+                                if not any(
+                                    msg["id"] == current_message_id for msg in assistant_messages
+                                ):
+                                    assistant_messages.append(
+                                        {
+                                            "id": current_message_id,
+                                            "role": "assistant",
+                                            "parts": [{"type": "text", "text": message_buffer}],
+                                            "createdAt": datetime.utcnow(),
+                                            "attachments": [],
+                                            "chatId": str(request.id),
+                                        }
+                                    )
+                                    message_buffer = ""
 
                         yield event
                     except json.JSONDecodeError:
@@ -362,9 +381,31 @@ async def stream_chat(
                 else:
                     yield event
 
+            # Final fallback: Save any remaining message content
+            # This handles cases where the stream ended without text-end or finish events
+            if message_buffer and current_message_id:
+                if not any(msg["id"] == current_message_id for msg in assistant_messages):
+                    assistant_messages.append(
+                        {
+                            "id": current_message_id,
+                            "role": "assistant",
+                            "parts": [{"type": "text", "text": message_buffer}],
+                            "createdAt": datetime.utcnow(),
+                            "attachments": [],
+                            "chatId": str(request.id),
+                        }
+                    )
+
             # Save assistant messages after streaming completes
             if assistant_messages:
+                print(
+                    f"DEBUG: Saving {len(assistant_messages)} assistant message(s) for chat {request.id}"
+                )
                 await save_messages(db, assistant_messages)
+            else:
+                print(
+                    f"WARNING: No assistant messages to save for chat {request.id} (buffer: '{message_buffer[:50] if message_buffer else 'empty'}', message_id: {current_message_id})"
+                )
 
             # Update chat context with usage
             if final_usage:
