@@ -1,12 +1,15 @@
-import { createUIMessageStream, JsonToSseTransformStream } from "ai";
 import { geolocation } from "@vercel/functions";
 import {
   convertToModelMessages,
+  createUIMessageStream,
+  JsonToSseTransformStream,
   smoothStream,
   stepCountIs,
   streamText,
 } from "ai";
 import { unstable_cache as cache } from "next/cache";
+import type { NextRequest } from "next/server";
+import type { Session } from "next-auth";
 import type { ModelCatalog } from "tokenlens/core";
 import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
@@ -31,7 +34,6 @@ import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
-import { NextRequest } from "next/server";
 
 export const maxDuration = 60;
 
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
     const internalSecret = request.headers.get("x-internal-api-secret");
     const expectedSecret = process.env.INTERNAL_API_SECRET;
 
-    let session: Awaited<ReturnType<typeof auth>> | null = null;
+    let session: Session | null = null;
     let userType: UserType = "regular";
     let userId: string | undefined;
 
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
           id: userId,
           type: userType,
         },
-      } as Awaited<ReturnType<typeof auth>>;
+      } as Session;
     } else {
       // Regular request - use NextAuth session
       session = await auth();
@@ -269,4 +271,3 @@ export async function POST(request: NextRequest) {
     return new ChatSDKError("offline:chat").toResponse();
   }
 }
-
