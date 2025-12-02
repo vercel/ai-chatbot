@@ -13,7 +13,6 @@ import {
   SidebarHistory,
 } from "@/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
-import { apiFetch } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -23,6 +22,7 @@ import {
   SidebarMenu,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { apiFetch } from "@/lib/api-client";
 import {
   AlertDialog,
   AlertDialogAction,
