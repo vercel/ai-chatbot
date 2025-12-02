@@ -5,10 +5,6 @@ import { guestRegex, isDevelopmentEnvironment } from "./lib/constants"
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  console.log("[proxy] ========== Proxy Request Start ==========")
-  console.log(`[proxy] Path: ${pathname}`)
-  console.log(`[proxy] Method: ${request.method}`)
-  console.log(`[proxy] Full URL: ${request.url}`)
   console.log(`[proxy] Headers:`, Object.fromEntries(request.headers.entries()))
 
   /*
@@ -16,21 +12,12 @@ export async function proxy(request: NextRequest) {
    * begin the tests, so this ensures that the tests can start
    */
   if (pathname.startsWith("/ping")) {
-    console.log("[proxy] Ping endpoint hit, returning 200")
-    const response = new Response("pong", { status: 200 })
-    console.log("[proxy] ========== Proxy Request End (ping) ==========")
-    return response
+    return new Response("pong", { status: 200 })
   }
 
   if (pathname.startsWith("/api/auth")) {
-    console.log("[proxy] Auth endpoint hit, proceeding without checks")
-    const response = NextResponse.next()
-    console.log("[proxy] ========== Proxy Request End (auth) ==========")
-    return response
+    return NextResponse.next()
   }
-
-  console.log("[proxy] Fetching token...")
-  console.log(`[proxy] Using secure cookie: ${!isDevelopmentEnvironment}`)
 
   const token = await getToken({
     req: request,
@@ -38,38 +25,20 @@ export async function proxy(request: NextRequest) {
     secureCookie: !isDevelopmentEnvironment,
   })
 
+  console.log(`[proxy] Token:`, token)
+
   if (!token) {
-    console.log("[proxy] No token found - user is unauthenticated")
     const redirectUrl = encodeURIComponent(request.url)
-    const guestAuthUrl = `/api/auth/guest?redirectUrl=${redirectUrl}`
-    console.log(`[proxy] Redirecting to guest auth: ${guestAuthUrl}`)
-
-    const response = NextResponse.redirect(new URL(guestAuthUrl, request.url))
-    console.log("[proxy] ========== Proxy Request End (no token) ==========")
-    return response
+    return NextResponse.redirect(new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url))
   }
-
-  console.log("[proxy] Token found:")
-  console.log(`[proxy]   - Email: ${token?.email}`)
-  console.log(`[proxy]   - Sub: ${token?.sub}`)
-  console.log(`[proxy]   - Exp: ${token?.exp}`)
 
   const isGuest = guestRegex.test(token?.email ?? "")
-  console.log(`[proxy] Is guest user: ${isGuest}`)
-  console.log(`[proxy] Guest regex pattern: ${guestRegex}`)
 
   if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
-    console.log("[proxy] Authenticated non-guest user trying to access login/register")
-    console.log("[proxy] Redirecting to home page")
-    const response = NextResponse.redirect(new URL("/", request.url))
-    console.log("[proxy] ========== Proxy Request End (redirect home) ==========")
-    return response
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
-  console.log("[proxy] Token valid, proceeding to next middleware/route")
-  const response = NextResponse.next()
-  console.log("[proxy] ========== Proxy Request End (success) ==========")
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
