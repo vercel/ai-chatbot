@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.config import settings
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.db.queries.document_queries import (
@@ -14,6 +15,8 @@ from app.db.queries.document_queries import (
     get_documents_by_id,
     save_document,
 )
+from app.db.queries.user_queries import get_or_create_user_for_session
+from app.utils.user_id import get_user_id_uuid, user_ids_match, is_session_id
 
 router = APIRouter()
 
@@ -40,7 +43,7 @@ async def get_document(
         raise ChatSDKError("not_found:document", status_code=status.HTTP_404_NOT_FOUND)
 
     # Check ownership (all versions should belong to the same user)
-    if str(documents[0].user_id) != current_user["id"]:
+    if not user_ids_match(current_user["id"], documents[0].user_id):
         raise ChatSDKError("forbidden:document", status_code=status.HTTP_403_FORBIDDEN)
 
     # Convert to dict format matching frontend expectations
@@ -85,13 +88,18 @@ async def create_document(
     # Check if document exists and user owns it
     existing_documents = await get_documents_by_id(db, id)
     if existing_documents:
-        if str(existing_documents[0].user_id) != current_user["id"]:
+        if not user_ids_match(current_user["id"], existing_documents[0].user_id):
             raise ChatSDKError(
                 "forbidden:document", status_code=status.HTTP_403_FORBIDDEN
             )
 
     # Create new version
-    user_id = UUID(current_user["id"])
+    user_id = get_user_id_uuid(current_user["id"])
+
+    # Ensure user exists in database (required for foreign key constraint)
+    # When auth is disabled, session IDs need corresponding user records
+    if settings.DISABLE_AUTH or is_session_id(current_user["id"]):
+        await get_or_create_user_for_session(db, user_id)
     document = await save_document(
         db,
         document_id=id,
@@ -144,7 +152,7 @@ async def delete_document(
     if not documents:
         raise ChatSDKError("not_found:document", status_code=status.HTTP_404_NOT_FOUND)
 
-    if str(documents[0].user_id) != current_user["id"]:
+    if not user_ids_match(current_user["id"], documents[0].user_id):
         raise ChatSDKError("forbidden:document", status_code=status.HTTP_403_FORBIDDEN)
 
     # Delete documents after timestamp

@@ -14,6 +14,25 @@ const FASTAPI_ENDPOINTS =
   process.env.NEXT_PUBLIC_FASTAPI_ENDPOINTS?.split(",") || [];
 
 /**
+ * Extract the endpoint path from a URL (handles both relative and absolute URLs)
+ */
+function extractEndpointPath(url: string): string {
+  try {
+    // If it's already a full URL, extract the path
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      const urlObj = new URL(url);
+      return urlObj.pathname;
+    }
+    // If it's a relative URL, extract just the path (before query string)
+    const pathname = url.split("?")[0].split("#")[0];
+    return pathname;
+  } catch {
+    // If URL parsing fails, return the original string
+    return url;
+  }
+}
+
+/**
  * Check if an endpoint should be routed to FastAPI backend
  */
 function shouldUseFastAPI(endpoint: string): boolean {
@@ -21,9 +40,12 @@ function shouldUseFastAPI(endpoint: string): boolean {
     return false;
   }
 
+  // Extract the path from the URL (handles both relative and absolute URLs)
+  const path = extractEndpointPath(endpoint);
+
   // Exclude stream resumption endpoints - these should stay in Next.js
   // Pattern: /api/chat/{id}/stream
-  if (endpoint.includes("/stream")) {
+  if (path.includes("/stream")) {
     return false;
   }
 
@@ -34,9 +56,10 @@ function shouldUseFastAPI(endpoint: string): boolean {
       // e.g., /api/chat or /api/chat?id=... but not /api/chat/{id}/stream
       const pattern = `/api/${ep}`;
       return (
-        endpoint === pattern ||
-        endpoint.startsWith(`${pattern}?`) ||
-        endpoint.startsWith(`${pattern}&`)
+        path === pattern ||
+        path.startsWith(`${pattern}?`) ||
+        path.startsWith(`${pattern}&`) ||
+        path.startsWith(`${pattern}/`)
       );
     });
   }
@@ -64,6 +87,9 @@ function getApiUrlInternal(endpoint: string): string {
   return endpoint;
 }
 
+import { isAuthDisabled } from "./constants";
+import { getSessionId } from "./session-id";
+
 /**
  * Get JWT token for FastAPI requests
  * For cross-origin requests, we need to get the token from the bridge response
@@ -71,6 +97,11 @@ function getApiUrlInternal(endpoint: string): string {
  */
 async function getAuthTokenForFastAPI(): Promise<string | null> {
   if (typeof window === "undefined") {
+    return null;
+  }
+
+  // If auth is disabled, return null (we'll use session ID instead)
+  if (isAuthDisabled) {
     return null;
   }
 
@@ -115,9 +146,15 @@ export async function apiFetch(
   // For FastAPI requests (cross-origin), get token and add to Authorization header
   // Note: httpOnly cookies won't be sent cross-origin, so we use Authorization header
   if (shouldUseFastAPI(url)) {
-    const token = await getAuthTokenForFastAPI();
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+    if (isAuthDisabled) {
+      // When auth is disabled, send session ID in a custom header
+      const sessionId = getSessionId();
+      headers.set("X-Session-Id", sessionId);
+    } else {
+      const token = await getAuthTokenForFastAPI();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
     }
 
     // Ensure Content-Type is set for FastAPI (but not for FormData - browser will set it)

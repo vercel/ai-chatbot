@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
+import { guestRegex, isDevelopmentEnvironment, isAuthDisabled } from "./lib/constants";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -28,6 +28,11 @@ export async function proxy(request: NextRequest) {
     internalSecret === expectedSecret
   ) {
     // Internal request from FastAPI - allow through without auth check
+    return NextResponse.next();
+  }
+
+  // If authentication is disabled, allow all requests through
+  if (isAuthDisabled) {
     return NextResponse.next();
   }
 

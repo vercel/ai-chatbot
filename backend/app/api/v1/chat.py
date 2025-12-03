@@ -23,7 +23,13 @@ from app.db.queries.chat_queries import (
     save_chat,
     save_messages,
 )
+from app.db.queries.user_queries import get_or_create_user_for_session
 from app.utils.stream import patch_response_with_headers
+from app.utils.user_id import get_user_id_uuid, user_ids_match, is_session_id
+import logging
+
+logger = logging.getLogger(__name__)
+logger.info("=== CHAT ENDPOINT CALLED ===")
 
 router = APIRouter()
 
@@ -66,8 +72,29 @@ async def create_chat(
     Create or continue a chat conversation.
     Handles database operations and proxies AI streaming to Next.js.
     """
-    user_id = UUID(current_user["id"])
+    logger.info("=== POST /api/chat called ===")
+    logger.info(
+        "current_user_id=%s (raw), request.id=%s, X-Session-Id header=%s",
+        current_user.get("id"),
+        request.id,
+        http_request.headers.get("X-Session-Id"),
+    )
+
+    user_id = get_user_id_uuid(current_user["id"])
     user_type = current_user.get("type", "regular")
+
+    logger.info(
+        "User ID conversion: current_user_id=%s -> uuid=%s (type=%s)",
+        current_user["id"],
+        user_id,
+        type(user_id).__name__,
+    )
+
+    # 0. Ensure user exists in database (required for foreign key constraint)
+    # When auth is disabled, session IDs need corresponding user records
+    if settings.DISABLE_AUTH or is_session_id(current_user["id"]):
+        logger.info("Ensuring user exists for session: user_id=%s", user_id)
+        await get_or_create_user_for_session(db, user_id)
 
     # 1. Rate limiting check
     message_count = await get_message_count_by_user_id(db, user_id, hours=24)
@@ -85,8 +112,20 @@ async def create_chat(
     messages_from_db = []  # messagesFromDb
 
     if chat:
+        logger.info(
+            "Existing chat found: id=%s, userId=%s (type=%s), current_user_id_uuid=%s",
+            chat.id,
+            chat.userId,
+            type(chat.userId).__name__,
+            user_id,
+        )
         # Validate ownership
         if chat.userId != user_id:
+            logger.warning(
+                "Chat ownership mismatch: chat.userId=%s != current_user_id_uuid=%s",
+                chat.userId,
+                user_id,
+            )
             raise ChatSDKError("forbidden:chat", status_code=status.HTTP_403_FORBIDDEN)
 
         # Fetch existing messages
@@ -104,16 +143,28 @@ async def create_chat(
             }
             for msg in messages_from_db
         ]
+        logger.info("messages_from_db: %s", json.dumps(messages_from_db, indent=4))
 
     else:
         # Create new chat (with placeholder title - can generate later)
         # TODO: Generate title from user message similar to Next.js: generateTitleFromUserMessage
+        logger.info(
+            "Creating new chat: id=%s, userId=%s, visibility=%s",
+            request.id,
+            user_id,
+            request.selectedVisibilityType,
+        )
         chat = await save_chat(
             db,
             request.id,
             user_id,
             title="New Chat",
             visibility=request.selectedVisibilityType,
+        )
+        logger.info(
+            "Chat created: id=%s, userId=%s (stored in DB)",
+            chat.id,
+            chat.userId,
         )
 
     # 3. Save user message
@@ -213,6 +264,13 @@ async def create_chat(
             if auth_token:
                 headers["Authorization"] = f"Bearer {auth_token}"
 
+            # Forward session ID header if auth is disabled
+            if settings.DISABLE_AUTH:
+                session_id_header = http_request.headers.get("X-Session-Id")
+                if session_id_header:
+                    headers["X-Session-Id"] = session_id_header
+                    logger.info("Forwarding X-Session-Id header: %s", session_id_header)
+
             # Prepare cookies (for same-origin requests)
             cookies = None
             if auth_token:
@@ -271,7 +329,7 @@ async def delete_chat(
         raise ChatSDKError("not_found:chat", status_code=status.HTTP_404_NOT_FOUND)
 
     # Validate user owns the chat
-    if str(chat.userId) != current_user["id"]:
+    if not user_ids_match(current_user["id"], chat.userId):
         raise ChatSDKError("forbidden:chat", status_code=status.HTTP_403_FORBIDDEN)
 
     # Delete the chat (cascade deletes votes, messages, streams)

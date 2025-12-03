@@ -7,6 +7,7 @@ from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.db.queries.chat_queries import get_chats_by_user_id, delete_all_chats_by_user_id
+from app.utils.user_id import get_user_id_uuid
 
 router = APIRouter()
 
@@ -31,10 +32,8 @@ async def get_chat_history(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    # Convert user_id string to UUID
-    from uuid import UUID as UUIDType
-
-    user_id = UUIDType(current_user["id"])
+    # Convert user_id to UUID (handles session IDs when auth is disabled)
+    user_id = get_user_id_uuid(current_user["id"])
 
     # Get chats
     result = await get_chats_by_user_id(
@@ -65,10 +64,8 @@ async def delete_all_chats(
     Delete all chats for the current user.
     Returns: { deletedCount: int }
     """
-    # Convert user_id string to UUID
-    from uuid import UUID as UUIDType
-
-    user_id = UUIDType(current_user["id"])
+    # Convert user_id to UUID (handles session IDs when auth is disabled)
+    user_id = get_user_id_uuid(current_user["id"])
 
     # Delete all chats
     result = await delete_all_chats_by_user_id(db, user_id)

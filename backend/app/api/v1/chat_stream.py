@@ -33,6 +33,7 @@ from app.db.queries.chat_queries import (
     save_messages,
     update_chat_last_context_by_id,
 )
+from app.utils.user_id import get_user_id_uuid
 from app.utils.stream import patch_response_with_headers, stream_text
 
 logger = logging.getLogger(__name__)
@@ -175,7 +176,7 @@ async def stream_chat(
     logger.info("Chat ID: %s", request.id)
     logger.info("User ID: %s", current_user.get("id"))
     try:
-        user_id = UUID(current_user["id"])
+        user_id = get_user_id_uuid(current_user["id"])
 
         # 1. Get existing messages from request body
         messages_from_db = request.existingMessages

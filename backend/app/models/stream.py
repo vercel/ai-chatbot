@@ -11,4 +11,3 @@ class Stream(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     chatId = Column(UUID(as_uuid=True), ForeignKey("Chat.id"), nullable=False)
     createdAt = Column(DateTime, nullable=False, default=datetime.utcnow)
-

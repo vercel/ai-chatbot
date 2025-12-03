@@ -5,6 +5,7 @@ import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { generateUUID } from "@/lib/utils";
+import { isAuthDisabled } from "@/lib/constants";
 import { auth } from "../(auth)/auth";
 
 export default function Page() {
@@ -18,7 +19,8 @@ export default function Page() {
 async function NewChatPage() {
   const session = await auth();
 
-  if (!session) {
+  // Only redirect if auth is enabled and no session exists
+  if (!isAuthDisabled && !session) {
     redirect("/api/auth/guest");
   }
 

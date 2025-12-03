@@ -30,6 +30,9 @@ class Settings(BaseSettings):
         "dev-internal-secret-change-in-production"  # Secret for FastAPI → Next.js internal requests
     )
 
+    # Authentication
+    DISABLE_AUTH: bool = False  # Set to True to disable authentication (uses session ID instead)
+
     # Blob
     BLOB_READ_WRITE_TOKEN: str = ""
 

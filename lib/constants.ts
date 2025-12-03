@@ -11,3 +11,6 @@ export const isTestEnvironment = Boolean(
 export const guestRegex = /^guest-\d+$/;
 
 export const DUMMY_PASSWORD = generateDummyPassword();
+
+// Authentication toggle - set DISABLE_AUTH=true to bypass authentication
+export const isAuthDisabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === "true";
