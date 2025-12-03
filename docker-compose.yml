@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:17.6
+    ports:
+      - 5432:5432
+    # environment:
+    #   POSTGRES_USER: [defined in .env]
+    #   POSTGRES_PASSWORD: [defined in .env]
+    #   POSTGRES_DB: [defined in .env]
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    env_file:
+      - ./api/.env

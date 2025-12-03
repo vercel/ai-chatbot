@@ -44,7 +44,7 @@ class Suggestion(Base):
         ForeignKeyConstraint(
             ["documentId", "documentCreatedAt"],
             ["Document.id", "Document.createdAt"],
-            name="Suggestion_documentId_documentCreatedAt_Document_id_createdAt_fk",
+            name="fk_suggestion_document",
         ),
     )
 
