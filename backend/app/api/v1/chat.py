@@ -1,4 +1,5 @@
 import json
+import logging
 import traceback
 from datetime import datetime
 from typing import List
@@ -26,8 +27,7 @@ from app.db.queries.chat_queries import (
 )
 from app.db.queries.user_queries import get_or_create_user_for_session
 from app.utils.stream import patch_response_with_headers
-from app.utils.user_id import get_user_id_uuid, user_ids_match, is_session_id
-import logging
+from app.utils.user_id import get_user_id_uuid, is_session_id, user_ids_match
 
 logger = logging.getLogger(__name__)
 logger.info("=== CHAT ENDPOINT CALLED ===")
