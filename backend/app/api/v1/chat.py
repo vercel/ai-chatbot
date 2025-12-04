@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai.client import get_ai_client, get_model_name
 from app.api.deps import get_current_user
 from app.config import settings
 from app.core.database import get_db
@@ -39,6 +40,14 @@ ENTITLEMENTS = {
     "regular": {"maxMessagesPerDay": 100},
 }
 
+# Title generation prompt (ported from lib/ai/prompts.ts)
+TITLE_PROMPT = """
+    - you will generate a short title based on the first message a user begins a conversation with
+    - ensure it is not more than 80 characters long
+    - the title should be a summary of the user's message
+    - do not use quotes or colons
+"""
+
 
 class MessagePart(BaseModel):
     type: str  # "text" or "file"
@@ -59,6 +68,43 @@ class ChatRequest(BaseModel):
     message: ChatMessage
     selectedChatModel: str  # "chat-model" or "chat-model-reasoning"
     selectedVisibilityType: str  # "public" or "private"
+
+
+def get_text_from_message(message: ChatMessage) -> str:
+    """
+    Extract text content from a chat message.
+    Ported from lib/utils.ts getTextFromMessage.
+    """
+    return "".join(part.text for part in message.parts if part.type == "text" and part.text)
+
+
+async def generate_title_from_user_message(message: ChatMessage) -> str:
+    """
+    Generate a chat title from the user's first message.
+    Ported from app/(chat)/actions.ts generateTitleFromUserMessage.
+    """
+    client = get_ai_client()
+    model = get_model_name("title-model")
+    text = get_text_from_message(message)
+
+    # Generate title using OpenAI (non-streaming)
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": TITLE_PROMPT},
+            {"role": "user", "content": text},
+        ],
+        temperature=0.7,
+        max_tokens=100,  # Limit to keep titles short
+    )
+
+    title = response.choices[0].message.content or "New Chat"
+    # Clean up title - remove quotes and colons, trim whitespace
+    title = title.strip().strip('"').strip("'").replace(":", "").strip()
+    # Ensure it's not more than 80 characters
+    if len(title) > 80:
+        title = title[:77] + "..."
+    return title or "New Chat"
 
 
 @router.post("")
@@ -146,19 +192,21 @@ async def create_chat(
         logger.info("messages_from_db: %s", json.dumps(messages_from_db, indent=4))
 
     else:
-        # Create new chat (with placeholder title - can generate later)
-        # TODO: Generate title from user message similar to Next.js: generateTitleFromUserMessage
+        # Create new chat - generate title from user message
         logger.info(
             "Creating new chat: id=%s, userId=%s, visibility=%s",
             request.id,
             user_id,
             request.selectedVisibilityType,
         )
+        # Generate title from user message
+        title = await generate_title_from_user_message(request.message)
+        logger.info("Generated title: %s", title)
         chat = await save_chat(
             db,
             request.id,
             user_id,
-            title="New Chat",
+            title=title,
             visibility=request.selectedVisibilityType,
         )
         logger.info(
