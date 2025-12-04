@@ -306,11 +306,12 @@ async def create_chat(
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
         },
     )
 
-    return response
-    # return patch_response_with_headers(response)
+    # return response
+    return patch_response_with_headers(response)
 
 
 @router.delete("")

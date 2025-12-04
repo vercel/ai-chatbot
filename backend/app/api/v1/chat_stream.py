@@ -3,6 +3,7 @@ Chat streaming endpoint using aisuite + OpenAI.
 This endpoint handles AI streaming and replaces the Next.js /api/chat/stream endpoint.
 """
 
+import asyncio
 import json
 import logging
 import traceback
@@ -341,6 +342,8 @@ async def stream_chat(
                         data_str = event[6:].strip()
                         if data_str == "[DONE]":
                             yield event_bytes
+                            # Give event loop a chance to flush
+                            await asyncio.sleep(0)
                             break
 
                         try:
@@ -395,11 +398,15 @@ async def stream_chat(
                                         message_buffer = ""
 
                             yield event_bytes
+                            # Give event loop a chance to flush immediately
+                            await asyncio.sleep(0)
                         except json.JSONDecodeError:
                             # Not JSON, yield as-is
                             yield event_bytes
+                            await asyncio.sleep(0)
                     else:
                         yield event_bytes
+                        await asyncio.sleep(0)
 
                 # Final fallback: Save any remaining message content
                 # This handles cases where the stream ended without text-end or finish events

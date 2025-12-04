@@ -5,8 +5,10 @@ Based on: https://raw.githubusercontent.com/vercel-labs/ai-sdk-preview-python-st
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import re
 import traceback
 import uuid
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence
@@ -21,6 +23,26 @@ logger = logging.getLogger(__name__)
 def format_sse(payload: dict) -> str:
     """Format a payload as Server-Sent Event."""
     return f"data: {json.dumps(payload, separators=(',', ':'))}\n\n"
+
+
+def chunk_text_by_words(text: str) -> list[str]:
+    """
+    Split text into word-by-word chunks for smoother streaming.
+    This mimics the behavior of Vercel AI SDK's smoothStream({ chunking: "word" }).
+
+    Args:
+        text: The text content to chunk
+
+    Returns:
+        List of word chunks (words with trailing spaces/punctuation preserved)
+    """
+    if not text:
+        return []
+
+    # Split by word boundaries, preserving spaces and punctuation
+    # Match words (including punctuation) and whitespace
+    chunks = re.findall(r"\S+\s*|\s+", text)
+    return chunks if chunks else [text]
 
 
 def _process_chunk(
@@ -160,6 +182,7 @@ async def stream_text(
     max_completion_tokens: Optional[int] = None,
     max_tool_turns: int = 5,
     sse_event_callback: Optional[Callable[[str], None]] = None,
+    stream_yield_delay: float = 0.01,
 ):
     """
     Stream text using aisuite and format as Vercel AI SDK SSE events.
@@ -208,6 +231,7 @@ async def stream_text(
             if turn == 0:
                 logger.info("Yielding start event with messageId: %s", message_id)
                 yield format_sse({"type": "start", "messageId": message_id})
+                await asyncio.sleep(0)  # Flush immediately
 
             # Call OpenAI with streaming
             stream = client.chat.completions.create(
@@ -224,7 +248,12 @@ async def stream_text(
             logger.info("Starting to iterate over stream chunks...")
             chunk_count = 0
             try:
+                # Iterate over stream chunks - OpenAI SDK stream is synchronous
+                # but we yield immediately to prevent buffering
                 for chunk in stream:
+                    # Give event loop a chance to process after each chunk
+                    # This prevents blocking and allows immediate flushing
+                    await asyncio.sleep(stream_yield_delay)
                     chunk_count += 1
                     if chunk_count == 1:
                         logger.info("First chunk received in turn %d", turn + 1)
@@ -250,10 +279,20 @@ async def stream_text(
                                     # Yield text-start event immediately (only once)
                                     yield format_sse({"type": "text-start", "id": text_stream_id})
                                     text_started = True
-                                # Yield text-delta event immediately
-                                yield format_sse(
-                                    {"type": "text-delta", "id": text_stream_id, "delta": content}
-                                )
+                                # Chunk content word-by-word for smoother streaming
+                                # This mimics Vercel AI SDK's smoothStream({ chunking: "word" })
+                                word_chunks = chunk_text_by_words(content)
+                                for word_chunk in word_chunks:
+                                    # Yield each word chunk as a separate text-delta event
+                                    yield format_sse(
+                                        {
+                                            "type": "text-delta",
+                                            "id": text_stream_id,
+                                            "delta": word_chunk,
+                                        }
+                                    )
+                                    # Give event loop a chance to flush immediately
+                                    await asyncio.sleep(stream_yield_delay)
 
                             # Handle tool calls
                             tool_calls = getattr(delta, "tool_calls", None)
