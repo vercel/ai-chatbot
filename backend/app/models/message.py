@@ -1,11 +1,14 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, JSON
+import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
-from datetime import datetime
-import uuid
 
 
+# ruff: noqa: N815
 class Message(Base):
     __tablename__ = "Message_v2"
 

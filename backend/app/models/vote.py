@@ -1,10 +1,12 @@
-from sqlalchemy import Column, Boolean, ForeignKey
+from sqlalchemy import Boolean, Column, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
+
 from app.core.database import Base
 
 
+# ruff: noqa: N815
 class Vote(Base):
     __tablename__ = "Vote_v2"
     __table_args__ = (PrimaryKeyConstraint("chatId", "messageId"),)

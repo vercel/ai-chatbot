@@ -1,8 +1,9 @@
 import ast
 import json
-import json5
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, TypedDict, Union
+
+import json5
 
 
 def format_sse(payload: dict) -> str:

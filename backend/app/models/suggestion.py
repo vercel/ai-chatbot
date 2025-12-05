@@ -2,13 +2,14 @@
 SQLAlchemy model for the Suggestion table.
 Ported from lib/db/schema.ts
 """
-from datetime import datetime
-from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, Column, ForeignKey, Text, DateTime
+from datetime import datetime
+from uuid import uuid4
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy.schema import ForeignKeyConstraint
 
 from app.core.database import Base
 
@@ -50,4 +51,3 @@ class Suggestion(Base):
 
     # Relationships
     user = relationship("User", back_populates="suggestions")
-
