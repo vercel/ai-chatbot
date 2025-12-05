@@ -295,9 +295,11 @@ export function Weather({
     end: new Date(weatherAtLocation.daily.sunset[0]),
   });
 
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -307,6 +309,11 @@ export function Weather({
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null;
+  }
 
   const hoursToShow = isMobile ? 5 : 6;
 

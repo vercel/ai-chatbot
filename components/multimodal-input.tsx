@@ -105,8 +105,14 @@ function PureMultimodalInput({
     ""
   );
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (textareaRef.current) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (textareaRef.current && mounted) {
       const domValue = textareaRef.current.value;
       // Prefer DOM value over localStorage to handle hydration
       const finalValue = domValue || localStorageInput || "";
@@ -115,11 +121,13 @@ function PureMultimodalInput({
     }
     // Only run once after hydration
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adjustHeight, localStorageInput, setInput]);
+  }, [adjustHeight, localStorageInput, setInput, mounted]);
 
   useEffect(() => {
-    setLocalStorageInput(input);
-  }, [input, setLocalStorageInput]);
+    if (mounted) {
+      setLocalStorageInput(input);
+    }
+  }, [input, setLocalStorageInput, mounted]);
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
