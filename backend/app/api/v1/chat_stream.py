@@ -316,8 +316,11 @@ async def stream_chat(
             nonlocal background_tasks
 
             logger.info("=== STREAM GENERATOR STARTED ===")
-            message_buffer = ""
+            # message_buffer = ""
             current_message_id: Optional[str] = None
+            current_part = {}
+            message_parts_buffer = []
+            # tools_buffer = []
 
             try:
                 logger.info("Starting stream_text iteration...")
@@ -350,52 +353,101 @@ async def stream_chat(
                             data = json.loads(data_str)
                             event_type = data.get("type")
 
-                            # Track usage
-                            if event_type == "finish":
-                                metadata = data.get("messageMetadata", {})
-                                usage = metadata.get("usage")
-                                if usage:
-                                    final_usage = usage
+                            if event_type == "start":
+                                current_message_id = str(uuid4())
 
+                            elif event_type == "start-step":
+                                message_parts_buffer.append({"type": "step-start"})
+
+                            elif event_type == "text-start":
+                                current_part = {
+                                    "type": "text",
+                                    "text": "",
+                                    "state": "",
+                                    "providerMetadata": {"openai": {"itemId": data.get("id")}},
+                                }
                             # Track text deltas for message saving
-                            if event_type == "text-delta":
-                                message_buffer += data.get("delta", "")
+
+                            elif event_type == "text-delta":
+                                # message_buffer += data.get("delta", "")
+                                current_part["text"] += data.get("delta", "")
+
                             elif event_type == "text-end":
                                 # Save accumulated message when text ends
-                                if message_buffer and current_message_id:
+                                if current_part and current_message_id:
+                                    # assistant_messages.append(
+                                    #     {
+                                    #         "id": current_message_id,
+                                    #         "role": "assistant",
+                                    #         "parts": [{"type": "text", "text": message_buffer}],
+                                    #         "createdAt": datetime.utcnow(),
+                                    #         "attachments": [],
+                                    #         "chatId": str(request.id),
+                                    #     }
+                                    # )
+                                    # message_buffer = ""
+                                    current_part["state"] = "done"
+                                    message_parts_buffer.append(current_part)
+                                    current_part = {}
+
+                            elif event_type == "tool-input-start":
+                                current_part = {
+                                    "type": "tool-" + data.get("toolName", ""),
+                                    "toolCallId": data.get("toolCallId"),
+                                    "state": "",
+                                    "input": {},
+                                    "output": {},
+                                    "callProviderMetadata": {
+                                        "openai": {"itemId": data.get("toolCallId")}
+                                    },
+                                }
+
+                            elif event_type == "tool-input-error":
+                                current_part["state"] = "input-available"
+                                current_part["input"]["error"] = data["errorText"]
+                                message_parts_buffer.append(current_part)
+
+                                current_part = {}
+
+                            elif event_type == "tool-input-available":
+                                current_part["input"] = data["input"]
+                                current_part["state"] = "input-available"
+                                # Don't save yet because this will be done in either `tool-output-error` or `tool-output-available`.
+
+                            elif event_type == "tool-output-error":
+                                current_part["state"] = "output-available"
+                                current_part["output"]["error"] = data["errorText"]
+                                message_parts_buffer.append(current_part)
+
+                                current_part = {}
+
+                            elif event_type == "tool-output-available":
+                                current_part["output"] = data["output"]
+                                current_part["state"] = "output-available"
+                                message_parts_buffer.append(current_part)
+
+                                current_part = {}
+
+                            elif event_type == "finish":
+                                if message_parts_buffer and current_message_id:
+                                    # Check if we haven't already saved this message
+
                                     assistant_messages.append(
                                         {
                                             "id": current_message_id,
                                             "role": "assistant",
-                                            "parts": [{"type": "text", "text": message_buffer}],
+                                            "parts": message_parts_buffer,
                                             "createdAt": datetime.utcnow(),
                                             "attachments": [],
                                             "chatId": str(request.id),
                                         }
                                     )
-                                    message_buffer = ""
-                            elif event_type == "start":
-                                current_message_id = uuid4()
-                            elif event_type == "finish":
-                                # Fallback: Save any remaining message content when stream finishes
-                                # This ensures messages are saved even if text-end wasn't received
-                                if message_buffer and current_message_id:
-                                    # Check if we haven't already saved this message
-                                    if not any(
-                                        msg["id"] == current_message_id
-                                        for msg in assistant_messages
-                                    ):
-                                        assistant_messages.append(
-                                            {
-                                                "id": current_message_id,
-                                                "role": "assistant",
-                                                "parts": [{"type": "text", "text": message_buffer}],
-                                                "createdAt": datetime.utcnow(),
-                                                "attachments": [],
-                                                "chatId": str(request.id),
-                                            }
-                                        )
-                                        message_buffer = ""
+
+                                # Track usage
+                                metadata = data.get("messageMetadata", {})
+                                usage = metadata.get("usage")
+                                if usage:
+                                    final_usage = usage
 
                             yield event_bytes
                             # Give event loop a chance to flush immediately
@@ -410,22 +462,12 @@ async def stream_chat(
 
                 # Final fallback: Save any remaining message content
                 # This handles cases where the stream ended without text-end or finish events
-                if message_buffer and current_message_id:
-                    if not any(msg["id"] == current_message_id for msg in assistant_messages):
-                        assistant_messages.append(
-                            {
-                                "id": current_message_id,
-                                "role": "assistant",
-                                "parts": [{"type": "text", "text": message_buffer}],
-                                "createdAt": datetime.utcnow(),
-                                "attachments": [],
-                                "chatId": str(request.id),
-                            }
-                        )
 
                 logger.info(
                     f"=== STREAM GENERATOR ENDED with assistant messages: {len(assistant_messages)} message(s) ==="
                 )
+
+                logger.info("assistant messages to save: %s", assistant_messages)
 
             except GeneratorExit:
                 # Generator is being closed by client, re-raise to allow cleanup
@@ -438,6 +480,7 @@ async def stream_chat(
                     yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n".encode(
                         "utf-8"
                     )
+                    yield f"data: {json.dumps({'type': 'finish'})}"
                     yield "data: [DONE]\n\n".encode("utf-8")
                 except Exception:
                     # If we can't yield, connection is likely closed
