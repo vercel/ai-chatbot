@@ -17,12 +17,9 @@ from fastapi.responses import StreamingResponse
 from openai import OpenAI
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 
+from app.utils.helpers import format_sse
+
 logger = logging.getLogger(__name__)
-
-
-def format_sse(payload: dict) -> str:
-    """Format a payload as Server-Sent Event."""
-    return f"data: {json.dumps(payload, separators=(',', ':'))}\n\n"
 
 
 def chunk_text_by_words(text: str) -> list[str]:
@@ -243,6 +240,8 @@ async def stream_text(
                 tools=tool_definitions if tool_definitions else None,
                 store=True,
             )
+
+            yield format_sse({"type": "start-step"})
 
             # Process stream chunks
             logger.info("Starting to iterate over stream chunks...")
