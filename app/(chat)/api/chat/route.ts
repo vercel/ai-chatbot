@@ -36,12 +36,13 @@ import {
   saveChat,
   saveMessages,
   updateChatLastContextById,
+  updateChatTitleById,
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
-import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import { convertToUIMessages, generateUUID, getTextFromMessage } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
@@ -135,16 +136,31 @@ export async function POST(request: Request) {
       // Only fetch messages if chat already exists
       messagesFromDb = await getMessagesByChatId({ id });
     } else {
-      const title = await generateTitleFromUserMessage({
-        message,
-      });
+      // Generate temporary title immediately (non-blocking)
+      const messageText = getTextFromMessage(message);
+      const temporaryTitle = messageText.length > 60 
+        ? `${messageText.slice(0, 60).trim()}...` 
+        : messageText || "New Chat";
 
       await saveChat({
         id,
         userId: session.user.id,
-        title,
+        title: temporaryTitle,
         visibility: selectedVisibilityType,
       });
+      
+      // Generate real title asynchronously in the background
+      // Don't await - let it run in parallel
+      generateTitleFromUserMessage({ message })
+        .then((realTitle) => {
+          updateChatTitleById({ chatId: id, title: realTitle }).catch((err) => {
+            console.warn("Failed to update chat title", id, err);
+          });
+        })
+        .catch((err) => {
+          console.warn("Failed to generate chat title", id, err);
+        });
+      
       // New chat - no need to fetch messages, it's empty
     }
 
