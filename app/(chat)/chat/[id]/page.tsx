@@ -7,9 +7,16 @@ import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { isAuthDisabled } from "@/lib/constants";
-import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
-import { sessionIdMatchesChatUserId } from "@/lib/session-id-utils";
+import type { Chat as DBChat, DBMessage } from "@/lib/db/schema";
+import { ChatSDKError } from "@/lib/errors";
+import { serverApiFetch } from "@/lib/server-api-client";
 import { convertToUIMessages } from "@/lib/utils";
+
+type ChatData = {
+  chat: DBChat;
+  messages: DBMessage[];
+  isOwner: boolean;
+};
 
 export default function Page(props: { params: Promise<{ id: string }> }) {
   return (
@@ -21,11 +28,6 @@ export default function Page(props: { params: Promise<{ id: string }> }) {
 
 async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const chat = await getChatById({ id });
-
-  if (!chat) {
-    notFound();
-  }
 
   const session = await auth();
   const cookieStore = await cookies();
@@ -35,50 +37,49 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     redirect("/api/auth/guest");
   }
 
-  // Determine if current user owns the chat (for readonly check)
-  let isOwner = false;
+  // Fetch chat data from backend API
+  let chatData: ChatData;
+  try {
+    const response = await serverApiFetch(`/api/chat/${id}`);
 
-  // Enforce private chat visibility - always check ownership
-  if (chat.visibility === "private") {
-    if (isAuthDisabled) {
-      // When auth is disabled, check session ID from cookie
-      const sessionId = cookieStore.get("session_id")?.value;
-      if (!sessionId) {
-        // No session ID in cookie - deny access to private chat
-        return notFound();
+    if (!response.ok) {
+      if (response.status === 404) {
+        notFound();
       }
-
-      // Convert session ID to UUID and compare with chat.userId
-      isOwner = await sessionIdMatchesChatUserId(sessionId, chat.userId);
-      if (!isOwner) {
-        return notFound();
+      if (response.status === 403) {
+        notFound(); // Forbidden - treat as not found for security
       }
-    } else {
-      // When auth is enabled, check authenticated user
-      if (!session?.user) {
-        return notFound();
-      }
-
-      isOwner = session.user.id === chat.userId;
-      if (!isOwner) {
-        return notFound();
-      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new ChatSDKError(
+        errorData.code || "bad_request:api",
+        errorData.cause || `Failed to fetch chat: ${response.statusText}`
+      );
     }
-  } else {
-    // For public chats, check ownership for readonly (but allow viewing)
-    if (isAuthDisabled) {
-      const sessionId = cookieStore.get("session_id")?.value;
-      if (sessionId) {
-        isOwner = await sessionIdMatchesChatUserId(sessionId, chat.userId);
-      }
-    } else {
-      isOwner = session?.user?.id === chat.userId;
+
+    chatData = await response.json();
+  } catch (error) {
+    if (error instanceof ChatSDKError && error.code === "not_found:chat") {
+      notFound();
     }
+    // Re-throw other errors
+    throw error;
   }
 
-  const messagesFromDb = await getMessagesByChatId({
-    id,
-  });
+  const { chat, messages: messagesFromApi, isOwner } = chatData;
+
+  // Convert backend message format to DBMessage format
+  // Backend returns createdAt as ISO string, but convertToUIMessages expects Date
+  const messagesFromDb = messagesFromApi.map(
+    (msg: DBMessage) =>
+      ({
+        id: msg.id,
+        chatId: chat.id,
+        role: msg.role as "user" | "assistant" | "system",
+        parts: msg.parts ?? [],
+        attachments: msg.attachments ?? [],
+        createdAt: msg.createdAt,
+      }) as DBMessage
+  );
 
   const uiMessages = convertToUIMessages(messagesFromDb);
 

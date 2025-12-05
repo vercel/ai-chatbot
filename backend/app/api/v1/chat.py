@@ -362,6 +362,59 @@ async def create_chat(
     return patch_response_with_headers(response)
 
 
+@router.get("/{chat_id}")
+async def get_chat(
+    chat_id: UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get a chat by ID with its messages.
+    Returns chat data, messages, and ownership status for the current user.
+    """
+    logger.info("=== GET /api/chat/%s called ===", chat_id)
+    logger.info("current_user_id=%s", current_user.get("id"))
+
+    # Get chat
+    chat = await get_chat_by_id(db, chat_id)
+    if not chat:
+        raise ChatSDKError("not_found:chat", status_code=status.HTTP_404_NOT_FOUND)
+
+    # Check access permissions
+    if chat.visibility == "private":
+        if not user_ids_match(current_user["id"], chat.userId):
+            raise ChatSDKError("forbidden:chat", status_code=status.HTTP_403_FORBIDDEN)
+
+    # Get messages
+    messages = await get_messages_by_chat_id(db, chat_id)
+
+    # Check ownership for readonly status
+    is_owner = user_ids_match(current_user["id"], chat.userId)
+
+    # Convert to response format
+    return {
+        "chat": {
+            "id": str(chat.id),
+            "title": chat.title,
+            "createdAt": chat.createdAt.isoformat(),
+            "visibility": chat.visibility,
+            "userId": str(chat.userId),
+            "lastContext": chat.lastContext,
+        },
+        "messages": [
+            {
+                "id": str(msg.id),
+                "role": msg.role,
+                "parts": msg.parts,
+                "attachments": msg.attachments,
+                "createdAt": msg.createdAt.isoformat(),
+            }
+            for msg in messages
+        ],
+        "isOwner": is_owner,
+    }
+
+
 @router.delete("")
 async def delete_chat(
     chat_id: UUID = Query(..., alias="id"),

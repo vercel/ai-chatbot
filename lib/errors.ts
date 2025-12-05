@@ -52,6 +52,10 @@ export class ChatSDKError extends Error {
     this.statusCode = getStatusCodeByType(this.type);
   }
 
+  get code(): ErrorCode {
+    return `${this.type}:${this.surface}`;
+  }
+
   toResponse() {
     const code: ErrorCode = `${this.type}:${this.surface}`;
     const visibility = visibilityBySurface[this.surface];
