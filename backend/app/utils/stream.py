@@ -11,7 +11,7 @@ import logging
 import re
 import traceback
 import uuid
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence
+from typing import Any, AsyncGenerator, Callable, Dict, Mapping, Optional, Sequence
 
 from fastapi.responses import StreamingResponse
 from openai import OpenAI
@@ -20,6 +20,115 @@ from openai.types.chat.chat_completion_message_param import ChatCompletionMessag
 from app.utils.helpers import format_sse
 
 logger = logging.getLogger(__name__)
+
+
+async def execute_tool_with_streaming(
+    tool_function: Callable,
+    tool_call_id: str,
+    tool_name: str,
+    parsed_arguments: Dict[str, Any],
+) -> AsyncGenerator[tuple[str, Any], None]:
+    """
+    Execute a tool and stream SSE events in real-time.
+
+    This function runs the tool concurrently while streaming SSE events
+    as they're produced, providing real-time updates to the frontend.
+
+    Yields:
+        Tuple of (event_type, event_data):
+        - ("event", sse_event_string) - SSE events from tool (streamed in real-time)
+        - ("result", tool_result) - Final tool result
+        - ("error", error_info) - Error if tool fails
+
+    Args:
+        tool_function: The tool function to execute
+        tool_call_id: ID of the tool call
+        tool_name: Name of the tool
+        parsed_arguments: Arguments to pass to the tool
+
+    Yields:
+        Tuples of (event_type, event_data) as described above
+    """
+    tool_sse_events = []
+    event_ready = asyncio.Event()
+    tool_task = None
+    tool_result = None
+
+    def tool_sse_writer(event: str):
+        """Emit SSE events in real-time. Called synchronously by tools."""
+        tool_sse_events.append(event)
+        event_ready.set()  # Signal that new event is ready
+
+    try:
+        # Try to call with _sse_writer parameter (tools that support it)
+        try:
+            tool_task = asyncio.create_task(
+                tool_function(**parsed_arguments, _sse_writer=tool_sse_writer)
+            )
+        except TypeError as e:
+            # Tool doesn't accept _sse_writer parameter, call without it
+            if "_sse_writer" in str(e) or "unexpected keyword" in str(e).lower():
+                tool_task = asyncio.create_task(tool_function(**parsed_arguments))
+            else:
+                raise
+
+        # Stream events as they arrive (while tool is running)
+        while not tool_task.done():
+            try:
+                # Wait for event or timeout
+                await asyncio.wait_for(event_ready.wait(), timeout=0.05)
+                event_ready.clear()
+
+                # Yield all new events immediately
+                while tool_sse_events:
+                    event = tool_sse_events.pop(0)
+                    yield ("event", event)
+
+            except asyncio.TimeoutError:
+                # No new events, check if tool is done
+                if tool_task.done():
+                    break
+                # Continue waiting for more events
+                continue
+
+        # Yield any remaining events (in case tool finished while we were waiting)
+        while tool_sse_events:
+            event = tool_sse_events.pop(0)
+            yield ("event", event)
+
+        # Get tool result
+        tool_result = await tool_task
+        yield ("result", tool_result)
+
+    except asyncio.CancelledError:
+        # Tool was cancelled
+        if tool_task and not tool_task.done():
+            tool_task.cancel()
+            try:
+                await tool_task
+            except asyncio.CancelledError:
+                pass
+        yield (
+            "error",
+            {
+                "type": "cancelled",
+                "toolCallId": tool_call_id,
+                "toolName": tool_name,
+                "errorText": "Tool execution cancelled",
+            },
+        )
+        raise
+
+    except Exception as error:
+        # Tool execution failed
+        tool_error = {
+            "type": "tool-error",
+            "toolCallId": tool_call_id,
+            "toolName": tool_name,
+            "errorText": str(error),
+        }
+        yield ("error", tool_error)
+        raise
 
 
 def chunk_text_by_words(text: str) -> list[str]:
@@ -511,46 +620,73 @@ async def stream_text(
                         )
                         continue
 
-                    # Create SSE writer for tool execution
-                    tool_sse_events = []
-
-                    def tool_sse_writer(event: str):
-                        """Collect SSE events emitted by tools."""
-                        tool_sse_events.append(event)
-
-                    # Execute tool (async)
+                    # Execute tool with real-time SSE streaming
                     try:
-                        # Try to call with _sse_writer parameter (tools that support it)
-                        tool_result = await tool_function(
-                            **parsed_arguments,
-                            _sse_writer=tool_sse_writer,
-                        )
-                    except TypeError as e:
-                        # Tool doesn't accept _sse_writer parameter, call without it
-                        if "_sse_writer" in str(e) or "unexpected keyword" in str(e).lower():
-                            try:
-                                tool_result = await tool_function(**parsed_arguments)
-                            except Exception as error:
-                                error_msg = str(error)
+                        tool_result = None
+                        async for event_type, event_data in execute_tool_with_streaming(
+                            tool_function,
+                            tool_call_id=tool_call_id,
+                            tool_name=tool_name,
+                            parsed_arguments=parsed_arguments,
+                        ):
+                            if event_type == "event":
+                                # Stream SSE event immediately (real-time)
+                                yield event_data
+                            elif event_type == "result":
+                                # Tool completed successfully
+                                tool_result = event_data
+                                break
+                            elif event_type == "error":
+                                # Tool failed
+                                error_info = event_data
                                 yield format_sse(
                                     {
                                         "type": "tool-output-error",
-                                        "toolCallId": tool_call_id,
-                                        "toolName": tool_name,
-                                        "errorText": error_msg,
+                                        "toolCallId": error_info.get("toolCallId", tool_call_id),
+                                        "toolName": error_info.get("toolName", tool_name),
+                                        "errorText": error_info.get("errorText", "Unknown error"),
                                     }
                                 )
                                 tool_messages.append(
                                     {
                                         "role": "tool",
                                         "tool_call_id": tool_call_id,
-                                        "content": json.dumps({"error": error_msg}),
+                                        "content": json.dumps(
+                                            {"error": error_info.get("errorText", "Unknown error")}
+                                        ),
                                     }
                                 )
-                                continue
-                        else:
-                            raise
+                                # Continue to next tool call
+                                tool_result = None
+                                break
+
+                        # If tool completed successfully, yield result and add to messages
+                        if tool_result is not None:
+                            # Yield tool result
+                            yield format_sse(
+                                {
+                                    "type": "tool-output-available",
+                                    "toolCallId": tool_call_id,
+                                    "output": tool_result,
+                                }
+                            )
+
+                            # Add tool result to conversation messages
+                            # Tool results must be JSON strings
+                            tool_result_str = (
+                                json.dumps(tool_result)
+                                if not isinstance(tool_result, str)
+                                else tool_result
+                            )
+                            tool_messages.append(
+                                {
+                                    "role": "tool",
+                                    "tool_call_id": tool_call_id,
+                                    "content": tool_result_str,
+                                }
+                            )
                     except Exception as error:
+                        # Handle any unexpected errors
                         error_msg = str(error)
                         yield format_sse(
                             {
@@ -568,32 +704,6 @@ async def stream_text(
                             }
                         )
                         continue
-
-                    # Yield any SSE events emitted by the tool
-                    for event in tool_sse_events:
-                        yield event
-
-                    # Yield tool result
-                    yield format_sse(
-                        {
-                            "type": "tool-output-available",
-                            "toolCallId": tool_call_id,
-                            "output": tool_result,
-                        }
-                    )
-
-                    # Add tool result to conversation messages
-                    # Tool results must be JSON strings
-                    tool_result_str = (
-                        json.dumps(tool_result) if not isinstance(tool_result, str) else tool_result
-                    )
-                    tool_messages.append(
-                        {
-                            "role": "tool",
-                            "tool_call_id": tool_call_id,
-                            "content": tool_result_str,
-                        }
-                    )
 
                 # Add tool results to conversation for next turn
                 if tool_messages:

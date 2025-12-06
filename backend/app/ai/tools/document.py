@@ -2,12 +2,13 @@
 Document tools - Create and update documents.
 Ported from lib/ai/tools/create-document.ts and update-document.ts
 """
+
 import uuid
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, Dict, Optional
 
 from app.ai.client import get_ai_client, get_model_name
 from app.db.queries.document_queries import get_documents_by_id, save_document
-from app.utils.stream import format_sse
+from app.utils.helpers import format_sse
 
 
 async def create_document_tool(
@@ -213,17 +214,20 @@ async def _stream_text_content(
     content = ""
 
     # Use aisuite to stream text
-    messages = [{"role": "user", "content": prompt}]
+    messages = [
+        {"role": "system", "content": [{"type": "text", "text": system}]},
+        {"role": "user", "content": [{"type": "text", "text": prompt}]},
+    ]
 
     # Stream from aisuite
     stream = client.chat.completions.create(
         model=model,
         messages=messages,
-        system=system,
         stream=True,
+        store=True,
     )
 
-    async for chunk in stream:
+    for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:
                 delta = getattr(choice, "delta", None)
@@ -261,16 +265,19 @@ async def _stream_structured_content(
     # In a full implementation, we'd use structured output
     content = ""
 
-    messages = [{"role": "user", "content": prompt}]
+    messages = [
+        {"role": "system", "content": [{"type": "text", "text": system}]},
+        {"role": "user", "content": [{"type": "text", "text": prompt}]},
+    ]
 
     stream = client.chat.completions.create(
         model=model,
         messages=messages,
-        system=system,
+        store=True,
         stream=True,
     )
 
-    async for chunk in stream:
+    for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:
                 delta = getattr(choice, "delta", None)
@@ -334,4 +341,3 @@ UPDATE_DOCUMENT_TOOL_DEFINITION = {
         },
     },
 }
-

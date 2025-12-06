@@ -20,8 +20,6 @@ from app.ai.client import get_ai_client, get_model_name
 from app.ai.tools import (
     CREATE_DOCUMENT_TOOL_DEFINITION,
     GET_WEATHER_TOOL_DEFINITION,
-    REQUEST_SUGGESTIONS_TOOL_DEFINITION,
-    UPDATE_DOCUMENT_TOOL_DEFINITION,
     create_document_tool,
     get_weather,
     request_suggestions_tool,
@@ -34,8 +32,8 @@ from app.db.queries.chat_queries import (
     save_messages,
     update_chat_last_context_by_id,
 )
-from app.utils.user_id import get_user_id_uuid
 from app.utils.stream import patch_response_with_headers, stream_text
+from app.utils.user_id import get_user_id_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +54,7 @@ class ChatMessage(BaseModel):
     parts: List[MessagePart]
 
 
+# ruff: noqa: N815
 class StreamRequest(BaseModel):
     id: UUID
     message: ChatMessage
@@ -223,7 +222,7 @@ async def stream_chat(
         # Create tool definitions and callable functions
         tool_definitions = [
             GET_WEATHER_TOOL_DEFINITION,
-            # CREATE_DOCUMENT_TOOL_DEFINITION,
+            CREATE_DOCUMENT_TOOL_DEFINITION,
             # UPDATE_DOCUMENT_TOOL_DEFINITION,
             # REQUEST_SUGGESTIONS_TOOL_DEFINITION,
         ]
@@ -301,7 +300,7 @@ async def stream_chat(
 
         tools = {
             "getWeather": get_weather_wrapper,
-            # "createDocument": create_document_wrapper,
+            "createDocument": create_document_wrapper,
             # "updateDocument": update_document_wrapper,
             # "requestSuggestions": request_suggestions_wrapper,
         }
