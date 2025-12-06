@@ -13,6 +13,7 @@ import type {
   OpsTaskPayload,
 } from './types';
 import { getAgent, canAgentHandleTask } from './registry';
+import { logEvaluation, logAgentOSEvent, extractEvaluationMetadata } from '@/lib/tiqologyDb';
 
 /**
  * Main agent router function
@@ -214,6 +215,34 @@ async function executeGhostEvaluator(
 
   trace.intermediateResults = { ghostResponse: ghostResult };
 
+  // Extract metadata for logging
+  const { orgId, caseId, userId } = extractEvaluationMetadata(task);
+
+  // Log evaluation to TiQology Core DB
+  const logResult = await logEvaluation({
+    orgId: orgId || 'unknown',
+    caseId,
+    evaluatorUserId: userId,
+    evaluationType: 'ghost',
+    modelFlavor: payload.model === 'chat-model-reasoning' ? 'deep' : 'fast',
+    overallScore: ghostResult.score,
+    summary: ghostResult.feedback,
+    rawRequest: { task, payload },
+    rawResponse: ghostResult,
+  });
+
+  // Log AgentOS event
+  await logAgentOSEvent({
+    eventType: 'evaluation_run',
+    agentId: 'ghost-evaluator',
+    taskId: task.id,
+    orgId,
+    caseId,
+    userId,
+    status: 'completed',
+    metadata: { score: ghostResult.score, model: payload.model },
+  });
+
   return {
     taskId: task.id,
     agentId: 'ghost-evaluator',
@@ -224,12 +253,14 @@ async function executeGhostEvaluator(
         feedback: ghostResult.feedback,
         fullResponse: ghostResult.result,
         model: ghostResult.model,
+        evaluationId: logResult.evaluationId,
       },
       summary: `Evaluation completed with score: ${ghostResult.score}`,
       confidence: ghostResult.score / 100,
     },
     trace,
     completedAt: Date.now(),
+    ...(logResult.loggingError && { loggingError: logResult.loggingError }),
   };
 }
 
@@ -267,17 +298,55 @@ async function executeBestInterestEngine(
 
   trace.intermediateResults = { ghostResponse: ghostResult, parsedScores: scores };
 
+  // Extract metadata for logging
+  const { orgId, caseId, userId } = extractEvaluationMetadata(task);
+
+  // Log evaluation to TiQology Core DB
+  const logResult = await logEvaluation({
+    orgId: orgId || 'unknown',
+    caseId,
+    evaluatorUserId: userId,
+    evaluationType: 'best_interest',
+    modelFlavor: payload.model === 'chat-model-reasoning' ? 'deep' : 'fast',
+    overallScore: scores.overall,
+    summary: scores.summary || `Overall: ${scores.overall}/100`,
+    dimensions: [
+      { dimensionName: 'Stability', score: scores.stability, reasoning: scores.stabilityReasoning },
+      { dimensionName: 'Emotional', score: scores.emotional, reasoning: scores.emotionalReasoning },
+      { dimensionName: 'Safety', score: scores.safety, reasoning: scores.safetyReasoning },
+      { dimensionName: 'Development', score: scores.development, reasoning: scores.developmentReasoning },
+    ],
+    rawRequest: { task, payload },
+    rawResponse: { ghostResult, scores },
+  });
+
+  // Log AgentOS event
+  await logAgentOSEvent({
+    eventType: 'evaluation_run',
+    agentId: 'best-interest-engine',
+    taskId: task.id,
+    orgId,
+    caseId,
+    userId,
+    status: 'completed',
+    metadata: { overallScore: scores.overall, model: payload.model },
+  });
+
   return {
     taskId: task.id,
     agentId: 'best-interest-engine',
     status: 'completed',
     result: {
-      data: scores,
+      data: {
+        ...scores,
+        evaluationId: logResult.evaluationId,
+      },
       summary: `Best Interest evaluation completed. Overall score: ${scores.overall}`,
       confidence: scores.overall / 100,
     },
     trace,
     completedAt: Date.now(),
+    ...(logResult.loggingError && { loggingError: logResult.loggingError }),
   };
 }
 
