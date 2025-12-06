@@ -37,6 +37,10 @@ async def geocode_city(city: str) -> Optional[Dict[str, float]]:
                 "longitude": result["longitude"],
             }
     except Exception:
+        # tbck = traceback.format_exc()
+
+        # raise Exception(f"Error geocoding city {city}: {str(e)}\n{tbck}")
+
         return None
 
 
