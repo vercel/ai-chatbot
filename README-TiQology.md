@@ -113,11 +113,20 @@ POST /api/ghost
 
 ```json
 {
-  "result": "Yes, user@example.com is a valid email format following RFC 5322 standards.",
+  "score": 95,
+  "feedback": "Yes, user@example.com is a valid email format following RFC 5322 standards.",
+  "result": "Score: 95\nFeedback: Yes, user@example.com is a valid email format following RFC 5322 standards.",
   "timestamp": "2024-12-05T10:00:00.000Z",
   "model": "chat-model"
 }
 ```
+
+**Fields**:
+- `score`: Quality/confidence score from 0-100
+- `feedback`: Brief evaluation summary (1-2 sentences)
+- `result`: Full AI response text
+- `timestamp`: ISO 8601 timestamp
+- `model`: Model used for evaluation
 
 ### Error Response
 
@@ -503,6 +512,211 @@ TiQology-spa                    AI Chatbot (this fork)
 └─ Settings panel ──────────────┼─ /app/(auth)/settings/page.tsx
    (Future integration)         │  └─ User preferences
 ```
+
+---
+
+## Vercel Deployment
+
+### Prerequisites
+
+1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
+2. **GitHub Repository**: Fork or push this repo to your GitHub account
+3. **Required API Keys**: Obtain before deployment (see below)
+
+### Required Environment Variables
+
+When deploying to Vercel, configure these environment variables in your project settings:
+
+#### Essential (Required for Basic Functionality)
+
+```bash
+# Authentication secret (generate at https://generate-secret.vercel.app/32)
+AUTH_SECRET=your-random-32-char-secret
+
+# Google AI API Key (get from https://aistudio.google.com/app/apikey)
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key
+
+# AI Provider: "google" for direct Gemini access
+AI_PROVIDER=google
+
+# Database (Vercel Postgres - auto-created when you add Vercel Postgres integration)
+POSTGRES_URL=auto-populated-by-vercel
+
+# Blob Storage (Vercel Blob - auto-created when you add Vercel Blob integration)
+BLOB_READ_WRITE_TOKEN=auto-populated-by-vercel
+```
+
+#### Ghost Mode API (Optional but Recommended)
+
+```bash
+# Generate a secure random key for Ghost Mode API authentication
+GHOST_MODE_API_KEY=your-secret-ghost-key
+```
+
+#### Optional (For Advanced Features)
+
+```bash
+# Redis for rate limiting (Vercel KV - auto-created with integration)
+REDIS_URL=auto-populated-by-vercel
+
+# AI Gateway (only if AI_PROVIDER=gateway)
+AI_GATEWAY_API_KEY=your-gateway-key
+```
+
+### Deployment Steps
+
+#### Option 1: Deploy via Vercel Dashboard (Recommended)
+
+1. **Import Repository**
+   - Go to [vercel.com/new](https://vercel.com/new)
+   - Click "Import Git Repository"
+   - Select your fork: `MrAllgoodWilson/ai-chatbot`
+
+2. **Configure Project**
+   - Framework Preset: **Next.js** (auto-detected)
+   - Root Directory: `./` (default)
+   - Build Command: `pnpm build` (default)
+   - Output Directory: `.next` (default)
+
+3. **Add Integrations** (Before deploying)
+   - Click "Storage" → Add "Vercel Postgres"
+   - Click "Storage" → Add "Vercel Blob"
+   - (Optional) Click "Storage" → Add "Vercel KV" for Redis
+
+4. **Set Environment Variables**
+   - Click "Environment Variables"
+   - Add each variable from the list above
+   - **Critical**: Set `AUTH_SECRET`, `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_PROVIDER=google`, `GHOST_MODE_API_KEY`
+
+5. **Deploy**
+   - Click "Deploy"
+   - Wait 2-3 minutes for build completion
+   - Note your production URL: `https://your-project.vercel.app`
+
+#### Option 2: Deploy via Vercel CLI
+
+```bash
+# Install Vercel CLI
+pnpm add -g vercel
+
+# Login to Vercel
+vercel login
+
+# Link project (first time only)
+vercel link
+
+# Set environment variables
+vercel env add AUTH_SECRET production
+vercel env add GOOGLE_GENERATIVE_AI_API_KEY production
+vercel env add AI_PROVIDER production
+vercel env add GHOST_MODE_API_KEY production
+
+# Deploy to production
+vercel --prod
+```
+
+### Post-Deployment Verification
+
+1. **Health Check**
+   ```bash
+   curl https://your-project.vercel.app/api/ghost
+   ```
+   Expected response:
+   ```json
+   {
+     "status": "healthy",
+     "service": "ghost-mode",
+     "version": "0.1.0"
+   }
+   ```
+
+2. **Test Ghost Mode API**
+   ```bash
+   curl -X POST https://your-project.vercel.app/api/ghost \
+     -H "Content-Type: application/json" \
+     -H "x-api-key: your-ghost-mode-api-key" \
+     -d '{
+       "prompt": "Is the sky blue?",
+       "context": {"source": "test"}
+     }'
+   ```
+   Expected response:
+   ```json
+   {
+     "score": 95,
+     "feedback": "Yes, the sky appears blue due to Rayleigh scattering.",
+     "result": "Score: 95\nFeedback: Yes, the sky appears blue...",
+     "timestamp": "2024-12-06T10:00:00.000Z",
+     "model": "chat-model"
+   }
+   ```
+
+3. **Test Chat UI**
+   - Visit `https://your-project.vercel.app`
+   - Try sending a message
+   - Verify reasoning works with Gemini models
+
+### Ghost Mode Endpoint URLs
+
+After deployment, your Ghost Mode API will be available at:
+
+- **Production**: `https://your-project.vercel.app/api/ghost`
+- **Preview** (from PRs): `https://your-project-git-branch.vercel.app/api/ghost`
+- **Local**: `http://localhost:3000/api/ghost`
+
+Use this URL in TiQology-spa configuration.
+
+### Troubleshooting Deployment
+
+#### Build Fails: "Cannot find module '@/lib/ai/providers'"
+
+**Cause**: Missing environment variables at build time.
+
+**Fix**: Ensure `GOOGLE_GENERATIVE_AI_API_KEY` and `AI_PROVIDER` are set in Vercel environment variables.
+
+#### Runtime Error: "Missing API key"
+
+**Cause**: Environment variables not propagated to runtime.
+
+**Fix**: 
+1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+2. Verify all variables are set for "Production" environment
+3. Redeploy: `vercel --prod` or trigger via git push
+
+#### Ghost Mode Returns 401 Unauthorized
+
+**Cause**: API key mismatch or missing.
+
+**Fix**:
+- Verify `GHOST_MODE_API_KEY` is set in Vercel
+- Ensure TiQology-spa sends correct `x-api-key` header
+- Check Vercel logs: `vercel logs`
+
+#### Database Migration Fails
+
+**Cause**: Postgres URL not available during build.
+
+**Fix**:
+1. Ensure Vercel Postgres integration is added
+2. Check that `POSTGRES_URL` is populated
+3. Review build logs for migration errors
+4. Manual migration if needed: `vercel env pull && pnpm db:migrate && git push`
+
+### Performance Tips
+
+1. **Edge Runtime**: Ghost Mode API uses Edge runtime for <100ms response times globally
+2. **Caching**: Enable Vercel's caching for static assets
+3. **Analytics**: Add Vercel Analytics to monitor API usage:
+   ```bash
+   pnpm add @vercel/analytics
+   ```
+
+### Security Best Practices
+
+1. **Rotate Keys**: Regenerate `AUTH_SECRET` and `GHOST_MODE_API_KEY` every 90 days
+2. **Rate Limiting**: Implement rate limits in production (future enhancement)
+3. **CORS**: Configure allowed origins for Ghost Mode API if needed
+4. **Audit Logs**: Monitor Vercel logs for unauthorized access attempts
 
 ---
 

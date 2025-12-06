@@ -1,7 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 export const maxDuration = 60;
+
+// Regex patterns for parsing evaluation responses
+const SCORE_REGEX = /Score:\s*(\d+)/i;
+const FEEDBACK_REGEX = /Feedback:\s*(.+?)(?:\n|$)/i;
 
 /**
  * Ghost Mode API Route
@@ -20,7 +25,9 @@ export const maxDuration = 60;
  * 
  * Response:
  * {
- *   "result": "AI evaluation response",
+ *   "score": 85,
+ *   "feedback": "AI evaluation feedback",
+ *   "result": "Full AI response text",
  *   "timestamp": "2024-12-05T10:00:00.000Z",
  *   "model": "chat-model"
  * }
@@ -55,20 +62,36 @@ export async function POST(req: NextRequest) {
     const { generateText } = await import("ai");
     const { myProvider } = await import("@/lib/ai/providers");
 
-    // Build the full prompt with context if provided
-    const fullPrompt = context 
-      ? `${prompt}\n\nContext: ${JSON.stringify(context)}`
-      : prompt;
+    // Build evaluation prompt that requests structured output
+    const evaluationPrompt = `Evaluate the following and provide:
+1. A quality/confidence score from 0-100
+2. Brief feedback (1-2 sentences)
+
+${prompt}${context ? `\n\nContext: ${JSON.stringify(context)}` : ''}
+
+Format your response as:
+Score: [0-100]
+Feedback: [your feedback]`;
 
     // Generate response using the specified model
     const result = await generateText({
       model: myProvider.languageModel(model),
-      prompt: fullPrompt,
+      prompt: evaluationPrompt,
     });
 
-    // Return the evaluation result
+    // Parse score and feedback from response
+    const responseText = result.text;
+    const scoreMatch = responseText.match(SCORE_REGEX);
+    const feedbackMatch = responseText.match(FEEDBACK_REGEX);
+    
+    const score = scoreMatch ? Math.min(100, Math.max(0, Number.parseInt(scoreMatch[1], 10))) : 50;
+    const feedback = feedbackMatch ? feedbackMatch[1].trim() : responseText.split('\n')[0];
+
+    // Return the evaluation result with score and feedback
     return NextResponse.json({
-      result: result.text,
+      score,
+      feedback,
+      result: responseText,
       timestamp: new Date().toISOString(),
       model,
     });
@@ -87,7 +110,7 @@ export async function POST(req: NextRequest) {
 }
 
 // Health check endpoint
-export async function GET() {
+export function GET() {
   return NextResponse.json({
     status: "healthy",
     service: "ghost-mode",
