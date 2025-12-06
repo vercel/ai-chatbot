@@ -18,3 +18,13 @@ export type Data360Output = {
   note?: Record<string, string>;
 };
 
+export type SearchIndicator = {
+  idno: string;
+  name: string;
+};
+
+export type SearchRelevantIndicatorsOutput = {
+  indicators: SearchIndicator[];
+  note?: string;
+};
+
