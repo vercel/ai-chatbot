@@ -44,23 +44,17 @@ export function Data360({ output }: { output: Data360Output }) {
   const [selectedIndicatorIndex, setSelectedIndicatorIndex] = useState(0);
 
   const selectedIndicator = useMemo(
-    () => output.data[selectedIndicatorIndex],
+    () => output.data?.[selectedIndicatorIndex],
     [output.data, selectedIndicatorIndex]
   );
 
-  if (!output.data || output.data.length === 0) {
-    return (
-      <div className="rounded-lg border border-border bg-background p-4 text-muted-foreground text-sm">
-        No data available
-      </div>
-    );
-  }
-
   // Sort data points by date for better visualization
   const sortedData = useMemo(() => {
-    if (!selectedIndicator?.data) return [];
+    if (!selectedIndicator?.data) {
+      return [];
+    }
     return [...selectedIndicator.data].sort(
-      (a, b) => Number.parseInt(a.date) - Number.parseInt(b.date)
+      (a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10)
     );
   }, [selectedIndicator]);
 
@@ -81,6 +75,14 @@ export function Data360({ output }: { output: Data360Output }) {
     () => Array.from(new Set(sortedData.map((d) => d.country))),
     [sortedData]
   );
+
+  if (!output.data || output.data.length === 0) {
+    return (
+      <div className="rounded-lg border border-border bg-background p-4 text-muted-foreground text-sm">
+        No data available
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-background p-4 shadow-sm">
@@ -162,7 +164,7 @@ export function Data360({ output }: { output: Data360Output }) {
                   <div className="text-muted-foreground text-xs">Years</div>
                   <div className="font-semibold text-sm">
                     {sortedData.length > 0
-                      ? `${sortedData[0].date} - ${sortedData[sortedData.length - 1].date}`
+                      ? `${sortedData[0].date} - ${sortedData.at(-1)?.date ?? ""}`
                       : "-"}
                   </div>
                 </div>
