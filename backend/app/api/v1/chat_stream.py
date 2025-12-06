@@ -227,41 +227,6 @@ async def stream_chat(
             # REQUEST_SUGGESTIONS_TOOL_DEFINITION,
         ]
 
-        # Create a closure to capture db_session and user_id for tools
-        def create_tool_wrapper(tool_name: str, tool_func):
-            """Wrap tool function to provide db_session and user_id."""
-
-            async def wrapper(**kwargs):
-                if tool_name == "getWeather":
-                    return await get_weather(**kwargs)
-                elif tool_name == "createDocument":
-                    return await create_document_tool(
-                        title=kwargs["title"],
-                        kind=kwargs["kind"],
-                        user_id=user_id,
-                        db_session=db,
-                        sse_writer=None,  # TODO: Pass SSE writer for real-time updates
-                    )
-                elif tool_name == "updateDocument":
-                    return await update_document_tool(
-                        document_id=kwargs["id"],
-                        description=kwargs["description"],
-                        user_id=user_id,
-                        db_session=db,
-                        sse_writer=None,  # TODO: Pass SSE writer for real-time updates
-                    )
-                elif tool_name == "requestSuggestions":
-                    return await request_suggestions_tool(
-                        document_id=kwargs["documentId"],
-                        user_id=user_id,
-                        db_session=db,
-                        sse_writer=None,  # TODO: Pass SSE writer for real-time updates
-                    )
-                else:
-                    raise ValueError(f"Unknown tool: {tool_name}")
-
-            return wrapper
-
         # Create tools dict with async wrappers
         # These will receive _sse_writer parameter from stream_text
         async def get_weather_wrapper(**kwargs):
