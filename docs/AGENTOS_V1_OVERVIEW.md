@@ -509,6 +509,232 @@ All tasks are automatically traced. Access logs via:
 
 ---
 
+## TiQology Global Contract
+
+**This section defines the canonical task format for all TiQology applications.** Use these exact JSON structures to ensure compatibility across the entire TiQology ecosystem.
+
+### Canonical Task: `family-law.best-interest`
+
+**Use case:** Evaluate custody arrangements, parenting plans, or any decision affecting children in family law cases.
+
+**Request to `/api/agent-router`:**
+
+```json
+{
+  "task": {
+    "id": "tiq_best_interest_20251206_001",
+    "origin": "tiqology-spa",
+    "targetAgents": ["best-interest-engine"],
+    "domain": "family-law",
+    "kind": "evaluation",
+    "priority": "high",
+    "payload": {
+      "caseContext": "Mother seeking primary custody. Father has stable job but limited parenting history.",
+      "evaluationFocus": "primary-custody",
+      "parentAInfo": {
+        "name": "Mother",
+        "strengths": "Strong bond with child, flexible work schedule, involved in school",
+        "concerns": "Limited financial resources"
+      },
+      "parentBInfo": {
+        "name": "Father", 
+        "strengths": "Stable income, supportive family network",
+        "concerns": "Limited parenting history, works long hours"
+      },
+      "childInfo": {
+        "age": 7,
+        "preferences": "Wants equal time with both parents",
+        "specialNeeds": null
+      }
+    },
+    "metadata": {
+      "caseId": "FL-2025-00123",
+      "jurisdiction": "California",
+      "requestedBy": "user_abc123"
+    }
+  }
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "taskId": "tiq_best_interest_20251206_001",
+  "status": "completed",
+  "result": {
+    "data": {
+      "scores": {
+        "stability": 75,
+        "emotional": 85,
+        "safety": 90,
+        "development": 80,
+        "overall": 82
+      },
+      "recommendation": "Joint custody with mother as primary physical custodian",
+      "strengths": [
+        "Both parents show commitment to child's wellbeing",
+        "Child expresses desire for continued relationship with both parents"
+      ],
+      "concerns": [
+        "Father's work schedule may limit availability for day-to-day care"
+      ],
+      "rationale": "Mother's flexible schedule and strong emotional bond support primary physical custody, while father's financial stability and family support warrant significant parenting time."
+    },
+    "summary": "Best Interest evaluation completed. Overall score: 82/100. Recommendation: Joint custody with mother as primary physical custodian.",
+    "confidence": 0.87
+  },
+  "trace": {
+    "routedTo": "best-interest-engine",
+    "steps": [
+      {
+        "timestamp": 1733500000000,
+        "action": "Task received",
+        "details": {}
+      },
+      {
+        "timestamp": 1733500002000,
+        "action": "Agent selected",
+        "details": { "agentId": "best-interest-engine" }
+      },
+      {
+        "timestamp": 1733500015000,
+        "action": "Evaluation completed",
+        "details": { "executionTime": "13s" }
+      }
+    ]
+  },
+  "completedAt": 1733500015000
+}
+```
+
+---
+
+### Canonical Task: `core.generic-eval`
+
+**Use case:** Generic AI evaluation for content quality, sentiment analysis, form validation, or any general-purpose scoring task.
+
+**Request to `/api/agent-router`:**
+
+```json
+{
+  "task": {
+    "id": "tiq_eval_20251206_002",
+    "origin": "tiqology-spa",
+    "targetAgents": ["ghost-evaluator"],
+    "domain": "general",
+    "kind": "evaluation",
+    "priority": "normal",
+    "payload": {
+      "evaluationPrompt": "Evaluate the professionalism and clarity of this client communication email.",
+      "content": "Hi, I need help with my case. Can you call me ASAP? Thanks.",
+      "context": {
+        "contentType": "client-email",
+        "expectedTone": "professional"
+      }
+    },
+    "metadata": {
+      "userId": "user_xyz789",
+      "feature": "email-drafting"
+    }
+  }
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "taskId": "tiq_eval_20251206_002",
+  "status": "completed",
+  "result": {
+    "data": {
+      "score": 35,
+      "feedback": "Email lacks professional structure and specific details. Recommend rewriting with clear subject, greeting, detailed explanation of issue, and specific request.",
+      "analysis": "The message is too casual for professional legal communication. It lacks context about the case, doesn't specify what help is needed, and uses informal language ('ASAP'). Professional emails should include: proper greeting, clear subject line, detailed description of the issue, specific questions or requests, and professional closing."
+    },
+    "summary": "Content evaluation completed. Score: 35/100. Recommendation: Significant improvement needed.",
+    "confidence": 0.92
+  },
+  "trace": {
+    "routedTo": "ghost-evaluator",
+    "steps": [
+      {
+        "timestamp": 1733500100000,
+        "action": "Task received",
+        "details": {}
+      },
+      {
+        "timestamp": 1733500101000,
+        "action": "Agent selected",
+        "details": { "agentId": "ghost-evaluator" }
+      },
+      {
+        "timestamp": 1733500108000,
+        "action": "Evaluation completed",
+        "details": { "executionTime": "7s" }
+      }
+    ]
+  },
+  "completedAt": 1733500108000
+}
+```
+
+---
+
+### Integration Requirements
+
+**All TiQology applications MUST:**
+
+1. ✅ Use `/api/agent-router` as the single entry point
+2. ✅ Send tasks in the canonical format shown above
+3. ✅ Handle the standardized response structure
+4. ✅ Include proper error handling for all error codes
+5. ✅ Set appropriate `origin` field (e.g., "tiqology-spa", "tiqology-mobile")
+6. ✅ Include `metadata.userId` for user tracking
+7. ✅ Use semantic task IDs with timestamps
+
+**DO NOT:**
+
+❌ Call `/api/ghost` directly (deprecated in favor of AgentOS)  
+❌ Implement custom agent integration patterns  
+❌ Create task schemas outside of the defined domains  
+❌ Skip error handling or trace logging  
+
+**Migration from Legacy `/api/ghost`:**
+
+If your app currently uses `/api/ghost`, migrate to AgentOS:
+
+```typescript
+// ❌ OLD (deprecated)
+const response = await fetch('/api/ghost', {
+  method: 'POST',
+  body: JSON.stringify({ prompt: "...", context: {...} })
+});
+
+// ✅ NEW (AgentOS canonical)
+const response = await fetch('/api/agent-router', {
+  method: 'POST',
+  body: JSON.stringify({
+    task: {
+      id: `eval_${Date.now()}`,
+      origin: 'tiqology-spa',
+      targetAgents: ['ghost-evaluator'],
+      domain: 'general',
+      kind: 'evaluation',
+      priority: 'normal',
+      payload: {
+        evaluationPrompt: "...",
+        content: "...",
+        context: {...}
+      }
+    }
+  })
+});
+```
+
+---
+
 ## Future Enhancements (v2.0)
 
 Planned features:
