@@ -1,5 +1,6 @@
 import traceback
 
+import json5
 from fastmcp import Client
 
 # # In-memory server
@@ -78,7 +79,10 @@ async def call_mcp_tool(tool_name: str, arguments: dict, as_jsonable: bool = Tru
         async with client:
             result = await client.call_tool(tool_name, arguments)
             if as_jsonable:
-                return result.content[0].model_dump()
+                try:
+                    return json5.loads(result.content[0].text.lstrip("root=").strip())
+                except Exception:
+                    return result.content[0].model_dump()
             else:
                 return result
     except Exception as e:
