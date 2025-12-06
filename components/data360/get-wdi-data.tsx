@@ -2,24 +2,7 @@
 
 import cx from "classnames";
 import { useMemo, useState } from "react";
-
-type IndicatorDataPoint = {
-  country: string;
-  date: string;
-  value: number;
-  claim_id: string;
-};
-
-type Indicator = {
-  indicator_id: string;
-  indicator_name: string;
-  data: IndicatorDataPoint[];
-};
-
-type Data360Output = {
-  data: Indicator[];
-  note?: Record<string, string>;
-};
+import type { Data360Output } from "./types";
 
 const ChartIcon = ({ size = 24 }: { size?: number }) => (
   <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
@@ -40,7 +23,7 @@ const ChartIcon = ({ size = 24 }: { size?: number }) => (
   </svg>
 );
 
-export function Data360({ output }: { output: Data360Output }) {
+export function GetWdiData({ output }: { output: Data360Output }) {
   const [selectedIndicatorIndex, setSelectedIndicatorIndex] = useState(0);
 
   const selectedIndicator = useMemo(
@@ -259,3 +242,4 @@ export function Data360({ output }: { output: Data360Output }) {
     </div>
   );
 }
+

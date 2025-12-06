@@ -6,7 +6,7 @@ import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
-import { Data360 } from "./data360";
+import { GetWdiData } from "./data360";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
 import { MessageContent } from "./elements/message";
@@ -298,7 +298,7 @@ const PurePreviewMessage = ({
                     {toolPart.state === "output-available" && (
                       <ToolOutput
                         errorText={undefined}
-                        output={<Data360 output={toolPart.output} />}
+                        output={<GetWdiData output={toolPart.output} />}
                       />
                     )}
                   </ToolContent>
