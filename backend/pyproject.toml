@@ -22,6 +22,7 @@ dependencies = [
     "greenlet>=3.2.4",
     "openai>=2.8.1",
     "json5>=0.12.1",
+    "fastmcp>=2.13.3",
 ]
 
 [project.optional-dependencies]

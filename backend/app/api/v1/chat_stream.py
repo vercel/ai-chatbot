@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.client import get_ai_client, get_model_name
+from app.ai.mcp_tools.data360_mcp import get_mcp_tools
 from app.ai.tools import (
     CREATE_DOCUMENT_TOOL_DEFINITION,
     GET_WEATHER_TOOL_DEFINITION,
@@ -265,11 +266,32 @@ async def stream_chat(
             )
 
         tools = {
-            "getWeather": get_weather_wrapper,
-            "createDocument": create_document_wrapper,
-            "updateDocument": update_document_wrapper,
+            "getWeather": {
+                "function": get_weather_wrapper,
+                "type": "tool",
+            },
+            "createDocument": {
+                "function": create_document_wrapper,
+                "type": "tool",
+            },
+            "updateDocument": {
+                "function": update_document_wrapper,
+                "type": "tool",
+            },
             # "requestSuggestions": request_suggestions_wrapper,
         }
+
+        # Add MCP tools
+        mcp_tools = await get_mcp_tools()
+
+        for tool in mcp_tools:
+            tools[tool["function"]["name"]] = {
+                "function": None,
+                "type": "mcp",
+            }
+            tool_definitions.append(tool)
+
+        logger.info("tool_definitions: %s", tool_definitions)
 
         # Track usage and messages for saving
         final_usage: Optional[Dict[str, Any]] = None

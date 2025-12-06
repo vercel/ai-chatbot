@@ -17,6 +17,7 @@ from fastapi.responses import StreamingResponse
 from openai import OpenAI
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 
+from app.ai.mcp_tools.data360_mcp import call_mcp_tool
 from app.utils.helpers import format_sse
 
 logger = logging.getLogger(__name__)
@@ -71,13 +72,25 @@ async def execute_tool_with_streaming(
     try:
         # Try to call with _sse_writer parameter (tools that support it)
         try:
-            tool_task = asyncio.create_task(
-                tool_function(**parsed_arguments, _sse_writer=tool_sse_writer)
-            )
+            if tool_function["type"] == "tool":
+                tool_task = asyncio.create_task(
+                    tool_function["function"](**parsed_arguments, _sse_writer=tool_sse_writer)
+                )
+            elif tool_function["type"] == "mcp":
+                tool_task = asyncio.create_task(call_mcp_tool(tool_name, parsed_arguments))
+            else:
+                raise ValueError(f"Invalid tool type: {tool_function['type']}")
         except TypeError as e:
             # Tool doesn't accept _sse_writer parameter, call without it
             if "_sse_writer" in str(e) or "unexpected keyword" in str(e).lower():
-                tool_task = asyncio.create_task(tool_function(**parsed_arguments))
+                if tool_function["type"] == "tool":
+                    tool_task = asyncio.create_task(
+                        tool_function["function"](**parsed_arguments, _sse_writer=tool_sse_writer)
+                    )
+                elif tool_function["type"] == "mcp":
+                    tool_task = asyncio.create_task(call_mcp_tool(tool_name, parsed_arguments))
+                else:
+                    raise ValueError(f"Invalid tool type: {tool_function['type']}")
             else:
                 raise
 
@@ -129,12 +142,13 @@ async def execute_tool_with_streaming(
         raise
 
     except Exception as error:
+        tbck = traceback.format_exc()
         # Tool execution failed
         tool_error = {
             "type": "tool-error",
             "toolCallId": tool_call_id,
             "toolName": tool_name,
-            "errorText": str(error),
+            "errorText": str(error) + "\n" + tbck,
         }
         yield ("error", tool_error)
         raise
