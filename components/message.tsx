@@ -6,6 +6,7 @@ import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
+import { Data360 } from "./data360";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
 import { MessageContent } from "./elements/message";
@@ -256,6 +257,48 @@ const PurePreviewMessage = ({
                             />
                           )
                         }
+                      />
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
+            // Handle Data360 MCP tool outputs
+            // Use type assertion for dynamic MCP tool types not in the type system
+            if ((type as string) === "tool-ai4data_ai4data_mcpget_wdi_data") {
+              const toolPart = part as {
+                toolCallId: string;
+                state: "input-available" | "output-available";
+                input: unknown;
+                output: {
+                  data: Array<{
+                    indicator_id: string;
+                    indicator_name: string;
+                    data: Array<{
+                      country: string;
+                      date: string;
+                      value: number;
+                      claim_id: string;
+                    }>;
+                  }>;
+                  note?: Record<string, string>;
+                };
+              };
+              return (
+                <Tool defaultOpen={true} key={toolPart.toolCallId}>
+                  <ToolHeader
+                    state={toolPart.state}
+                    type={type as `tool-${string}`}
+                  />
+                  <ToolContent>
+                    {toolPart.state === "input-available" && (
+                      <ToolInput input={toolPart.input} />
+                    )}
+                    {toolPart.state === "output-available" && (
+                      <ToolOutput
+                        errorText={undefined}
+                        output={<Data360 output={toolPart.output} />}
                       />
                     )}
                   </ToolContent>
