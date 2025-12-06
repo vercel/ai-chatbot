@@ -20,6 +20,7 @@ from app.ai.client import get_ai_client, get_model_name
 from app.ai.tools import (
     CREATE_DOCUMENT_TOOL_DEFINITION,
     GET_WEATHER_TOOL_DEFINITION,
+    UPDATE_DOCUMENT_TOOL_DEFINITION,
     create_document_tool,
     get_weather,
     request_suggestions_tool,
@@ -223,7 +224,7 @@ async def stream_chat(
         tool_definitions = [
             GET_WEATHER_TOOL_DEFINITION,
             CREATE_DOCUMENT_TOOL_DEFINITION,
-            # UPDATE_DOCUMENT_TOOL_DEFINITION,
+            UPDATE_DOCUMENT_TOOL_DEFINITION,
             # REQUEST_SUGGESTIONS_TOOL_DEFINITION,
         ]
 
@@ -266,7 +267,7 @@ async def stream_chat(
         tools = {
             "getWeather": get_weather_wrapper,
             "createDocument": create_document_wrapper,
-            # "updateDocument": update_document_wrapper,
+            "updateDocument": update_document_wrapper,
             # "requestSuggestions": request_suggestions_wrapper,
         }
 

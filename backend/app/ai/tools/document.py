@@ -62,7 +62,7 @@ async def create_document_tool(
         "id": document_id,
         "title": title,
         "kind": kind,
-        "content": "A document was created and is now visible to the user.",
+        "content": "A document was created and the contents are now visible to the user.",
     }
 
 
