@@ -3,6 +3,7 @@ Document tools - Create and update documents.
 Ported from lib/ai/tools/create-document.ts and update-document.ts
 """
 
+import asyncio
 import uuid
 from typing import Any, Dict, Optional
 
@@ -227,6 +228,8 @@ async def _stream_text_content(
         store=True,
     )
 
+    # Process chunks and yield control to event loop periodically
+    # This allows SSE events to be streamed in real-time
     for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:
@@ -243,6 +246,16 @@ async def _stream_text_content(
                                 sse_writer(format_sse({"type": "data-codeDelta", "data": text}))
                             elif delta_type == "sheet":
                                 sse_writer(format_sse({"type": "data-sheetDelta", "data": text}))
+
+        # # Yield control to event loop periodically to allow real-time event processing
+        # # This ensures SSE events can be streamed even while processing chunks
+        # chunk_count += 1
+        # if chunk_count % 3 == 0:  # Yield every 3 chunks for better responsiveness
+        #     # Use asyncio.sleep(0) to yield control without blocking
+        #     # Since we're in an async function, we can await
+        #     await asyncio.sleep(0.001)
+
+        await asyncio.sleep(0)
 
     return content
 
@@ -290,6 +303,7 @@ async def _stream_structured_content(
                                 sse_writer(format_sse({"type": "data-codeDelta", "data": text}))
                             elif delta_type == "sheet":
                                 sse_writer(format_sse({"type": "data-sheetDelta", "data": text}))
+        await asyncio.sleep(0)
 
     # TODO: Parse structured output if needed
     # For now, return content as-is

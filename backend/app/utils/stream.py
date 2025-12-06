@@ -57,7 +57,16 @@ async def execute_tool_with_streaming(
     def tool_sse_writer(event: str):
         """Emit SSE events in real-time. Called synchronously by tools."""
         tool_sse_events.append(event)
-        event_ready.set()  # Signal that new event is ready
+        # Use call_soon_threadsafe to ensure event loop can process this even if tool is blocking
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.call_soon_threadsafe(event_ready.set)
+            else:
+                event_ready.set()
+        except RuntimeError:
+            # No event loop, set directly (shouldn't happen but safe fallback)
+            event_ready.set()
 
     try:
         # Try to call with _sse_writer parameter (tools that support it)
