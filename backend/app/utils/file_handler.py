@@ -1,6 +1,5 @@
 """Utilities for handling file operations in chat messages."""
 
-import base64
 import logging
 import re
 from typing import Optional
@@ -30,8 +29,11 @@ def extract_file_id_from_url(url: str) -> Optional[UUID]:
     return None
 
 
-async def get_file_base64(file_id: UUID, content_type: str, db: AsyncSession) -> Optional[str]:
-    """Fetch file from database and return base64-encoded data URL."""
+async def get_file_base64(file_id: UUID, db: AsyncSession) -> Optional[str]:
+    """
+    Fetch file from database and return base64-encoded data URL.
+    Uses the File model's to_base64_data_url() method.
+    """
     try:
         result = await db.execute(select(File).where(File.id == file_id))
         file_record = result.scalar_one_or_none()
@@ -40,12 +42,8 @@ async def get_file_base64(file_id: UUID, content_type: str, db: AsyncSession) ->
             logger.warning("File not found in database: %s", file_id)
             return None
 
-        # Encode file data as base64
-        file_data_bytes = bytes(file_record.data)
-        base64_string = base64.b64encode(file_data_bytes).decode("utf-8")
-
-        # Return data URL format: data:{content_type};base64,{base64_string}
-        return f"data:{content_type};base64,{base64_string}"
+        # Use the model method to get base64 data URL
+        return file_record.to_base64_data_url()
     except Exception as e:
         logger.error("Error fetching file from database: %s", e)
         return None

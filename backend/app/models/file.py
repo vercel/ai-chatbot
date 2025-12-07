@@ -1,3 +1,4 @@
+import base64
 import uuid
 from datetime import datetime
 
@@ -21,3 +22,12 @@ class File(Base):
 
     # Relationships
     user = relationship("User", back_populates="files")
+
+    def to_base64_data_url(self) -> str:
+        """
+        Convert file data to base64-encoded data URL.
+        Returns: data:{content_type};base64,{base64_string}
+        """
+        file_data_bytes = bytes(self.data)
+        base64_string = base64.b64encode(file_data_bytes).decode("utf-8")
+        return f"data:{self.content_type};base64,{base64_string}"

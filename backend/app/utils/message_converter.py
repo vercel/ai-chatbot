@@ -46,7 +46,7 @@ async def convert_messages_to_openai_format(
                 file_id = extract_file_id_from_url(file_url)
                 if file_id:
                     # File is in our database - use base64 encoding
-                    base64_data = await get_file_base64(file_id, media_type, db)
+                    base64_data = await get_file_base64(file_id, db)
                     if base64_data:
                         if is_pdf:
                             # Use file format for PDFs
