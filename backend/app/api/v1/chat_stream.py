@@ -21,6 +21,7 @@ from app.api.v1.utils.background_tasks import (
     create_save_messages_task,
     create_update_context_task,
 )
+from app.api.v1.utils.continue_stream import _continue_stream_in_background
 from app.api.v1.utils.tool_setup import prepare_tools
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
@@ -107,7 +108,12 @@ async def stream_chat(
         processor = StreamEventProcessor(request.id)
 
         # 8. Create stream generator with non-blocking Redis storage
+        # Track if stream was interrupted (client disconnect) vs completed normally
+        stream_interrupted = False
+
         async def stream_generator():
+            nonlocal stream_interrupted
+            sequence = 0  # Sequence counter for ordering chunks
             try:
                 async for event_bytes in processor.process_stream(
                     client=client,
@@ -117,20 +123,55 @@ async def stream_chat(
                     tools=tools,
                     tool_definitions=tool_definitions,
                 ):
-                    # Store chunk in Redis asynchronously (fire-and-forget to avoid blocking)
+                    # Store chunk in Redis asynchronously with sequence number
+                    # Sequence ensures chunks are stored/retrieved in order
                     # This doesn't block the stream output
-                    asyncio.create_task(store_stream_chunk(stream_id, event_bytes))
+                    current_sequence = sequence
+                    sequence += 1
+                    asyncio.create_task(
+                        store_stream_chunk(stream_id, event_bytes, current_sequence)
+                    )
                     yield event_bytes
-            finally:
-                # Mark stream as complete in Redis (non-blocking)
-                asyncio.create_task(mark_stream_complete(stream_id))
-
-                # Schedule background tasks after stream completes (even on error)
-                create_save_messages_task(
-                    background_tasks, request.id, processor.assistant_messages
+            except GeneratorExit:
+                # Client disconnected (browser refresh, navigation, etc.)
+                # Don't mark as complete - stream should continue in background
+                stream_interrupted = True
+                logger.info(
+                    "Stream interrupted (client disconnect) for stream_id=%s, chat_id=%s",
+                    stream_id,
+                    request.id,
                 )
-                if processor.final_usage:
-                    create_update_context_task(background_tasks, request.id, processor.final_usage)
+                # Continue stream in background even though client disconnected
+                asyncio.create_task(
+                    _continue_stream_in_background(
+                        stream_id=stream_id,
+                        chat_id=request.id,
+                        client=client,
+                        model=model,
+                        messages=openai_messages,
+                        system=system,
+                        tools=tools,
+                        tool_definitions=tool_definitions,
+                        background_tasks=background_tasks,
+                        processor=processor,
+                        current_sequence=sequence,
+                    )
+                )
+                raise  # Re-raise to properly close the generator
+            finally:
+                # Only mark as complete if stream finished normally (not interrupted)
+                if not stream_interrupted:
+                    # Mark stream as complete in Redis (non-blocking)
+                    asyncio.create_task(mark_stream_complete(stream_id))
+
+                    # Schedule background tasks after stream completes (even on error)
+                    create_save_messages_task(
+                        background_tasks, request.id, processor.assistant_messages
+                    )
+                    if processor.final_usage:
+                        create_update_context_task(
+                            background_tasks, request.id, processor.final_usage
+                        )
 
         response = StreamingResponse(
             stream_generator(),

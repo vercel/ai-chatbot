@@ -10,13 +10,15 @@ logger = logging.getLogger(__name__)
 
 # Redis key patterns
 STREAM_CHUNKS_KEY = "stream:{stream_id}:chunks"
+STREAM_SEQ_KEY = "stream:{stream_id}:seq"
 STREAM_STATE_KEY = "stream:{stream_id}:state"
 STREAM_TTL = 3600  # 1 hour TTL for stream data
 
 
-async def store_stream_chunk(stream_id: UUID, chunk: bytes) -> bool:
+async def store_stream_chunk(stream_id: UUID, chunk: bytes, sequence: int) -> bool:
     """
-    Store a stream chunk in Redis.
+    Store a stream chunk in Redis with sequence number to ensure order.
+    Uses hash with sequence number as key to maintain order and handle duplicate chunks.
     Returns True if successful, False if Redis is not available.
     This function is designed to be called as a fire-and-forget task,
     so errors are logged but not raised.
@@ -27,8 +29,10 @@ async def store_stream_chunk(stream_id: UUID, chunk: bytes) -> bool:
             return False
 
         chunks_key = STREAM_CHUNKS_KEY.format(stream_id=str(stream_id))
-        # Append chunk to list (RPUSH)
-        await redis_client.rpush(chunks_key, chunk)
+        # Store chunk in hash with sequence number as key
+        # This ensures chunks can be retrieved in order even if stored out of order
+        # and handles duplicate chunks correctly
+        await redis_client.hset(chunks_key, str(sequence), chunk)
         # Set TTL on the key
         await redis_client.expire(chunks_key, STREAM_TTL)
         return True
@@ -61,7 +65,8 @@ async def mark_stream_complete(stream_id: UUID) -> bool:
 
 async def get_stream_chunks(stream_id: UUID) -> Optional[list[bytes]]:
     """
-    Retrieve all chunks for a stream from Redis.
+    Retrieve all chunks for a stream from Redis in order.
+    Uses hash (HGETALL) and sorts by sequence number (key) to maintain order.
     Returns None if stream not found or Redis is not available.
     """
     redis_client = await get_redis_client()
@@ -70,8 +75,13 @@ async def get_stream_chunks(stream_id: UUID) -> Optional[list[bytes]]:
 
     try:
         chunks_key = STREAM_CHUNKS_KEY.format(stream_id=str(stream_id))
-        chunks = await redis_client.lrange(chunks_key, 0, -1)
-        if chunks:
+        # Retrieve all chunks from hash
+        chunks_dict = await redis_client.hgetall(chunks_key)
+        if chunks_dict:
+            # Sort by sequence number (key) and return chunks in order
+            # Keys are strings (sequence numbers), values are bytes (chunks)
+            sorted_items = sorted(chunks_dict.items(), key=lambda x: int(x[0]))
+            chunks = [value for _, value in sorted_items]
             return chunks
         return None
     except Exception as e:

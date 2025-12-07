@@ -43,11 +43,8 @@ function shouldUseFastAPI(endpoint: string): boolean {
   // Extract the path from the URL (handles both relative and absolute URLs)
   const path = extractEndpointPath(endpoint);
 
-  // Exclude stream resumption endpoints - these should stay in Next.js
-  // Pattern: /api/chat/{id}/stream
-  if (path.includes("/stream")) {
-    return false;
-  }
+  // Stream resumption endpoints are now in FastAPI backend
+  // Pattern: /api/chat/{id}/stream - allow these to go to FastAPI
 
   // If specific endpoints are configured, check if this endpoint matches
   if (FASTAPI_ENDPOINTS.length > 0) {

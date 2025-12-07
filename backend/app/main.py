@@ -64,7 +64,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(chat_stream.router, prefix="/api/v1/chat", tags=["chat"])
-app.include_router(chat_resume.router, prefix="/api/v1/chat", tags=["chat"])
+app.include_router(chat_resume.router, prefix="/api/chat", tags=["chat"])
 app.include_router(history.router, prefix="/api/history", tags=["history"])
 app.include_router(vote.router, prefix="/api/vote", tags=["vote"])
 app.include_router(document.router, prefix="/api/document", tags=["document"])
