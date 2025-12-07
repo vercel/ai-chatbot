@@ -80,7 +80,14 @@ async def call_mcp_tool(tool_name: str, arguments: dict, as_jsonable: bool = Tru
             result = await client.call_tool(tool_name, arguments)
             if as_jsonable:
                 try:
-                    return json5.loads(result.content[0].text.lstrip("root=").strip())
+                    return json5.loads(
+                        result.content[0]
+                        .text.lstrip("root=")
+                        .replace(": None", ": null")
+                        .replace(": True", ": true")
+                        .replace(": False", ": false")
+                        .strip()
+                    )
                 except Exception:
                     return result.content[0].model_dump()
             else:
