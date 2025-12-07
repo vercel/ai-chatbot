@@ -25,39 +25,100 @@ const ChartIcon = ({ size = 24 }: { size?: number }) => (
 
 export function GetWdiData({ output }: { output: Data360Output }) {
   const [selectedIndicatorIndex, setSelectedIndicatorIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<"single" | "compare">("single");
 
   const selectedIndicator = useMemo(
     () => output.data?.[selectedIndicatorIndex],
     [output.data, selectedIndicatorIndex]
   );
 
+  // Get all unique countries across all indicators
+  const allCountries = useMemo(() => {
+    const countrySet = new Set<string>();
+    output.data?.forEach((indicator) => {
+      indicator.data?.forEach((point) => {
+        if (point.country) countrySet.add(point.country);
+      });
+    });
+    return Array.from(countrySet);
+  }, [output.data]);
+
+  // Get all unique dates across selected indicators
+  const allDates = useMemo(() => {
+    const dateSet = new Set<string>();
+    if (viewMode === "compare" && output.data) {
+      output.data.forEach((indicator) => {
+        indicator.data?.forEach((point) => {
+          if (point.date) dateSet.add(point.date);
+        });
+      });
+    } else if (selectedIndicator) {
+      selectedIndicator.data?.forEach((point) => {
+        if (point.date) dateSet.add(point.date);
+      });
+    }
+    return Array.from(dateSet).sort(
+      (a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
+    );
+  }, [output.data, selectedIndicator, viewMode]);
+
   // Sort data points by date for better visualization
   const sortedData = useMemo(() => {
     if (!selectedIndicator?.data) {
       return [];
     }
-    return [...selectedIndicator.data].sort(
-      (a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10)
-    );
+    return [...selectedIndicator.data]
+      .filter((d) => d.value !== null && d.value !== undefined)
+      .sort((a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10));
   }, [selectedIndicator]);
 
-  const minValue = useMemo(
-    () =>
-      sortedData.length > 0 ? Math.min(...sortedData.map((d) => d.value)) : 0,
-    [sortedData]
-  );
-  const maxValue = useMemo(
-    () =>
-      sortedData.length > 0 ? Math.max(...sortedData.map((d) => d.value)) : 0,
-    [sortedData]
-  );
+  // Get data for comparison mode
+  const comparisonData = useMemo(() => {
+    if (viewMode !== "compare" || !output.data) return [];
+    return output.data.map((indicator) => ({
+      indicator,
+      data: [...(indicator.data || [])]
+        .filter((d) => d.value !== null && d.value !== undefined)
+        .sort((a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10)),
+    }));
+  }, [output.data, viewMode]);
+
+  const minValue = useMemo(() => {
+    if (viewMode === "compare") {
+      const allValues = comparisonData.flatMap((cd) =>
+        cd.data.map((d) => d.value).filter((v): v is number => v !== null)
+      );
+      return allValues.length > 0 ? Math.min(...allValues) : 0;
+    }
+    const values = sortedData
+      .map((d) => d.value)
+      .filter((v): v is number => v !== null);
+    return values.length > 0 ? Math.min(...values) : 0;
+  }, [sortedData, comparisonData, viewMode]);
+
+  const maxValue = useMemo(() => {
+    if (viewMode === "compare") {
+      const allValues = comparisonData.flatMap((cd) =>
+        cd.data.map((d) => d.value).filter((v): v is number => v !== null)
+      );
+      return allValues.length > 0 ? Math.max(...allValues) : 0;
+    }
+    const values = sortedData
+      .map((d) => d.value)
+      .filter((v): v is number => v !== null);
+    return values.length > 0 ? Math.max(...values) : 0;
+  }, [sortedData, comparisonData, viewMode]);
+
   const valueRange = maxValue - minValue || 1;
 
-  // Get unique countries
+  // Get unique countries for selected indicator
   const countries = useMemo(
     () => Array.from(new Set(sortedData.map((d) => d.country))),
     [sortedData]
   );
+
+  const hasMultipleIndicators = (output.data?.length ?? 0) > 1;
+  const hasMultipleCountries = allCountries.length > 1;
 
   if (!output.data || output.data.length === 0) {
     return (
@@ -79,15 +140,56 @@ export function GetWdiData({ output }: { output: Data360Output }) {
             World Development Indicators
           </div>
         </div>
-        {output.data.length > 1 && (
-          <div className="text-muted-foreground text-xs">
-            {output.data.length} indicators
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {hasMultipleCountries && (
+            <div className="text-muted-foreground text-xs">
+              {allCountries.length} countr{allCountries.length !== 1 ? "ies" : "y"}
+            </div>
+          )}
+          {hasMultipleIndicators && (
+            <div className="text-muted-foreground text-xs">
+              {output.data.length} indicators
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Indicator Selector */}
-      {output.data.length > 1 && (
+      {/* View Mode Toggle (only show if multiple indicators) */}
+      {hasMultipleIndicators && (
+        <div className="flex gap-2 rounded-lg border border-border bg-muted/30 p-1">
+          <button
+            className={cx(
+              "flex-1 rounded-md px-3 py-1.5 text-xs transition-colors",
+              {
+                "bg-background font-medium shadow-sm": viewMode === "single",
+                "text-muted-foreground hover:text-foreground":
+                  viewMode !== "single",
+              }
+            )}
+            onClick={() => setViewMode("single")}
+            type="button"
+          >
+            Single View
+          </button>
+          <button
+            className={cx(
+              "flex-1 rounded-md px-3 py-1.5 text-xs transition-colors",
+              {
+                "bg-background font-medium shadow-sm": viewMode === "compare",
+                "text-muted-foreground hover:text-foreground":
+                  viewMode !== "compare",
+              }
+            )}
+            onClick={() => setViewMode("compare")}
+            type="button"
+          >
+            Compare All
+          </button>
+        </div>
+      )}
+
+      {/* Indicator Selector (only in single view) */}
+      {hasMultipleIndicators && viewMode === "single" && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {output.data.map((indicator, index) => (
             <button
@@ -112,15 +214,18 @@ export function GetWdiData({ output }: { output: Data360Output }) {
         </div>
       )}
 
-      {/* Selected Indicator Info */}
-      {selectedIndicator && (
+      {/* Single View */}
+      {viewMode === "single" && selectedIndicator && (
         <>
           <div className="rounded-lg border border-border bg-muted/30 p-3">
             <div className="mb-2 font-medium text-sm">
               {selectedIndicator.indicator_name}
             </div>
-            <div className="text-muted-foreground text-xs">
-              Indicator ID: {selectedIndicator.indicator_id}
+            <div className="flex flex-wrap gap-2 text-muted-foreground text-xs">
+              <span>ID: {selectedIndicator.indicator_id}</span>
+              {hasMultipleCountries && (
+                <span>• Countries: {countries.join(", ")}</span>
+              )}
             </div>
           </div>
 
@@ -162,7 +267,9 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                 >
                   {sortedData.map((point, index) => {
                     const height =
-                      ((point.value - minValue) / valueRange) * 100;
+                      point.value !== null
+                        ? ((point.value - minValue) / valueRange) * 100
+                        : 0;
                     return (
                       <div
                         className="flex flex-1 flex-col items-center gap-1"
@@ -170,8 +277,14 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                       >
                         <div
                           className="w-full rounded-t bg-primary transition-all hover:bg-primary/80"
-                          style={{ height: `${Math.max(height, 2)}%` }}
-                          title={`${point.date}: ${point.value.toFixed(2)}`}
+                          style={{
+                            height: `${Math.max(height, point.value === null ? 0 : 2)}%`,
+                          }}
+                          title={
+                            point.value !== null
+                              ? `${point.date}: ${point.value.toFixed(2)}`
+                              : `${point.date}: No data`
+                          }
                         />
                         <div className="text-[10px] text-muted-foreground">
                           {point.date.slice(-2)}
@@ -212,7 +325,13 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                           <td className="px-3 py-2">{point.country}</td>
                           <td className="px-3 py-2">{point.date}</td>
                           <td className="px-3 py-2 text-right font-medium">
-                            {point.value.toFixed(2)}
+                            {point.value !== null
+                              ? point.value.toFixed(2)
+                              : (
+                                  <span className="text-muted-foreground">
+                                    No data
+                                  </span>
+                                )}
                           </td>
                         </tr>
                       ))}
@@ -223,6 +342,115 @@ export function GetWdiData({ output }: { output: Data360Output }) {
             </div>
           )}
         </>
+      )}
+
+      {/* Compare View */}
+      {viewMode === "compare" && (
+        <div className="flex flex-col gap-4">
+          {comparisonData.map(({ indicator, data: indicatorData }, idx) => {
+            const indicatorMin = indicatorData.length > 0
+              ? Math.min(...indicatorData.map((d) => d.value).filter((v): v is number => v !== null))
+              : 0;
+            const indicatorMax = indicatorData.length > 0
+              ? Math.max(...indicatorData.map((d) => d.value).filter((v): v is number => v !== null))
+              : 0;
+            const indicatorRange = indicatorMax - indicatorMin || 1;
+
+            return (
+              <div
+                className="rounded-lg border border-border bg-muted/30 p-4"
+                key={indicator.indicator_id}
+              >
+                <div className="mb-3">
+                  <div className="mb-1 font-medium text-sm">
+                    {indicator.indicator_name}
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    {indicator.indicator_id}
+                  </div>
+                </div>
+
+                {indicatorData.length > 0 && (
+                  <div className="space-y-3">
+                    {/* Mini Chart */}
+                    <div className="rounded border border-border bg-background p-2">
+                      <div className="mb-1 font-medium text-xs">Trend</div>
+                      <div
+                        className="flex items-end gap-0.5"
+                        style={{ height: "80px" }}
+                      >
+                        {indicatorData.map((point, pointIdx) => {
+                          const height =
+                            point.value !== null
+                              ? ((point.value - indicatorMin) / indicatorRange) *
+                                  100
+                              : 0;
+                          return (
+                            <div
+                              className="flex flex-1 flex-col items-center gap-0.5"
+                              key={`${point.date}-${pointIdx}`}
+                            >
+                              <div
+                                className="w-full rounded-t bg-primary/70 transition-all hover:bg-primary"
+                                style={{
+                                  height: `${Math.max(height, point.value === null ? 0 : 2)}%`,
+                                }}
+                                title={
+                                  point.value !== null
+                                    ? `${point.date}: ${point.value.toFixed(2)}`
+                                    : `${point.date}: No data`
+                                }
+                              />
+                              <div className="text-[9px] text-muted-foreground">
+                                {point.date.slice(-2)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-1 flex justify-between text-muted-foreground text-[10px]">
+                        <span>Min: {indicatorMin.toFixed(2)}</span>
+                        <span>Max: {indicatorMax.toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* Summary */}
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="rounded border border-border bg-background p-1.5">
+                        <div className="text-muted-foreground text-[10px]">
+                          Points
+                        </div>
+                        <div className="font-semibold text-xs">
+                          {indicatorData.length}
+                        </div>
+                      </div>
+                      <div className="rounded border border-border bg-background p-1.5">
+                        <div className="text-muted-foreground text-[10px]">
+                          Latest
+                        </div>
+                        <div className="font-semibold text-xs">
+                          {indicatorData.at(-1)?.value !== null
+                            ? indicatorData.at(-1)?.value.toFixed(2)
+                            : "N/A"}
+                        </div>
+                      </div>
+                      <div className="rounded border border-border bg-background p-1.5">
+                        <div className="text-muted-foreground text-[10px]">
+                          Range
+                        </div>
+                        <div className="font-semibold text-xs">
+                          {indicatorData.length > 0
+                            ? `${indicatorData[0].date}-${indicatorData.at(-1)?.date ?? ""}`
+                            : "-"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {/* Notes */}
@@ -242,4 +470,3 @@ export function GetWdiData({ output }: { output: Data360Output }) {
     </div>
   );
 }
-

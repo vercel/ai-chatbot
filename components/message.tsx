@@ -6,7 +6,8 @@ import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
-import { GetWdiData, SearchRelevantIndicators } from "./data360";
+import { GetWdiData } from "./data360/get-wdi-data";
+import { SearchRelevantIndicators } from "./data360/search-relevant-indicators";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
 import { MessageContent } from "./elements/message";
@@ -280,7 +281,7 @@ const PurePreviewMessage = ({
                     data: Array<{
                       country: string;
                       date: string;
-                      value: number;
+                      value: number | null;
                       claim_id: string;
                     }>;
                   }>;

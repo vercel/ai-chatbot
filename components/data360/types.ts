@@ -3,7 +3,7 @@
 export type IndicatorDataPoint = {
   country: string;
   date: string;
-  value: number;
+  value: number | null;
   claim_id: string;
 };
 
