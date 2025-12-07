@@ -2,6 +2,7 @@
 
 import cx from "classnames";
 import { useMemo, useState } from "react";
+import { TimeSeriesChart } from "./charts";
 import type { Data360Output } from "./types";
 
 const ChartIcon = ({ size = 24 }: { size?: number }) => (
@@ -35,32 +36,44 @@ export function GetWdiData({ output }: { output: Data360Output }) {
   // Get all unique countries across all indicators
   const allCountries = useMemo(() => {
     const countrySet = new Set<string>();
-    output.data?.forEach((indicator) => {
-      indicator.data?.forEach((point) => {
-        if (point.country) countrySet.add(point.country);
-      });
-    });
+    if (output.data) {
+      for (const indicator of output.data) {
+        if (indicator.data) {
+          for (const point of indicator.data) {
+            if (point.country) {
+              countrySet.add(point.country);
+            }
+          }
+        }
+      }
+    }
     return Array.from(countrySet);
   }, [output.data]);
 
-  // Get all unique dates across selected indicators
-  const allDates = useMemo(() => {
-    const dateSet = new Set<string>();
-    if (viewMode === "compare" && output.data) {
-      output.data.forEach((indicator) => {
-        indicator.data?.forEach((point) => {
-          if (point.date) dateSet.add(point.date);
-        });
-      });
-    } else if (selectedIndicator) {
-      selectedIndicator.data?.forEach((point) => {
-        if (point.date) dateSet.add(point.date);
-      });
-    }
-    return Array.from(dateSet).sort(
-      (a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
-    );
-  }, [output.data, selectedIndicator, viewMode]);
+  // Get all unique dates across selected indicators (for future use)
+  // const allDates = useMemo(() => {
+  //   const dateSet = new Set<string>();
+  //   if (viewMode === "compare" && output.data) {
+  //     for (const indicator of output.data) {
+  //       if (indicator.data) {
+  //         for (const point of indicator.data) {
+  //           if (point.date) {
+  //             dateSet.add(point.date);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   } else if (selectedIndicator?.data) {
+  //     for (const point of selectedIndicator.data) {
+  //       if (point.date) {
+  //         dateSet.add(point.date);
+  //       }
+  //     }
+  //   }
+  //   return Array.from(dateSet).sort(
+  //     (a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
+  //   );
+  // }, [output.data, selectedIndicator, viewMode]);
 
   // Sort data points by date for better visualization
   const sortedData = useMemo(() => {
@@ -76,7 +89,9 @@ export function GetWdiData({ output }: { output: Data360Output }) {
 
   // Get data for comparison mode
   const comparisonData = useMemo(() => {
-    if (viewMode !== "compare" || !output.data) return [];
+    if (viewMode !== "compare" || !output.data) {
+      return [];
+    }
     return output.data.map((indicator) => ({
       indicator,
       data: [...(indicator.data || [])]
@@ -112,8 +127,6 @@ export function GetWdiData({ output }: { output: Data360Output }) {
       .filter((v): v is number => v !== null);
     return values.length > 0 ? Math.max(...values) : 0;
   }, [sortedData, comparisonData, viewMode]);
-
-  const valueRange = maxValue - minValue || 1;
 
   // Get unique countries for selected indicator
   const countries = useMemo(
@@ -263,45 +276,22 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                 </div>
               </div>
 
-              {/* Simple Bar Chart */}
+              {/* Time Series Line Chart */}
               <div className="rounded-lg border border-border bg-muted/30 p-3">
-                <div className="mb-2 font-medium text-xs">Value Over Time</div>
-                <div
-                  className="flex items-end gap-1"
-                  style={{ height: "120px" }}
-                >
-                  {sortedData.map((point, index) => {
-                    const height =
-                      point.value !== null
-                        ? ((point.value - minValue) / valueRange) * 100
-                        : 0;
-                    return (
-                      <div
-                        className="flex flex-1 flex-col items-center gap-1"
-                        key={`${point.date}-${point.country}-${index}`}
-                      >
-                        <div
-                          className="w-full rounded-t bg-primary transition-all hover:bg-primary/80"
-                          style={{
-                            height: `${Math.max(height, point.value === null ? 0 : 2)}%`,
-                          }}
-                          title={
-                            point.value !== null
-                              ? `${point.date}: ${point.value.toFixed(2)}`
-                              : `${point.date}: No data`
-                          }
-                        />
-                        <div className="text-[10px] text-muted-foreground">
-                          {point.date.slice(-2)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-2 flex justify-between text-muted-foreground text-xs">
-                  <span>Min: {minValue.toFixed(2)}</span>
-                  <span>Max: {maxValue.toFixed(2)}</span>
-                </div>
+                <TimeSeriesChart
+                  data={sortedData.map((point) => ({
+                    country: point.country,
+                    date: point.date,
+                    value: point.value,
+                  }))}
+                  dateFormatter={(date) => date.slice(-2)}
+                  height={180}
+                  maxValue={maxValue}
+                  minValue={minValue}
+                  showLegend={countries.length > 1}
+                  showStats
+                  title="Value Over Time"
+                />
               </div>
 
               {/* Data Table */}
@@ -352,7 +342,7 @@ export function GetWdiData({ output }: { output: Data360Output }) {
       {/* Compare View */}
       {viewMode === "compare" && (
         <div className="flex flex-col gap-4">
-          {comparisonData.map(({ indicator, data: indicatorData }, idx) => {
+          {comparisonData.map(({ indicator, data: indicatorData }) => {
             const indicatorMin =
               indicatorData.length > 0
                 ? Math.min(
@@ -445,9 +435,12 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                           Latest
                         </div>
                         <div className="font-semibold text-xs">
-                          {indicatorData.at(-1)?.value !== null
-                            ? indicatorData.at(-1)?.value.toFixed(2)
-                            : "N/A"}
+                          {(() => {
+                            const lastValue = indicatorData.at(-1)?.value;
+                            return lastValue !== null && lastValue !== undefined
+                              ? lastValue.toFixed(2)
+                              : "N/A";
+                          })()}
                         </div>
                       </div>
                       <div className="rounded border border-border bg-background p-1.5">
