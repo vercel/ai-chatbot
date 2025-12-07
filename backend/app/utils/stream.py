@@ -50,7 +50,11 @@ async def execute_tool_with_streaming(
     Yields:
         Tuples of (event_type, event_data) as described above
     """
-    tool_sse_events = []
+    # Use collections.deque for O(1) append/popleft operations
+    # This ensures events are processed in order even under high concurrency
+    from collections import deque
+
+    tool_sse_events = deque()
     event_ready = asyncio.Event()
     tool_task = None
     tool_result = None
@@ -101,9 +105,9 @@ async def execute_tool_with_streaming(
                 await asyncio.wait_for(event_ready.wait(), timeout=0.05)
                 event_ready.clear()
 
-                # Yield all new events immediately
+                # Yield all new events immediately (using popleft for O(1) operation)
                 while tool_sse_events:
-                    event = tool_sse_events.pop(0)
+                    event = tool_sse_events.popleft()
                     yield ("event", event)
 
             except asyncio.TimeoutError:
@@ -115,7 +119,7 @@ async def execute_tool_with_streaming(
 
         # Yield any remaining events (in case tool finished while we were waiting)
         while tool_sse_events:
-            event = tool_sse_events.pop(0)
+            event = tool_sse_events.popleft()
             yield ("event", event)
 
         # Get tool result
