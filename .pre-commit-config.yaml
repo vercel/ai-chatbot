@@ -1,0 +1,69 @@
+# Pre-commit hooks configuration
+# Install with: cd backend && uv sync && uv run pre-commit install
+# Or globally: pip install pre-commit && pre-commit install
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(.*\.md|.*\.lock|.*\.json)$
+      - id: end-of-file-fixer
+        exclude: ^(.*\.lock|.*\.json)$
+      - id: check-yaml
+        args: [--unsafe] # Allow custom YAML tags
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+
+  # # Frontend: Biome/Ultracite (TypeScript/JavaScript)
+  # - repo: local
+  #   hooks:
+  #     - id: biome-check
+  #       name: Biome Check (Lint & Format)
+  #       entry: pre-commit-hooks/run-biome.sh
+  #       language: system
+  #       types: [file]
+  #       files: \.(ts|tsx|js|jsx|json|jsonc)$
+  #       exclude: ^(node_modules|\.next|dist|build|pnpm-lock\.yaml)/
+
+  # Backend: Ruff (Python linter and formatter) - using uv environment
+  - repo: local
+    hooks:
+      - id: ruff
+        name: Ruff (Linter)
+        entry: pre-commit-hooks/run-uv-command.sh ruff check --fix --exit-non-zero-on-fix
+        language: system
+        types: [python]
+        files: ^backend/
+      - id: ruff-format
+        name: Ruff (Formatter)
+        entry: pre-commit-hooks/run-uv-command.sh ruff format
+        language: system
+        types: [python]
+        files: ^backend/
+
+  # # Backend: Black (Python formatter - as backup/alternative) - using uv environment
+  # - repo: local
+  #   hooks:
+  #     - id: black
+  #       name: Black (Python Formatter)
+  #       entry: pre-commit-hooks/run-uv-command.sh black --line-length=100
+  #       language: system
+  #       types: [python]
+  #       files: ^backend/
+
+  # Custom Docker security check
+  - repo: local
+    hooks:
+      - id: check-docker-root
+        name: Check Dockerfile for root user
+        entry: pre-commit-hooks/check-docker-root.sh
+        language: system
+        types: [file]
+        files: .*Dockerfile$
+        pass_filenames: true
