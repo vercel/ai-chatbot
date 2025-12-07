@@ -1,65 +1,104 @@
-import { put } from "@vercel/blob";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import jwt from "jsonwebtoken";
 
 import { auth } from "@/app/(auth)/auth";
+import { isAuthDisabled } from "@/lib/constants";
 
-// Use Blob instead of File since File is not available in Node.js environment
-const FileSchema = z.object({
-  file: z
-    .instanceof(Blob)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: "File size should be less than 5MB",
-    })
-    // Update the file type based on the kind of files you want to accept
-    .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
-      message: "File type should be JPEG or PNG",
-    }),
-});
-
+/**
+ * Proxy file upload to FastAPI backend (PostgreSQL storage)
+ * This route forwards file uploads to the FastAPI backend which stores files in PostgreSQL
+ */
 export async function POST(request: Request) {
   const session = await auth();
 
-  if (!session) {
+  if (!session?.user && !isAuthDisabled) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (request.body === null) {
-    return new Response("Request body is empty", { status: 400 });
+    return NextResponse.json(
+      { error: "Request body is empty" },
+      { status: 400 }
+    );
   }
 
   try {
+    // Get FastAPI backend URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const fastApiUrl = `${apiUrl}/api/files/upload`;
+
+    // Prepare headers for FastAPI request
+    const headers: HeadersInit = {};
+
+    // Add authentication
+    if (isAuthDisabled) {
+      // When auth is disabled, send session ID from cookies
+      const cookieStore = await cookies();
+      const sessionId = cookieStore.get("session_id")?.value;
+      if (sessionId) {
+        headers["X-Session-Id"] = sessionId;
+      }
+    } else {
+      // Generate JWT token for FastAPI
+      const jwtSecret = process.env.JWT_SECRET_KEY;
+      if (!jwtSecret) {
+        return NextResponse.json(
+          { error: "Server configuration error" },
+          { status: 500 }
+        );
+      }
+
+      const token = jwt.sign(
+        {
+          sub: session.user.id,
+          type: session.user.type || "regular",
+        },
+        jwtSecret,
+        {
+          expiresIn: "30m",
+          algorithm: "HS256",
+        }
+      );
+
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    // Forward the form data to FastAPI
+    // Note: We need to recreate FormData because Request.formData() can only be read once
     const formData = await request.formData();
-    const file = formData.get("file") as Blob;
+    const file = formData.get("file") as File | Blob;
 
     if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No file uploaded" },
+        { status: 400 }
+      );
     }
 
-    const validatedFile = FileSchema.safeParse({ file });
+    // Create new FormData for FastAPI request
+    const fastApiFormData = new FormData();
+    fastApiFormData.append("file", file);
 
-    if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.errors
-        .map((error) => error.message)
-        .join(", ");
+    // Forward request to FastAPI
+    const response = await fetch(fastApiUrl, {
+      method: "POST",
+      headers,
+      body: fastApiFormData,
+    });
 
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
+    // Handle response
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({
+        error: "Upload failed",
+      }));
+      return NextResponse.json(errorData, { status: response.status });
     }
 
-    // Get filename from formData since Blob doesn't have name property
-    const filename = (formData.get("file") as File).name;
-    const fileBuffer = await file.arrayBuffer();
-
-    try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
-      });
-
-      return NextResponse.json(data);
-    } catch (_error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
-    }
-  } catch (_error) {
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error proxying file upload to FastAPI:", error);
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 }

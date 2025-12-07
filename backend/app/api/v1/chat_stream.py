@@ -4,11 +4,14 @@ This endpoint handles AI streaming and replaces the Next.js /api/chat/stream end
 """
 
 import asyncio
+import base64
 import json
 import logging
+import re
 import traceback
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin, urlparse
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
@@ -134,11 +137,53 @@ About the origin of user's request:
     return f"{regular_prompt}\n\n{request_prompt}\n\n{artifacts_prompt}".strip()
 
 
-def convert_messages_to_openai_format(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+async def convert_messages_to_openai_format(
+    messages: List[Dict[str, Any]], db: AsyncSession
+) -> List[Dict[str, Any]]:
     """
     Convert messages from database format to OpenAI format.
     Handles both text and file parts.
+    For files stored in our database, uses base64-encoded data instead of URLs.
     """
+    from sqlalchemy import select
+
+    from app.models.file import File
+
+    def extract_file_id_from_url(url: str) -> Optional[UUID]:
+        """Extract file ID from URL like /api/files/{file_id}."""
+        if not url:
+            return None
+
+        # Match pattern: /api/files/{uuid}
+        pattern = r"/api/files/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+        match = re.search(pattern, url, re.IGNORECASE)
+        if match:
+            try:
+                return UUID(match.group(1))
+            except ValueError:
+                return None
+        return None
+
+    async def get_file_base64(file_id: UUID, content_type: str) -> Optional[str]:
+        """Fetch file from database and return base64-encoded data URL."""
+        try:
+            result = await db.execute(select(File).where(File.id == file_id))
+            file_record = result.scalar_one_or_none()
+
+            if not file_record:
+                logger.warning("File not found in database: %s", file_id)
+                return None
+
+            # Encode file data as base64
+            file_data_bytes = bytes(file_record.data)
+            base64_string = base64.b64encode(file_data_bytes).decode("utf-8")
+
+            # Return data URL format: data:{content_type};base64,{base64_string}
+            return f"data:{content_type};base64,{base64_string}"
+        except Exception as e:
+            logger.error("Error fetching file from database: %s", e)
+            return None
+
     openai_messages = []
 
     for msg in messages:
@@ -151,13 +196,97 @@ def convert_messages_to_openai_format(messages: List[Dict[str, Any]]) -> List[Di
             if part.get("type") == "text":
                 content.append({"type": "text", "text": part.get("text", "")})
             elif part.get("type") == "file":
-                # OpenAI format for images
-                content.append(
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": part.get("url", "")},
-                    }
+                file_url = part.get("url", "")
+                file_name = part.get("name", "file")
+                media_type = part.get("mediaType") or part.get(
+                    "contentType", "application/octet-stream"
                 )
+
+                # Determine if this is an image or PDF based on media type
+                is_image = media_type.startswith("image/")
+                is_pdf = media_type == "application/pdf"
+
+                # Try to extract file ID from URL (our database files)
+                file_id = extract_file_id_from_url(file_url)
+                if file_id:
+                    # File is in our database - use base64 encoding
+                    base64_data = await get_file_base64(file_id, media_type)
+                    if base64_data:
+                        if is_pdf:
+                            # Use file format for PDFs
+                            content.append(
+                                {
+                                    "type": "file",
+                                    "file": {
+                                        "filename": file_name,
+                                        "file_data": base64_data,
+                                    },
+                                }
+                            )
+                        elif is_image:
+                            # Use image_url format for images (JPEG, PNG, etc.)
+                            content.append(
+                                {
+                                    "type": "image_url",
+                                    "image_url": {"url": base64_data},
+                                }
+                            )
+                        else:
+                            # Unknown type - default to file format
+                            logger.warning("Unknown media type %s, using file format", media_type)
+                            content.append(
+                                {
+                                    "type": "file",
+                                    "file": {
+                                        "filename": file_name,
+                                        "file_data": base64_data,
+                                    },
+                                }
+                            )
+                    else:
+                        # Fallback to URL if file not found in database
+                        logger.warning("File not found, falling back to URL: %s", file_url)
+                        # Convert relative URL to absolute URL as fallback
+                        from app.config import settings
+
+                        parsed = urlparse(file_url)
+                        if not (parsed.scheme and parsed.netloc):
+                            base_url = settings.NEXTJS_URL.rstrip("/")
+                            file_url = urljoin(base_url, file_url)
+                        # Use appropriate format based on media type
+                        if is_image:
+                            content.append(
+                                {
+                                    "type": "image_url",
+                                    "image_url": {"url": file_url},
+                                }
+                            )
+                        else:
+                            # For non-images, we can't use URL format with OpenAI
+                            # This shouldn't happen if file is in our database
+                            logger.error("Cannot use URL format for non-image file: %s", media_type)
+                else:
+                    # External URL - use appropriate format based on media type
+                    from app.config import settings
+
+                    parsed = urlparse(file_url)
+                    if not (parsed.scheme and parsed.netloc):
+                        base_url = settings.NEXTJS_URL.rstrip("/")
+                        file_url = urljoin(base_url, file_url)
+                    if is_image:
+                        content.append(
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": file_url},
+                            }
+                        )
+                    else:
+                        # For external non-image files, we can't use URL format
+                        logger.warning(
+                            "External non-image file URL not supported: %s (%s)",
+                            file_url,
+                            media_type,
+                        )
 
         if content:
             openai_messages.append(
@@ -215,8 +344,8 @@ async def stream_chat(
             }
         )
 
-        # Convert to OpenAI format
-        openai_messages = convert_messages_to_openai_format(all_messages)
+        # Convert to OpenAI format (async - fetches file data from database)
+        openai_messages = await convert_messages_to_openai_format(all_messages, db)
 
         # 3. Get system prompt
         # TODO: Get geolocation hints from request headers or frontend
