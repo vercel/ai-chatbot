@@ -228,8 +228,9 @@ async def _stream_text_content(
         store=True,
     )
 
-    # Process chunks and yield control to event loop periodically
-    # This allows SSE events to be streamed in real-time
+    # Process chunks - the synchronous stream iteration blocks the event loop
+    # We need to yield control frequently to allow execute_tool_with_streaming to yield events
+    # Using a small delay (0.001s) instead of 0 to ensure the event loop actually processes
     for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:
@@ -247,15 +248,9 @@ async def _stream_text_content(
                             elif delta_type == "sheet":
                                 sse_writer(format_sse({"type": "data-sheetDelta", "data": text}))
 
-        # # Yield control to event loop periodically to allow real-time event processing
-        # # This ensures SSE events can be streamed even while processing chunks
-        # chunk_count += 1
-        # if chunk_count % 3 == 0:  # Yield every 3 chunks for better responsiveness
-        #     # Use asyncio.sleep(0) to yield control without blocking
-        #     # Since we're in an async function, we can await
-        #     await asyncio.sleep(0.001)
-
-        await asyncio.sleep(0)
+        # Yield control to event loop with a small delay to ensure events are processed
+        # Using 0.001s instead of 0 to give the event loop time to process pending tasks
+        await asyncio.sleep(0.001)
 
     return content
 
@@ -290,6 +285,9 @@ async def _stream_structured_content(
         stream=True,
     )
 
+    # Process chunks - the synchronous stream iteration blocks the event loop
+    # We need to yield control frequently to allow execute_tool_with_streaming to yield events
+    # Using a small delay (0.001s) instead of 0 to ensure the event loop actually processes
     for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:
@@ -303,7 +301,10 @@ async def _stream_structured_content(
                                 sse_writer(format_sse({"type": "data-codeDelta", "data": text}))
                             elif delta_type == "sheet":
                                 sse_writer(format_sse({"type": "data-sheetDelta", "data": text}))
-        await asyncio.sleep(0)
+
+        # Yield control to event loop with a small delay to ensure events are processed
+        # Using 0.001s instead of 0 to give the event loop time to process pending tasks
+        await asyncio.sleep(0.001)
 
     # TODO: Parse structured output if needed
     # For now, return content as-is

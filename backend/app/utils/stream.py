@@ -111,7 +111,17 @@ async def execute_tool_with_streaming(
                     yield ("event", event)
 
             except asyncio.TimeoutError:
-                # No new events, check if tool is done
+                # Timeout occurred - check if there are events queued anyway
+                # (This can happen if the tool is blocking and call_soon_threadsafe
+                # callbacks haven't been processed yet, but events were queued)
+                if tool_sse_events:
+                    # Yield any queued events even though event_ready wasn't set
+                    # This handles the case where the tool is blocking the event loop
+                    while tool_sse_events:
+                        event = tool_sse_events.popleft()
+                        yield ("event", event)
+
+                # Check if tool is done
                 if tool_task.done():
                     break
                 # Continue waiting for more events
