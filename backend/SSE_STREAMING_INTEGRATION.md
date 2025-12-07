@@ -165,4 +165,3 @@ To test SSE streaming:
 2. **Error Recovery**: Handle partial tool execution failures
 3. **Event Filtering**: Allow tools to specify which events to emit
 4. **Progress Events**: Add progress indicators for long-running tools
-

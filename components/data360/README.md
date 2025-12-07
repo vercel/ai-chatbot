@@ -38,4 +38,3 @@ if ((type as string) === "tool-ai4data_ai4data_mcpyour_tool_name") {
   // Render YourToolWidget
 }
 ```
-

@@ -153,4 +153,3 @@ The Suggestion model was the only missing model. It has been:
 5. Integrated into the `requestSuggestions` tool
 
 The schema migration is now complete!
-

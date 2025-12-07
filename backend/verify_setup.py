@@ -4,8 +4,9 @@ Quick verification script to check if FastAPI setup is correct.
 Run this after installing dependencies to verify everything is set up properly.
 """
 
-import sys
 import importlib.util
+import sys
+
 
 def check_import(module_name):
     """Check if a module can be imported."""
@@ -16,6 +17,7 @@ def check_import(module_name):
         return True, f"✓ {module_name}"
     except Exception as e:
         return False, f"✗ {module_name}: {str(e)}"
+
 
 def main():
     print("Verifying FastAPI backend setup...\n")
@@ -58,7 +60,7 @@ def main():
         if not ok:
             all_ok = False
 
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     if all_ok:
         print("✓ All checks passed! Setup looks good.")
         print("\nNext steps:")
@@ -72,6 +74,6 @@ def main():
         print("  uv sync")
         return 1
 
+
 if __name__ == "__main__":
     sys.exit(main())
-

@@ -145,4 +145,3 @@ Tools are executed manually (not using aisuite's `max_turns`):
 4. ⏳ Port tools to Python
 5. ⏳ Update FastAPI chat endpoint
 6. ⏳ Test end-to-end
-

@@ -159,4 +159,3 @@ Make FastAPI accept NextAuth session cookies - requires more backend changes.
 **Quick win: 5 minutes** to temporarily disable auth and test endpoints.
 
 **Recommendation**: Start with quick win, implement bridge when needed.
-

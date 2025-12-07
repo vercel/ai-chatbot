@@ -103,4 +103,3 @@ Located in `backend/app/api/v1/chat.py`:
 - ✅ `DELETE /api/history` - Delete all chats (already migrated)
 - ✅ `DELETE /api/chat?id={id}` - Delete single chat (just migrated)
 - ⏳ `POST /api/chat` - Create/continue chat (complex, needs streaming)
-

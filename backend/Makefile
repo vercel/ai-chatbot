@@ -45,4 +45,3 @@ add: ## Add a dependency (usage: make add PACKAGE=package-name)
 
 add-dev: ## Add a dev dependency (usage: make add-dev PACKAGE=package-name)
 	uv add --dev $(PACKAGE)
-

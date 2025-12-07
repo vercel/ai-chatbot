@@ -111,4 +111,3 @@ See [MIGRATION_PLAN.md](../MIGRATION_PLAN.md) for detailed migration steps.
 ### Port Already in Use
 - Change port: `uvicorn app.main:app --reload --port 8001`
 - Or kill existing process on port 8000
-

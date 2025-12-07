@@ -96,4 +96,3 @@ But still:
 - Never commit `.env`
 - Use different credentials for production
 - Don't share your local `.env` file
-

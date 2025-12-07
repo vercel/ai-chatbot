@@ -172,4 +172,3 @@ NEXT_PUBLIC_USE_FASTAPI_BACKEND=true
 - The routing matches any URL that **includes** `/api/{endpoint_name}`
 - Order doesn't matter: `vote,history` = `history,vote`
 - If `NEXT_PUBLIC_USE_FASTAPI_BACKEND=true`, all endpoints go to FastAPI (ignores the list)
-

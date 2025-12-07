@@ -77,4 +77,3 @@ The frontend uses **Next.js App Router** with:
 - **Auth**: NextAuth.js
 
 Everything runs together when you do `pnpm dev`!
-

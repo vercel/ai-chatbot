@@ -136,4 +136,3 @@ To test the migration:
 - The `kind` field must be one of: `"text"`, `"code"`, `"image"`, `"sheet"`
 - All endpoints require authentication via JWT
 - User ownership is validated for all operations
-

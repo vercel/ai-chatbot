@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { guestRegex, isDevelopmentEnvironment, isAuthDisabled } from "./lib/constants";
+import {
+  guestRegex,
+  isAuthDisabled,
+  isDevelopmentEnvironment,
+} from "./lib/constants";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,11 +26,7 @@ export async function proxy(request: NextRequest) {
   const internalSecret = request.headers.get("x-internal-api-secret");
   const expectedSecret = process.env.INTERNAL_API_SECRET;
 
-  if (
-    internalSecret &&
-    expectedSecret &&
-    internalSecret === expectedSecret
-  ) {
+  if (internalSecret && expectedSecret && internalSecret === expectedSecret) {
     // Internal request from FastAPI - allow through without auth check
     return NextResponse.next();
   }

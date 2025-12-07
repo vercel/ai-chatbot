@@ -166,4 +166,3 @@ Currently, the API client expects JWT tokens in `localStorage.getItem('auth_toke
 | **Complexity** | High | Low |
 
 The patching approach is **much simpler** and **less risky** for your use case!
-

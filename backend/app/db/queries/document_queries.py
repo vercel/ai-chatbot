@@ -2,20 +2,16 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import select, and_, delete
+from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.document import Document
 
 
-async def get_documents_by_id(
-    session: AsyncSession, document_id: UUID
-) -> List[Document]:
+async def get_documents_by_id(session: AsyncSession, document_id: UUID) -> List[Document]:
     """Get all versions of a document by ID, ordered by creation time."""
     result = await session.execute(
-        select(Document)
-        .where(Document.id == document_id)
-        .order_by(Document.created_at)
+        select(Document).where(Document.id == document_id).order_by(Document.created_at)
     )
     return list(result.scalars().all())
 
@@ -74,4 +70,3 @@ async def delete_documents_by_id_after_timestamp(
         await session.commit()
 
     return documents_to_delete
-

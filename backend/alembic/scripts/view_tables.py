@@ -3,8 +3,10 @@
 Simple script to view table contents in the database.
 Usage: python scripts/view_tables.py [table_name]
 """
+
 import asyncio
 import sys
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -19,8 +21,7 @@ async def view_table(table_name: str = None, limit: int = 10):
         if table_name:
             # View specific table
             result = await conn.execute(
-                text(f'SELECT * FROM "{table_name}" LIMIT :limit'),
-                {"limit": limit}
+                text(f'SELECT * FROM "{table_name}" LIMIT :limit'), {"limit": limit}
             )
             rows = result.fetchall()
             columns = result.keys()
@@ -50,9 +51,7 @@ async def view_table(table_name: str = None, limit: int = 10):
             print("\n=== Available Tables ===\n")
             for (table,) in tables:
                 # Get row count
-                count_result = await conn.execute(
-                    text(f'SELECT COUNT(*) FROM "{table}"')
-                )
+                count_result = await conn.execute(text(f'SELECT COUNT(*) FROM "{table}"'))
                 count = count_result.scalar()
                 print(f"  {table} ({count} rows)")
 
@@ -68,4 +67,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

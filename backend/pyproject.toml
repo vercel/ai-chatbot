@@ -60,5 +60,6 @@ target-version = ["py310"]
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.5.0",
     "ruff>=0.14.7",
 ]

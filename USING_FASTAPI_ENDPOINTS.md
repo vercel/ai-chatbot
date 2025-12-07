@@ -231,4 +231,3 @@ FastAPI automatically generates interactive API documentation:
 - **ReDoc**: http://localhost:8000/redoc
 
 You can test all endpoints directly from the browser!
-

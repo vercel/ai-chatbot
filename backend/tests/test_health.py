@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -16,4 +17,3 @@ def test_root():
     data = response.json()
     assert "message" in data
     assert "docs" in data
-

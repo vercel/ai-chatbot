@@ -6,7 +6,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { SearchRelevantIndicatorsOutput } from "./types";
 
 const SearchIconComponent = () => (
-  <SearchIcon className="text-muted-foreground size-5" />
+  <SearchIcon className="size-5 text-muted-foreground" />
 );
 
 export function SearchRelevantIndicators({
@@ -31,7 +31,8 @@ export function SearchRelevantIndicators({
           <div className="font-semibold text-sm">Search Results</div>
         </div>
         <div className="text-muted-foreground text-xs">
-          {output.indicators.length} indicator{output.indicators.length !== 1 ? "s" : ""}
+          {output.indicators.length} indicator
+          {output.indicators.length !== 1 ? "s" : ""}
         </div>
       </div>
 
@@ -40,11 +41,11 @@ export function SearchRelevantIndicators({
         <div className="flex w-max gap-3 pb-4">
           {output.indicators.map((indicator, index) => (
             <Card
-              className="min-w-[280px] max-w-[320px] shrink-0 border-border hover:border-primary/50 transition-colors"
+              className="min-w-[280px] max-w-[320px] shrink-0 border-border transition-colors hover:border-primary/50"
               key={`${indicator.idno}-${index}`}
             >
               <CardHeader className="pb-3">
-                <CardTitle className="line-clamp-2 text-sm font-medium leading-tight">
+                <CardTitle className="line-clamp-2 font-medium text-sm leading-tight">
                   {indicator.name}
                 </CardTitle>
               </CardHeader>
@@ -65,7 +66,7 @@ export function SearchRelevantIndicators({
       {output.note && (
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-800 dark:bg-amber-950/20">
           <div className="flex items-start gap-2">
-            <div className="text-amber-600 dark:text-amber-400 mt-0.5">
+            <div className="mt-0.5 text-amber-600 dark:text-amber-400">
               <svg
                 fill="none"
                 height="16"
@@ -82,7 +83,7 @@ export function SearchRelevantIndicators({
                 />
               </svg>
             </div>
-            <div className="text-amber-800 dark:text-amber-200 text-xs leading-relaxed">
+            <div className="text-amber-800 text-xs leading-relaxed dark:text-amber-200">
               {output.note}
             </div>
           </div>
@@ -91,4 +92,3 @@ export function SearchRelevantIndicators({
     </div>
   );
 }
-

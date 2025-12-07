@@ -145,4 +145,3 @@ OPENAI_API_KEY=sk-...
 - ✅ **Provider Abstraction:** Using aisuite for easy provider switching
 - ✅ **Format Compatibility:** Output matches Vercel AI SDK format
 - ✅ **Clean Architecture:** Separation of concerns (DB vs AI)
-

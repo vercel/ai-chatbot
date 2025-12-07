@@ -69,7 +69,9 @@ export function GetWdiData({ output }: { output: Data360Output }) {
     }
     return [...selectedIndicator.data]
       .filter((d) => d.value !== null && d.value !== undefined)
-      .sort((a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10));
+      .sort(
+        (a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10)
+      );
   }, [selectedIndicator]);
 
   // Get data for comparison mode
@@ -79,7 +81,9 @@ export function GetWdiData({ output }: { output: Data360Output }) {
       indicator,
       data: [...(indicator.data || [])]
         .filter((d) => d.value !== null && d.value !== undefined)
-        .sort((a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10)),
+        .sort(
+          (a, b) => Number.parseInt(a.date, 10) - Number.parseInt(b.date, 10)
+        ),
     }));
   }, [output.data, viewMode]);
 
@@ -143,7 +147,8 @@ export function GetWdiData({ output }: { output: Data360Output }) {
         <div className="flex items-center gap-3">
           {hasMultipleCountries && (
             <div className="text-muted-foreground text-xs">
-              {allCountries.length} countr{allCountries.length !== 1 ? "ies" : "y"}
+              {allCountries.length} countr
+              {allCountries.length !== 1 ? "ies" : "y"}
             </div>
           )}
           {hasMultipleIndicators && (
@@ -325,13 +330,13 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                           <td className="px-3 py-2">{point.country}</td>
                           <td className="px-3 py-2">{point.date}</td>
                           <td className="px-3 py-2 text-right font-medium">
-                            {point.value !== null
-                              ? point.value.toFixed(2)
-                              : (
-                                  <span className="text-muted-foreground">
-                                    No data
-                                  </span>
-                                )}
+                            {point.value !== null ? (
+                              point.value.toFixed(2)
+                            ) : (
+                              <span className="text-muted-foreground">
+                                No data
+                              </span>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -348,12 +353,22 @@ export function GetWdiData({ output }: { output: Data360Output }) {
       {viewMode === "compare" && (
         <div className="flex flex-col gap-4">
           {comparisonData.map(({ indicator, data: indicatorData }, idx) => {
-            const indicatorMin = indicatorData.length > 0
-              ? Math.min(...indicatorData.map((d) => d.value).filter((v): v is number => v !== null))
-              : 0;
-            const indicatorMax = indicatorData.length > 0
-              ? Math.max(...indicatorData.map((d) => d.value).filter((v): v is number => v !== null))
-              : 0;
+            const indicatorMin =
+              indicatorData.length > 0
+                ? Math.min(
+                    ...indicatorData
+                      .map((d) => d.value)
+                      .filter((v): v is number => v !== null)
+                  )
+                : 0;
+            const indicatorMax =
+              indicatorData.length > 0
+                ? Math.max(
+                    ...indicatorData
+                      .map((d) => d.value)
+                      .filter((v): v is number => v !== null)
+                  )
+                : 0;
             const indicatorRange = indicatorMax - indicatorMin || 1;
 
             return (
@@ -382,8 +397,9 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                         {indicatorData.map((point, pointIdx) => {
                           const height =
                             point.value !== null
-                              ? ((point.value - indicatorMin) / indicatorRange) *
-                                  100
+                              ? ((point.value - indicatorMin) /
+                                  indicatorRange) *
+                                100
                               : 0;
                           return (
                             <div
@@ -408,7 +424,7 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                           );
                         })}
                       </div>
-                      <div className="mt-1 flex justify-between text-muted-foreground text-[10px]">
+                      <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
                         <span>Min: {indicatorMin.toFixed(2)}</span>
                         <span>Max: {indicatorMax.toFixed(2)}</span>
                       </div>
@@ -417,7 +433,7 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                     {/* Summary */}
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div className="rounded border border-border bg-background p-1.5">
-                        <div className="text-muted-foreground text-[10px]">
+                        <div className="text-[10px] text-muted-foreground">
                           Points
                         </div>
                         <div className="font-semibold text-xs">
@@ -425,7 +441,7 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                         </div>
                       </div>
                       <div className="rounded border border-border bg-background p-1.5">
-                        <div className="text-muted-foreground text-[10px]">
+                        <div className="text-[10px] text-muted-foreground">
                           Latest
                         </div>
                         <div className="font-semibold text-xs">
@@ -435,7 +451,7 @@ export function GetWdiData({ output }: { output: Data360Output }) {
                         </div>
                       </div>
                       <div className="rounded border border-border bg-background p-1.5">
-                        <div className="text-muted-foreground text-[10px]">
+                        <div className="text-[10px] text-muted-foreground">
                           Range
                         </div>
                         <div className="font-semibold text-xs">

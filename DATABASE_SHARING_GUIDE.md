@@ -264,4 +264,3 @@ Once both backends are connected to the same database:
 ---
 
 **Summary**: Use the same database connection details, but add `+asyncpg` to the FastAPI connection string. Both backends will share the same database seamlessly!
-

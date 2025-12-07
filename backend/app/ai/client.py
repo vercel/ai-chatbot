@@ -3,7 +3,6 @@ AI Client using aisuite for provider abstraction.
 Supports OpenAI and can be extended to other providers.
 """
 
-from app.config import settings
 from dotenv import load_dotenv
 from openai import OpenAI
 

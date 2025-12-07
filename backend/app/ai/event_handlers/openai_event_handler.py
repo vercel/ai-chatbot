@@ -1,25 +1,25 @@
+import json
+import logging
+
+from app.helpers import to_jsonable
+from app.sse.events import EventName
 from openai._models import BaseModel
 from openai.types.responses import (
+    ResponseCompletedEvent,
+    ResponseContentPartAddedEvent,
+    ResponseContentPartDoneEvent,
     ResponseCreatedEvent,
     ResponseInProgressEvent,
-    ResponseMcpCallInProgressEvent,
     ResponseMcpCallArgumentsDeltaEvent,
     ResponseMcpCallArgumentsDoneEvent,
     ResponseMcpCallCompletedEvent,
     ResponseMcpCallFailedEvent,
-    ResponseContentPartAddedEvent,
-    ResponseCompletedEvent,
-    ResponseContentPartDoneEvent,
+    ResponseMcpCallInProgressEvent,
     ResponseOutputItemAddedEvent,
     ResponseOutputItemDoneEvent,
     ResponseTextDeltaEvent,
     ResponseTextDoneEvent,
 )
-import logging
-import json
-from app.sse.events import EventName
-import json5
-from app.helpers import to_jsonable
 
 logger = logging.getLogger(__name__)
 

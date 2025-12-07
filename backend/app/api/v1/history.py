@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
-from app.db.queries.chat_queries import get_chats_by_user_id, delete_all_chats_by_user_id
+from app.db.queries.chat_queries import delete_all_chats_by_user_id, get_chats_by_user_id
 from app.utils.user_id import get_user_id_uuid
 
 router = APIRouter()

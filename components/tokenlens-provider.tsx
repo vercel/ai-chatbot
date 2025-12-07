@@ -14,4 +14,3 @@ export function TokenLensProvider({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-

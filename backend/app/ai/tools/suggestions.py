@@ -2,11 +2,11 @@
 Suggestions tool - Request suggestions for a document.
 Ported from lib/ai/tools/request-suggestions.ts
 """
+
 import json
 import uuid
-from typing import Any, Dict, List, Optional
-
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from app.ai.client import get_ai_client, get_model_name
 from app.db.queries.document_queries import get_documents_by_id
@@ -50,17 +50,19 @@ async def request_suggestions_tool(
         # Prepare suggestions for database
         suggestions_to_save = []
         for sug in suggestions:
-            suggestions_to_save.append({
-                "id": sug["id"],
-                "documentId": document_id,
-                "documentCreatedAt": document.created_at,
-                "originalText": sug["originalText"],
-                "suggestedText": sug["suggestedText"],
-                "description": sug.get("description"),
-                "isResolved": sug.get("isResolved", False),
-                "userId": user_id,
-                "createdAt": datetime.utcnow(),
-            })
+            suggestions_to_save.append(
+                {
+                    "id": sug["id"],
+                    "documentId": document_id,
+                    "documentCreatedAt": document.created_at,
+                    "originalText": sug["originalText"],
+                    "suggestedText": sug["suggestedText"],
+                    "description": sug.get("description"),
+                    "isResolved": sug.get("isResolved", False),
+                    "userId": user_id,
+                    "createdAt": datetime.utcnow(),
+                }
+            )
 
         await save_suggestions(db_session, suggestions_to_save)
 
@@ -165,4 +167,3 @@ REQUEST_SUGGESTIONS_TOOL_DEFINITION = {
         },
     },
 }
-

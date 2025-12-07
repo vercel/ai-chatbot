@@ -109,4 +109,3 @@ Once vote endpoint is working:
 - Error messages use ChatSDKError for consistency
 - Database queries use async SQLAlchemy
 - UUIDs are handled as Python UUID objects, converted to strings for responses
-

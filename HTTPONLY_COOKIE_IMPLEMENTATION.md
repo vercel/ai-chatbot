@@ -183,4 +183,3 @@ If frontend (localhost:3000) and backend (localhost:8001) are on different ports
 - [x] CORS with credentials enabled
 - [ ] Rate limiting on token generation
 - [ ] Token rotation/refresh tokens
-

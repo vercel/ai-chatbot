@@ -166,4 +166,3 @@ This will check:
 ## 🎯 Next Priority
 
 The most important next step is to implement the database models and queries, as all other functionality depends on them.
-

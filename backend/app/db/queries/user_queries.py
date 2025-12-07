@@ -21,9 +21,7 @@ async def get_user_by_id(session: AsyncSession, user_id: UUID) -> Optional[User]
     return result.scalar_one_or_none()
 
 
-async def get_or_create_user_for_session(
-    session: AsyncSession, user_id: UUID
-) -> User:
+async def get_or_create_user_for_session(session: AsyncSession, user_id: UUID) -> User:
     """
     Get or create a user for a session ID (when auth is disabled).
     Creates a user with a generated email if it doesn't exist.
@@ -54,4 +52,3 @@ async def get_or_create_user_for_session(
             return user
         # If still not found, re-raise the error
         raise
-

@@ -158,4 +158,3 @@ See `JWT_BRIDGE_SETUP.md` for detailed troubleshooting guide.
 ## Status
 
 ✅ **Ready for use!** The bridge is fully implemented and ready to authenticate requests to FastAPI endpoints.
-

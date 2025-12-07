@@ -3,6 +3,7 @@ Alembic environment configuration for async SQLAlchemy with PostgreSQL.
 
 This file configures Alembic to work with async SQLAlchemy models.
 """
+
 import asyncio
 from logging.config import fileConfig
 
@@ -12,12 +13,12 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
+# Import settings to get database URL
+from app.config import settings
+
 # Import your models and Base
 from app.core.database import Base
 from app.models import *  # noqa: F401, F403 - Import all models so Alembic can detect them
-
-# Import settings to get database URL
-from app.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -130,4 +131,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

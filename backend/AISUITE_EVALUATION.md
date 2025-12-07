@@ -128,4 +128,3 @@ The direct API approach gives you:
 - ✅ No additional dependencies
 - ✅ Precise SSE format control
 - ✅ Works with existing Vercel Gateway setup
-

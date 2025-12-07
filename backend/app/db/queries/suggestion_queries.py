@@ -2,6 +2,7 @@
 Database query functions for Suggestion model.
 Ported from lib/db/queries.ts
 """
+
 from datetime import datetime
 from typing import List
 from uuid import UUID
@@ -74,8 +75,5 @@ async def get_suggestions_by_document_id(
     Returns:
         List of Suggestion objects
     """
-    result = await session.execute(
-        select(Suggestion).where(Suggestion.document_id == document_id)
-    )
+    result = await session.execute(select(Suggestion).where(Suggestion.document_id == document_id))
     return list(result.scalars().all())
-

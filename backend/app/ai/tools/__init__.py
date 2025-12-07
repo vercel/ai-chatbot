@@ -2,6 +2,7 @@
 AI Tools for the chatbot.
 Ported from lib/ai/tools/
 """
+
 from app.ai.tools.document import (
     CREATE_DOCUMENT_TOOL_DEFINITION,
     UPDATE_DOCUMENT_TOOL_DEFINITION,

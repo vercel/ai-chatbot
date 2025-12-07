@@ -383,4 +383,3 @@ When adding a new tool:
 - [ ] Test error handling
 - [ ] Document tool purpose and usage
 - [ ] Update any relevant documentation
-

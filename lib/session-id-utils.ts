@@ -52,4 +52,3 @@ export async function sessionIdMatchesChatUserId(
     return false;
   }
 }
-

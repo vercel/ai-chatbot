@@ -49,6 +49,7 @@ TITLE_PROMPT = """
 """
 
 
+# ruff: noqa: N815
 class MessagePart(BaseModel):
     type: str  # "text" or "file"
     text: str | None = None

@@ -1,14 +1,10 @@
-from fastapi import HTTPException, status
 from typing import Optional
+
+from fastapi import HTTPException, status
 
 
 class ChatSDKError(HTTPException):
-    def __init__(
-        self,
-        error_code: str,
-        detail: Optional[str] = None,
-        status_code: int = 500
-    ):
+    def __init__(self, error_code: str, detail: Optional[str] = None, status_code: int = 500):
         self.error_code = error_code
         self.detail = detail or self._get_message(error_code)
         super().__init__(status_code=status_code, detail=self.detail)
@@ -42,4 +38,3 @@ def get_status_code(error_type: str) -> int:
         "offline": status.HTTP_503_SERVICE_UNAVAILABLE,
     }
     return status_codes.get(error_type, status.HTTP_500_INTERNAL_SERVER_ERROR)
-

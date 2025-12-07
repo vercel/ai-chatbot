@@ -241,4 +241,3 @@ After implementing:
 3. Test tool call chains (tool calls another tool)
 4. Test tool errors (should still continue conversation)
 5. Test max_tool_turns limit
-

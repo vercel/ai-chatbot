@@ -287,7 +287,11 @@ export function Weather({
   console.log("weatherAtLocation", weatherAtLocation);
 
   if (weatherAtLocation.error) {
-    return <div className="text-white/60 text-xs">Error: {weatherAtLocation.error}</div>;
+    return (
+      <div className="text-white/60 text-xs">
+        Error: {weatherAtLocation.error}
+      </div>
+    );
   }
 
   const currentHigh = Math.max(

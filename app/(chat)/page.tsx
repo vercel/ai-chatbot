@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
-import { generateUUID } from "@/lib/utils";
 import { isAuthDisabled } from "@/lib/constants";
+import { generateUUID } from "@/lib/utils";
 import { auth } from "../(auth)/auth";
 
 export default function Page() {

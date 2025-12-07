@@ -200,4 +200,3 @@ async function getAuthToken(): Promise<string | null> {
 **For production**: Migrate to httpOnly cookies before going live.
 
 Would you like me to implement the httpOnly cookie approach?
-

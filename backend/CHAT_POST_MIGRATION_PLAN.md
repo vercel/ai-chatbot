@@ -324,4 +324,3 @@ The POST `/api/chat` endpoint is the **most complex endpoint** in the applicatio
 3. Should we migrate tools immediately or defer?
 4. Do we need resumable streams in FastAPI?
 5. How do we handle geolocation in FastAPI?
-

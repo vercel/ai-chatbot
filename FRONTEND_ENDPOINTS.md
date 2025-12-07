@@ -291,4 +291,3 @@ apiFetch('/api/history', { method: 'DELETE' })
 ```
 
 This ensures the request is automatically routed to FastAPI when configured.
-

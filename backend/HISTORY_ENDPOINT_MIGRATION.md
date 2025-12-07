@@ -117,4 +117,3 @@ The GET endpoint returns chats in the following format:
 - Pagination uses cursor-based approach with `starting_after` and `ending_before`
 - All datetime fields are serialized as ISO-8601 strings
 - The `lastContext` field can be `null` or a JSON object
-

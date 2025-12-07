@@ -117,4 +117,3 @@ Example tool triggers:
 - Create Document: "Create a document about Python"
 - Update Document: "Update document [id] to add more details"
 - Suggestions: "Request suggestions for document [id]"
-

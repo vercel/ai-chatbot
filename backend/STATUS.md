@@ -70,4 +70,3 @@ backend/
 ```
 
 Everything is ready to go! 🚀
-

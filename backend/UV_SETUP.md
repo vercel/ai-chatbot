@@ -101,4 +101,3 @@ If you were using `pip` and `venv`:
 - `pyproject.toml` - Project configuration and dependencies
 - `uv.lock` - Locked dependency versions (auto-generated)
 - `.venv/` - Virtual environment (auto-created, gitignored)
-

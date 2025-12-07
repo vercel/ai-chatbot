@@ -149,4 +149,3 @@ pnpm db:migrate
 | Format | `pnpm format` |
 
 The frontend will run on **http://localhost:3000** by default.
-

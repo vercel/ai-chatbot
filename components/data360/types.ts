@@ -27,4 +27,3 @@ export type SearchRelevantIndicatorsOutput = {
   indicators: SearchIndicator[];
   note?: string;
 };
-

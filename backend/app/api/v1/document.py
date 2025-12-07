@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
@@ -16,7 +16,7 @@ from app.db.queries.document_queries import (
     save_document,
 )
 from app.db.queries.user_queries import get_or_create_user_for_session
-from app.utils.user_id import get_user_id_uuid, user_ids_match, is_session_id
+from app.utils.user_id import get_user_id_uuid, is_session_id, user_ids_match
 
 router = APIRouter()
 
@@ -89,9 +89,7 @@ async def create_document(
     existing_documents = await get_documents_by_id(db, id)
     if existing_documents:
         if not user_ids_match(current_user["id"], existing_documents[0].user_id):
-            raise ChatSDKError(
-                "forbidden:document", status_code=status.HTTP_403_FORBIDDEN
-            )
+            raise ChatSDKError("forbidden:document", status_code=status.HTTP_403_FORBIDDEN)
 
     # Create new version
     user_id = get_user_id_uuid(current_user["id"])
@@ -156,9 +154,7 @@ async def delete_document(
         raise ChatSDKError("forbidden:document", status_code=status.HTTP_403_FORBIDDEN)
 
     # Delete documents after timestamp
-    deleted_documents = await delete_documents_by_id_after_timestamp(
-        db, id, timestamp_dt
-    )
+    deleted_documents = await delete_documents_by_id_after_timestamp(db, id, timestamp_dt)
 
     # Convert to dict format matching frontend expectations
     return [
@@ -172,4 +168,3 @@ async def delete_document(
         }
         for doc in deleted_documents
     ]
-

@@ -401,4 +401,3 @@ NEXTJS_INTERNAL_TOKEN=...  # Token for FastAPI → Next.js auth
 3. Implement proxy to Next.js
 4. Create Next.js proxy endpoint
 5. Test end-to-end flow
-

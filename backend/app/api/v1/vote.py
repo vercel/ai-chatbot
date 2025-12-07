@@ -21,12 +21,14 @@ if not logger.handlers:
 router = APIRouter()
 
 
+# ruff: noqa: N815
 class VoteRequest(BaseModel):
     chatId: UUID
     messageId: UUID
     type: str  # "up" or "down"
 
 
+# ruff: noqa: N803
 @router.get("")
 async def get_votes(
     chatId: UUID = Query(...),

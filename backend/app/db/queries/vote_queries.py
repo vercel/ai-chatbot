@@ -1,6 +1,8 @@
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
+
 from app.models.vote import Vote
 
 

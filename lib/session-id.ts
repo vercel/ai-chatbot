@@ -49,13 +49,13 @@ export function getSessionId(): string {
   try {
     let sessionId = localStorage.getItem(SESSION_ID_KEY);
 
-    if (!sessionId) {
+    if (sessionId) {
+      // Ensure cookie is also set (in case it was cleared)
+      setSessionIdCookie(sessionId);
+    } else {
       sessionId = generateSessionId();
       localStorage.setItem(SESSION_ID_KEY, sessionId);
       // Also store in cookie for server-side access
-      setSessionIdCookie(sessionId);
-    } else {
-      // Ensure cookie is also set (in case it was cleared)
       setSessionIdCookie(sessionId);
     }
 
@@ -102,4 +102,3 @@ export function clearSessionId(): void {
 export function isValidSessionId(id: string): boolean {
   return id.startsWith(SESSION_ID_PREFIX);
 }
-

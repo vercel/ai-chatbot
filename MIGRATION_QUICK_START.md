@@ -224,4 +224,3 @@ return StreamingResponse(stream_data(), media_type="text/event-stream")
 2. Start with one endpoint (e.g., `/api/history`)
 3. Test thoroughly before moving to the next
 4. Use feature flags to switch between backends
-

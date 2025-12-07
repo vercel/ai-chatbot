@@ -142,4 +142,3 @@ After setting up the bridge:
 - **Production**: Must use a strong, randomly generated secret key
 - **Token Storage**: Tokens are stored in localStorage (consider httpOnly cookies for production)
 - **Token Expiration**: 30 minutes default (adjust based on security requirements)
-
