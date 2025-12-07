@@ -12,8 +12,11 @@ install: ## Install dependencies
 install-dev: ## Install with dev dependencies
 	uv sync --dev
 
-run: ## Run the FastAPI server
+run: ## Run the FastAPI server (development mode, single worker)
 	uv run uvicorn app.main:app --reload --port 8000
+
+run-prod: ## Run the FastAPI server (production mode, multiple workers)
+	uv run uvicorn app.main:app --workers 4 --port 8000
 
 test: ## Run tests
 	uv run pytest
