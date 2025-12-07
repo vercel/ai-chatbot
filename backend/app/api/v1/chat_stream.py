@@ -3,9 +3,11 @@
 This endpoint handles AI streaming and replaces the Next.js /api/chat/stream endpoint.
 """
 
+import asyncio
 import logging
 import traceback
 from datetime import datetime
+from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.responses import StreamingResponse
@@ -22,7 +24,12 @@ from app.api.v1.utils.background_tasks import (
 from app.api.v1.utils.tool_setup import prepare_tools
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
+from app.db.queries.chat_queries import create_stream_id
 from app.utils.message_converter import convert_messages_to_openai_format
+from app.utils.resumable_stream import (
+    mark_stream_complete,
+    store_stream_chunk,
+)
 from app.utils.stream import patch_response_with_headers
 from app.utils.stream_processor import StreamEventProcessor
 from app.utils.user_id import get_user_id_uuid
@@ -90,10 +97,16 @@ async def stream_chat(
         tools, tool_definitions = await prepare_tools(user_id, db)
         logger.info("tool_definitions: %s", tool_definitions)
 
-        # 6. Create stream processor
+        # 6. Get or create stream ID for resumable streams
+        stream_id = request.streamId
+        if not stream_id:
+            stream_id = uuid4()
+            await create_stream_id(db, stream_id, request.id)
+
+        # 7. Create stream processor
         processor = StreamEventProcessor(request.id)
 
-        # 7. Create stream generator
+        # 8. Create stream generator with non-blocking Redis storage
         async def stream_generator():
             try:
                 async for event_bytes in processor.process_stream(
@@ -104,8 +117,14 @@ async def stream_chat(
                     tools=tools,
                     tool_definitions=tool_definitions,
                 ):
+                    # Store chunk in Redis asynchronously (fire-and-forget to avoid blocking)
+                    # This doesn't block the stream output
+                    asyncio.create_task(store_stream_chunk(stream_id, event_bytes))
                     yield event_bytes
             finally:
+                # Mark stream as complete in Redis (non-blocking)
+                asyncio.create_task(mark_stream_complete(stream_id))
+
                 # Schedule background tasks after stream completes (even on error)
                 create_save_messages_task(
                     background_tasks, request.id, processor.assistant_messages

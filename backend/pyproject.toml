@@ -23,6 +23,8 @@ dependencies = [
     "openai>=2.8.1",
     "json5>=0.12.1",
     "fastmcp>=2.13.3",
+    "redis>=5.0.0",
+    "hiredis>=2.2.0",
 ]
 
 [project.optional-dependencies]

@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     # Blob
     BLOB_READ_WRITE_TOKEN: str = ""
 
+    # Redis - Optional: Only needed for resumable streams
+    REDIS_URL: str = ""
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:

@@ -33,3 +33,4 @@ class StreamRequest(BaseModel):
     selectedChatModel: str  # "chat-model" or "chat-model-reasoning"
     selectedVisibilityType: str  # "public" or "private"
     existingMessages: List[Dict[str, Any]] = []
+    streamId: Optional[UUID] = None  # Optional stream ID for resumable streams
