@@ -77,7 +77,10 @@ def get_system_prompt(
 
     **IMPORTANT**: ALWAYS explain what you are planning to do before you do it. Do not use tools without explaining what you are planning to do.
 
-    **PRESENTATION**: If there are numeric values in the response, always try your best to present them in a table format if possible and if it makes sense."""
+    **PRESENTATION**: If there are numeric values in the response, always try your best to present them in a table format if possible and if it makes sense.
+
+
+    **DATA360**: Always find the relevant indicators first before getting the data. Do not use the data360 tool to get the data if you have not found the relevant indicators first."""
 
     artifacts_prompt = """
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
