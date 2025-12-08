@@ -6,11 +6,12 @@ import { TokenLensProvider } from "@/components/tokenlens-provider";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { appConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
+  metadataBase: new URL(appConfig.metadata.baseUrl),
+  title: appConfig.metadata.title,
+  description: appConfig.metadata.description,
 };
 
 export const viewport = {
