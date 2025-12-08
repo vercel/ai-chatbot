@@ -2,6 +2,13 @@
 
 import cx from "classnames";
 import { useMemo, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { TimeSeriesChart } from "./charts";
 import type { Data360Output } from "./types";
 
@@ -137,11 +144,128 @@ export function GetWdiData({ output }: { output: Data360Output }) {
   const hasMultipleIndicators = (output.data?.length ?? 0) > 1;
   const hasMultipleCountries = allCountries.length > 1;
 
+  // Count total data points across all indicators
+  const totalDataPoints = useMemo(() => {
+    if (!output.data) {
+      return 0;
+    }
+    return output.data.reduce(
+      (total, indicator) => total + (indicator.data?.length ?? 0),
+      0
+    );
+  }, [output.data]);
+
+  // Check if there's only one data point total
+  const hasSingleDataPoint = totalDataPoints === 1;
+
   if (!output.data || output.data.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-background p-4 text-muted-foreground text-sm">
         No data available
       </div>
+    );
+  }
+
+  // Render simple data card if there's only one data point
+  if (hasSingleDataPoint) {
+    const singleIndicator = output.data[0];
+    const singleDataPoint = singleIndicator.data?.[0];
+
+    if (!singleDataPoint) {
+      return (
+        <div className="rounded-lg border border-border bg-background p-4 text-muted-foreground text-sm">
+          No data available
+        </div>
+      );
+    }
+
+    return (
+      <Card className="w-full border-border shadow-sm">
+        <CardHeader className="border-border border-b pb-4">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <ChartIcon size={18} />
+              <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                World Development Indicator
+              </span>
+            </div>
+            <CardTitle className="font-semibold text-xl leading-snug">
+              {singleIndicator.indicator_name}
+            </CardTitle>
+            <CardDescription>
+              <span className="font-mono text-muted-foreground text-xs">
+                {singleIndicator.indicator_id}
+              </span>
+            </CardDescription>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-5 pt-6">
+          {/* Value Display */}
+          <div className="rounded-lg border border-border bg-muted/30 p-6">
+            <div className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+              Value
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-3xl text-foreground">
+                {singleDataPoint.value !== null
+                  ? singleDataPoint.value.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                  : "N/A"}
+              </span>
+              {singleDataPoint.value !== null && (
+                <span className="text-muted-foreground text-sm">units</span>
+              )}
+            </div>
+          </div>
+
+          {/* Metadata Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg border border-border bg-background p-4">
+              <div className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                Country
+              </div>
+              <div className="font-semibold text-foreground text-sm">
+                {singleDataPoint.country}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-4">
+              <div className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                Date
+              </div>
+              <div className="font-semibold text-foreground text-sm">
+                {singleDataPoint.date}
+              </div>
+            </div>
+          </div>
+
+          {/* Notes Section */}
+          {output.note &&
+          Object.keys(output.note).length > 0 &&
+          Object.values(output.note).some((value) => value !== "") ? (
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <div className="mb-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                Notes
+              </div>
+              <div className="space-y-2 text-muted-foreground text-sm">
+                {Object.entries(output.note)
+                  .filter(([, value]) => value)
+                  .map(([key, value]) => (
+                    <div className="flex gap-3" key={key}>
+                      <span className="font-medium text-foreground">
+                        {key}:
+                      </span>
+                      <span className="flex-1">{value}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
     );
   }
 
