@@ -38,4 +38,14 @@ export const appConfig = {
     description:
       "Data360 Chat is a chatbot that uses the Data360 MCP tools to answer questions about the Data360 dataset.",
   },
+  /**
+   * Application display name shown in the UI.
+   * This appears in:
+   * - Sidebar header
+   * - Navigation elements
+   * - Other UI components that display the app name
+   */
+  sidebar: {
+    appName: "Data360 Chat",
+  },
 } as const;

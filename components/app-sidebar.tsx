@@ -23,6 +23,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { apiFetch } from "@/lib/api-client";
+import { appConfig } from "@/lib/config";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,7 +73,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                  Chatbot
+                  {appConfig.sidebar.appName}
                 </span>
               </Link>
               <div className="flex flex-row gap-1">
