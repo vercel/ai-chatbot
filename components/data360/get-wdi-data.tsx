@@ -462,8 +462,12 @@ export function GetWdiData({ output }: { output: Data360Output }) {
         </div>
       )}
 
-      {/* Notes */}
-      {output.note && Object.keys(output.note).length > 0 && (
+      {/* Notes
+      The note contains a key and a value. The key is the name of the note and the value is the value of the note. If the value is empty for all keys, then don't show the note section.
+      */}
+      {output.note &&
+      Object.keys(output.note).length > 0 &&
+      Object.values(output.note).some((value) => value !== "") ? (
         <div className="rounded-lg border border-border bg-muted/30 p-2">
           <div className="text-muted-foreground text-xs">
             {Object.entries(output.note)
@@ -475,7 +479,7 @@ export function GetWdiData({ output }: { output: Data360Output }) {
               ))}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
