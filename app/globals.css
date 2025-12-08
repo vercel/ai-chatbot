@@ -317,3 +317,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Override sidebar colors - add your custom values here */
+/* These will override the original declarations above */
+/*
+:root {
+  --sidebar-background: hsl(0 0% 95%);
+  --sidebar: hsl(0 0% 95%);
+}
+
+.dark {
+  --sidebar-background: hsl(240 5.9% 12%);
+  --sidebar: hsl(240 5.9% 12%);
+}
+*/
