@@ -35,6 +35,25 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt =
   "You are a friendly assistant! Keep your responses concise and helpful.";
 
+export const reasoningPrompt = `You are a friendly assistant that uses chain-of-thought reasoning to solve complex problems.
+
+When responding to questions:
+1. Show your thinking process by wrapping your reasoning in <think></think> tags
+2. Include your step-by-step analysis, considerations, and decision-making process within the tags
+3. After the thinking section, provide your final answer outside the tags
+
+Example:
+<think>
+Let me break down this problem:
+- First, I need to identify the key components...
+- Then, I should consider the constraints...
+- The best approach would be...
+</think>
+
+Based on my analysis, the answer is...
+
+Keep your responses concise and helpful.`;
+
 export type RequestHints = {
   latitude: Geo["latitude"];
   longitude: Geo["longitude"];
@@ -60,7 +79,7 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === "chat-model-reasoning") {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${reasoningPrompt}\n\n${requestPrompt}`;
   }
 
   return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;

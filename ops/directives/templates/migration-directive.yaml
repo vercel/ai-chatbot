@@ -1,0 +1,209 @@
+# ============================================
+# DEVIN DIRECTIVE: Database Migration
+# ============================================
+# This template is for database migration tasks.
+# Copy this file to /ops/directives/pending/ and fill in all sections.
+# Devin will automatically detect and execute the directive.
+
+id: "MIG-YYYY-MM-DD-NNNN"  # Example: MIG-2025-01-15-0003
+title: "Database Migration: [Migration Name]"
+priority: "high"  # Options: critical, high, normal, low
+status: "pending"
+created_at: "2025-01-15T00:00:00Z"
+created_by: "human"
+assigned_to: "devin-builder"
+
+# ============================================
+# CONTEXT
+# ============================================
+context:
+  description: |
+    Clear description of what this migration does:
+    - What tables/columns are being added/modified/removed
+    - What data transformations are needed
+    - Why this migration is necessary
+    
+  background: |
+    How this migration fits into the schema evolution.
+    Any dependencies on other migrations or features.
+    
+  related_docs:
+    - "docs/CORE_DB_SCHEMA.md"
+    - "docs/migrations/README.md"
+    # Add any relevant documentation
+
+# ============================================
+# OBJECTIVES
+# ============================================
+objectives:
+  - "Create migration file [NNN]_[migration_name].sql"
+  - "Add new tables: [table_names]"
+  - "Modify existing tables: [table_names]"
+  - "Create indexes for performance"
+  - "Update RLS policies for security"
+  - "Test migration on staging database"
+
+# ============================================
+# TECHNICAL SPECIFICATIONS
+# ============================================
+technical_specs:
+  repositories:
+    - name: "ai-chatbot"
+      branch: "migration/[migration-name]"
+      actions:
+        - "Create migration branch"
+        - "Write migration SQL"
+        - "Document schema changes"
+        - "Create pull request"
+  
+  database_changes:
+    - "Create tables: [table_names]"
+    - "Add columns: [table.column]"
+    - "Create indexes: [index_names]"
+    - "Add foreign keys: [relationships]"
+    - "Update RLS policies: [policy_names]"
+    - "Create functions: [function_names]"
+    - "Create triggers: [trigger_names]"
+  
+  environment_variables: []
+    # Usually not needed for migrations
+  
+  dependencies: []
+    # Migrations typically don't need new npm packages
+
+# ============================================
+# EXECUTION STEPS
+# ============================================
+execution_steps:
+  - step: 1
+    action: "Create migration branch"
+    command: "git checkout -b migration/[migration-name]"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 2
+    action: "Create migration file"
+    files_to_create:
+      - "docs/migrations/[NNN]_[migration_name].sql"
+    retry_on_failure: false
+  
+  - step: 3
+    action: "Write migration SQL"
+    # This step involves actual SQL code generation
+    # Devin will write the CREATE TABLE, ALTER TABLE, etc. statements
+    retry_on_failure: false
+  
+  - step: 4
+    action: "Update schema documentation"
+    files_to_edit:
+      - "docs/CORE_DB_SCHEMA.md"
+    retry_on_failure: false
+  
+  - step: 5
+    action: "Test migration locally (dry run)"
+    command: "psql $DATABASE_URL -f docs/migrations/[NNN]_[migration_name].sql --dry-run"
+    retry_on_failure: true
+    max_retries: 2
+  
+  - step: 6
+    action: "Apply migration to local dev database"
+    command: "psql $DATABASE_URL -f docs/migrations/[NNN]_[migration_name].sql"
+    retry_on_failure: false
+  
+  - step: 7
+    action: "Verify schema changes"
+    command: "psql $DATABASE_URL -c '\\dt [table_name]'"
+    retry_on_failure: false
+  
+  - step: 8
+    action: "Commit migration"
+    command: "git add . && git commit -m 'migration: [migration description]'"
+    retry_on_failure: false
+  
+  - step: 9
+    action: "Push to GitHub"
+    command: "git push origin migration/[migration-name]"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 10
+    action: "Create pull request"
+    command: "gh pr create --title 'Migration: [Migration Name]' --body 'Database migration per MIG-YYYY-MM-DD-NNNN'"
+    retry_on_failure: true
+    max_retries: 3
+
+# ============================================
+# VALIDATION
+# ============================================
+validation:
+  - criterion: "Migration SQL is syntactically valid"
+    test_command: "psql $DATABASE_URL -f docs/migrations/[NNN]_[migration_name].sql --dry-run"
+  
+  - criterion: "All new tables exist"
+    test_command: "psql $DATABASE_URL -c '\\dt [table_name]'"
+  
+  - criterion: "All indexes created"
+    test_command: "psql $DATABASE_URL -c '\\di [index_name]'"
+  
+  - criterion: "RLS policies are active"
+    test_command: "psql $DATABASE_URL -c 'SELECT * FROM pg_policies WHERE tablename = [table_name]'"
+  
+  - criterion: "Migration is idempotent (can run multiple times)"
+    manual_test: "Run migration twice and verify no errors"
+  
+  - criterion: "Schema matches documentation"
+    manual_test: "Compare schema to CORE_DB_SCHEMA.md"
+  
+  - criterion: "Migration tested on staging"
+    manual_test: "Apply to staging database and verify success"
+
+# ============================================
+# SUCCESS METRICS
+# ============================================
+success_metrics:
+  - "Migration runs successfully on dev database"
+  - "Migration runs successfully on staging database"
+  - "All tests pass with new schema"
+  - "Schema documentation updated"
+  - "PR created and approved by DBA or senior engineer"
+  - "Zero data loss or corruption"
+
+# ============================================
+# ROLLBACK (Optional)
+# ============================================
+rollback:
+  - "Create rollback migration: DROP TABLE [table_name]"
+  - "Restore from database backup if data was modified"
+  - "Document rollback procedure in migration file"
+
+# ============================================
+# TELEMETRY
+# ============================================
+telemetry:
+  log_to_db: true
+  log_to_agentos: true
+  notify_on_completion: true
+  notify_channels:
+    - "slack-engineering"
+    - "email-dba-team"
+
+# ============================================
+# NOTES
+# ============================================
+notes: |
+  CRITICAL MIGRATION GUIDELINES:
+  
+  1. **Idempotency**: Always use "CREATE TABLE IF NOT EXISTS" and "ALTER TABLE IF ..."
+  2. **Backwards Compatibility**: Ensure existing code still works during migration
+  3. **Indexes**: Create indexes CONCURRENTLY to avoid locking tables
+  4. **RLS**: Always enable RLS on new tables: ALTER TABLE [table] ENABLE ROW LEVEL SECURITY
+  5. **Testing**: Test on dev → staging → production (never skip staging)
+  6. **Backups**: Ensure database backup exists before production migration
+  7. **Monitoring**: Watch for performance degradation after migration
+  8. **Documentation**: Update CORE_DB_SCHEMA.md immediately
+  
+  Example migration order:
+  - 001_initial_schema.sql
+  - 002_add_user_profiles.sql
+  - 003_devin_operations_telemetry.sql  # ← Current migration
+  - 004_[next_migration].sql

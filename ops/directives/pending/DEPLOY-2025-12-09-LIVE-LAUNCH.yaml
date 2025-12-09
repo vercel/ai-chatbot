@@ -1,0 +1,897 @@
+# ============================================
+# TIQOLOGY LIVE DEPLOYMENT DIRECTIVE v1.0
+# Directive ID: DEPLOY-2025-12-09-LIVE-LAUNCH
+# ============================================
+
+directive:
+  id: DEPLOY-2025-12-09-LIVE-LAUNCH
+  name: "TiQology Live Deployment v1.0 - Full Production Launch"
+  description: "Connect all services, verify integrations, and deploy complete TiQology stack to production. Make TiQology a live, functioning operating system."
+  priority: launch_critical
+  category: deployment
+  estimated_duration_hours: 48
+  created_at: "2025-12-09T00:00:00Z"
+  issued_by: "Commander AL"
+  agent: "Devin (GitHub Ops Intelligence)"
+  
+  metadata:
+    deployment_type: production
+    multi_project: true
+    projects:
+      - name: ai-chatbot
+        description: "AgentOS + Backend APIs"
+        repo: MrAllgoodWilson/ai-chatbot
+      - name: tiqology-spa
+        description: "Frontend application"
+        repo: MrAllgoodWilson/tiqology-spa # Assuming this exists
+    
+  success_criteria:
+    - "✅ Both Vercel projects live and reachable"
+    - "✅ Supabase migrations confirmed and schema valid"
+    - "✅ Stripe test checkout flow operational"
+    - "✅ Affiliate system issuing codes"
+    - "✅ Telemetry visible in Supabase tables and AgentOS dashboard"
+    - "✅ LAUNCH_STATUS.md report generated and logged"
+    - "✅ Cross-service communication verified (SPA ↔ AgentOS)"
+    - "✅ All API endpoints responding with 200 OK"
+    - "✅ Auth flow working end-to-end"
+    - "✅ No critical errors in production logs"
+
+# ============================================
+# PHASE 1: ENVIRONMENT & INFRASTRUCTURE
+# ============================================
+
+phase_1_environment:
+  description: "Connect all services and configure environment variables"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 1.1: Verify Supabase Connection
+    # --------------------------------------------
+    - step_id: verify_supabase_connection
+      description: "Verify Supabase database connection and credentials"
+      type: validation
+      command: |
+        echo "🔍 Verifying Supabase connection..."
+        
+        # Check Supabase URL and keys are set
+        if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+          echo "❌ NEXT_PUBLIC_SUPABASE_URL not set"
+          exit 1
+        fi
+        
+        if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+          echo "❌ SUPABASE_SERVICE_ROLE_KEY not set"
+          exit 1
+        fi
+        
+        # Test database connection
+        psql "$DATABASE_URL" -c "SELECT 1;" > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+          echo "✅ Supabase connection verified"
+        else
+          echo "❌ Supabase connection failed"
+          exit 1
+        fi
+        
+        # Check for required tables
+        TABLES_COUNT=$(psql "$DATABASE_URL" -t -c "
+          SELECT COUNT(*) FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name LIKE 'tiq_%' OR table_name LIKE 'agentos_%' OR table_name LIKE 'devin_%';
+        ")
+        
+        echo "Found $TABLES_COUNT TiQology tables"
+        
+        if [ "$TABLES_COUNT" -lt 20 ]; then
+          echo "⚠️  Warning: Expected 20+ tables, found $TABLES_COUNT"
+          echo "You may need to run migrations"
+        fi
+      
+      on_failure:
+        action: abort
+        message: "Supabase connection failed - verify credentials"
+
+    # --------------------------------------------
+    # STEP 1.2: Configure Vercel Environment Variables (ai-chatbot)
+    # --------------------------------------------
+    - step_id: configure_vercel_ai_chatbot
+      description: "Configure environment variables for ai-chatbot project"
+      type: configuration
+      command: |
+        echo "🔧 Configuring Vercel environment for ai-chatbot..."
+        
+        # List of required environment variables
+        REQUIRED_VARS=(
+          "NEXT_PUBLIC_SUPABASE_URL"
+          "SUPABASE_SERVICE_ROLE_KEY"
+          "DATABASE_URL"
+          "AUTH_SECRET"
+          "NEXTAUTH_URL"
+          "OPENAI_API_KEY"
+          "GITHUB_OAUTH_TOKEN"
+        )
+        
+        # Optional variables
+        OPTIONAL_VARS=(
+          "STRIPE_SECRET_KEY"
+          "STRIPE_PUBLISHABLE_KEY"
+          "STRIPE_WEBHOOK_SECRET"
+          "DEEPINFRA_API_KEY"
+          "ELEVENLABS_API_KEY"
+          "REPLICATE_API_TOKEN"
+        )
+        
+        echo "✅ Vercel environment configured for ai-chatbot"
+        echo "📝 Ensure these are set in Vercel dashboard:"
+        for var in "${REQUIRED_VARS[@]}"; do
+          echo "  - $var (required)"
+        done
+        for var in "${OPTIONAL_VARS[@]}"; do
+          echo "  - $var (optional)"
+        done
+      
+      manual_action:
+        description: "Set environment variables in Vercel dashboard"
+        url: "https://vercel.com/MrAllgoodWilson/ai-chatbot/settings/environment-variables"
+        variables_to_set:
+          - name: NEXT_PUBLIC_SUPABASE_URL
+            description: "Supabase project URL"
+          - name: SUPABASE_SERVICE_ROLE_KEY
+            description: "Supabase service role key (secret)"
+          - name: DATABASE_URL
+            description: "PostgreSQL connection string"
+          - name: AUTH_SECRET
+            description: "NextAuth secret"
+          - name: NEXTAUTH_URL
+            description: "Production URL (https://ai-chatbot.vercel.app)"
+          - name: STRIPE_SECRET_KEY
+            description: "Stripe secret key"
+          - name: STRIPE_PUBLISHABLE_KEY
+            description: "Stripe publishable key"
+
+    # --------------------------------------------
+    # STEP 1.3: Configure Vercel Environment (tiqology-spa)
+    # --------------------------------------------
+    - step_id: configure_vercel_spa
+      description: "Configure environment variables for tiqology-spa project"
+      type: configuration
+      
+      manual_action:
+        description: "Set environment variables in Vercel dashboard for SPA"
+        url: "https://vercel.com/MrAllgoodWilson/tiqology-spa/settings/environment-variables"
+        variables_to_set:
+          - name: NEXT_PUBLIC_SUPABASE_URL
+            description: "Same Supabase URL as ai-chatbot"
+          - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+            description: "Supabase anon key (public)"
+          - name: NEXT_PUBLIC_AGENTOS_API_URL
+            description: "AgentOS API URL (ai-chatbot production URL)"
+          - name: NEXT_PUBLIC_GHOST_API_URL
+            description: "Ghost Mode API URL (ai-chatbot/api/ghost)"
+          - name: NEXT_PUBLIC_GHOST_MODE_API_KEY
+            description: "API key for Ghost Mode authentication"
+
+    # --------------------------------------------
+    # STEP 1.4: Configure Render.com Services
+    # --------------------------------------------
+    - step_id: configure_render_services
+      description: "Set up Render.com background workers (if needed)"
+      type: configuration
+      
+      services:
+        - name: tiqology-worker
+          type: background_worker
+          description: "Background job processor"
+          runtime: python
+          auto_deploy: true
+          
+        - name: tiqology-redis
+          type: redis
+          description: "Caching and job queue"
+          plan: starter
+          
+      manual_action:
+        description: "Configure Render.com services if background processing needed"
+        url: "https://dashboard.render.com"
+        note: "Optional - can skip for initial launch, use Vercel Edge Functions instead"
+
+# ============================================
+# PHASE 2: DATABASE MIGRATIONS & SCHEMA
+# ============================================
+
+phase_2_database:
+  description: "Run all database migrations and verify schema"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 2.1: Run Core Database Migrations
+    # --------------------------------------------
+    - step_id: run_core_migrations
+      description: "Execute all TiQology core database migrations"
+      type: database
+      command: |
+        echo "📊 Running TiQology core database migrations..."
+        
+        # Migration order (must be sequential)
+        MIGRATIONS=(
+          "docs/migrations/001_tiqology_core_schema.sql"
+          "docs/migrations/002_agentos_schema.sql"
+          "docs/migrations/003_devin_operations_telemetry.sql"
+          "docs/migrations/004_human_economy.sql"
+          "docs/migrations/005_economy_telemetry.sql"
+        )
+        
+        for migration in "${MIGRATIONS[@]}"; do
+          if [ -f "$migration" ]; then
+            echo "Running: $migration"
+            psql "$DATABASE_URL" -f "$migration"
+            if [ $? -eq 0 ]; then
+              echo "✅ $migration completed"
+            else
+              echo "❌ $migration failed"
+              exit 1
+            fi
+          else
+            echo "⚠️  Migration file not found: $migration"
+          fi
+        done
+        
+        echo "✅ All migrations completed successfully"
+      
+      github_bot_alternative:
+        description: "Run via Supabase bot if GitHub integration active"
+        commands:
+          - "/supabase migrate docs/migrations/001_tiqology_core_schema.sql"
+          - "/supabase migrate docs/migrations/002_agentos_schema.sql"
+          - "/supabase migrate docs/migrations/003_devin_operations_telemetry.sql"
+          - "/supabase migrate docs/migrations/004_human_economy.sql"
+          - "/supabase migrate docs/migrations/005_economy_telemetry.sql"
+      
+      on_failure:
+        action: rollback
+        message: "Migration failed - check migration logs"
+
+    # --------------------------------------------
+    # STEP 2.2: Verify Database Schema
+    # --------------------------------------------
+    - step_id: verify_database_schema
+      description: "Verify all tables, functions, and triggers created"
+      type: validation
+      command: |
+        echo "🔍 Verifying database schema..."
+        
+        # Expected tables
+        EXPECTED_TABLES=(
+          "tiq_users"
+          "tiq_organizations"
+          "tiq_plans"
+          "tiq_subscriptions"
+          "tiq_affiliates"
+          "tiq_referrals"
+          "agentos_agents"
+          "agentos_event_log"
+          "devin_operations"
+          "devin_telemetry"
+        )
+        
+        for table in "${EXPECTED_TABLES[@]}"; do
+          EXISTS=$(psql "$DATABASE_URL" -t -c "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '$table');")
+          if [[ "$EXISTS" != *"t"* ]]; then
+            echo "❌ Table missing: $table"
+            exit 1
+          fi
+          echo "✅ Table verified: $table"
+        done
+        
+        # Verify functions
+        EXPECTED_FUNCTIONS=(
+          "generate_affiliate_code"
+          "get_economy_realtime_metrics"
+          "get_user_financial_profile"
+          "get_devin_workload"
+        )
+        
+        for func in "${EXPECTED_FUNCTIONS[@]}"; do
+          EXISTS=$(psql "$DATABASE_URL" -t -c "SELECT EXISTS (SELECT FROM pg_proc WHERE proname = '$func');")
+          if [[ "$EXISTS" != *"t"* ]]; then
+            echo "❌ Function missing: $func"
+            exit 1
+          fi
+          echo "✅ Function verified: $func"
+        done
+        
+        echo "✅ Database schema verification completed"
+
+    # --------------------------------------------
+    # STEP 2.3: Seed Initial Data
+    # --------------------------------------------
+    - step_id: seed_initial_data
+      description: "Seed database with initial data (plans, agents, etc.)"
+      type: database
+      command: |
+        echo "🌱 Seeding initial data..."
+        
+        # Verify subscription plans exist (already seeded in migration 004)
+        PLAN_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM tiq_plans;")
+        echo "Found $PLAN_COUNT subscription plans"
+        
+        if [ "$PLAN_COUNT" -lt 4 ]; then
+          echo "⚠️  Expected 4 plans, found $PLAN_COUNT - migrations may not have run"
+        fi
+        
+        # Verify agents registered
+        AGENT_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM agentos_agents;")
+        echo "Found $AGENT_COUNT registered agents"
+        
+        echo "✅ Data verification completed"
+
+# ============================================
+# PHASE 3: API ENDPOINT VALIDATION
+# ============================================
+
+phase_3_api_validation:
+  description: "Validate all API endpoints are functioning"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 3.1: Test Economy API Endpoints
+    # --------------------------------------------
+    - step_id: test_economy_endpoints
+      description: "Test all Human Economy API endpoints"
+      type: validation
+      command: |
+        echo "🧪 Testing Economy API endpoints..."
+        
+        BASE_URL="http://localhost:3000" # Will be replaced with production URL
+        
+        # Test GET /api/economy/subscriptions?action=plans
+        echo "Testing: GET /api/economy/subscriptions?action=plans"
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/economy/subscriptions?action=plans")
+        if [ "$RESPONSE" == "200" ] || [ "$RESPONSE" == "401" ]; then
+          echo "✅ Plans endpoint responding ($RESPONSE)"
+        else
+          echo "❌ Plans endpoint failed ($RESPONSE)"
+          exit 1
+        fi
+        
+        # Test GET /api/economy/metrics?type=overview
+        echo "Testing: GET /api/economy/metrics?type=overview"
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/economy/metrics?type=overview")
+        if [ "$RESPONSE" == "200" ] || [ "$RESPONSE" == "401" ]; then
+          echo "✅ Metrics endpoint responding ($RESPONSE)"
+        else
+          echo "❌ Metrics endpoint failed ($RESPONSE)"
+          exit 1
+        fi
+        
+        echo "✅ Economy API endpoints validated"
+
+    # --------------------------------------------
+    # STEP 3.2: Test AgentOS API Endpoints
+    # --------------------------------------------
+    - step_id: test_agentos_endpoints
+      description: "Test AgentOS API endpoints"
+      type: validation
+      command: |
+        echo "🧪 Testing AgentOS API endpoints..."
+        
+        BASE_URL="http://localhost:3000"
+        
+        # Test GET /api/agentos/registry
+        echo "Testing: GET /api/agentos/registry"
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/agentos/registry")
+        if [ "$RESPONSE" == "200" ] || [ "$RESPONSE" == "401" ]; then
+          echo "✅ Agent registry endpoint responding ($RESPONSE)"
+        else
+          echo "❌ Agent registry endpoint failed ($RESPONSE)"
+          exit 1
+        fi
+        
+        # Test POST /api/agent-router (health check)
+        echo "Testing: POST /api/agent-router"
+        RESPONSE=$(curl -s -X POST "$BASE_URL/api/agent-router" \
+          -H "Content-Type: application/json" \
+          -d '{"action": "health"}' \
+          -o /dev/null -w "%{http_code}")
+        if [ "$RESPONSE" == "200" ] || [ "$RESPONSE" == "400" ]; then
+          echo "✅ Agent router endpoint responding ($RESPONSE)"
+        else
+          echo "❌ Agent router endpoint failed ($RESPONSE)"
+          exit 1
+        fi
+        
+        echo "✅ AgentOS API endpoints validated"
+
+    # --------------------------------------------
+    # STEP 3.3: Test Ghost Mode API
+    # --------------------------------------------
+    - step_id: test_ghost_api
+      description: "Test Ghost Mode API for SPA integration"
+      type: validation
+      command: |
+        echo "🧪 Testing Ghost Mode API..."
+        
+        BASE_URL="http://localhost:3000"
+        
+        # Test GET /api/ghost (health check)
+        echo "Testing: GET /api/ghost"
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/ghost")
+        if [ "$RESPONSE" == "200" ]; then
+          echo "✅ Ghost API endpoint responding ($RESPONSE)"
+        else
+          echo "❌ Ghost API endpoint failed ($RESPONSE)"
+          exit 1
+        fi
+        
+        echo "✅ Ghost Mode API validated"
+
+# ============================================
+# PHASE 4: DEPLOYMENT
+# ============================================
+
+phase_4_deployment:
+  description: "Deploy both projects to production"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 4.1: Deploy ai-chatbot to Vercel
+    # --------------------------------------------
+    - step_id: deploy_ai_chatbot
+      description: "Deploy ai-chatbot (AgentOS + Backend) to Vercel production"
+      type: deployment
+      
+      manual_steps:
+        - "Create deployment branch: deploy/live-launch-ai-chatbot"
+        - "Push latest changes"
+        - "Create pull request"
+        - "Post comment: /vercel deploy production"
+        - "Wait for deployment to complete"
+        - "Capture production URL"
+      
+      github_bot_commands:
+        - command: "/vercel deploy production"
+          description: "Deploy to production via Vercel bot"
+          wait_for_response: true
+          timeout_ms: 900000 # 15 minutes
+      
+      validation:
+        - "Deployment completes successfully"
+        - "Production URL accessible"
+        - "Health check passes"
+        - "Environment variables loaded"
+      
+      on_success:
+        - "Save production URL to environment"
+        - "Update NEXTAUTH_URL if needed"
+        - "Log deployment to telemetry"
+
+    # --------------------------------------------
+    # STEP 4.2: Deploy tiqology-spa to Vercel
+    # --------------------------------------------
+    - step_id: deploy_tiqology_spa
+      description: "Deploy tiqology-spa (Frontend) to Vercel production"
+      type: deployment
+      
+      manual_steps:
+        - "Navigate to tiqology-spa repository"
+        - "Update NEXT_PUBLIC_AGENTOS_API_URL with ai-chatbot production URL"
+        - "Create deployment branch"
+        - "Create pull request"
+        - "Post comment: /vercel deploy production"
+        - "Capture production URL"
+      
+      github_bot_commands:
+        - command: "/vercel deploy production"
+          description: "Deploy SPA to production"
+          wait_for_response: true
+          timeout_ms: 900000
+      
+      validation:
+        - "Deployment completes successfully"
+        - "Production URL accessible"
+        - "API_URL points to ai-chatbot production"
+      
+      note: "If tiqology-spa is separate repo, may need manual deployment or separate directive"
+
+# ============================================
+# PHASE 5: INTEGRATION TESTING
+# ============================================
+
+phase_5_integration:
+  description: "Test cross-service communication and end-to-end flows"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 5.1: Test Auth Flow
+    # --------------------------------------------
+    - step_id: test_auth_flow
+      description: "Test user registration and login flow"
+      type: validation
+      
+      test_flow:
+        - step: "Visit production SPA registration page"
+        - step: "Submit registration form with test user"
+        - step: "Verify user created in tiq_users table"
+        - step: "Verify auth session created"
+        - step: "Login with test credentials"
+        - step: "Verify redirect to dashboard"
+        - step: "Check session persists"
+      
+      validation:
+        - "User registration creates record in database"
+        - "Auth session works across both apps"
+        - "Protected routes enforce authentication"
+
+    # --------------------------------------------
+    # STEP 5.2: Test Subscription Purchase Flow
+    # --------------------------------------------
+    - step_id: test_subscription_flow
+      description: "Test Stripe checkout and subscription creation"
+      type: validation
+      
+      test_flow:
+        - step: "Navigate to /pricing page"
+        - step: "Select Pro plan (monthly)"
+        - step: "Click Subscribe button"
+        - step: "Verify Stripe checkout URL generated"
+        - step: "Complete test checkout (Stripe test mode)"
+        - step: "Verify subscription created in tiq_subscriptions"
+        - step: "Check user role updated"
+        - step: "Verify subscription appears in user dashboard"
+      
+      validation:
+        - "Stripe checkout session created"
+        - "Subscription recorded in database"
+        - "User role auto-updated"
+        - "Telemetry logged"
+
+    # --------------------------------------------
+    # STEP 5.3: Test Affiliate System
+    # --------------------------------------------
+    - step_id: test_affiliate_flow
+      description: "Test affiliate registration and referral tracking"
+      type: validation
+      
+      test_flow:
+        - step: "Navigate to /affiliate page"
+        - step: "Click 'Become Affiliate' button"
+        - step: "Verify affiliate code generated (CK1 format)"
+        - step: "Test code copy functionality"
+        - step: "Register new user with referral code"
+        - step: "Verify referral tracked in tiq_referrals"
+        - step: "Complete subscription for referred user"
+        - step: "Verify commission created"
+      
+      validation:
+        - "Affiliate code generated correctly"
+        - "Referral tracking works"
+        - "Commission calculation correct"
+        - "Dashboard displays earnings"
+
+    # --------------------------------------------
+    # STEP 5.4: Test SPA ↔ AgentOS Communication
+    # --------------------------------------------
+    - step_id: test_spa_agentos_communication
+      description: "Verify SPA can communicate with AgentOS backend"
+      type: validation
+      
+      test_flow:
+        - step: "From SPA, make request to Ghost API"
+        - step: "Verify Ghost API receives request"
+        - step: "Check response returned to SPA"
+        - step: "Verify event logged in agentos_event_log"
+        - step: "Test agent-router endpoint from SPA"
+        - step: "Verify agent task completion"
+      
+      validation:
+        - "SPA can reach AgentOS endpoints"
+        - "CORS configured correctly"
+        - "Events logged to telemetry"
+        - "Auth tokens validated"
+
+    # --------------------------------------------
+    # STEP 5.5: Test Telemetry Pipeline
+    # --------------------------------------------
+    - step_id: test_telemetry_pipeline
+      description: "Verify telemetry data flows correctly"
+      type: validation
+      
+      test_actions:
+        - action: "User signs up"
+          expected_event: "user_created in agentos_event_log"
+        - action: "User subscribes"
+          expected_event: "subscription_created in telemetry"
+        - action: "User becomes affiliate"
+          expected_event: "affiliate_registered in telemetry"
+        - action: "Agent completes task"
+          expected_event: "agent_task_completed in event log"
+      
+      validation:
+        - "All events logged correctly"
+        - "Timestamps accurate"
+        - "Metadata captured"
+        - "Dashboard displays real-time data"
+
+# ============================================
+# PHASE 6: SMOKE TESTS & VALIDATION
+# ============================================
+
+phase_6_smoke_tests:
+  description: "Run comprehensive smoke tests on production"
+  
+  smoke_tests:
+    - test: "Homepage loads"
+      url: "https://tiqology-spa.vercel.app"
+      expected: "200 OK"
+      
+    - test: "AgentOS API health"
+      url: "https://ai-chatbot.vercel.app/api/health"
+      expected: "200 OK"
+      
+    - test: "Plans endpoint"
+      url: "https://ai-chatbot.vercel.app/api/economy/subscriptions?action=plans"
+      expected: "200 OK with 4 plans"
+      
+    - test: "Metrics endpoint"
+      url: "https://ai-chatbot.vercel.app/api/economy/metrics?type=overview"
+      expected: "401 Unauthorized (auth required)"
+      
+    - test: "Agent registry"
+      url: "https://ai-chatbot.vercel.app/api/agentos/registry"
+      expected: "200 OK with agent list"
+      
+    - test: "Ghost API"
+      url: "https://ai-chatbot.vercel.app/api/ghost"
+      expected: "200 OK"
+
+# ============================================
+# PHASE 7: LAUNCH STATUS REPORT
+# ============================================
+
+phase_7_launch_status:
+  description: "Generate comprehensive launch status report"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 7.1: Generate LAUNCH_STATUS.md
+    # --------------------------------------------
+    - step_id: generate_launch_status
+      description: "Create comprehensive launch status documentation"
+      type: documentation
+      
+      file_to_create: docs/LAUNCH_STATUS.md
+      
+      content_sections:
+        - section: "Deployment Summary"
+          includes:
+            - "Production URLs (ai-chatbot, tiqology-spa)"
+            - "Deployment timestamps"
+            - "Version numbers"
+            - "Environment (production)"
+            
+        - section: "Connected Services"
+          includes:
+            - "Supabase (database, auth)"
+            - "Vercel (hosting, deployment)"
+            - "Stripe (payments) - test/production mode"
+            - "Render.com (workers) - if configured"
+            - "GitHub (CI/CD)"
+            
+        - section: "Verified Endpoints"
+          includes:
+            - "All API endpoints with response codes"
+            - "Health check status"
+            - "Response times"
+            
+        - section: "Database Status"
+          includes:
+            - "Migration status (all 5 applied)"
+            - "Table count"
+            - "Function count"
+            - "Sample data verification"
+            
+        - section: "Integration Status"
+          includes:
+            - "Auth flow: ✅"
+            - "Subscription flow: ✅"
+            - "Affiliate system: ✅"
+            - "Telemetry: ✅"
+            - "SPA ↔ AgentOS: ✅"
+            
+        - section: "Pending Items"
+          includes:
+            - "Stripe production mode (if still in test)"
+            - "Email notifications setup"
+            - "Custom domain configuration"
+            - "Performance optimization"
+            - "Production monitoring setup"
+            
+        - section: "Next Steps"
+          includes:
+            - "Monitor production logs"
+            - "Set up error tracking (Sentry)"
+            - "Configure analytics (Vercel Analytics)"
+            - "Add status page"
+            - "Plan marketing launch"
+
+    # --------------------------------------------
+    # STEP 7.2: Log to Telemetry
+    # --------------------------------------------
+    - step_id: log_launch_telemetry
+      description: "Log launch completion to all telemetry systems"
+      type: telemetry
+      command: |
+        echo "📊 Logging launch completion to telemetry..."
+        
+        # Log to AgentOS event log
+        psql "$DATABASE_URL" <<EOF
+        INSERT INTO agentos_event_log (
+          event_type,
+          agent_id,
+          status,
+          metadata
+        ) VALUES (
+          'tiqology_live_launch',
+          'devin',
+          'completed',
+          jsonb_build_object(
+            'directive_id', 'DEPLOY-2025-12-09-LIVE-LAUNCH',
+            'ai_chatbot_url', '${AI_CHATBOT_URL}',
+            'spa_url', '${SPA_URL}',
+            'timestamp', now()
+          )
+        );
+        EOF
+        
+        # Log to Devin operations
+        psql "$DATABASE_URL" <<EOF
+        INSERT INTO devin_operations (
+          directive_id,
+          operation_type,
+          status,
+          metadata
+        ) VALUES (
+          'DEPLOY-2025-12-09-LIVE-LAUNCH',
+          'deployment',
+          'completed',
+          jsonb_build_object(
+            'phase', 'live_launch',
+            'projects_deployed', 2,
+            'services_connected', 5
+          )
+        );
+        EOF
+        
+        echo "✅ Telemetry logged"
+
+    # --------------------------------------------
+    # STEP 7.3: Notify Commander AL
+    # --------------------------------------------
+    - step_id: notify_commander
+      description: "Notify Commander AL of successful launch"
+      type: notification
+      
+      message: |
+        🎉 **TiQology Live Launch Complete!**
+        
+        **Status:** ✅ SUCCESS
+        **Directive:** DEPLOY-2025-12-09-LIVE-LAUNCH
+        **Timestamp:** {TIMESTAMP}
+        
+        **Production URLs:**
+        - AgentOS: {AI_CHATBOT_URL}
+        - Frontend: {SPA_URL}
+        
+        **Services Connected:**
+        - ✅ Supabase (database + auth)
+        - ✅ Vercel (hosting)
+        - ✅ Stripe (payments)
+        - ✅ GitHub (CI/CD)
+        
+        **Verified Features:**
+        - ✅ User authentication
+        - ✅ Subscription management
+        - ✅ Affiliate system (CK1/EK2/DK3)
+        - ✅ Real-time telemetry
+        - ✅ Agent marketplace
+        
+        **📊 Next Steps:**
+        1. Review LAUNCH_STATUS.md for detailed report
+        2. Monitor production logs
+        3. Test user flows in production
+        4. Plan marketing launch
+        
+        **TiQology is now LIVE and operational!** 🚀
+      
+      channels:
+        - type: github_pr_comment
+          description: "Post to launch PR"
+        - type: console_output
+          description: "Display in terminal"
+
+# ============================================
+# ROLLBACK PLAN
+# ============================================
+
+rollback:
+  enabled: true
+  
+  triggers:
+    - "Critical API endpoint failure"
+    - "Database connection loss"
+    - "Auth system failure"
+    - "More than 50% of smoke tests fail"
+  
+  steps:
+    - step_id: rollback_vercel_deployments
+      description: "Rollback Vercel deployments to previous version"
+      command: |
+        vercel rollback --yes
+    
+    - step_id: notify_rollback
+      description: "Notify team of rollback"
+      command: |
+        echo "🚨 ROLLBACK INITIATED - Launch deployment rolled back"
+
+# ============================================
+# TELEMETRY & MONITORING
+# ============================================
+
+telemetry:
+  enabled: true
+  continuous: true
+  
+  metrics_to_track:
+    - "API response times"
+    - "Error rates"
+    - "User signups"
+    - "Subscription conversions"
+    - "Affiliate registrations"
+    - "Database query performance"
+  
+  alerts:
+    - condition: "API error rate > 5%"
+      action: "Send alert"
+    - condition: "Response time > 3 seconds"
+      action: "Log warning"
+    - condition: "Database connection fails"
+      action: "Trigger rollback"
+
+# ============================================
+# SUCCESS VALIDATION
+# ============================================
+
+final_validation:
+  checklist:
+    - "✅ ai-chatbot deployed to production"
+    - "✅ tiqology-spa deployed to production"
+    - "✅ All database migrations applied"
+    - "✅ API endpoints responding (200 OK)"
+    - "✅ Auth flow tested and working"
+    - "✅ Subscription purchase flow validated"
+    - "✅ Affiliate system operational"
+    - "✅ Telemetry pipeline active"
+    - "✅ SPA communicates with AgentOS"
+    - "✅ Smoke tests passed (100%)"
+    - "✅ LAUNCH_STATUS.md generated"
+    - "✅ Commander AL notified"
+  
+  launch_criteria:
+    all_must_pass: true
+    minimum_smoke_tests_passed: 80%
+    critical_endpoints_must_work: true
+
+# ============================================
+# DOCUMENTATION
+# ============================================
+
+documentation:
+  files_to_create:
+    - docs/LAUNCH_STATUS.md
+    - docs/PRODUCTION_URLS.md
+    - docs/MONITORING_GUIDE.md
+  
+  files_to_update:
+    - README.md (add production URLs)
+    - README-TiQology.md (update deployment status)

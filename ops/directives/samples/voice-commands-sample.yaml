@@ -1,0 +1,172 @@
+# ============================================
+# SAMPLE DIRECTIVE: Voice Commands Feature
+# ============================================
+# This is a working example of a feature directive.
+# Devin will execute this if moved to /ops/directives/pending/
+
+id: "FEAT-2025-01-15-VOICE-COMMANDS"
+title: "Implement Voice Command Shortcuts"
+priority: "normal"
+status: "pending"
+created_at: "2025-01-15T12:00:00Z"
+created_by: "human"
+assigned_to: "devin-builder"
+
+# ============================================
+# CONTEXT
+# ============================================
+context:
+  description: |
+    Add voice command shortcuts for common user actions:
+    - "Start new chat" → Create new conversation
+    - "Show history" → Open sidebar with chat history
+    - "Read last message" → Text-to-speech on most recent assistant message
+    - "Clear context" → Clear current conversation
+    
+  background: |
+    Voice agent (lib/voiceAgent.ts) already supports transcription and synthesis.
+    This feature adds predefined command recognition and execution.
+    Enhances accessibility and hands-free operation.
+    
+  related_docs:
+    - "lib/voiceAgent.ts"
+    - "docs/AGENTOS_V2_SPEC.md - Voice Interface section"
+
+# ============================================
+# OBJECTIVES
+# ============================================
+objectives:
+  - "Create voice command parser for shortcuts"
+  - "Implement command execution handlers"
+  - "Add voice feedback for command confirmation"
+  - "Update UI with voice command status indicator"
+  - "Write tests for each command"
+
+# ============================================
+# TECHNICAL SPECIFICATIONS
+# ============================================
+technical_specs:
+  repositories:
+    - name: "ai-chatbot"
+      branch: "feature/voice-commands"
+      actions:
+        - "Create new branch from main"
+        - "Implement voice command system"
+        - "Add frontend components"
+        - "Write tests"
+        - "Create pull request"
+  
+  database_changes: []
+    # No database changes needed
+  
+  environment_variables: []
+    # No new env vars needed
+  
+  dependencies: []
+    # Using existing voice agent
+
+# ============================================
+# EXECUTION STEPS
+# ============================================
+execution_steps:
+  - step: 1
+    action: "Create feature branch"
+    command: "git checkout -b feature/voice-commands"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 2
+    action: "Extend voice command parser"
+    files_to_edit:
+      - "lib/voiceAgent.ts"
+    retry_on_failure: false
+  
+  - step: 3
+    action: "Create voice command hooks"
+    files_to_create:
+      - "hooks/use-voice-commands.ts"
+    retry_on_failure: false
+  
+  - step: 4
+    action: "Add voice status indicator component"
+    files_to_create:
+      - "components/voice-status.tsx"
+    retry_on_failure: false
+  
+  - step: 5
+    action: "Write unit tests"
+    files_to_create:
+      - "tests/voice-commands.test.ts"
+    retry_on_failure: false
+  
+  - step: 6
+    action: "Run tests"
+    command: "pnpm test tests/voice-commands.test.ts"
+    retry_on_failure: true
+    max_retries: 2
+  
+  - step: 7
+    action: "Commit changes"
+    command: "git add . && git commit -m 'feat: add voice command shortcuts for common actions'"
+    retry_on_failure: false
+  
+  - step: 8
+    action: "Push to GitHub"
+    command: "git push origin feature/voice-commands"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 9
+    action: "Create pull request"
+    command: "gh pr create --title 'Voice Command Shortcuts' --body 'Implements voice shortcuts per FEAT-2025-01-15-VOICE-COMMANDS. Adds commands: start new chat, show history, read last message, clear context.'"
+    retry_on_failure: true
+    max_retries: 3
+
+# ============================================
+# VALIDATION
+# ============================================
+validation:
+  - criterion: "All tests pass"
+    test_command: "pnpm test tests/voice-commands.test.ts"
+  
+  - criterion: "TypeScript compilation succeeds"
+    test_command: "pnpm tsc --noEmit"
+  
+  - criterion: "Lint checks pass"
+    test_command: "pnpm lint"
+  
+  - criterion: "Voice commands work in dev environment"
+    manual_test: "Test each command via microphone input"
+
+# ============================================
+# SUCCESS METRICS
+# ============================================
+success_metrics:
+  - "PR created and passing CI/CD checks"
+  - "All 4 voice commands functional"
+  - "Voice feedback confirms command execution"
+  - "Zero TypeScript errors"
+  - "Test coverage > 80%"
+
+# ============================================
+# TELEMETRY
+# ============================================
+telemetry:
+  log_to_db: true
+  log_to_agentos: true
+  notify_on_completion: true
+  notify_channels:
+    - "slack-engineering"
+
+# ============================================
+# NOTES
+# ============================================
+notes: |
+  This is a sample directive showing the complete workflow.
+  
+  To execute this directive:
+  1. Ensure Devin Ops is running (lib/devinOpsService.ts initialized)
+  2. Move this file to /ops/directives/pending/
+  3. Devin will detect it within 60 seconds
+  4. Watch logs at /ops/logs/devin-[date].log
+  5. Track progress in devin_operations table

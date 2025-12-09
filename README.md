@@ -69,3 +69,50 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+## TiQology AI Bridge: Rocket ⇄ Devin Workflow
+
+This repository serves as the **AI engine** for TiQology, with a specialized workflow enabling seamless collaboration between Rocket (AI Architect) and Devin (AI Developer).
+
+### Overview
+
+- **Rocket** acts as the AI architect, identifying tasks and providing detailed specifications
+- **Devin** acts as the AI developer, implementing tasks and opening pull requests
+- **Human oversight** reviews and merges the work
+
+### How It Works
+
+1. **Rocket assigns tasks**: Fills out the template in `playbooks/rocket-devin/ROCKET_TASK_TEMPLATE.md` and adds it to `playbooks/rocket-devin/ROCKET_INBOX.md`
+
+2. **Devin picks up tasks**: Monitors the inbox, creates feature branches, implements solutions, and opens PRs
+
+3. **Status tracking**: Tasks move through states: `TODO` → `IN PROGRESS` → `DONE`
+
+### Quick Start for Rocket
+
+To assign a task to Devin:
+
+1. Copy the template from [`playbooks/rocket-devin/ROCKET_TASK_TEMPLATE.md`](playbooks/rocket-devin/ROCKET_TASK_TEMPLATE.md)
+2. Fill out all sections with complete details:
+   - Summary and context
+   - Target files/areas to modify
+   - Clear acceptance criteria
+   - Commands to run for validation
+3. Paste the filled template into [`playbooks/rocket-devin/ROCKET_INBOX.md`](playbooks/rocket-devin/ROCKET_INBOX.md)
+4. Set status to `TODO`
+
+### Quick Start for Devin
+
+To work on a task:
+
+1. Check [`playbooks/rocket-devin/ROCKET_INBOX.md`](playbooks/rocket-devin/ROCKET_INBOX.md) for tasks with status `TODO`
+2. Update status to `IN PROGRESS`
+3. Create a feature branch (e.g., `feature/task-description`)
+4. Implement the solution following the acceptance criteria
+5. Open a PR and update the task status to `DONE` with PR link
+
+### Documentation
+
+- **Full workflow guide**: [`playbooks/rocket-devin/ROCKET_DEVIN_WORKFLOW.md`](playbooks/rocket-devin/ROCKET_DEVIN_WORKFLOW.md)
+- **Task template**: [`playbooks/rocket-devin/ROCKET_TASK_TEMPLATE.md`](playbooks/rocket-devin/ROCKET_TASK_TEMPLATE.md)
+- **Task inbox**: [`playbooks/rocket-devin/ROCKET_INBOX.md`](playbooks/rocket-devin/ROCKET_INBOX.md)

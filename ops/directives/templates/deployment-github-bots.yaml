@@ -1,0 +1,208 @@
+# ============================================
+# ENHANCED DEPLOYMENT DIRECTIVE (with GitHub Bots)
+# ============================================
+# This template uses Vercel and Supabase GitHub App integrations.
+# Drop this in /ops/directives/pending/ for autonomous deployment.
+
+id: "DEPLOY-2025-12-07-GITHUB-BOTS"
+title: "Deploy to Production (via GitHub Bots)"
+priority: "critical"
+status: "pending"
+created_at: "2025-12-07T00:00:00Z"
+created_by: "human"
+assigned_to: "devin-builder"
+
+# ============================================
+# CONTEXT
+# ============================================
+context:
+  description: |
+    Deploy the current feature branch to production using Vercel and Supabase
+    GitHub App integrations. This leverages existing GitHub App connections
+    instead of direct API calls.
+    
+  background: |
+    Vercel and Supabase are already integrated with this GitHub repository.
+    Bot commands are posted as PR comments, and bots respond automatically.
+    Devin monitors bot responses and continues execution based on status.
+    
+  related_docs:
+    - "ops/DEVIN_OPS_IMPLEMENTATION.md"
+    - "lib/githubOps.ts"
+
+# ============================================
+# OBJECTIVES
+# ============================================
+objectives:
+  - "Create pull request from feature branch"
+  - "Trigger Vercel deployment via bot command"
+  - "Run Supabase migrations via bot command"
+  - "Wait for bot confirmations"
+  - "Verify deployment success"
+  - "Merge PR on success"
+
+# ============================================
+# TECHNICAL SPECIFICATIONS
+# ============================================
+technical_specs:
+  repositories:
+    - name: "ai-chatbot"
+      branch: "feature/agentos-v1.5-global-brain"
+      actions:
+        - "Create PR to main"
+        - "Post bot commands"
+        - "Monitor bot responses"
+        - "Merge on success"
+  
+  database_changes:
+    - "Run migration via Supabase bot: 003_devin_operations_telemetry.sql"
+  
+  environment_variables:
+    - "GITHUB_TOKEN (required)"
+    - "VERCEL bot must be installed on repo"
+    - "SUPABASE bot must be installed on repo"
+
+# ============================================
+# EXECUTION STEPS
+# ============================================
+execution_steps:
+  - step: 1
+    action: "Ensure we're on the feature branch"
+    command: "git checkout feature/agentos-v1.5-global-brain"
+    retry_on_failure: true
+    max_retries: 2
+  
+  - step: 2
+    action: "Push latest changes to GitHub"
+    command: "git push origin feature/agentos-v1.5-global-brain"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 3
+    action: "Create pull request"
+    command: "gh pr create --title 'Deploy: Devin Ops Protocol v2.0' --body 'Automated deployment via Devin Ops Protocol. Includes autonomous execution engine, telemetry system, and GitHub bot integration.'"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 4
+    action: "Trigger Supabase migration"
+    github_bot_commands:
+      - "/supabase migrate 003_devin_operations_telemetry.sql"
+    wait_for_bot_response: true
+    bot_timeout_ms: 300000
+    retry_on_failure: false
+  
+  - step: 5
+    action: "Trigger Vercel production deployment"
+    github_bot_commands:
+      - "/vercel deploy production"
+    wait_for_bot_response: true
+    bot_timeout_ms: 600000
+    retry_on_failure: false
+  
+  - step: 6
+    action: "Wait for deployment to stabilize"
+    command: "sleep 30"
+    retry_on_failure: false
+  
+  - step: 7
+    action: "Run smoke tests"
+    command: "curl -f https://ai-chatbot-production.vercel.app/api/health || echo 'Health check failed'"
+    retry_on_failure: true
+    max_retries: 5
+  
+  - step: 8
+    action: "Post deployment status comment"
+    github_bot_commands:
+      - "✅ **Deployment successful!** All systems operational."
+    wait_for_bot_response: false
+
+# ============================================
+# VALIDATION
+# ============================================
+validation:
+  - criterion: "PR created successfully"
+    test_command: "gh pr view --json number,state"
+  
+  - criterion: "Supabase bot responded with success"
+    manual_test: "Check PR comments for Supabase bot confirmation"
+  
+  - criterion: "Vercel bot responded with deployment URL"
+    manual_test: "Check PR comments for Vercel deployment URL"
+  
+  - criterion: "Production site is accessible"
+    test_command: "curl -f https://ai-chatbot-production.vercel.app/api/health"
+  
+  - criterion: "Database migration applied"
+    manual_test: "Verify devin_* tables exist in production database"
+
+# ============================================
+# SUCCESS METRICS
+# ============================================
+success_metrics:
+  - "PR created and bot commands posted"
+  - "Supabase migration applied successfully"
+  - "Vercel deployment completed with URL"
+  - "Smoke tests pass"
+  - "Zero production errors"
+  - "Deployment time < 10 minutes"
+
+# ============================================
+# ROLLBACK
+# ============================================
+rollback:
+  - "Post comment: /vercel rollback"
+  - "Revert database migration if needed"
+  - "Close PR without merging"
+  - "Notify team in Slack"
+
+# ============================================
+# TELEMETRY
+# ============================================
+telemetry:
+  log_to_db: true
+  log_to_agentos: true
+  notify_on_completion: true
+  notify_channels:
+    - "slack-deployments"
+    - "slack-engineering"
+
+# ============================================
+# NOTES
+# ============================================
+notes: |
+  GITHUB BOT INTEGRATION:
+  
+  This directive uses the new GitHub Ops integration (lib/githubOps.ts)
+  to interact with Vercel and Supabase bots via PR comments.
+  
+  **How it works:**
+  1. Devin creates PR
+  2. Posts bot commands as PR comment
+  3. Monitors PR for bot responses
+  4. Parses bot responses (success/failure)
+  5. Continues or aborts based on bot status
+  
+  **Supported bot commands:**
+  
+  Vercel:
+  - /vercel deploy production
+  - /vercel deploy preview
+  - /vercel rollback
+  - /vercel inspect
+  
+  Supabase:
+  - /supabase migrate <filename>
+  - /supabase backup
+  - /supabase restore <backup-id>
+  
+  **Timeout handling:**
+  - Default timeout: 5 minutes (300000ms)
+  - Vercel deployments: 10 minutes (600000ms)
+  - If timeout, step fails and directive moves to /failed/
+  
+  **Prerequisites:**
+  - GitHub token in env (GITHUB_TOKEN or GH_TOKEN)
+  - Vercel bot installed on repository
+  - Supabase bot installed on repository
+  - @octokit/rest package installed

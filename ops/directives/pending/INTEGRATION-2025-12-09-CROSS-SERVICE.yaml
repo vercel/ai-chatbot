@@ -1,0 +1,922 @@
+# ============================================
+# CROSS-SERVICE INTEGRATION DIRECTIVE v1.0
+# Directive ID: INTEGRATION-2025-12-09-CROSS-SERVICE
+# ============================================
+
+directive:
+  id: INTEGRATION-2025-12-09-CROSS-SERVICE
+  name: "TiQology Cross-Service Integration v1.0"
+  description: "Ensure seamless communication between tiqology-spa (frontend) and ai-chatbot (AgentOS backend). Configure API discovery, authentication, event streaming, and health monitoring."
+  priority: launch_critical
+  category: integration
+  estimated_duration_hours: 24
+  created_at: "2025-12-09T00:00:00Z"
+  issued_by: "Commander AL"
+  agent: "Devin (Integration Specialist)"
+  
+  metadata:
+    integration_type: cross_service
+    services:
+      - name: ai-chatbot
+        description: "AgentOS + Backend APIs"
+        role: backend
+        provides:
+          - "AgentOS API"
+          - "Ghost Mode API"
+          - "Human Economy API"
+          - "Authentication service"
+          - "Database access"
+      - name: tiqology-spa
+        description: "Frontend application"
+        role: frontend
+        consumes:
+          - "AgentOS API endpoints"
+          - "Ghost Mode lightweight evaluations"
+          - "Economy API (subscriptions, affiliates, metrics)"
+          - "Auth sessions"
+  
+  success_criteria:
+    - "✅ SPA can authenticate users via AgentOS backend"
+    - "✅ SPA can fetch data from all Economy API endpoints"
+    - "✅ Ghost Mode API accessible from SPA with API key"
+    - "✅ Agent tasks can be triggered from SPA"
+    - "✅ Telemetry events flow from SPA → AgentOS → Database"
+    - "✅ CORS configured properly for cross-origin requests"
+    - "✅ Health checks validate connectivity"
+    - "✅ Error handling propagates correctly"
+    - "✅ Webhooks route to correct services"
+
+# ============================================
+# PHASE 1: API DISCOVERY & REGISTRATION
+# ============================================
+
+phase_1_api_discovery:
+  description: "Register all API endpoints and configure service discovery"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 1.1: Document All API Endpoints
+    # --------------------------------------------
+    - step_id: document_api_endpoints
+      description: "Create comprehensive API endpoint registry"
+      type: documentation
+      
+      file_to_create: docs/API_REGISTRY.md
+      
+      api_endpoints:
+        # Authentication
+        - endpoint: POST /api/auth/signin
+          service: ai-chatbot
+          description: "User sign-in with credentials"
+          access: public
+          
+        - endpoint: POST /api/auth/signout
+          service: ai-chatbot
+          description: "User sign-out"
+          access: authenticated
+          
+        - endpoint: GET /api/auth/session
+          service: ai-chatbot
+          description: "Get current user session"
+          access: authenticated
+        
+        # Human Economy - Subscriptions
+        - endpoint: GET /api/economy/subscriptions?action=plans
+          service: ai-chatbot
+          description: "Get all subscription plans"
+          access: public
+          
+        - endpoint: GET /api/economy/subscriptions?action=current
+          service: ai-chatbot
+          description: "Get user's current subscription"
+          access: authenticated
+          
+        - endpoint: POST /api/economy/subscriptions?action=create
+          service: ai-chatbot
+          description: "Create Stripe checkout session"
+          access: authenticated
+          body:
+            - plan_id: string (required)
+            - billing_cycle: "monthly" | "yearly"
+          
+        - endpoint: POST /api/economy/subscriptions?action=cancel
+          service: ai-chatbot
+          description: "Cancel user subscription"
+          access: authenticated
+        
+        # Human Economy - Affiliates
+        - endpoint: GET /api/economy/affiliates?action=status
+          service: ai-chatbot
+          description: "Get user affiliate status"
+          access: authenticated
+          
+        - endpoint: POST /api/economy/affiliates?action=register
+          service: ai-chatbot
+          description: "Register as affiliate"
+          access: authenticated
+          
+        - endpoint: GET /api/economy/affiliates?action=stats
+          service: ai-chatbot
+          description: "Get affiliate statistics"
+          access: authenticated
+          
+        - endpoint: POST /api/economy/affiliates?action=payout
+          service: ai-chatbot
+          description: "Request affiliate payout"
+          access: authenticated
+        
+        # Human Economy - Metrics
+        - endpoint: GET /api/economy/metrics?type=overview
+          service: ai-chatbot
+          description: "Get economy overview metrics (admin only)"
+          access: admin
+          
+        - endpoint: GET /api/economy/metrics?type=revenue
+          service: ai-chatbot
+          description: "Get revenue metrics (admin only)"
+          access: admin
+          
+        - endpoint: GET /api/economy/metrics?type=user_growth
+          service: ai-chatbot
+          description: "Get user growth metrics (admin only)"
+          access: admin
+        
+        # AgentOS
+        - endpoint: GET /api/agentos/registry
+          service: ai-chatbot
+          description: "Get all registered agents"
+          access: authenticated
+          
+        - endpoint: POST /api/agent-router
+          service: ai-chatbot
+          description: "Route agent task"
+          access: authenticated
+          body:
+            - agent_id: string
+            - task: string
+            - context: object
+        
+        # Ghost Mode API
+        - endpoint: GET /api/ghost
+          service: ai-chatbot
+          description: "Ghost Mode health check"
+          access: public
+          
+        - endpoint: POST /api/ghost
+          service: ai-chatbot
+          description: "Lightweight AI evaluation"
+          access: authenticated (via API key)
+          headers:
+            - X-Ghost-API-Key: string
+          body:
+            - prompt: string
+            - context: object (optional)
+
+    # --------------------------------------------
+    # STEP 1.2: Create API Client Library (SPA)
+    # --------------------------------------------
+    - step_id: create_api_client
+      description: "Create TypeScript API client for tiqology-spa"
+      type: development
+      
+      file_to_create: lib/api/client.ts
+      
+      implementation:
+        - "Create base API client class with fetch wrapper"
+        - "Add authentication headers (session token)"
+        - "Implement error handling and retry logic"
+        - "Create typed response interfaces"
+        - "Add request/response logging"
+        - "Export API methods for all endpoints"
+      
+      code_structure: |
+        // lib/api/client.ts
+        
+        export class TiQologyAPIClient {
+          private baseUrl: string;
+          private apiKey?: string;
+          
+          constructor(config: { baseUrl: string; apiKey?: string }) {
+            this.baseUrl = config.baseUrl;
+            this.apiKey = config.apiKey;
+          }
+          
+          // Authentication
+          async signIn(credentials: SignInCredentials): Promise<Session> { }
+          async signOut(): Promise<void> { }
+          async getSession(): Promise<Session | null> { }
+          
+          // Subscriptions
+          async getPlans(): Promise<Plan[]> { }
+          async getCurrentSubscription(): Promise<Subscription | null> { }
+          async createCheckoutSession(planId: string, cycle: BillingCycle): Promise<CheckoutSession> { }
+          async cancelSubscription(): Promise<void> { }
+          
+          // Affiliates
+          async getAffiliateStatus(): Promise<AffiliateStatus> { }
+          async registerAffiliate(): Promise<Affiliate> { }
+          async getAffiliateStats(): Promise<AffiliateStats> { }
+          async requestPayout(amount: number): Promise<Payout> { }
+          
+          // Metrics (Admin)
+          async getOverviewMetrics(): Promise<OverviewMetrics> { }
+          async getRevenueMetrics(): Promise<RevenueMetrics> { }
+          async getUserGrowthMetrics(): Promise<UserGrowthMetrics> { }
+          
+          // AgentOS
+          async getAgents(): Promise<Agent[]> { }
+          async routeAgentTask(task: AgentTask): Promise<AgentTaskResult> { }
+          
+          // Ghost Mode
+          async ghostEval(prompt: string, context?: object): Promise<GhostEvalResponse> { }
+        }
+
+    # --------------------------------------------
+    # STEP 1.3: Create React Hooks (SPA)
+    # --------------------------------------------
+    - step_id: create_react_hooks
+      description: "Create React hooks for API integration"
+      type: development
+      
+      hooks_to_create:
+        - name: useAuth
+          file: hooks/use-auth.ts
+          description: "Handle authentication state"
+          
+        - name: useSubscription
+          file: hooks/use-subscription.ts
+          description: "Manage subscription state and actions"
+          
+        - name: useAffiliate
+          file: hooks/use-affiliate.ts
+          description: "Manage affiliate state and actions"
+          
+        - name: useAgents
+          file: hooks/use-agents.ts
+          description: "Fetch and manage agents from registry"
+          
+        - name: useGhostEval
+          file: hooks/use-ghost-eval.ts
+          description: "Perform Ghost Mode evaluations"
+          
+        - name: useMetrics
+          file: hooks/use-metrics.ts
+          description: "Fetch economy metrics (admin)"
+
+# ============================================
+# PHASE 2: AUTHENTICATION & AUTHORIZATION
+# ============================================
+
+phase_2_auth:
+  description: "Configure authentication flow between SPA and backend"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 2.1: Configure Session Sharing
+    # --------------------------------------------
+    - step_id: configure_session_sharing
+      description: "Enable session sharing between SPA and backend"
+      type: configuration
+      
+      approach: "Cookie-based sessions with NextAuth.js"
+      
+      configuration:
+        - file: ai-chatbot/app/(auth)/auth.config.ts
+          changes:
+            - "Set NEXTAUTH_URL to production URL"
+            - "Configure session.strategy = 'jwt'"
+            - "Set cookie domain to allow cross-subdomain sharing"
+            - "Enable secure cookies in production"
+        
+        - file: tiqology-spa/app/providers.tsx
+          changes:
+            - "Wrap app in SessionProvider from next-auth"
+            - "Configure session polling interval"
+            - "Add session refresh logic"
+      
+      validation:
+        - "User signs in on SPA → session created on backend"
+        - "Session cookie accessible from both domains"
+        - "Protected routes redirect to login"
+        - "Session persists across page reloads"
+
+    # --------------------------------------------
+    # STEP 2.2: Implement Protected Routes (SPA)
+    # --------------------------------------------
+    - step_id: implement_protected_routes
+      description: "Add authentication middleware to SPA"
+      type: development
+      
+      file_to_create: middleware.ts
+      
+      implementation: |
+        // middleware.ts
+        import { NextResponse } from 'next/server';
+        import type { NextRequest } from 'next/server';
+        import { getToken } from 'next-auth/jwt';
+        
+        export async function middleware(request: NextRequest) {
+          const token = await getToken({ req: request });
+          
+          // Protected routes
+          const protectedPaths = [
+            '/dashboard',
+            '/subscription',
+            '/affiliate',
+            '/marketplace',
+            '/metrics',
+          ];
+          
+          const isProtectedPath = protectedPaths.some(path =>
+            request.nextUrl.pathname.startsWith(path)
+          );
+          
+          if (isProtectedPath && !token) {
+            return NextResponse.redirect(new URL('/login', request.url));
+          }
+          
+          // Admin-only routes
+          const adminPaths = ['/metrics'];
+          const isAdminPath = adminPaths.some(path =>
+            request.nextUrl.pathname.startsWith(path)
+          );
+          
+          if (isAdminPath && token?.role !== 'admin') {
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+          }
+          
+          return NextResponse.next();
+        }
+        
+        export const config = {
+          matcher: ['/dashboard/:path*', '/subscription/:path*', '/affiliate/:path*', '/marketplace/:path*', '/metrics/:path*'],
+        };
+
+    # --------------------------------------------
+    # STEP 2.3: Add Referral Code to Signup
+    # --------------------------------------------
+    - step_id: add_referral_code_signup
+      description: "Capture referral codes during registration"
+      type: development
+      
+      file_to_modify: tiqology-spa/app/(auth)/register/page.tsx
+      
+      changes:
+        - "Add 'referral_code' field to registration form"
+        - "Pre-fill from URL query param (?ref=CK1ABC123)"
+        - "Pass referral code to backend on registration"
+        - "Display affiliate welcome message if referral used"
+
+# ============================================
+# PHASE 3: CORS & NETWORK CONFIGURATION
+# ============================================
+
+phase_3_cors:
+  description: "Configure CORS for cross-origin API requests"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 3.1: Configure CORS Headers (Backend)
+    # --------------------------------------------
+    - step_id: configure_cors_headers
+      description: "Add CORS headers to API endpoints"
+      type: configuration
+      
+      file_to_create: middleware.ts (ai-chatbot)
+      
+      implementation: |
+        // middleware.ts (ai-chatbot)
+        import { NextResponse } from 'next/server';
+        import type { NextRequest } from 'next/server';
+        
+        export function middleware(request: NextRequest) {
+          const response = NextResponse.next();
+          
+          // Allowed origins
+          const allowedOrigins = [
+            'https://tiqology-spa.vercel.app',
+            'http://localhost:3001', // Local development
+          ];
+          
+          const origin = request.headers.get('origin');
+          
+          if (origin && allowedOrigins.includes(origin)) {
+            response.headers.set('Access-Control-Allow-Origin', origin);
+            response.headers.set('Access-Control-Allow-Credentials', 'true');
+            response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Ghost-API-Key');
+          }
+          
+          // Handle OPTIONS preflight requests
+          if (request.method === 'OPTIONS') {
+            return new NextResponse(null, {
+              status: 200,
+              headers: response.headers,
+            });
+          }
+          
+          return response;
+        }
+        
+        export const config = {
+          matcher: '/api/:path*',
+        };
+
+    # --------------------------------------------
+    # STEP 3.2: Test Cross-Origin Requests
+    # --------------------------------------------
+    - step_id: test_cors
+      description: "Validate CORS configuration"
+      type: validation
+      
+      test_cases:
+        - description: "SPA can fetch plans from backend"
+          command: |
+            curl -X GET "https://ai-chatbot.vercel.app/api/economy/subscriptions?action=plans" \
+              -H "Origin: https://tiqology-spa.vercel.app" \
+              -v
+          expected: "Access-Control-Allow-Origin header present"
+        
+        - description: "SPA can POST to Ghost API"
+          command: |
+            curl -X POST "https://ai-chatbot.vercel.app/api/ghost" \
+              -H "Origin: https://tiqology-spa.vercel.app" \
+              -H "X-Ghost-API-Key: YOUR_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"prompt": "test"}' \
+              -v
+          expected: "Request succeeds with CORS headers"
+
+# ============================================
+# PHASE 4: EVENT STREAMING & TELEMETRY
+# ============================================
+
+phase_4_event_streaming:
+  description: "Configure event streaming from SPA to backend telemetry"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 4.1: Create Event Tracking Utility (SPA)
+    # --------------------------------------------
+    - step_id: create_event_tracking
+      description: "Build event tracking utility for SPA"
+      type: development
+      
+      file_to_create: lib/telemetry/tracker.ts
+      
+      implementation: |
+        // lib/telemetry/tracker.ts
+        
+        export class TelemetryTracker {
+          private apiUrl: string;
+          
+          constructor(apiUrl: string) {
+            this.apiUrl = apiUrl;
+          }
+          
+          async trackEvent(event: TelemetryEvent): Promise<void> {
+            try {
+              await fetch(`${this.apiUrl}/api/telemetry`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(event),
+                credentials: 'include',
+              });
+            } catch (error) {
+              console.error('Failed to track event:', error);
+            }
+          }
+          
+          // Convenience methods
+          trackPageView(page: string) {
+            this.trackEvent({
+              type: 'page_view',
+              data: { page, timestamp: new Date().toISOString() },
+            });
+          }
+          
+          trackUserAction(action: string, metadata?: object) {
+            this.trackEvent({
+              type: 'user_action',
+              data: { action, metadata, timestamp: new Date().toISOString() },
+            });
+          }
+          
+          trackConversion(type: string, value: number) {
+            this.trackEvent({
+              type: 'conversion',
+              data: { type, value, timestamp: new Date().toISOString() },
+            });
+          }
+        }
+
+    # --------------------------------------------
+    # STEP 4.2: Create Telemetry Endpoint (Backend)
+    # --------------------------------------------
+    - step_id: create_telemetry_endpoint
+      description: "Create endpoint to receive telemetry from SPA"
+      type: development
+      
+      file_to_create: app/api/telemetry/route.ts
+      
+      implementation: |
+        // app/api/telemetry/route.ts
+        import { NextRequest, NextResponse } from 'next/server';
+        import { getServerSession } from 'next-auth';
+        import { getTiqologyDb } from '@/lib/tiqologyDb';
+        
+        export async function POST(req: NextRequest) {
+          const session = await getServerSession();
+          const db = getTiqologyDb();
+          
+          const event = await req.json();
+          
+          // Log to agentos_event_log
+          await db
+            .from('agentos_event_log')
+            .insert({
+              event_type: event.type,
+              user_id: session?.user?.id,
+              status: 'received',
+              metadata: event.data,
+            });
+          
+          return NextResponse.json({ success: true });
+        }
+
+    # --------------------------------------------
+    # STEP 4.3: Implement Auto-Tracking
+    # --------------------------------------------
+    - step_id: implement_auto_tracking
+      description: "Automatically track key user events"
+      type: development
+      
+      events_to_track:
+        - event: "User signs up"
+          trigger: "POST /api/auth/signup"
+          logged_as: "user_signup"
+          
+        - event: "User subscribes"
+          trigger: "Subscription created"
+          logged_as: "subscription_created"
+          
+        - event: "Affiliate registration"
+          trigger: "POST /api/economy/affiliates?action=register"
+          logged_as: "affiliate_registered"
+          
+        - event: "Agent deployed"
+          trigger: "POST /api/agent-router"
+          logged_as: "agent_task_created"
+
+# ============================================
+# PHASE 5: WEBHOOK ROUTING
+# ============================================
+
+phase_5_webhooks:
+  description: "Configure webhook routing for external services"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 5.1: Stripe Webhook Handler
+    # --------------------------------------------
+    - step_id: stripe_webhook_handler
+      description: "Handle Stripe webhooks for subscription events"
+      type: development
+      
+      file_to_create: app/api/webhooks/stripe/route.ts
+      
+      events_to_handle:
+        - checkout.session.completed
+        - customer.subscription.created
+        - customer.subscription.updated
+        - customer.subscription.deleted
+        - invoice.payment_succeeded
+        - invoice.payment_failed
+      
+      implementation: |
+        // app/api/webhooks/stripe/route.ts
+        import { NextRequest, NextResponse } from 'next/server';
+        import Stripe from 'stripe';
+        import { getTiqologyDb } from '@/lib/tiqologyDb';
+        
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        
+        export async function POST(req: NextRequest) {
+          const sig = req.headers.get('stripe-signature')!;
+          const body = await req.text();
+          
+          let event: Stripe.Event;
+          
+          try {
+            event = stripe.webhooks.constructEvent(
+              body,
+              sig,
+              process.env.STRIPE_WEBHOOK_SECRET!
+            );
+          } catch (err) {
+            return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+          }
+          
+          const db = getTiqologyDb();
+          
+          switch (event.type) {
+            case 'checkout.session.completed':
+              const session = event.data.object as Stripe.Checkout.Session;
+              // Create subscription in database
+              await db.from('tiq_subscriptions').insert({
+                user_id: session.client_reference_id,
+                stripe_customer_id: session.customer,
+                stripe_subscription_id: session.subscription,
+                status: 'active',
+              });
+              break;
+            
+            case 'customer.subscription.updated':
+              const subscription = event.data.object as Stripe.Subscription;
+              // Update subscription status
+              await db
+                .from('tiq_subscriptions')
+                .update({ status: subscription.status })
+                .eq('stripe_subscription_id', subscription.id);
+              break;
+            
+            // Handle other events...
+          }
+          
+          return NextResponse.json({ received: true });
+        }
+
+    # --------------------------------------------
+    # STEP 5.2: Configure Webhook URLs
+    # --------------------------------------------
+    - step_id: configure_webhook_urls
+      description: "Set webhook URLs in external services"
+      type: configuration
+      
+      webhooks:
+        - service: Stripe
+          url: "https://ai-chatbot.vercel.app/api/webhooks/stripe"
+          events:
+            - checkout.session.completed
+            - customer.subscription.updated
+            - customer.subscription.deleted
+          
+        - service: Supabase (optional)
+          url: "https://ai-chatbot.vercel.app/api/webhooks/supabase"
+          events:
+            - db.insert
+            - db.update
+            - db.delete
+
+# ============================================
+# PHASE 6: HEALTH CHECKS & MONITORING
+# ============================================
+
+phase_6_health_checks:
+  description: "Implement health checks and service monitoring"
+  
+  steps:
+    # --------------------------------------------
+    # STEP 6.1: Create Health Check Endpoint
+    # --------------------------------------------
+    - step_id: create_health_check
+      description: "Create health check endpoint for backend"
+      type: development
+      
+      file_to_create: app/api/health/route.ts
+      
+      implementation: |
+        // app/api/health/route.ts
+        import { NextResponse } from 'next/server';
+        import { getTiqologyDb } from '@/lib/tiqologyDb';
+        
+        export async function GET() {
+          const db = getTiqologyDb();
+          
+          const checks = {
+            database: false,
+            api: true,
+            timestamp: new Date().toISOString(),
+          };
+          
+          try {
+            // Test database connection
+            const { data, error } = await db
+              .from('tiq_users')
+              .select('id')
+              .limit(1);
+            
+            checks.database = !error;
+          } catch (err) {
+            checks.database = false;
+          }
+          
+          const status = checks.database ? 200 : 503;
+          
+          return NextResponse.json(checks, { status });
+        }
+
+    # --------------------------------------------
+    # STEP 6.2: Implement Connectivity Monitor (SPA)
+    # --------------------------------------------
+    - step_id: connectivity_monitor
+      description: "Monitor backend connectivity from SPA"
+      type: development
+      
+      file_to_create: hooks/use-health-check.ts
+      
+      implementation: |
+        // hooks/use-health-check.ts
+        import { useState, useEffect } from 'react';
+        
+        export function useHealthCheck(apiUrl: string) {
+          const [isHealthy, setIsHealthy] = useState(true);
+          const [lastCheck, setLastCheck] = useState<Date | null>(null);
+          
+          useEffect(() => {
+            const checkHealth = async () => {
+              try {
+                const response = await fetch(`${apiUrl}/api/health`);
+                const data = await response.json();
+                setIsHealthy(data.database && data.api);
+                setLastCheck(new Date());
+              } catch (error) {
+                setIsHealthy(false);
+              }
+            };
+            
+            // Check immediately
+            checkHealth();
+            
+            // Check every 60 seconds
+            const interval = setInterval(checkHealth, 60000);
+            
+            return () => clearInterval(interval);
+          }, [apiUrl]);
+          
+          return { isHealthy, lastCheck };
+        }
+
+    # --------------------------------------------
+    # STEP 6.3: Add Error Boundary
+    # --------------------------------------------
+    - step_id: add_error_boundary
+      description: "Add error boundary for API failures"
+      type: development
+      
+      file_to_create: components/error-boundary.tsx
+      
+      implementation: |
+        // components/error-boundary.tsx
+        'use client';
+        
+        import { Component, ReactNode } from 'react';
+        
+        interface Props {
+          children: ReactNode;
+          fallback?: ReactNode;
+        }
+        
+        interface State {
+          hasError: boolean;
+          error?: Error;
+        }
+        
+        export class ErrorBoundary extends Component<Props, State> {
+          constructor(props: Props) {
+            super(props);
+            this.state = { hasError: false };
+          }
+          
+          static getDerivedStateFromError(error: Error): State {
+            return { hasError: true, error };
+          }
+          
+          render() {
+            if (this.state.hasError) {
+              return this.props.fallback || (
+                <div className="error-boundary">
+                  <h2>Something went wrong</h2>
+                  <p>{this.state.error?.message}</p>
+                  <button onClick={() => window.location.reload()}>
+                    Reload
+                  </button>
+                </div>
+              );
+            }
+            
+            return this.props.children;
+          }
+        }
+
+# ============================================
+# PHASE 7: INTEGRATION TESTING
+# ============================================
+
+phase_7_integration_testing:
+  description: "Test all cross-service integrations end-to-end"
+  
+  test_suites:
+    # --------------------------------------------
+    # Authentication Flow
+    # --------------------------------------------
+    - suite_name: "Authentication Integration"
+      tests:
+        - test: "User signs up on SPA → account created in backend"
+          steps:
+            - "POST /api/auth/signup from SPA"
+            - "Verify user in tiq_users table"
+            - "Verify session created"
+        
+        - test: "User logs in on SPA → session shared"
+          steps:
+            - "POST /api/auth/signin from SPA"
+            - "Verify session cookie set"
+            - "Access protected route on SPA"
+            - "Verify auth header sent to backend"
+    
+    # --------------------------------------------
+    # Subscription Flow
+    # --------------------------------------------
+    - suite_name: "Subscription Integration"
+      tests:
+        - test: "User clicks Subscribe → Stripe checkout → subscription created"
+          steps:
+            - "GET /api/economy/subscriptions?action=plans"
+            - "POST /api/economy/subscriptions?action=create"
+            - "Verify Stripe checkout URL returned"
+            - "Complete checkout (test mode)"
+            - "Verify webhook received"
+            - "Verify subscription in tiq_subscriptions"
+    
+    # --------------------------------------------
+    # Affiliate Flow
+    # --------------------------------------------
+    - suite_name: "Affiliate Integration"
+      tests:
+        - test: "User becomes affiliate → code generated → referral tracked"
+          steps:
+            - "POST /api/economy/affiliates?action=register"
+            - "Verify affiliate code (CK1 format)"
+            - "Register new user with referral code"
+            - "Verify referral in tiq_referrals"
+            - "Verify commission created on subscription"
+    
+    # --------------------------------------------
+    # Ghost Mode
+    # --------------------------------------------
+    - suite_name: "Ghost Mode Integration"
+      tests:
+        - test: "SPA sends Ghost eval → response returned"
+          steps:
+            - "POST /api/ghost from SPA with API key"
+            - "Verify AI response returned"
+            - "Verify event logged in telemetry"
+    
+    # --------------------------------------------
+    # Telemetry
+    # --------------------------------------------
+    - suite_name: "Telemetry Integration"
+      tests:
+        - test: "SPA events flow to backend telemetry"
+          steps:
+            - "Track page view from SPA"
+            - "Verify event in agentos_event_log"
+            - "Track user action from SPA"
+            - "Verify event logged with user_id"
+
+# ============================================
+# SUCCESS VALIDATION
+# ============================================
+
+final_validation:
+  checklist:
+    - "✅ API client library created (TypeScript)"
+    - "✅ React hooks for all API interactions"
+    - "✅ Protected routes enforce authentication"
+    - "✅ CORS configured for cross-origin requests"
+    - "✅ Session sharing working (SPA ↔ Backend)"
+    - "✅ Telemetry events flowing SPA → Backend → Database"
+    - "✅ Stripe webhooks routing correctly"
+    - "✅ Health checks operational"
+    - "✅ Error boundaries handle API failures"
+    - "✅ All integration tests passing"
+  
+  launch_criteria:
+    all_must_pass: true
+    minimum_tests_passed: 90%
+    critical_integrations_must_work: true
+
+# ============================================
+# DOCUMENTATION
+# ============================================
+
+documentation:
+  files_to_create:
+    - docs/API_REGISTRY.md
+    - docs/INTEGRATION_GUIDE.md
+    - docs/WEBHOOK_CONFIG.md
+  
+  files_to_update:
+    - README-TiQology.md (update integration status)
+    - TIQOLOGY_SPA_IMPLEMENTATION.md (add new integrations)
