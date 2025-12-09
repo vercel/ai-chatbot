@@ -3,15 +3,15 @@
  * Common agent task pipelines for TiQology applications
  */
 
-import type { AgentTask, BestInterestPayload } from './types';
-import { routeAgentTask } from './router';
+import { routeAgentTask } from "./router";
+import type { AgentTask, BestInterestPayload } from "./types";
 
 /**
  * Best Interest Evaluation Pipeline
- * 
+ *
  * Specialized pipeline for family law "Best Interest of the Child" evaluations
  * Uses Ghost evaluator with Best Interest Engine prompts
- * 
+ *
  * @param input - Best Interest evaluation inputs
  * @param options - Additional options
  * @returns AgentResult with 4-dimensional scoring
@@ -32,22 +32,22 @@ export async function bestInterestEvaluationPipeline(
 ) {
   const task: AgentTask = {
     id: `best-interest_${Date.now()}`,
-    origin: options?.origin || 'pipeline',
-    targetAgents: ['best-interest-engine'],
-    domain: 'family-law',
-    kind: 'evaluation',
-    priority: 'high',
+    origin: options?.origin || "pipeline",
+    targetAgents: ["best-interest-engine"],
+    domain: "family-law",
+    kind: "evaluation",
+    priority: "high",
     payload: {
       parentingPlan: input.parentingPlan,
       communication: input.communication,
       incidents: input.incidents,
       childProfile: input.childProfile,
-      model: input.model || 'chat-model',
+      model: input.model || "chat-model",
     },
     metadata: {
       userId: options?.userId,
       sessionId: options?.sessionId,
-      pipelineType: 'best-interest-evaluation',
+      pipelineType: "best-interest-evaluation",
     },
     createdAt: Date.now(),
   };
@@ -57,9 +57,9 @@ export async function bestInterestEvaluationPipeline(
 
 /**
  * Ghost Evaluation Pipeline
- * 
+ *
  * General purpose AI evaluation pipeline
- * 
+ *
  * @param prompt - Evaluation prompt
  * @param options - Additional options
  * @returns AgentResult with score and feedback
@@ -75,19 +75,19 @@ export async function ghostEvaluationPipeline(
 ) {
   const task: AgentTask = {
     id: `ghost-eval_${Date.now()}`,
-    origin: options?.origin || 'pipeline',
-    targetAgents: ['ghost-evaluator'],
-    domain: 'general',
-    kind: 'evaluation',
-    priority: 'normal',
+    origin: options?.origin || "pipeline",
+    targetAgents: ["ghost-evaluator"],
+    domain: "general",
+    kind: "evaluation",
+    priority: "normal",
     payload: {
       prompt,
       context: options?.context,
-      model: options?.model || 'chat-model',
+      model: options?.model || "chat-model",
     },
     metadata: {
       userId: options?.userId,
-      pipelineType: 'ghost-evaluation',
+      pipelineType: "ghost-evaluation",
     },
     createdAt: Date.now(),
   };
@@ -97,9 +97,9 @@ export async function ghostEvaluationPipeline(
 
 /**
  * Devin Build Pipeline
- * 
+ *
  * Generate Rocket-Devin build task templates
- * 
+ *
  * @param description - Build task description
  * @param requirements - List of requirements
  * @param options - Additional options
@@ -111,17 +111,17 @@ export async function devinBuildPipeline(
   options?: {
     context?: string;
     targetRepo?: string;
-    priority?: 'low' | 'medium' | 'high';
+    priority?: "low" | "medium" | "high";
     origin?: string;
   }
 ) {
   const task: AgentTask = {
     id: `devin-build_${Date.now()}`,
-    origin: options?.origin || 'pipeline',
-    targetAgents: ['devin-builder'],
-    domain: 'dev-ops',
-    kind: 'build',
-    priority: options?.priority === 'high' ? 'high' : 'normal',
+    origin: options?.origin || "pipeline",
+    targetAgents: ["devin-builder"],
+    domain: "dev-ops",
+    kind: "build",
+    priority: options?.priority === "high" ? "high" : "normal",
     payload: {
       description,
       requirements,
@@ -130,7 +130,7 @@ export async function devinBuildPipeline(
       priority: options?.priority,
     },
     metadata: {
-      pipelineType: 'devin-build',
+      pipelineType: "devin-build",
     },
     createdAt: Date.now(),
   };
@@ -140,9 +140,9 @@ export async function devinBuildPipeline(
 
 /**
  * Rocket Ops Pipeline
- * 
+ *
  * Generate Rocket ops playbooks
- * 
+ *
  * @param action - Ops action type
  * @param target - Target system/service
  * @param parameters - Action parameters
@@ -150,7 +150,7 @@ export async function devinBuildPipeline(
  * @returns AgentResult with ops playbook
  */
 export async function rocketOpsPipeline(
-  action: 'deploy' | 'config' | 'monitor' | 'rollback' | 'scale',
+  action: "deploy" | "config" | "monitor" | "rollback" | "scale",
   target: string,
   parameters: Record<string, unknown>,
   options?: {
@@ -160,11 +160,11 @@ export async function rocketOpsPipeline(
 ) {
   const task: AgentTask = {
     id: `rocket-ops_${Date.now()}`,
-    origin: options?.origin || 'pipeline',
-    targetAgents: ['rocket-ops'],
-    domain: 'dev-ops',
-    kind: 'ops',
-    priority: action === 'rollback' ? 'critical' : 'high',
+    origin: options?.origin || "pipeline",
+    targetAgents: ["rocket-ops"],
+    domain: "dev-ops",
+    kind: "ops",
+    priority: action === "rollback" ? "critical" : "high",
     payload: {
       action,
       target,
@@ -172,7 +172,7 @@ export async function rocketOpsPipeline(
       runbook: options?.runbook,
     },
     metadata: {
-      pipelineType: 'rocket-ops',
+      pipelineType: "rocket-ops",
     },
     createdAt: Date.now(),
   };
@@ -182,9 +182,9 @@ export async function rocketOpsPipeline(
 
 /**
  * Multi-Agent Workflow Pipeline
- * 
+ *
  * Execute a sequence of agent tasks
- * 
+ *
  * @param tasks - Array of agent tasks
  * @returns Array of agent results
  */
@@ -196,7 +196,7 @@ export async function multiAgentWorkflow(tasks: AgentTask[]) {
     results.push(result);
 
     // Stop workflow if any task fails
-    if (result.status === 'failed') {
+    if (result.status === "failed") {
       break;
     }
   }

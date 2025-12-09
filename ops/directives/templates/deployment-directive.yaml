@@ -1,0 +1,250 @@
+# ============================================
+# DEVIN DIRECTIVE: Deployment
+# ============================================
+# This template is for deployment tasks.
+# Copy this file to /ops/directives/pending/ and fill in all sections.
+# Devin will automatically detect and execute the directive.
+
+id: "DEPLOY-YYYY-MM-DD-NNNN"  # Example: DEPLOY-2025-01-15-0001
+title: "Deploy [Feature/Release] to [Environment]"
+priority: "critical"  # Options: critical, high, normal, low
+status: "pending"
+created_at: "2025-01-15T00:00:00Z"
+created_by: "human"
+assigned_to: "devin-builder"
+
+# ============================================
+# CONTEXT
+# ============================================
+context:
+  description: |
+    What is being deployed:
+    - Release version or feature name
+    - Target environment (staging, production)
+    - Expected impact on users
+    - Deployment window and downtime (if any)
+    
+  background: |
+    Why this deployment is happening now.
+    Any dependencies or prerequisites.
+    Coordination with other teams.
+    
+  related_docs:
+    - "docs/DEPLOYMENT_GUIDE.md"
+    - "docs/ROLLBACK_PROCEDURES.md"
+    - "Release Notes: v[version]"
+
+# ============================================
+# OBJECTIVES
+# ============================================
+objectives:
+  - "Deploy [feature/release] to [environment]"
+  - "Run database migrations if needed"
+  - "Update environment variables"
+  - "Verify deployment health"
+  - "Monitor for errors post-deployment"
+  - "Notify stakeholders of deployment status"
+
+# ============================================
+# TECHNICAL SPECIFICATIONS
+# ============================================
+technical_specs:
+  repositories:
+    - name: "ai-chatbot"
+      branch: "main"  # or "staging" for staging deployments
+      actions:
+        - "Merge approved PRs"
+        - "Tag release version"
+        - "Trigger deployment pipeline"
+  
+  database_changes:
+    - "Run migration: docs/migrations/[NNN]_[migration_name].sql"
+    - "Verify schema changes"
+    # Only if deploying includes database changes
+  
+  environment_variables:
+    - "FEATURE_FLAG_[NAME]=true"
+    - "API_VERSION=v2"
+    # List any environment variables to update in production
+  
+  dependencies: []
+    # Deployment usually uses existing dependencies
+
+# ============================================
+# EXECUTION STEPS
+# ============================================
+execution_steps:
+  - step: 1
+    action: "Pre-deployment checks"
+    command: "pnpm run pre-deploy-checks"
+    retry_on_failure: false
+  
+  - step: 2
+    action: "Backup production database"
+    command: "pg_dump $PRODUCTION_DB_URL > backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 3
+    action: "Set maintenance mode (if needed)"
+    command: "vercel env add MAINTENANCE_MODE=true --production"
+    retry_on_failure: false
+  
+  - step: 4
+    action: "Merge release PR"
+    command: "gh pr merge [pr-number] --merge"
+    retry_on_failure: false
+  
+  - step: 5
+    action: "Tag release version"
+    command: "git tag v[version] && git push origin v[version]"
+    retry_on_failure: false
+  
+  - step: 6
+    action: "Trigger Vercel deployment"
+    command: "vercel deploy --prod"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 7
+    action: "Run database migrations (if applicable)"
+    command: "psql $PRODUCTION_DB_URL -f docs/migrations/[NNN]_[migration_name].sql"
+    retry_on_failure: false
+  
+  - step: 8
+    action: "Update environment variables"
+    command: "vercel env add [KEY]=[VALUE] --production"
+    retry_on_failure: false
+  
+  - step: 9
+    action: "Wait for deployment to complete"
+    command: "vercel inspect --wait"
+    retry_on_failure: false
+  
+  - step: 10
+    action: "Run smoke tests"
+    command: "pnpm run smoke-tests --env=production"
+    retry_on_failure: true
+    max_retries: 2
+  
+  - step: 11
+    action: "Disable maintenance mode"
+    command: "vercel env remove MAINTENANCE_MODE --production"
+    retry_on_failure: false
+  
+  - step: 12
+    action: "Monitor application health"
+    command: "curl https://app.tiqology.com/api/health"
+    retry_on_failure: true
+    max_retries: 5
+
+# ============================================
+# VALIDATION
+# ============================================
+validation:
+  - criterion: "Deployment successful (HTTP 200)"
+    test_command: "curl -f https://app.tiqology.com/api/health"
+  
+  - criterion: "Database migrations applied"
+    test_command: "psql $PRODUCTION_DB_URL -c 'SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1'"
+  
+  - criterion: "No errors in application logs"
+    manual_test: "Check Vercel logs for errors in last 5 minutes"
+  
+  - criterion: "Key features working"
+    manual_test: "Test critical user flows (login, chat, payments)"
+  
+  - criterion: "Performance within acceptable range"
+    manual_test: "Check response times < 500ms"
+  
+  - criterion: "Zero 5xx errors"
+    manual_test: "Check error rate in monitoring dashboard"
+
+# ============================================
+# SUCCESS METRICS
+# ============================================
+success_metrics:
+  - "Deployment completed within planned window"
+  - "Zero downtime (or < 5 minutes if maintenance mode used)"
+  - "All smoke tests pass"
+  - "Error rate < 0.1%"
+  - "Response time < 500ms (p95)"
+  - "Database migration successful with zero data loss"
+  - "Users can access application immediately"
+
+# ============================================
+# ROLLBACK (CRITICAL)
+# ============================================
+rollback:
+  - "Revert to previous Vercel deployment: vercel rollback"
+  - "Restore database from backup: psql $PRODUCTION_DB_URL < backups/pre-deploy-[timestamp].sql"
+  - "Revert environment variables: vercel env remove [KEY] --production"
+  - "Notify team of rollback in Slack #incidents"
+  - "Create incident report"
+  
+# Rollback triggers:
+# - Error rate > 5%
+# - Response time > 2000ms
+# - Critical feature not working
+# - Database corruption detected
+
+# ============================================
+# TELEMETRY
+# ============================================
+telemetry:
+  log_to_db: true
+  log_to_agentos: true
+  notify_on_completion: true
+  notify_channels:
+    - "slack-engineering"
+    - "slack-product"
+    - "email-stakeholders"
+
+# ============================================
+# NOTES
+# ============================================
+notes: |
+  DEPLOYMENT CHECKLIST:
+  
+  **Pre-Deployment (24 hours before):**
+  - [ ] All PRs merged and approved
+  - [ ] CI/CD pipeline green
+  - [ ] Staging deployment tested thoroughly
+  - [ ] Database backup verified
+  - [ ] Rollback plan documented
+  - [ ] Stakeholders notified of deployment window
+  - [ ] On-call engineer assigned
+  
+  **During Deployment:**
+  - [ ] Announce in #engineering channel
+  - [ ] Monitor logs in real-time
+  - [ ] Keep rollback command ready
+  - [ ] Test critical flows immediately after deploy
+  
+  **Post-Deployment (2 hours after):**
+  - [ ] Monitor error rates and performance
+  - [ ] Verify all features working
+  - [ ] Check user feedback channels
+  - [ ] Update release notes
+  - [ ] Send success notification to stakeholders
+  
+  **Emergency Contacts:**
+  - Engineering Lead: @[name] (Slack/Phone)
+  - DevOps: @[name] (Slack/Phone)
+  - Database Admin: @[name] (Slack/Phone)
+  
+  **Monitoring URLs:**
+  - Vercel Dashboard: https://vercel.com/[team]/[project]
+  - Supabase Logs: https://app.supabase.com/project/[id]/logs
+  - Error Tracking: https://sentry.io/[project]
+  
+  **Deployment Windows:**
+  - Staging: Anytime (low risk)
+  - Production: Tuesday/Wednesday 10am-2pm PST (avoid Monday, Friday, weekends)
+  
+  **Critical Features (must test after deploy):**
+  - User authentication
+  - Chat functionality
+  - Payment processing
+  - AI model responses
+  - Voice interface

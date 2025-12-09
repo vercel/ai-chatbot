@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export interface GhostEvalRequest {
   prompt: string;
@@ -32,16 +32,16 @@ export interface UseGhostEvalReturn {
 
 /**
  * React hook for Ghost Mode evaluations via AgentOS
- * 
+ *
  * **Updated for AgentOS v1.0:** This hook now uses `/api/agent-router` instead of the legacy `/api/ghost` endpoint.
- * 
+ *
  * Usage:
  * ```tsx
  * const { evaluate, isLoading, error, lastResult } = useGhostEval({
  *   apiKey: "your-api-key", // Optional if env var is set
  *   origin: "tiqology-spa" // Your app identifier
  * });
- * 
+ *
  * const handleEvaluate = async () => {
  *   try {
  *     const result = await evaluate({
@@ -112,7 +112,9 @@ export function useGhostEval({
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+          throw new Error(
+            errorData.error?.message || `HTTP ${response.status}`
+          );
         }
 
         const agentResult = await response.json();
@@ -121,7 +123,10 @@ export function useGhostEval({
         const result: GhostEvalResponse = {
           score: agentResult.result?.data?.score,
           feedback: agentResult.result?.data?.feedback,
-          result: agentResult.result?.data?.analysis || agentResult.result?.data?.feedback || "",
+          result:
+            agentResult.result?.data?.analysis ||
+            agentResult.result?.data?.feedback ||
+            "",
           timestamp: new Date(agentResult.completedAt).toISOString(),
           model: request.model,
           confidence: agentResult.result?.confidence,

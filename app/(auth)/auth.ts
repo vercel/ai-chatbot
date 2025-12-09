@@ -42,6 +42,18 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
+        // Demo mode - allow any login for testing
+        const isDemoMode = process.env.DEMO_MODE === "true";
+
+        if (isDemoMode) {
+          // Allow any email/password in demo mode
+          return {
+            id: `demo-${Date.now()}`,
+            email: email || "demo@tiqology.com",
+            type: "regular" as UserType,
+          };
+        }
+
         const users = await getUser(email);
 
         if (users.length === 0) {

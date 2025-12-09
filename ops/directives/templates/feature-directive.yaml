@@ -1,0 +1,191 @@
+# ============================================
+# DEVIN DIRECTIVE: Feature Development
+# ============================================
+# This template is for new feature development tasks.
+# Copy this file to /ops/directives/pending/ and fill in all sections.
+# Devin will automatically detect and execute the directive.
+
+id: "FEAT-YYYY-MM-DD-NNNN"  # Example: FEAT-2025-01-15-0001
+title: "Implement [Feature Name]"
+priority: "normal"  # Options: critical, high, normal, low
+status: "pending"
+created_at: "2025-01-15T00:00:00Z"
+created_by: "human"  # or "rocket", "ghost", etc.
+assigned_to: "devin-builder"
+
+# ============================================
+# CONTEXT
+# ============================================
+context:
+  description: |
+    Brief description of what this feature does and why it's needed.
+    Include user stories or business requirements.
+    
+  background: |
+    Technical context and architectural considerations.
+    Explain how this fits into the existing system.
+    
+  related_docs:
+    - "docs/AGENTOS_V2_SPEC.md"
+    - "docs/ROADMAP.md"
+    # Add any relevant documentation
+
+# ============================================
+# OBJECTIVES
+# ============================================
+objectives:
+  - "Implement [specific functionality]"
+  - "Create database schema for [feature]"
+  - "Build API endpoints for [feature]"
+  - "Add frontend components for [feature]"
+  - "Write tests covering [scenarios]"
+
+# ============================================
+# TECHNICAL SPECIFICATIONS
+# ============================================
+technical_specs:
+  repositories:
+    - name: "ai-chatbot"
+      branch: "feature/[feature-name]"
+      actions:
+        - "Create new branch from main"
+        - "Implement feature code"
+        - "Write tests"
+        - "Update documentation"
+        - "Create pull request"
+  
+  database_changes:
+    - "Create migration: [migration_name].sql"
+    - "Add tables: [table_names]"
+    - "Add indexes for performance"
+    - "Update RLS policies"
+  
+  environment_variables:
+    - "FEATURE_FLAG_[NAME]"
+    # List any new environment variables needed
+  
+  dependencies:
+    - "npm install [package-name]"
+    # List any new dependencies to install
+
+# ============================================
+# EXECUTION STEPS
+# ============================================
+execution_steps:
+  - step: 1
+    action: "Create feature branch"
+    command: "git checkout -b feature/[feature-name]"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 2
+    action: "Create database migration"
+    files_to_create:
+      - "docs/migrations/[NNN]_[migration_name].sql"
+    retry_on_failure: false
+  
+  - step: 3
+    action: "Implement backend module"
+    files_to_create:
+      - "lib/[module_name].ts"
+    retry_on_failure: false
+  
+  - step: 4
+    action: "Create API endpoint"
+    files_to_create:
+      - "app/api/[endpoint_name]/route.ts"
+    retry_on_failure: false
+  
+  - step: 5
+    action: "Build frontend component"
+    files_to_create:
+      - "components/[component_name].tsx"
+    retry_on_failure: false
+  
+  - step: 6
+    action: "Write unit tests"
+    files_to_create:
+      - "tests/[feature_name].test.ts"
+    retry_on_failure: false
+  
+  - step: 7
+    action: "Run tests"
+    command: "pnpm test [feature_name]"
+    retry_on_failure: true
+    max_retries: 2
+  
+  - step: 8
+    action: "Commit changes"
+    command: "git add . && git commit -m 'feat: [commit message]'"
+    retry_on_failure: false
+  
+  - step: 9
+    action: "Push to GitHub"
+    command: "git push origin feature/[feature-name]"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 10
+    action: "Create pull request"
+    command: "gh pr create --title '[Feature Name]' --body 'Implements [feature] per FEAT-YYYY-MM-DD-NNNN'"
+    retry_on_failure: true
+    max_retries: 3
+
+# ============================================
+# VALIDATION
+# ============================================
+validation:
+  - criterion: "All tests pass"
+    test_command: "pnpm test [feature_name]"
+  
+  - criterion: "TypeScript compilation succeeds"
+    test_command: "pnpm tsc --noEmit"
+  
+  - criterion: "Lint checks pass"
+    test_command: "pnpm lint"
+  
+  - criterion: "Database migration runs successfully"
+    manual_test: "Apply migration to staging database and verify schema"
+  
+  - criterion: "Feature works in local environment"
+    manual_test: "Test feature end-to-end in dev environment"
+
+# ============================================
+# SUCCESS METRICS
+# ============================================
+success_metrics:
+  - "PR created and passing CI/CD checks"
+  - "Code coverage > 80% for new code"
+  - "Zero TypeScript errors"
+  - "Database migration tested on staging"
+  - "Documentation updated in README or docs/"
+
+# ============================================
+# ROLLBACK (Optional)
+# ============================================
+rollback:
+  - "Revert commit: git revert [commit-sha]"
+  - "Drop migration: DROP TABLE [table_name]"
+  - "Close PR and delete branch"
+
+# ============================================
+# TELEMETRY
+# ============================================
+telemetry:
+  log_to_db: true
+  log_to_agentos: true
+  notify_on_completion: true
+  notify_channels:
+    - "slack-engineering"
+    - "email-dev-team"
+
+# ============================================
+# NOTES
+# ============================================
+notes: |
+  Additional context, warnings, or considerations.
+  
+  Example:
+  - This feature requires coordination with the mobile team
+  - Breaking change: update API version to v2
+  - Performance: expect 10-20ms latency increase

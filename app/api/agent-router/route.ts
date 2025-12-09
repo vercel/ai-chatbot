@@ -3,24 +3,24 @@
  * Central HTTP endpoint for all agent task routing
  */
 
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { routeAgentTask } from '@/lib/agentos/router';
-import type { AgentTask } from '@/lib/agentos/types';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { routeAgentTask } from "@/lib/agentos/router";
+import type { AgentTask } from "@/lib/agentos/types";
 
-export const runtime = 'edge';
+export const runtime = "edge";
 export const maxDuration = 60;
 
 /**
  * POST /api/agent-router
- * 
+ *
  * Route agent tasks to appropriate handlers
- * 
+ *
  * Request body:
  * {
  *   "task": AgentTask
  * }
- * 
+ *
  * Response:
  * {
  *   "taskId": string,
@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: 'AGENTOS_VALIDATION_ERROR',
-            message: 'Missing required field: task',
+            code: "AGENTOS_VALIDATION_ERROR",
+            message: "Missing required field: task",
           },
         },
         { status: 400 }
@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: 'AGENTOS_VALIDATION_ERROR',
-            message: 'Task validation failed',
+            code: "AGENTOS_VALIDATION_ERROR",
+            message: "Task validation failed",
             details: { errors: validationErrors },
           },
         },
@@ -63,15 +63,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Optional: Validate API key for external requests
-    const apiKey = req.headers.get('x-api-key');
+    const apiKey = req.headers.get("x-api-key");
     const expectedKey = process.env.AGENTOS_API_KEY;
-    
+
     if (expectedKey && apiKey !== expectedKey) {
       return NextResponse.json(
         {
           error: {
-            code: 'AGENTOS_AUTHENTICATION_ERROR',
-            message: 'Invalid or missing API key',
+            code: "AGENTOS_AUTHENTICATION_ERROR",
+            message: "Invalid or missing API key",
           },
         },
         { status: 401 }
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       ...task,
       id: task.id || generateTaskId(),
       createdAt: task.createdAt || Date.now(),
-      priority: task.priority || 'normal',
+      priority: task.priority || "normal",
       metadata: task.metadata || {},
     };
 
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     const result = await routeAgentTask(agentTask);
 
     // Check for errors in result
-    if (result.status === 'failed' && result.error) {
+    if (result.status === "failed" && result.error) {
       const statusCode = getStatusCodeForError(result.error.code);
       return NextResponse.json(
         {
@@ -111,15 +111,14 @@ export async function POST(req: NextRequest) {
       status: result.status,
       completedAt: result.completedAt,
     });
-
   } catch (error) {
-    console.error('AgentOS Router Error:', error);
+    console.error("AgentOS Router Error:", error);
 
     return NextResponse.json(
       {
         error: {
-          code: 'AGENTOS_ROUTING_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          code: "AGENTOS_ROUTING_ERROR",
+          message: error instanceof Error ? error.message : "Unknown error",
           details: { error: String(error) },
         },
       },
@@ -130,29 +129,36 @@ export async function POST(req: NextRequest) {
 
 /**
  * GET /api/agent-router
- * 
+ *
  * Health check and service info
  */
 export async function GET() {
   return NextResponse.json({
-    status: 'healthy',
-    service: 'agentos-router',
-    version: '1.0.0',
-    description: 'Multi-agent orchestration layer for TiQology',
+    status: "healthy",
+    service: "agentos-router",
+    version: "1.0.0",
+    description: "Multi-agent orchestration layer for TiQology",
     endpoints: {
       POST: {
-        description: 'Route agent tasks',
-        requiredFields: ['task.id', 'task.origin', 'task.targetAgents', 'task.kind', 'task.domain', 'task.payload'],
+        description: "Route agent tasks",
+        requiredFields: [
+          "task.id",
+          "task.origin",
+          "task.targetAgents",
+          "task.kind",
+          "task.domain",
+          "task.payload",
+        ],
       },
       GET: {
-        description: 'Health check and service info',
+        description: "Health check and service info",
       },
     },
     availableAgents: [
-      'ghost-evaluator',
-      'best-interest-engine',
-      'devin-builder',
-      'rocket-ops',
+      "ghost-evaluator",
+      "best-interest-engine",
+      "devin-builder",
+      "rocket-ops",
     ],
   });
 }
@@ -163,24 +169,24 @@ export async function GET() {
 function validateTaskStructure(task: any): string[] {
   const errors: string[] = [];
 
-  if (!task.origin || typeof task.origin !== 'string') {
-    errors.push('task.origin must be a non-empty string');
+  if (!task.origin || typeof task.origin !== "string") {
+    errors.push("task.origin must be a non-empty string");
   }
 
   if (!Array.isArray(task.targetAgents) || task.targetAgents.length === 0) {
-    errors.push('task.targetAgents must be a non-empty array');
+    errors.push("task.targetAgents must be a non-empty array");
   }
 
-  if (!task.kind || typeof task.kind !== 'string') {
-    errors.push('task.kind must be a non-empty string');
+  if (!task.kind || typeof task.kind !== "string") {
+    errors.push("task.kind must be a non-empty string");
   }
 
-  if (!task.domain || typeof task.domain !== 'string') {
-    errors.push('task.domain must be a non-empty string');
+  if (!task.domain || typeof task.domain !== "string") {
+    errors.push("task.domain must be a non-empty string");
   }
 
-  if (!task.payload || typeof task.payload !== 'object') {
-    errors.push('task.payload must be an object');
+  if (!task.payload || typeof task.payload !== "object") {
+    errors.push("task.payload must be an object");
   }
 
   return errors;

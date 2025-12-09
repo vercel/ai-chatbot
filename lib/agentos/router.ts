@@ -3,17 +3,21 @@
  * Central routing engine for all agent tasks
  */
 
+import {
+  extractEvaluationMetadata,
+  logAgentOSEvent,
+  logEvaluation,
+} from "@/lib/tiqologyDb";
+import { canAgentHandleTask, getAgent } from "./registry";
 import type {
-  AgentTask,
-  AgentResult,
-  AgentTrace,
   AgentOSErrorCode,
-  EvaluationPayload,
+  AgentResult,
+  AgentTask,
+  AgentTrace,
   BuildTaskPayload,
+  EvaluationPayload,
   OpsTaskPayload,
-} from './types';
-import { getAgent, canAgentHandleTask } from './registry';
-import { logEvaluation, logAgentOSEvent, extractEvaluationMetadata } from '@/lib/tiqologyDb';
+} from "./types";
 
 /**
  * Main agent router function
@@ -32,13 +36,19 @@ export async function routeAgentTask(task: AgentTask): Promise<AgentResult> {
     // Validate task
     const validationError = validateTask(task);
     if (validationError) {
-      return createErrorResult(task.id, 'validation', validationError, trace, startTime);
+      return createErrorResult(
+        task.id,
+        "validation",
+        validationError,
+        trace,
+        startTime
+      );
     }
 
     trace.steps.push({
       timestamp: Date.now(),
-      agent: 'router',
-      action: 'task_validated',
+      agent: "router",
+      action: "task_validated",
     });
 
     // Find appropriate agent
@@ -46,9 +56,9 @@ export async function routeAgentTask(task: AgentTask): Promise<AgentResult> {
     if (!agentId) {
       return createErrorResult(
         task.id,
-        agentId || 'unknown',
+        agentId || "unknown",
         {
-          code: 'AGENTOS_AGENT_NOT_FOUND',
+          code: "AGENTOS_AGENT_NOT_FOUND",
           message: `No suitable agent found for kind: ${task.kind}, domain: ${task.domain}`,
         },
         trace,
@@ -58,14 +68,14 @@ export async function routeAgentTask(task: AgentTask): Promise<AgentResult> {
 
     trace.steps.push({
       timestamp: Date.now(),
-      agent: 'router',
-      action: 'agent_selected',
+      agent: "router",
+      action: "agent_selected",
       metadata: { selectedAgent: agentId },
     });
 
     // Route to specific agent handler
     const result = await executeAgentTask(task, agentId, trace);
-    
+
     trace.totalDuration = Date.now() - startTime;
     result.trace = trace;
 
@@ -73,10 +83,10 @@ export async function routeAgentTask(task: AgentTask): Promise<AgentResult> {
   } catch (error) {
     return createErrorResult(
       task.id,
-      'router',
+      "router",
       {
-        code: 'AGENTOS_EXECUTION_ERROR',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        code: "AGENTOS_EXECUTION_ERROR",
+        message: error instanceof Error ? error.message : "Unknown error",
         details: { error: String(error) },
       },
       trace,
@@ -88,24 +98,41 @@ export async function routeAgentTask(task: AgentTask): Promise<AgentResult> {
 /**
  * Validate agent task structure
  */
-function validateTask(task: AgentTask): { code: string; message: string } | null {
+function validateTask(
+  task: AgentTask
+): { code: string; message: string } | null {
   if (!task.id) {
-    return { code: 'AGENTOS_VALIDATION_ERROR', message: 'Task ID is required' };
+    return { code: "AGENTOS_VALIDATION_ERROR", message: "Task ID is required" };
   }
   if (!task.origin) {
-    return { code: 'AGENTOS_VALIDATION_ERROR', message: 'Task origin is required' };
+    return {
+      code: "AGENTOS_VALIDATION_ERROR",
+      message: "Task origin is required",
+    };
   }
   if (!task.targetAgents || task.targetAgents.length === 0) {
-    return { code: 'AGENTOS_VALIDATION_ERROR', message: 'At least one target agent is required' };
+    return {
+      code: "AGENTOS_VALIDATION_ERROR",
+      message: "At least one target agent is required",
+    };
   }
   if (!task.kind) {
-    return { code: 'AGENTOS_VALIDATION_ERROR', message: 'Task kind is required' };
+    return {
+      code: "AGENTOS_VALIDATION_ERROR",
+      message: "Task kind is required",
+    };
   }
   if (!task.domain) {
-    return { code: 'AGENTOS_VALIDATION_ERROR', message: 'Task domain is required' };
+    return {
+      code: "AGENTOS_VALIDATION_ERROR",
+      message: "Task domain is required",
+    };
   }
   if (!task.payload) {
-    return { code: 'AGENTOS_VALIDATION_ERROR', message: 'Task payload is required' };
+    return {
+      code: "AGENTOS_VALIDATION_ERROR",
+      message: "Task payload is required",
+    };
   }
   return null;
 }
@@ -136,7 +163,7 @@ async function executeAgentTask(
   trace.steps.push({
     timestamp: agentStartTime,
     agent: agentId,
-    action: 'execution_started',
+    action: "execution_started",
   });
 
   try {
@@ -144,19 +171,19 @@ async function executeAgentTask(
 
     // Route to specific agent implementation
     switch (agentId) {
-      case 'ghost-evaluator':
+      case "ghost-evaluator":
         result = await executeGhostEvaluator(task, trace);
         break;
 
-      case 'best-interest-engine':
+      case "best-interest-engine":
         result = await executeBestInterestEngine(task, trace);
         break;
 
-      case 'devin-builder':
+      case "devin-builder":
         result = await executeDevinBuilder(task, trace);
         break;
 
-      case 'rocket-ops':
+      case "rocket-ops":
         result = await executeRocketOps(task, trace);
         break;
 
@@ -168,7 +195,7 @@ async function executeAgentTask(
     trace.steps.push({
       timestamp: Date.now(),
       agent: agentId,
-      action: 'execution_completed',
+      action: "execution_completed",
       duration,
     });
 
@@ -178,7 +205,7 @@ async function executeAgentTask(
     trace.steps.push({
       timestamp: Date.now(),
       agent: agentId,
-      action: 'execution_failed',
+      action: "execution_failed",
       duration,
       metadata: { error: String(error) },
     });
@@ -196,19 +223,22 @@ async function executeGhostEvaluator(
   const payload = task.payload as EvaluationPayload;
 
   // Call Ghost API internally
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/ghost`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt: payload.prompt,
-      context: payload.context,
-      model: payload.model || 'chat-model',
-    }),
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/ghost`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: payload.prompt,
+        context: payload.context,
+        model: payload.model || "chat-model",
+      }),
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Ghost API request failed');
+    throw new Error(error.error || "Ghost API request failed");
   }
 
   const ghostResult = await response.json();
@@ -220,11 +250,11 @@ async function executeGhostEvaluator(
 
   // Log evaluation to TiQology Core DB
   const logResult = await logEvaluation({
-    orgId: orgId || 'unknown',
+    orgId: orgId || "unknown",
     caseId,
     evaluatorUserId: userId,
-    evaluationType: 'ghost',
-    modelFlavor: payload.model === 'chat-model-reasoning' ? 'deep' : 'fast',
+    evaluationType: "ghost",
+    modelFlavor: payload.model === "chat-model-reasoning" ? "deep" : "fast",
     overallScore: ghostResult.score,
     summary: ghostResult.feedback,
     rawRequest: { task, payload },
@@ -233,20 +263,20 @@ async function executeGhostEvaluator(
 
   // Log AgentOS event
   await logAgentOSEvent({
-    eventType: 'evaluation_run',
-    agentId: 'ghost-evaluator',
+    eventType: "evaluation_run",
+    agentId: "ghost-evaluator",
     taskId: task.id,
     orgId,
     caseId,
     userId,
-    status: 'completed',
+    status: "completed",
     metadata: { score: ghostResult.score, model: payload.model },
   });
 
   return {
     taskId: task.id,
-    agentId: 'ghost-evaluator',
-    status: 'completed',
+    agentId: "ghost-evaluator",
+    status: "completed",
     result: {
       data: {
         score: ghostResult.score,
@@ -277,18 +307,21 @@ async function executeBestInterestEngine(
   const prompt = buildBestInterestPrompt(payload);
 
   // Call Ghost API with specialized prompt
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/ghost`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt,
-      model: payload.model || 'chat-model',
-    }),
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/ghost`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt,
+        model: payload.model || "chat-model",
+      }),
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Best Interest API request failed');
+    throw new Error(error.error || "Best Interest API request failed");
   }
 
   const ghostResult = await response.json();
@@ -296,25 +329,44 @@ async function executeBestInterestEngine(
   // Parse Best Interest scores from response
   const scores = parseBestInterestScores(ghostResult.result);
 
-  trace.intermediateResults = { ghostResponse: ghostResult, parsedScores: scores };
+  trace.intermediateResults = {
+    ghostResponse: ghostResult,
+    parsedScores: scores,
+  };
 
   // Extract metadata for logging
   const { orgId, caseId, userId } = extractEvaluationMetadata(task);
 
   // Log evaluation to TiQology Core DB
   const logResult = await logEvaluation({
-    orgId: orgId || 'unknown',
+    orgId: orgId || "unknown",
     caseId,
     evaluatorUserId: userId,
-    evaluationType: 'best_interest',
-    modelFlavor: payload.model === 'chat-model-reasoning' ? 'deep' : 'fast',
+    evaluationType: "best_interest",
+    modelFlavor: payload.model === "chat-model-reasoning" ? "deep" : "fast",
     overallScore: scores.overall,
     summary: scores.summary || `Overall: ${scores.overall}/100`,
     dimensions: [
-      { dimensionName: 'Stability', score: scores.stability, reasoning: scores.stabilityReasoning },
-      { dimensionName: 'Emotional', score: scores.emotional, reasoning: scores.emotionalReasoning },
-      { dimensionName: 'Safety', score: scores.safety, reasoning: scores.safetyReasoning },
-      { dimensionName: 'Development', score: scores.development, reasoning: scores.developmentReasoning },
+      {
+        dimensionName: "Stability",
+        score: scores.stability,
+        reasoning: scores.stabilityReasoning,
+      },
+      {
+        dimensionName: "Emotional",
+        score: scores.emotional,
+        reasoning: scores.emotionalReasoning,
+      },
+      {
+        dimensionName: "Safety",
+        score: scores.safety,
+        reasoning: scores.safetyReasoning,
+      },
+      {
+        dimensionName: "Development",
+        score: scores.development,
+        reasoning: scores.developmentReasoning,
+      },
     ],
     rawRequest: { task, payload },
     rawResponse: { ghostResult, scores },
@@ -322,20 +374,20 @@ async function executeBestInterestEngine(
 
   // Log AgentOS event
   await logAgentOSEvent({
-    eventType: 'evaluation_run',
-    agentId: 'best-interest-engine',
+    eventType: "evaluation_run",
+    agentId: "best-interest-engine",
     taskId: task.id,
     orgId,
     caseId,
     userId,
-    status: 'completed',
+    status: "completed",
     metadata: { overallScore: scores.overall, model: payload.model },
   });
 
   return {
     taskId: task.id,
-    agentId: 'best-interest-engine',
-    status: 'completed',
+    agentId: "best-interest-engine",
+    status: "completed",
     result: {
       data: {
         ...scores,
@@ -366,15 +418,15 @@ async function executeDevinBuilder(
 
   return {
     taskId: task.id,
-    agentId: 'devin-builder',
-    status: 'completed',
+    agentId: "devin-builder",
+    status: "completed",
     result: {
       data: {
         taskTemplate,
-        templateFormat: 'rocket-devin-markdown',
+        templateFormat: "rocket-devin-markdown",
         requiresHumanApproval: true,
       },
-      summary: 'Build task template generated. Human review required.',
+      summary: "Build task template generated. Human review required.",
     },
     trace,
     completedAt: Date.now(),
@@ -397,8 +449,8 @@ async function executeRocketOps(
 
   return {
     taskId: task.id,
-    agentId: 'rocket-ops',
-    status: 'completed',
+    agentId: "rocket-ops",
+    status: "completed",
     result: {
       data: {
         playbook,
@@ -426,10 +478,10 @@ Evaluate using these 4 categories (0-100):
 4. EMOTIONAL IMPACT (child's well-being, parental support)
 
 CASE INFORMATION:
-Parenting Plan: ${payload.parentingPlan || 'Not provided'}
-Communication: ${payload.communication || 'Not provided'}
-Incidents: ${payload.incidents || 'Not provided'}
-Child Profile: ${payload.childProfile || 'Not provided'}
+Parenting Plan: ${payload.parentingPlan || "Not provided"}
+Communication: ${payload.communication || "Not provided"}
+Incidents: ${payload.incidents || "Not provided"}
+Child Profile: ${payload.childProfile || "Not provided"}
 
 Respond in JSON format:
 {
@@ -459,13 +511,13 @@ function parseBestInterestScores(response: string): any {
         cooperation: parsed.cooperation_score || 0,
         emotionalImpact: parsed.emotional_impact_score || 0,
         overall: parsed.overall_score || 0,
-        summary: parsed.summary || '',
+        summary: parsed.summary || "",
         concerns: parsed.concerns || [],
         recommendations: parsed.recommendations || [],
       };
     }
   } catch (error) {
-    console.error('Failed to parse Best Interest scores:', error);
+    console.error("Failed to parse Best Interest scores:", error);
   }
 
   // Fallback to basic score extraction
@@ -491,16 +543,16 @@ function generateRocketDevinTask(payload: BuildTaskPayload): string {
 ${payload.description}
 
 ## Requirements
-${payload.requirements.map((req, i) => `${i + 1}. ${req}`).join('\n')}
+${payload.requirements.map((req, i) => `${i + 1}. ${req}`).join("\n")}
 
 ## Context
-${payload.context || 'No additional context provided'}
+${payload.context || "No additional context provided"}
 
 ## Priority
-${payload.priority?.toUpperCase() || 'MEDIUM'}
+${payload.priority?.toUpperCase() || "MEDIUM"}
 
 ## Target Repository
-${payload.targetRepo || 'TBD'}
+${payload.targetRepo || "TBD"}
 
 ## Acceptance Criteria
 - [ ] All requirements implemented
@@ -554,7 +606,7 @@ ${generateRollbackSteps(payload.action)}
 - [ ] User-facing functionality verified
 
 ## Runbook Reference
-${payload.runbook || 'No runbook specified'}
+${payload.runbook || "No runbook specified"}
 
 ---
 *Generated by AgentOS v1.0 - Rocket Ops Agent*
@@ -568,48 +620,50 @@ ${payload.runbook || 'No runbook specified'}
 function generateOpsSteps(action: string): string {
   const steps: Record<string, string[]> = {
     deploy: [
-      '1. Pull latest code from repository',
-      '2. Run build process',
-      '3. Run automated tests',
-      '4. Deploy to staging environment',
-      '5. Verify staging deployment',
-      '6. Deploy to production with blue-green strategy',
-      '7. Monitor error rates and performance',
+      "1. Pull latest code from repository",
+      "2. Run build process",
+      "3. Run automated tests",
+      "4. Deploy to staging environment",
+      "5. Verify staging deployment",
+      "6. Deploy to production with blue-green strategy",
+      "7. Monitor error rates and performance",
     ],
     config: [
-      '1. Review current configuration',
-      '2. Prepare new configuration files',
-      '3. Validate configuration syntax',
-      '4. Apply to non-production environment first',
-      '5. Test configuration changes',
-      '6. Apply to production',
-      '7. Verify application behavior',
+      "1. Review current configuration",
+      "2. Prepare new configuration files",
+      "3. Validate configuration syntax",
+      "4. Apply to non-production environment first",
+      "5. Test configuration changes",
+      "6. Apply to production",
+      "7. Verify application behavior",
     ],
     monitor: [
-      '1. Set up monitoring dashboards',
-      '2. Configure alert thresholds',
-      '3. Set up notification channels',
-      '4. Test alert firing',
-      '5. Document alert response procedures',
+      "1. Set up monitoring dashboards",
+      "2. Configure alert thresholds",
+      "3. Set up notification channels",
+      "4. Test alert firing",
+      "5. Document alert response procedures",
     ],
     rollback: [
-      '1. Identify last known good version',
-      '2. Notify team of rollback',
-      '3. Execute rollback procedure',
-      '4. Verify service restoration',
-      '5. Investigate root cause',
+      "1. Identify last known good version",
+      "2. Notify team of rollback",
+      "3. Execute rollback procedure",
+      "4. Verify service restoration",
+      "5. Investigate root cause",
     ],
     scale: [
-      '1. Analyze current resource usage',
-      '2. Calculate required capacity',
-      '3. Update scaling configuration',
-      '4. Apply scaling changes',
-      '5. Monitor resource allocation',
-      '6. Verify service performance',
+      "1. Analyze current resource usage",
+      "2. Calculate required capacity",
+      "3. Update scaling configuration",
+      "4. Apply scaling changes",
+      "5. Monitor resource allocation",
+      "6. Verify service performance",
     ],
   };
 
-  return (steps[action] || ['1. Execute action', '2. Verify results']).join('\n');
+  return (steps[action] || ["1. Execute action", "2. Verify results"]).join(
+    "\n"
+  );
 }
 
 /**
@@ -618,26 +672,25 @@ function generateOpsSteps(action: string): string {
 function generateRollbackSteps(action: string): string {
   const steps: Record<string, string[]> = {
     deploy: [
-      '1. Identify previous stable version',
-      '2. Deploy previous version',
-      '3. Verify rollback success',
+      "1. Identify previous stable version",
+      "2. Deploy previous version",
+      "3. Verify rollback success",
     ],
     config: [
-      '1. Restore previous configuration',
-      '2. Restart affected services',
-      '3. Verify configuration restore',
+      "1. Restore previous configuration",
+      "2. Restart affected services",
+      "3. Verify configuration restore",
     ],
-    monitor: [
-      '1. Disable new alerts',
-      '2. Restore previous monitoring setup',
-    ],
+    monitor: ["1. Disable new alerts", "2. Restore previous monitoring setup"],
     scale: [
-      '1. Revert to previous scale settings',
-      '2. Monitor resource stabilization',
+      "1. Revert to previous scale settings",
+      "2. Monitor resource stabilization",
     ],
   };
 
-  return (steps[action] || ['1. Revert changes', '2. Verify system state']).join('\n');
+  return (
+    steps[action] || ["1. Revert changes", "2. Verify system state"]
+  ).join("\n");
 }
 
 /**
@@ -651,11 +704,11 @@ function createErrorResult(
   startTime: number
 ): AgentResult {
   trace.totalDuration = Date.now() - startTime;
-  
+
   return {
     taskId,
     agentId,
-    status: 'failed',
+    status: "failed",
     error,
     trace,
     completedAt: Date.now(),

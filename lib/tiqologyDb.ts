@@ -1,11 +1,11 @@
 /**
  * TiQology Core DB Client
- * 
+ *
  * Supabase client for logging AgentOS evaluations to the TiQology Core database.
  * Used by Ghost and Best Interest evaluation agents to persist results.
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Singleton Supabase client
 let supabaseClient: SupabaseClient | null = null;
@@ -23,7 +23,7 @@ function getSupabaseClient(): SupabaseClient {
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error(
-      'Missing Supabase credentials. Set TIQ_SUPABASE_URL and TIQ_SUPABASE_SERVICE_ROLE_KEY environment variables.'
+      "Missing Supabase credentials. Set TIQ_SUPABASE_URL and TIQ_SUPABASE_SERVICE_ROLE_KEY environment variables."
     );
   }
 
@@ -53,8 +53,8 @@ export interface EvaluationLogInput {
   orgId: string;
   caseId?: string;
   evaluatorUserId?: string;
-  evaluationType: 'ghost' | 'best_interest';
-  modelFlavor: 'fast' | 'deep';
+  evaluationType: "ghost" | "best_interest";
+  modelFlavor: "fast" | "deep";
   overallScore: number;
   summary?: string;
   dimensions?: DimensionScore[];
@@ -64,7 +64,7 @@ export interface EvaluationLogInput {
 
 /**
  * Log evaluation result
- * 
+ *
  * Result includes evaluation ID and any logging errors
  */
 export interface LogEvaluationResult {
@@ -74,11 +74,11 @@ export interface LogEvaluationResult {
 
 /**
  * Log an evaluation to TiQology Core DB
- * 
+ *
  * Inserts into:
  * - public.evaluations
  * - public.evaluation_dimension_scores (if dimensions provided)
- * 
+ *
  * @param input - Evaluation data
  * @returns Result with evaluation ID or error
  */
@@ -90,7 +90,7 @@ export async function logEvaluation(
 
     // Insert evaluation record
     const { data: evaluation, error: evalError } = await supabase
-      .from('evaluations')
+      .from("evaluations")
       .insert({
         org_id: input.orgId,
         case_id: input.caseId || null,
@@ -103,11 +103,11 @@ export async function logEvaluation(
         raw_response: input.rawResponse || null,
         created_at: new Date().toISOString(),
       })
-      .select('id')
+      .select("id")
       .single();
 
     if (evalError) {
-      console.error('Failed to insert evaluation:', evalError);
+      console.error("Failed to insert evaluation:", evalError);
       return {
         loggingError: `Evaluation insert failed: ${evalError.message}`,
       };
@@ -125,11 +125,11 @@ export async function logEvaluation(
       }));
 
       const { error: dimError } = await supabase
-        .from('evaluation_dimension_scores')
+        .from("evaluation_dimension_scores")
         .insert(dimensionRows);
 
       if (dimError) {
-        console.error('Failed to insert dimension scores:', dimError);
+        console.error("Failed to insert dimension scores:", dimError);
         return {
           evaluationId,
           loggingError: `Dimension scores insert failed: ${dimError.message}`,
@@ -139,9 +139,9 @@ export async function logEvaluation(
 
     return { evaluationId };
   } catch (error) {
-    console.error('logEvaluation error:', error);
+    console.error("logEvaluation error:", error);
     return {
-      loggingError: error instanceof Error ? error.message : 'Unknown error',
+      loggingError: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -150,20 +150,20 @@ export async function logEvaluation(
  * AgentOS event log entry
  */
 export interface AgentOSEventInput {
-  eventType: 'evaluation_run' | 'agent_task' | 'pipeline_execution';
+  eventType: "evaluation_run" | "agent_task" | "pipeline_execution";
   agentId: string;
   taskId: string;
   orgId?: string;
   caseId?: string;
   userId?: string;
-  status: 'started' | 'completed' | 'failed';
+  status: "started" | "completed" | "failed";
   metadata?: Record<string, any>;
   errorDetails?: Record<string, any>;
 }
 
 /**
  * Log AgentOS event to agentos_event_log
- * 
+ *
  * @param input - Event data
  * @returns Event ID or error
  */
@@ -174,7 +174,7 @@ export async function logAgentOSEvent(
     const supabase = getSupabaseClient();
 
     const { data: event, error: eventError } = await supabase
-      .from('agentos_event_log')
+      .from("agentos_event_log")
       .insert({
         event_type: input.eventType,
         agent_id: input.agentId,
@@ -187,11 +187,11 @@ export async function logAgentOSEvent(
         error_details: input.errorDetails || null,
         created_at: new Date().toISOString(),
       })
-      .select('id')
+      .select("id")
       .single();
 
     if (eventError) {
-      console.error('Failed to insert AgentOS event:', eventError);
+      console.error("Failed to insert AgentOS event:", eventError);
       return {
         loggingError: `Event log insert failed: ${eventError.message}`,
       };
@@ -199,9 +199,9 @@ export async function logAgentOSEvent(
 
     return { evaluationId: event.id };
   } catch (error) {
-    console.error('logAgentOSEvent error:', error);
+    console.error("logAgentOSEvent error:", error);
     return {
-      loggingError: error instanceof Error ? error.message : 'Unknown error',
+      loggingError: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

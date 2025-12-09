@@ -1,0 +1,182 @@
+# ============================================
+# DEVIN DIRECTIVE: Bug Fix
+# ============================================
+# This template is for bug fix tasks.
+# Copy this file to /ops/directives/pending/ and fill in all sections.
+# Devin will automatically detect and execute the directive.
+
+id: "BUG-YYYY-MM-DD-NNNN"  # Example: BUG-2025-01-15-0042
+title: "Fix [Bug Description]"
+priority: "high"  # Options: critical, high, normal, low
+status: "pending"
+created_at: "2025-01-15T00:00:00Z"
+created_by: "rocket"  # or "human", "ghost", "trustshield", etc.
+assigned_to: "devin-builder"
+
+# ============================================
+# CONTEXT
+# ============================================
+context:
+  description: |
+    Clear description of the bug, including:
+    - What is happening (actual behavior)
+    - What should happen (expected behavior)
+    - Steps to reproduce
+    - Impact on users
+    
+  background: |
+    When the bug was introduced, which systems are affected,
+    any related issues or previous attempts to fix.
+    
+  related_docs:
+    - "docs/TROUBLESHOOTING.md"
+    - "GitHub Issue #[number]"
+    # Add any relevant issue links or documentation
+
+# ============================================
+# OBJECTIVES
+# ============================================
+objectives:
+  - "Identify root cause of [bug]"
+  - "Fix [specific issue] in [module/file]"
+  - "Add tests to prevent regression"
+  - "Verify fix in staging environment"
+  - "Document solution in changelog"
+
+# ============================================
+# TECHNICAL SPECIFICATIONS
+# ============================================
+technical_specs:
+  repositories:
+    - name: "ai-chatbot"
+      branch: "bugfix/[bug-name]"
+      actions:
+        - "Create bugfix branch from main"
+        - "Fix the bug"
+        - "Add regression tests"
+        - "Create pull request"
+  
+  database_changes:
+    - "Data fix: UPDATE [table] SET [column] = [value] WHERE [condition]"
+    # Only if database changes are needed
+  
+  environment_variables: []
+    # Usually not needed for bug fixes
+  
+  dependencies: []
+    # Only if the fix requires new dependencies
+
+# ============================================
+# EXECUTION STEPS
+# ============================================
+execution_steps:
+  - step: 1
+    action: "Create bugfix branch"
+    command: "git checkout -b bugfix/[bug-name]"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 2
+    action: "Reproduce the bug"
+    files_to_create:
+      - "tests/bugs/[bug-name].test.ts"
+    retry_on_failure: false
+  
+  - step: 3
+    action: "Fix the bug in [file/module]"
+    files_to_edit:
+      - "lib/[module].ts"
+      - "components/[component].tsx"
+      # List files that need editing
+    retry_on_failure: false
+  
+  - step: 4
+    action: "Run regression tests"
+    command: "pnpm test tests/bugs/[bug-name].test.ts"
+    retry_on_failure: true
+    max_retries: 2
+  
+  - step: 5
+    action: "Run full test suite"
+    command: "pnpm test"
+    retry_on_failure: true
+    max_retries: 2
+  
+  - step: 6
+    action: "Commit fix"
+    command: "git add . && git commit -m 'fix: [commit message] (closes #[issue])'"
+    retry_on_failure: false
+  
+  - step: 7
+    action: "Push to GitHub"
+    command: "git push origin bugfix/[bug-name]"
+    retry_on_failure: true
+    max_retries: 3
+  
+  - step: 8
+    action: "Create pull request"
+    command: "gh pr create --title 'Fix: [Bug Description]' --body 'Fixes #[issue] - [detailed explanation]'"
+    retry_on_failure: true
+    max_retries: 3
+
+# ============================================
+# VALIDATION
+# ============================================
+validation:
+  - criterion: "Bug is no longer reproducible"
+    manual_test: "Follow steps to reproduce and verify bug is fixed"
+  
+  - criterion: "Regression tests pass"
+    test_command: "pnpm test tests/bugs/[bug-name].test.ts"
+  
+  - criterion: "All existing tests still pass"
+    test_command: "pnpm test"
+  
+  - criterion: "No new TypeScript errors"
+    test_command: "pnpm tsc --noEmit"
+  
+  - criterion: "Lint checks pass"
+    test_command: "pnpm lint"
+  
+  - criterion: "Fix works in staging"
+    manual_test: "Deploy to staging and verify fix"
+
+# ============================================
+# SUCCESS METRICS
+# ============================================
+success_metrics:
+  - "Bug no longer reproducible in dev/staging"
+  - "PR created and passing CI/CD checks"
+  - "Regression test added to prevent future occurrence"
+  - "Zero breaking changes to existing functionality"
+  - "GitHub issue closed with fix reference"
+
+# ============================================
+# ROLLBACK (Optional)
+# ============================================
+rollback:
+  - "Revert commit: git revert [commit-sha]"
+  - "Revert database changes: [SQL to undo changes]"
+  - "Close PR and delete branch"
+
+# ============================================
+# TELEMETRY
+# ============================================
+telemetry:
+  log_to_db: true
+  log_to_agentos: true
+  notify_on_completion: true
+  notify_channels:
+    - "slack-engineering"
+
+# ============================================
+# NOTES
+# ============================================
+notes: |
+  Additional context about the fix.
+  
+  Example:
+  - This bug was introduced in PR #123
+  - Affects users on mobile devices only
+  - Hot-fix required for production if priority = critical
+  - Root cause: race condition in async function

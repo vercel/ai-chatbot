@@ -1,0 +1,617 @@
+# ============================================
+# TIQOLOGY OS FRONTEND UI DIRECTIVE v1.0
+# Directive ID: FRONTEND-2025-12-07-TIQOLOGY-OS-UI-V1
+# ============================================
+
+directive:
+  id: FRONTEND-2025-12-07-TIQOLOGY-OS-UI-V1
+  name: "Build TiQology OS Frontend UI - Complete Interface"
+  description: "Create the complete TiQology OS user interface with dashboard, Human Economy UI, agent marketplace, and real-time metrics visualization"
+  priority: critical
+  category: frontend
+  estimated_duration_hours: 6
+  created_at: "2025-12-07T00:00:00Z"
+  
+  metadata:
+    project: ai-chatbot
+    framework: next.js
+    ui_library: shadcn/ui
+    styling: tailwindcss
+    deployment_target: vercel
+    
+  success_criteria:
+    - "Dashboard homepage fully functional with agent control center"
+    - "Human Economy UI complete (pricing, subscriptions, affiliate dashboard)"
+    - "Agent marketplace interface implemented"
+    - "Real-time metrics/telemetry visualization working"
+    - "Responsive navigation with dark/light mode toggle"
+    - "All components properly integrated with existing auth system"
+    - "API integration with Human Economy endpoints verified"
+    - "Mobile-responsive design implemented"
+
+# ============================================
+# EXECUTION STEPS
+# ============================================
+
+steps:
+  # --------------------------------------------
+  # STEP 1: Create Dashboard Homepage
+  # --------------------------------------------
+  - step_id: create_dashboard_homepage
+    description: "Build main TiQology OS dashboard page"
+    type: frontend
+    files_to_create:
+      - path: app/(dashboard)/dashboard/page.tsx
+        description: "Main dashboard landing page"
+      - path: components/dashboard/overview-card.tsx
+        description: "Dashboard stat cards component"
+      - path: components/dashboard/agent-status-panel.tsx
+        description: "Live agent status display"
+      - path: components/dashboard/quick-actions.tsx
+        description: "Quick action buttons"
+        
+    features:
+      - "Welcome message with user greeting"
+      - "System status cards (agents, subscriptions, earnings)"
+      - "Recent activity feed"
+      - "Quick action buttons (Deploy Agent, View Analytics, Manage Subscription)"
+      - "Real-time agent status indicators"
+    
+    validation:
+      - "Dashboard loads without errors"
+      - "All stat cards display correct data from API"
+      - "Quick actions navigate to correct pages"
+
+  # --------------------------------------------
+  # STEP 2: Build Human Economy UI - Pricing Page
+  # --------------------------------------------
+  - step_id: create_pricing_page
+    description: "Build subscription pricing page with Stripe integration"
+    type: frontend
+    files_to_create:
+      - path: app/(economy)/pricing/page.tsx
+        description: "Pricing page with plan cards"
+      - path: components/economy/pricing-card.tsx
+        description: "Individual plan card component"
+      - path: components/economy/feature-list.tsx
+        description: "Plan features list"
+      - path: components/economy/billing-toggle.tsx
+        description: "Monthly/Yearly billing toggle"
+        
+    features:
+      - "Display 4 plans: Basic ($9.99), Pro ($29.99), Elite ($99.99), Enterprise (custom)"
+      - "Monthly/Yearly billing toggle with savings indicator"
+      - "Feature comparison list"
+      - "CTA buttons linking to Stripe checkout"
+      - "Current plan highlight (if user is subscribed)"
+      - "Responsive grid layout"
+    
+    api_integration:
+      - endpoint: GET /api/economy/subscriptions?action=plans
+        description: "Fetch active plans"
+      - endpoint: POST /api/economy/subscriptions (action=checkout)
+        description: "Create Stripe checkout session"
+    
+    validation:
+      - "All 4 plans display correctly"
+      - "Billing toggle updates prices"
+      - "Checkout redirects to Stripe (or shows test URL)"
+      - "Current plan badge appears for subscribed users"
+
+  # --------------------------------------------
+  # STEP 3: Build Subscription Management Page
+  # --------------------------------------------
+  - step_id: create_subscription_management
+    description: "Build user subscription management interface"
+    type: frontend
+    files_to_create:
+      - path: app/(economy)/subscription/page.tsx
+        description: "Subscription management page"
+      - path: components/economy/subscription-card.tsx
+        description: "Current subscription display"
+      - path: components/economy/billing-history.tsx
+        description: "Payment history table"
+      - path: components/economy/plan-upgrade-modal.tsx
+        description: "Plan upgrade/downgrade modal"
+        
+    features:
+      - "Display current plan details (name, price, billing period, renewal date)"
+      - "Upgrade/downgrade plan buttons"
+      - "Cancel subscription option with confirmation"
+      - "Billing history table (placeholder for now)"
+      - "Payment method display (masked)"
+      - "Trial status indicator (if applicable)"
+    
+    api_integration:
+      - endpoint: GET /api/economy/subscriptions
+        description: "Get current user subscription"
+      - endpoint: PATCH /api/economy/subscriptions
+        description: "Update subscription"
+      - endpoint: DELETE /api/economy/subscriptions
+        description: "Cancel subscription"
+    
+    validation:
+      - "Subscription details load correctly"
+      - "Plan upgrade flow works"
+      - "Cancellation flow shows confirmation"
+      - "Non-subscribed users see upgrade CTA"
+
+  # --------------------------------------------
+  # STEP 4: Build Affiliate Dashboard
+  # --------------------------------------------
+  - step_id: create_affiliate_dashboard
+    description: "Build affiliate program dashboard with earnings tracking"
+    type: frontend
+    files_to_create:
+      - path: app/(economy)/affiliate/page.tsx
+        description: "Affiliate dashboard page"
+      - path: components/economy/affiliate-stats.tsx
+        description: "Affiliate statistics cards"
+      - path: components/economy/referral-code-display.tsx
+        description: "Referral code with copy button"
+      - path: components/economy/referral-list.tsx
+        description: "List of referrals"
+      - path: components/economy/earnings-chart.tsx
+        description: "Earnings over time chart"
+      - path: components/economy/payout-request-modal.tsx
+        description: "Request payout modal"
+        
+    features:
+      - "Affiliate code display with one-click copy (e.g., CK1, EK2, DK3)"
+      - "Stats cards: Total Referrals, Active Referrals, Total Earnings, Pending Earnings"
+      - "Referral list table (status, date, commission earned)"
+      - "Earnings chart (30-day view)"
+      - "Request Payout button"
+      - "Become Affiliate CTA (if not yet affiliate)"
+      - "Share buttons (Twitter, Email, Copy Link)"
+    
+    api_integration:
+      - endpoint: GET /api/economy/affiliates?action=dashboard
+        description: "Get affiliate dashboard data"
+      - endpoint: GET /api/economy/affiliates?action=referrals
+        description: "Get referral list"
+      - endpoint: POST /api/economy/affiliates (action=register)
+        description: "Register as affiliate"
+      - endpoint: POST /api/economy/affiliates (action=request_payout)
+        description: "Request payout"
+    
+    validation:
+      - "Affiliate code displays and copies correctly"
+      - "Stats update in real-time"
+      - "Referral list loads and filters work"
+      - "Payout request flow completes"
+      - "Non-affiliates see registration CTA"
+
+  # --------------------------------------------
+  # STEP 5: Build Agent Marketplace
+  # --------------------------------------------
+  - step_id: create_agent_marketplace
+    description: "Build agent marketplace for browsing and deploying AI agents"
+    type: frontend
+    files_to_create:
+      - path: app/(agents)/marketplace/page.tsx
+        description: "Agent marketplace page"
+      - path: components/agents/agent-card.tsx
+        description: "Individual agent card"
+      - path: components/agents/agent-category-filter.tsx
+        description: "Category filter sidebar"
+      - path: components/agents/agent-details-modal.tsx
+        description: "Agent details modal"
+        
+    features:
+      - "Grid of available agents (Devin, Rocket, TrustShield, Ghost, etc.)"
+      - "Agent card shows: name, icon, description, category, status"
+      - "Category filters (Automation, Security, Analytics, Communication)"
+      - "Search bar for agent discovery"
+      - "Deploy Agent button (opens modal with config)"
+      - "Agent status indicators (Active, Inactive, Deploying)"
+    
+    api_integration:
+      - endpoint: GET /api/agentos/registry
+        description: "Get available agents"
+      - endpoint: POST /api/agent-router
+        description: "Deploy/activate agent"
+    
+    validation:
+      - "All registered agents display"
+      - "Filters work correctly"
+      - "Search finds agents"
+      - "Deploy flow initiates"
+
+  # --------------------------------------------
+  # STEP 6: Build Real-Time Metrics Dashboard
+  # --------------------------------------------
+  - step_id: create_metrics_dashboard
+    description: "Build real-time metrics and analytics dashboard"
+    type: frontend
+    files_to_create:
+      - path: app/(analytics)/metrics/page.tsx
+        description: "Metrics dashboard page"
+      - path: components/analytics/metric-card.tsx
+        description: "Individual metric card"
+      - path: components/analytics/revenue-chart.tsx
+        description: "Revenue over time chart (MRR/ARR)"
+      - path: components/analytics/user-growth-chart.tsx
+        description: "User growth chart"
+      - path: components/analytics/agent-performance-table.tsx
+        description: "Agent performance table"
+        
+    features:
+      - "Economy metrics: MRR, ARR, Total Subscribers, Churn Rate"
+      - "User metrics: Total Users, Active Users (7d/30d), New Signups"
+      - "Affiliate metrics: Total Affiliates, Active Referrals, Pending Payouts"
+      - "Agent metrics: Total Agents, Active Agents, Tasks Completed"
+      - "Charts: Revenue trend, User growth, Agent activity"
+      - "Time period selector (7d, 30d, 90d, All)"
+      - "Export data button"
+    
+    api_integration:
+      - endpoint: GET /api/economy/metrics?type=overview
+        description: "Get system-wide economy metrics"
+      - endpoint: GET /api/economy/metrics?type=subscription_analytics
+        description: "Get subscription analytics"
+      - endpoint: GET /api/agentos/telemetry
+        description: "Get agent telemetry"
+    
+    validation:
+      - "All metrics load and display correctly"
+      - "Charts render without errors"
+      - "Time period selector updates data"
+      - "Real-time updates work"
+
+  # --------------------------------------------
+  # STEP 7: Build Navigation & Layout
+  # --------------------------------------------
+  - step_id: create_navigation_layout
+    description: "Build main navigation and responsive layout"
+    type: frontend
+    files_to_create:
+      - path: components/layout/main-nav.tsx
+        description: "Main navigation component"
+      - path: components/layout/user-menu.tsx
+        description: "User dropdown menu"
+      - path: components/layout/sidebar.tsx
+        description: "Collapsible sidebar navigation"
+      - path: app/(dashboard)/layout.tsx
+        description: "Dashboard layout wrapper"
+        
+    features:
+      - "Top navbar with logo, navigation links, user menu"
+      - "Sidebar with icon navigation (collapsible)"
+      - "Navigation items: Dashboard, Agents, Economy, Metrics, Settings"
+      - "User menu: Profile, Subscription, Affiliate, Sign Out"
+      - "Dark/Light mode toggle"
+      - "Mobile-responsive (hamburger menu)"
+      - "Active route highlighting"
+      - "Notification badge (unread count)"
+    
+    validation:
+      - "Navigation renders on all pages"
+      - "Sidebar collapses/expands smoothly"
+      - "Theme toggle persists preference"
+      - "Mobile menu works correctly"
+      - "Active routes highlighted"
+
+  # --------------------------------------------
+  # STEP 8: Implement Dark/Light Mode
+  # --------------------------------------------
+  - step_id: implement_theme_system
+    description: "Implement comprehensive dark/light mode theming"
+    type: frontend
+    files_to_update:
+      - path: app/globals.css
+        description: "Add theme CSS variables"
+      - path: components/theme-provider.tsx
+        description: "Theme provider component (already exists, enhance)"
+        
+    features:
+      - "CSS variables for all theme colors"
+      - "Theme toggle button in navigation"
+      - "Persist theme preference (localStorage)"
+      - "Smooth theme transition animation"
+      - "System theme detection (prefers-color-scheme)"
+      - "All components support both themes"
+    
+    validation:
+      - "Theme toggles smoothly"
+      - "Preference persists across sessions"
+      - "All pages support both themes"
+      - "No flash of unstyled content"
+
+  # --------------------------------------------
+  # STEP 9: Integrate with Existing Auth
+  # --------------------------------------------
+  - step_id: integrate_auth_system
+    description: "Integrate UI with existing NextAuth authentication"
+    type: frontend
+    files_to_update:
+      - path: app/(auth)/login/page.tsx
+        description: "Update login page styling"
+      - path: app/(auth)/register/page.tsx
+        description: "Update register page with referral code field"
+      - path: components/auth-form.tsx
+        description: "Enhance auth form component"
+        
+    features:
+      - "Referral code input on registration (optional)"
+      - "Auto-create user in Human Economy on signup"
+      - "Redirect to dashboard after login"
+      - "Protected routes (redirect to login if not authenticated)"
+      - "Session refresh handling"
+    
+    api_integration:
+      - endpoint: POST /api/economy/users
+        description: "Create user in Human Economy"
+      - endpoint: POST /api/economy/affiliates (action=track_referral)
+        description: "Track referral if code provided"
+    
+    validation:
+      - "Registration creates user in both auth and economy tables"
+      - "Referral tracking works"
+      - "Protected routes enforce auth"
+      - "Session management works"
+
+  # --------------------------------------------
+  # STEP 10: Add Loading & Error States
+  # --------------------------------------------
+  - step_id: implement_loading_error_states
+    description: "Implement consistent loading and error handling"
+    type: frontend
+    files_to_create:
+      - path: components/ui/loading-spinner.tsx
+        description: "Loading spinner component"
+      - path: components/ui/error-message.tsx
+        description: "Error message component"
+      - path: components/ui/empty-state.tsx
+        description: "Empty state component"
+        
+    features:
+      - "Loading skeletons for all data-driven components"
+      - "Error boundaries with retry button"
+      - "Empty states for lists/tables"
+      - "Toast notifications for success/error"
+      - "Suspense boundaries for async components"
+    
+    validation:
+      - "Loading states display during data fetch"
+      - "Errors show user-friendly messages"
+      - "Empty states appear when no data"
+      - "Toasts appear for actions"
+
+  # --------------------------------------------
+  # STEP 11: Mobile Optimization
+  # --------------------------------------------
+  - step_id: optimize_mobile_responsive
+    description: "Ensure all pages are fully mobile-responsive"
+    type: frontend
+    
+    features:
+      - "Responsive breakpoints (sm, md, lg, xl)"
+      - "Touch-friendly buttons and links"
+      - "Optimized mobile navigation"
+      - "Readable typography on mobile"
+      - "Fast mobile performance"
+    
+    validation:
+      - "All pages render correctly on mobile (375px width)"
+      - "Navigation works on touch devices"
+      - "No horizontal scroll"
+      - "Performance score >90 on mobile"
+
+  # --------------------------------------------
+  # STEP 12: End-to-End Testing
+  # --------------------------------------------
+  - step_id: e2e_testing
+    description: "Test complete user flows"
+    type: validation
+    
+    test_flows:
+      - flow: "New user registration → dashboard view"
+        steps:
+          - "Visit /register"
+          - "Fill form with referral code"
+          - "Submit registration"
+          - "Verify redirect to dashboard"
+          - "Check user appears in economy tables"
+          
+      - flow: "Subscription purchase flow"
+        steps:
+          - "Visit /pricing"
+          - "Select Pro plan (monthly)"
+          - "Click Subscribe button"
+          - "Verify Stripe checkout URL generated"
+          - "Check subscription API response"
+          
+      - flow: "Affiliate registration and code generation"
+        steps:
+          - "Visit /affiliate"
+          - "Click 'Become Affiliate'"
+          - "Verify affiliate code generated (CK1 format)"
+          - "Test code copy functionality"
+          - "Verify code appears in dashboard"
+          
+      - flow: "Agent deployment"
+        steps:
+          - "Visit /marketplace"
+          - "Select Devin agent"
+          - "Click Deploy"
+          - "Verify agent status changes to 'Active'"
+          - "Check telemetry logged"
+    
+    validation:
+      - "All flows complete without errors"
+      - "Data persists correctly"
+      - "UI updates reflect API changes"
+
+# ============================================
+# TECHNICAL SPECIFICATIONS
+# ============================================
+
+tech_stack:
+  framework: Next.js 14 (App Router)
+  language: TypeScript
+  styling: TailwindCSS
+  ui_components: shadcn/ui + Radix UI
+  state_management: React hooks + Server Components
+  data_fetching: Server Actions + fetch API
+  auth: NextAuth.js (existing)
+  deployment: Vercel
+  
+component_patterns:
+  - Server Components for static content
+  - Client Components for interactive features
+  - Server Actions for mutations
+  - Route Handlers for API integration
+  - Suspense boundaries for loading states
+  - Error boundaries for error handling
+  
+styling_conventions:
+  - Use Tailwind utility classes
+  - Follow shadcn/ui component patterns
+  - Maintain consistent spacing (spacing scale)
+  - Use CSS variables for theming
+  - Mobile-first responsive design
+
+# ============================================
+# FILE STRUCTURE
+# ============================================
+
+new_files:
+  # Dashboard
+  - app/(dashboard)/dashboard/page.tsx
+  - components/dashboard/overview-card.tsx
+  - components/dashboard/agent-status-panel.tsx
+  - components/dashboard/quick-actions.tsx
+  
+  # Economy
+  - app/(economy)/pricing/page.tsx
+  - app/(economy)/subscription/page.tsx
+  - app/(economy)/affiliate/page.tsx
+  - components/economy/pricing-card.tsx
+  - components/economy/subscription-card.tsx
+  - components/economy/affiliate-stats.tsx
+  - components/economy/referral-code-display.tsx
+  
+  # Agents
+  - app/(agents)/marketplace/page.tsx
+  - components/agents/agent-card.tsx
+  - components/agents/agent-details-modal.tsx
+  
+  # Analytics
+  - app/(analytics)/metrics/page.tsx
+  - components/analytics/metric-card.tsx
+  - components/analytics/revenue-chart.tsx
+  
+  # Layout
+  - components/layout/main-nav.tsx
+  - components/layout/sidebar.tsx
+  - components/layout/user-menu.tsx
+  
+  # UI
+  - components/ui/loading-spinner.tsx
+  - components/ui/error-message.tsx
+  - components/ui/empty-state.tsx
+
+# ============================================
+# API INTEGRATION MAP
+# ============================================
+
+api_endpoints:
+  economy:
+    - GET /api/economy/users
+    - POST /api/economy/users
+    - PATCH /api/economy/users
+    - GET /api/economy/subscriptions?action=plans
+    - POST /api/economy/subscriptions
+    - DELETE /api/economy/subscriptions
+    - GET /api/economy/affiliates?action=dashboard
+    - POST /api/economy/affiliates
+    - GET /api/economy/metrics?type=overview
+    
+  agentos:
+    - GET /api/agentos/registry
+    - POST /api/agent-router
+    - GET /api/agentos/telemetry
+    
+  auth:
+    - POST /api/auth/signin
+    - POST /api/auth/signout
+    - GET /api/auth/session
+
+# ============================================
+# DEPLOYMENT
+# ============================================
+
+deployment:
+  method: vercel_bot
+  steps:
+    - "Create feature branch: frontend/tiqology-os-ui-v1"
+    - "Commit all UI changes"
+    - "Create pull request"
+    - "Comment: /vercel deploy preview"
+    - "Verify preview deployment"
+    - "Comment: /vercel deploy production"
+    - "Merge to main"
+    
+  validation:
+    - "All pages load without errors"
+    - "API integrations work"
+    - "Responsive design verified"
+    - "Performance metrics pass"
+
+# ============================================
+# SUCCESS METRICS
+# ============================================
+
+metrics:
+  - metric: "Page Load Time"
+    target: "<2 seconds"
+    
+  - metric: "Mobile Performance Score"
+    target: ">90"
+    
+  - metric: "Desktop Performance Score"
+    target: ">95"
+    
+  - metric: "API Response Time"
+    target: "<500ms"
+    
+  - metric: "Successful User Flows"
+    target: "100%"
+
+# ============================================
+# DOCUMENTATION
+# ============================================
+
+documentation:
+  files_to_create:
+    - path: docs/FRONTEND_ARCHITECTURE.md
+      description: "Frontend architecture overview"
+    - path: docs/COMPONENT_LIBRARY.md
+      description: "Component usage guide"
+    - path: docs/API_INTEGRATION.md
+      description: "API integration patterns"
+      
+  files_to_update:
+    - path: README.md
+      description: "Add frontend setup instructions"
+
+# ============================================
+# TELEMETRY
+# ============================================
+
+telemetry:
+  enabled: true
+  log_to_agentos: true
+  
+  events:
+    - event_type: frontend_build_started
+      metadata:
+        directive_id: FRONTEND-2025-12-07-TIQOLOGY-OS-UI-V1
+        components_count: 40+
+        
+    - event_type: frontend_build_completed
+      metadata:
+        directive_id: FRONTEND-2025-12-07-TIQOLOGY-OS-UI-V1
+        pages_created: 8
+        components_created: 30+

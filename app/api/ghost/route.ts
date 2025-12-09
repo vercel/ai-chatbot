@@ -10,31 +10,31 @@ const FEEDBACK_REGEX = /Feedback:\s*(.+?)(?:\n|$)/i;
 
 /**
  * Ghost Mode API Route (DEPRECATED)
- * 
+ *
  * ⚠️ **DEPRECATED:** This endpoint is deprecated in favor of AgentOS v1.0.
- * 
+ *
  * **Migration Path:**
  * Please use `/api/agent-router` instead with the canonical task format.
  * See docs/AGENTOS_V1_OVERVIEW.md for the "TiQology Global Contract" section.
- * 
+ *
  * **Legacy Support:**
  * This endpoint remains functional for backward compatibility but will be removed in v2.0.
  * All new integrations should use AgentOS.
- * 
+ *
  * ---
- * 
+ *
  * This endpoint allows TiQology-spa to send prompts for AI evaluation
  * without creating a persistent chat or requiring user authentication.
- * 
+ *
  * Use case: Quick AI evaluations for form validation, content analysis, etc.
- * 
+ *
  * Request body:
  * {
  *   "prompt": "Evaluate this user input...",
  *   "context"?: {...},  // Optional additional context
  *   "model"?: "chat-model" | "chat-model-reasoning"
  * }
- * 
+ *
  * Response:
  * {
  *   "score": 85,
@@ -50,16 +50,22 @@ export async function POST(req: NextRequest) {
     // Add deprecation warning header
     const response = await handleGhostRequest(req);
     response.headers.set("X-Deprecated", "true");
-    response.headers.set("X-Deprecation-Message", "Use /api/agent-router instead. See docs/AGENTOS_V1_OVERVIEW.md");
-    response.headers.set("X-Migration-Guide", "https://github.com/MrAllgoodWilson/ai-chatbot/blob/main/docs/AGENTOS_V1_OVERVIEW.md#tiqology-global-contract");
+    response.headers.set(
+      "X-Deprecation-Message",
+      "Use /api/agent-router instead. See docs/AGENTOS_V1_OVERVIEW.md"
+    );
+    response.headers.set(
+      "X-Migration-Guide",
+      "https://github.com/MrAllgoodWilson/ai-chatbot/blob/main/docs/AGENTOS_V1_OVERVIEW.md#tiqology-global-contract"
+    );
     return response;
   } catch (error) {
     console.error("Ghost Mode API Error:", error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: "Internal server error",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
@@ -82,12 +88,9 @@ async function handleGhostRequest(req: NextRequest) {
   // Optional: Validate API key from TiQology-spa
   const apiKey = req.headers.get("x-api-key");
   const expectedKey = process.env.GHOST_MODE_API_KEY;
-  
+
   if (expectedKey && apiKey !== expectedKey) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Import AI SDK dynamically to avoid edge runtime issues
@@ -99,7 +102,7 @@ async function handleGhostRequest(req: NextRequest) {
 1. A quality/confidence score from 0-100
 2. Brief feedback (1-2 sentences)
 
-${prompt}${context ? `\n\nContext: ${JSON.stringify(context)}` : ''}
+${prompt}${context ? `\n\nContext: ${JSON.stringify(context)}` : ""}
 
 Format your response as:
 Score: [0-100]
@@ -115,9 +118,13 @@ Feedback: [your feedback]`;
   const responseText = result.text;
   const scoreMatch = responseText.match(SCORE_REGEX);
   const feedbackMatch = responseText.match(FEEDBACK_REGEX);
-  
-  const score = scoreMatch ? Math.min(100, Math.max(0, Number.parseInt(scoreMatch[1], 10))) : 50;
-  const feedback = feedbackMatch ? feedbackMatch[1].trim() : responseText.split('\n')[0];
+
+  const score = scoreMatch
+    ? Math.min(100, Math.max(0, Number.parseInt(scoreMatch[1], 10)))
+    : 50;
+  const feedback = feedbackMatch
+    ? feedbackMatch[1].trim()
+    : responseText.split("\n")[0];
 
   // Return the evaluation result with score and feedback
   return NextResponse.json({
@@ -138,7 +145,8 @@ export function GET() {
     deprecationNotice: {
       message: "This endpoint is deprecated. Please migrate to AgentOS v1.0",
       migrationEndpoint: "/api/agent-router",
-      documentationUrl: "https://github.com/MrAllgoodWilson/ai-chatbot/blob/main/docs/AGENTOS_V1_OVERVIEW.md#tiqology-global-contract",
+      documentationUrl:
+        "https://github.com/MrAllgoodWilson/ai-chatbot/blob/main/docs/AGENTOS_V1_OVERVIEW.md#tiqology-global-contract",
       removalDate: "2026-03-01",
     },
   });
