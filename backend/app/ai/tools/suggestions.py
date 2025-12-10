@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from app.ai.client import get_ai_client, get_model_name
+from app.ai.client import get_async_ai_client, get_model_name
 from app.db.queries.document_queries import get_documents_by_id
 from app.db.queries.suggestion_queries import save_suggestions
 from app.utils.stream import format_sse
@@ -81,15 +81,19 @@ async def _generate_suggestions(
     Generate suggestions for document content using AI.
     Uses structured output to get suggestions.
     """
-    client = get_ai_client()
+    client = get_async_ai_client()
     model = get_model_name("artifact-model")
 
-    system = "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions."
+    system_message = "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions."
 
-    # Use aisuite to generate structured output
+    # Use LiteLLM to generate structured output
     # Note: This is a simplified version. Full structured output support
     # would require using OpenAI's structured output or parsing JSON from response
     messages = [
+        {
+            "role": "system",
+            "content": system_message,
+        },
         {
             "role": "user",
             "content": f"Please provide suggestions for the following text in JSON format as an array of objects with 'originalSentence', 'suggestedSentence', and 'description' fields:\n\n{content}",
@@ -98,15 +102,15 @@ async def _generate_suggestions(
 
     suggestions = []
 
-    # Stream response and parse suggestions
-    stream = client.chat.completions.create(
+    # Stream response and parse suggestions using async streaming
+    stream = await client.chat.completions.create(
         model=model,
         messages=messages,
-        system=system,
         stream=True,
     )
 
     full_response = ""
+    # LiteLLM async streaming
     async for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:

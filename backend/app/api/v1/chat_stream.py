@@ -13,7 +13,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.client import get_ai_client, get_model_name
+from app.ai.client import get_async_ai_client, get_model_name
 from app.ai.prompts import get_system_prompt
 from app.api.deps import get_current_user
 from app.api.v1.schemas.chat_schemas import StreamRequest
@@ -90,8 +90,8 @@ async def stream_chat(
         request_hints = None  # Will be implemented later
         system = get_system_prompt(request.selectedChatModel, request_hints)
 
-        # 4. Get AI client and model
-        client = get_ai_client()
+        # 4. Get async AI client for streaming and model name
+        client = get_async_ai_client()
         model = get_model_name(request.selectedChatModel)
 
         # 5. Prepare tools

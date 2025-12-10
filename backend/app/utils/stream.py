@@ -9,14 +9,15 @@ import asyncio
 import json
 import logging
 import re
+from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
+
 import traceback
 import uuid
 from typing import Any, AsyncGenerator, Callable, Dict, Mapping, Optional, Sequence
 
 from fastapi.responses import StreamingResponse
-from openai import OpenAI
-from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 
+from app.ai.client import AsyncOpenAIChatClientProtocol
 from app.ai.mcp_tools.data360_mcp import call_mcp_tool
 from app.utils.helpers import format_sse
 
@@ -315,7 +316,7 @@ def _process_chunk(
 
 
 async def stream_text(
-    client: OpenAI,
+    client: AsyncOpenAIChatClientProtocol,
     model: str,
     messages: Sequence[ChatCompletionMessageParam],
     system: Optional[str] = None,
@@ -376,15 +377,14 @@ async def stream_text(
                 yield format_sse({"type": "start", "messageId": message_id})
                 await asyncio.sleep(0)  # Flush immediately
 
-            # Call OpenAI with streaming
-            stream = client.chat.completions.create(
+            # Call LiteLLM with async streaming
+            stream = await client.chat.completions.create(
                 model=model,
                 messages=conversation_messages,  # Updated with tool results from previous turns
                 stream=True,
                 temperature=temperature,
                 max_completion_tokens=max_completion_tokens,
                 tools=tool_definitions if tool_definitions else None,
-                store=True,
             )
 
             yield format_sse({"type": "start-step"})
@@ -393,9 +393,8 @@ async def stream_text(
             logger.info("Starting to iterate over stream chunks...")
             chunk_count = 0
             try:
-                # Iterate over stream chunks - OpenAI SDK stream is synchronous
-                # but we yield immediately to prevent buffering
-                for chunk in stream:
+                # Iterate over stream chunks using async iteration
+                async for chunk in stream:
                     # Give event loop a chance to process after each chunk
                     # This prevents blocking and allows immediate flushing
                     await asyncio.sleep(stream_yield_delay)

@@ -19,6 +19,7 @@ pydantic-settings==2.1.0
 
 # AI/LLM
 openai==1.12.0
+litellm>=1.50.0
 httpx==0.26.0
 
 # Utilities

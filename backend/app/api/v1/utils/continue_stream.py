@@ -4,7 +4,7 @@ import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from app.ai.client import OpenAI
+from app.ai.client import AsyncOpenAIChatClientProtocol
 from app.core.database import AsyncSessionLocal
 from app.db.queries.chat_queries import save_messages, update_chat_last_context_by_id
 from app.utils.resumable_stream import mark_stream_complete, store_stream_chunk
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 async def _continue_stream_in_background(
     stream_id: UUID,
     chat_id: UUID,
-    client: OpenAI,
+    client: AsyncOpenAIChatClientProtocol,
     model: str,
     messages: List[Dict[str, Any]],
     system: Optional[str],

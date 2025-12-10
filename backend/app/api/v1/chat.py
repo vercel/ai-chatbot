@@ -1,18 +1,24 @@
+import asyncio
 import json
 import logging
-import traceback
 from datetime import datetime
 from typing import List
 from uuid import UUID, uuid4
 
-import httpx
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.client import get_ai_client, get_model_name
+from app.ai.client import get_ai_client, get_async_ai_client, get_model_name
+from app.ai.prompts import get_system_prompt
 from app.api.deps import get_current_user
+from app.api.v1.utils.background_tasks import (
+    create_save_messages_task,
+    create_update_context_task,
+)
+from app.api.v1.utils.continue_stream import _continue_stream_in_background
+from app.api.v1.utils.tool_setup import prepare_tools
 from app.config import settings
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
@@ -26,7 +32,10 @@ from app.db.queries.chat_queries import (
     save_messages,
 )
 from app.db.queries.user_queries import get_or_create_user_for_session
+from app.utils.message_converter import convert_messages_to_openai_format
+from app.utils.resumable_stream import mark_stream_complete, store_stream_chunk
 from app.utils.stream import patch_response_with_headers
+from app.utils.stream_processor import StreamEventProcessor
 from app.utils.user_id import get_user_id_uuid, is_session_id, user_ids_match
 
 logger = logging.getLogger(__name__)
@@ -112,6 +121,7 @@ async def generate_title_from_user_message(message: ChatMessage) -> str:
 async def create_chat(
     request: ChatRequest,
     http_request: Request,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -235,122 +245,113 @@ async def create_chat(
     stream_id = uuid4()
     await create_stream_id(db, stream_id, request.id)
 
-    # 5. Proxy to Next.js for AI streaming
-    proxy_url = f"{settings.NEXTJS_URL}/api/chat/stream"
+    # 5. Prepare for AI streaming (direct call, no HTTP proxy)
+    # Combine existing messages with the new user message for AI context
+    all_messages = []
+    for msg in messages_from_db:
+        all_messages.append(
+            {
+                "id": str(msg["id"]),
+                "role": msg["role"],
+                "parts": msg["parts"],
+                "attachments": msg.get("attachments") or [],
+                "createdAt": msg["createdAt"],
+            }
+        )
 
-    proxy_request = {
-        "id": str(request.id),
-        "message": {
+    # Add the new user message
+    all_messages.append(
+        {
             "id": str(request.message.id),
             "role": request.message.role,
             "parts": [part.dict() for part in request.message.parts],
-        },
-        "selectedChatModel": request.selectedChatModel,
-        "selectedVisibilityType": request.selectedVisibilityType,
-        "existingMessages": messages_from_db,
-    }
-    stream_request = proxy_request.copy()
+            "attachments": [],
+            "createdAt": datetime.utcnow().isoformat(),
+        }
+    )
 
-    # Stream response from Next.js
-    async def stream_from_nextjs():
+    # Convert messages to OpenAI format (fetches file data from database)
+    openai_messages = await convert_messages_to_openai_format(all_messages, db)
+
+    # Get system prompt
+    request_hints = None  # Will be implemented later
+    system = get_system_prompt(request.selectedChatModel, request_hints)
+
+    # Get async AI client for streaming and model name
+    client = get_async_ai_client()
+    model = get_model_name(request.selectedChatModel)
+
+    # Prepare tools
+    tools, tool_definitions = await prepare_tools(user_id, db)
+    logger.info("tool_definitions: %s", tool_definitions)
+
+    # Create stream processor
+    processor = StreamEventProcessor(request.id)
+
+    # Track if stream was interrupted (client disconnect) vs completed normally
+    stream_interrupted = False
+
+    async def stream_generator():
+        nonlocal stream_interrupted
+        sequence = 0  # Sequence counter for ordering chunks
         try:
-            # Add internal API secret for service-to-service authentication
-            headers = {
-                "Content-Type": "application/json",
-                "X-Internal-API-Secret": settings.INTERNAL_API_SECRET,
-                "X-User-Id": current_user["id"],  # Pass user ID for Next.js to use
-                "X-User-Type": current_user.get("type", "regular"),
-            }
+            async for event_bytes in processor.process_stream(
+                client=client,
+                model=model,
+                messages=openai_messages,
+                system=system,
+                tools=tools,
+                tool_definitions=tool_definitions,
+            ):
+                # Store chunk in Redis asynchronously with sequence number
+                current_sequence = sequence
+                sequence += 1
+                asyncio.create_task(
+                    store_stream_chunk(stream_id, event_bytes, current_sequence)
+                )
+                yield event_bytes
+        except GeneratorExit:
+            # Client disconnected (browser refresh, navigation, etc.)
+            stream_interrupted = True
+            logger.info(
+                "Stream interrupted (client disconnect) for stream_id=%s, chat_id=%s",
+                stream_id,
+                request.id,
+            )
+            # Continue stream in background even though client disconnected
+            asyncio.create_task(
+                _continue_stream_in_background(
+                    stream_id=stream_id,
+                    chat_id=request.id,
+                    client=client,
+                    model=model,
+                    messages=openai_messages,
+                    system=system,
+                    tools=tools,
+                    tool_definitions=tool_definitions,
+                    background_tasks=background_tasks,
+                    processor=processor,
+                    current_sequence=sequence,
+                )
+            )
+            raise  # Re-raise to properly close the generator
+        finally:
+            # Only mark as complete if stream finished normally (not interrupted)
+            if not stream_interrupted:
+                # Mark stream as complete in Redis (non-blocking)
+                asyncio.create_task(mark_stream_complete(stream_id))
 
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                async with client.stream(
-                    "POST",
-                    proxy_url,
-                    json=proxy_request,
-                    headers=headers,
-                ) as response:
-                    if response.status_code != 200:
-                        error_text = await response.aread()
-                        yield f"data: {json.dumps({'type': 'error', 'error': f'Next.js proxy error: {error_text.decode()}'})}\n\n"
-                        yield "data: [DONE]\n\n"
-                        return
-
-                    async for chunk in response.aiter_bytes():
-                        yield chunk
-        except Exception as e:
-            # Handle connection errors
-            stack_trace = traceback.format_exc()
-            error_msg = f"Failed to connect to Next.js: {str(e)}\n{stack_trace}"
-            yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n"
-            yield "data: [DONE]\n\n"
-
-    # Stream response from FastAPI stream endpoint
-    async def stream_from_fastapi():
-        try:
-            # Get base URL for internal call
-            # In production, this could be configured via env var
-            import os
-
-            base_url = os.getenv("FASTAPI_INTERNAL_URL", "http://localhost:8001")
-            stream_url = f"{base_url}/api/v1/chat/stream"
-
-            # Get auth token from request (cookie or Authorization header)
-            auth_token = None
-            # Try cookie first (httpOnly cookie)
-            auth_token = http_request.cookies.get("auth_token")
-            # Fallback to Authorization header
-            if not auth_token:
-                auth_header = http_request.headers.get("Authorization", "")
-                if auth_header.startswith("Bearer "):
-                    auth_token = auth_header[7:]
-
-            # Prepare headers with authentication
-            headers = {
-                "Content-Type": "application/json",
-            }
-
-            # Add Authorization header if we have a token
-            if auth_token:
-                headers["Authorization"] = f"Bearer {auth_token}"
-
-            # Forward session ID header if auth is disabled
-            if settings.DISABLE_AUTH:
-                session_id_header = http_request.headers.get("X-Session-Id")
-                if session_id_header:
-                    headers["X-Session-Id"] = session_id_header
-                    logger.info("Forwarding X-Session-Id header: %s", session_id_header)
-
-            # Prepare cookies (for same-origin requests)
-            cookies = None
-            if auth_token:
-                cookies = {"auth_token": auth_token}
-
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                async with client.stream(
-                    "POST",
-                    stream_url,
-                    json=stream_request,
-                    headers=headers,
-                    cookies=cookies,
-                ) as response:
-                    if response.status_code != 200:
-                        error_text = await response.aread()
-                        yield f"data: {json.dumps({'type': 'error', 'error': f'FastAPI stream error: {response.status_code} - {error_text.decode()}'})}\n\n"
-                        yield "data: [DONE]\n\n"
-                        return
-
-                    async for chunk in response.aiter_bytes():
-                        yield chunk
-        except Exception as e:
-            # Handle connection errors
-            stack_trace = traceback.format_exc()
-            error_msg = f"Failed to connect to FastAPI stream: {str(e)}\n{stack_trace}"
-            yield f"data: {json.dumps({'type': 'error', 'error': error_msg})}\n\n"
-            yield "data: [DONE]\n\n"
+                # Schedule background tasks after stream completes
+                create_save_messages_task(
+                    background_tasks, request.id, processor.assistant_messages
+                )
+                if processor.final_usage:
+                    create_update_context_task(
+                        background_tasks, request.id, processor.final_usage
+                    )
 
     response = StreamingResponse(
-        # stream_from_nextjs(),
-        stream_from_fastapi(),
+        stream_generator(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -359,7 +360,6 @@ async def create_chat(
         },
     )
 
-    # return response
     return patch_response_with_headers(response)
 
 

@@ -3,11 +3,10 @@ Document tools - Create and update documents.
 Ported from lib/ai/tools/create-document.ts and update-document.ts
 """
 
-import asyncio
 import uuid
 from typing import Any, Dict, Optional
 
-from app.ai.client import get_ai_client, get_model_name
+from app.ai.client import get_async_ai_client, get_model_name
 from app.db.queries.document_queries import get_documents_by_id, save_document
 from app.utils.helpers import format_sse
 
@@ -131,7 +130,7 @@ async def _generate_document_content(
     title: str, kind: str, sse_writer: Optional[Any] = None
 ) -> str:
     """Generate document content based on title and kind."""
-    client = get_ai_client()
+    client = get_async_ai_client()
     model = get_model_name("artifact-model")
 
     # System prompts based on kind
@@ -177,7 +176,7 @@ async def _generate_updated_content(
     sse_writer: Optional[Any] = None,
 ) -> str:
     """Generate updated document content."""
-    client = get_ai_client()
+    client = get_async_ai_client()
     model = get_model_name("artifact-model")
 
     # Update prompt
@@ -214,24 +213,21 @@ async def _stream_text_content(
     """Stream text content and emit SSE events."""
     content = ""
 
-    # Use aisuite to stream text
+    # Use LiteLLM async streaming
     messages = [
         {"role": "system", "content": [{"type": "text", "text": system}]},
         {"role": "user", "content": [{"type": "text", "text": prompt}]},
     ]
 
-    # Stream from aisuite
-    stream = client.chat.completions.create(
+    # Stream from LiteLLM using async
+    stream = await client.chat.completions.acreate(
         model=model,
         messages=messages,
         stream=True,
-        store=True,
     )
 
-    # Process chunks - the synchronous stream iteration blocks the event loop
-    # We need to yield control frequently to allow execute_tool_with_streaming to yield events
-    # Using a small delay (0.001s) instead of 0 to ensure the event loop actually processes
-    for chunk in stream:
+    # Process chunks using async iteration
+    async for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:
                 delta = getattr(choice, "delta", None)
@@ -247,10 +243,6 @@ async def _stream_text_content(
                                 sse_writer(format_sse({"type": "data-codeDelta", "data": text}))
                             elif delta_type == "sheet":
                                 sse_writer(format_sse({"type": "data-sheetDelta", "data": text}))
-
-        # Yield control to event loop with a small delay to ensure events are processed
-        # Using 0.001s instead of 0 to give the event loop time to process pending tasks
-        await asyncio.sleep(0.001)
 
     return content
 
@@ -278,17 +270,14 @@ async def _stream_structured_content(
         {"role": "user", "content": [{"type": "text", "text": prompt}]},
     ]
 
-    stream = client.chat.completions.create(
+    stream = await client.chat.completions.acreate(
         model=model,
         messages=messages,
-        store=True,
         stream=True,
     )
 
-    # Process chunks - the synchronous stream iteration blocks the event loop
-    # We need to yield control frequently to allow execute_tool_with_streaming to yield events
-    # Using a small delay (0.001s) instead of 0 to ensure the event loop actually processes
-    for chunk in stream:
+    # Process chunks using async iteration
+    async for chunk in stream:
         if hasattr(chunk, "choices") and chunk.choices:
             for choice in chunk.choices:
                 delta = getattr(choice, "delta", None)
@@ -301,10 +290,6 @@ async def _stream_structured_content(
                                 sse_writer(format_sse({"type": "data-codeDelta", "data": text}))
                             elif delta_type == "sheet":
                                 sse_writer(format_sse({"type": "data-sheetDelta", "data": text}))
-
-        # Yield control to event loop with a small delay to ensure events are processed
-        # Using 0.001s instead of 0 to give the event loop time to process pending tasks
-        await asyncio.sleep(0.001)
 
     # TODO: Parse structured output if needed
     # For now, return content as-is
