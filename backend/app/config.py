@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import dotenv
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
@@ -51,8 +52,34 @@ class Settings(BaseSettings):
         env_file = ".env"
         case_sensitive = True
         env_file_encoding = "utf-8"
-        extrac = 'ignore'
+        extra = "ignore"
 
-import dotenv
+
+class MCPSettings(BaseSettings):
+    """Settings for MCP (Model Context Protocol) server connections."""
+
+    server_url: str = "https://ai4data-ai4data-mcp.hf.space/gradio_api/mcp/sse"
+    ssl_verify: bool = True  # Set to False for dev environments with proxy/self-signed certs
+    timeout: float = 30.0  # HTTP timeout in seconds
+
+    class Config:
+        env_prefix = "MCP_"
+        case_sensitive = False
+        extra = "ignore"
+
+
+def get_settings() -> Settings:
+    """Load environment variables and return Settings instance."""
+    dotenv.load_dotenv()
+    return Settings()
+
+
+def get_mcp_settings() -> MCPSettings:
+    """Load environment variables and return MCPSettings instance."""
+    dotenv.load_dotenv()
+    return MCPSettings()
+
+
+# Initialize settings after loading dotenv
 dotenv.load_dotenv()
 settings = Settings()

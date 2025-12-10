@@ -1,22 +1,14 @@
 import traceback
 
 import json5
-from fastmcp import Client
 
-# # In-memory server
-# server = FastMCP("Data360 MCP Server")
-# client = Client(server)
-
-# HTTP server
-client = Client("https://ai4data-ai4data-mcp.hf.space/gradio_api/mcp/sse")
-
-# # Local Python script
-# client = Client("my_mcp_server.py")
+from ._client import get_mcp_client
 
 # NOTE: Implement outputSchema for MCP tools. https://github.com/modelcontextprotocol/modelcontextprotocol/pull/371
 
 
 async def main():
+    client = get_mcp_client()
     async with client:
         # Basic server interaction
         await client.ping()
@@ -53,6 +45,7 @@ async def get_mcp_tools():
     #  'annotations': None,
     #  'meta': None}
 
+    client = get_mcp_client()
     async with client:
         tools = await client.list_tools()
 
@@ -76,6 +69,7 @@ async def get_mcp_tools():
 
 async def call_mcp_tool(tool_name: str, arguments: dict, as_jsonable: bool = True):
     try:
+        client = get_mcp_client()
         async with client:
             result = await client.call_tool(tool_name, arguments)
             if as_jsonable:
