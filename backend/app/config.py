@@ -51,6 +51,8 @@ class Settings(BaseSettings):
         env_file = ".env"
         case_sensitive = True
         env_file_encoding = "utf-8"
+        extrac = 'ignore'
 
-
+import dotenv
+dotenv.load_dotenv()
 settings = Settings()
