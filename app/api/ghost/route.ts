@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
 export const maxDuration = 60;
 
 // Regex patterns for parsing evaluation responses

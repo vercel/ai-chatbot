@@ -92,7 +92,6 @@ export async function POST(request: NextRequest) {
       handle,
       display_name,
       referred_by_code,
-      metadata,
     });
 
     return NextResponse.json(user, { status: 201 });
@@ -122,7 +121,6 @@ export async function PATCH(request: NextRequest) {
       avatar_url,
       country,
       timezone,
-      metadata,
     });
 
     return NextResponse.json(updatedUser);

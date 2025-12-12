@@ -8,9 +8,6 @@ import { NextResponse } from "next/server";
 import { getSystemHealth, performanceMonitor } from "@/lib/eliteMiddleware";
 import { getTiqologyDb } from "@/lib/tiqologyDb";
 
-export const runtime = "edge";
-export const dynamic = "force-dynamic";
-
 export async function GET() {
   const startTime = Date.now();
 
@@ -41,7 +38,6 @@ export async function GET() {
   const response = {
     status: overallHealthy ? "healthy" : systemHealth.status,
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
     version: "1.5.0-elite",
 
     services: {

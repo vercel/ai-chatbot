@@ -11,7 +11,7 @@
 
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
-import { createAnthropic } from "@anthropic-ai/sdk";
+// import { createAnthropic } from "@ai-sdk/anthropic"; // TODO: Install @ai-sdk/anthropic package
 import { generateText, streamText } from "ai";
 
 // ============================================
@@ -42,15 +42,16 @@ export const MODEL_REGISTRY: ModelConfig[] = [
     contextWindow: 16_385,
     tier: "fast",
   },
-  {
-    id: "claude-3-haiku",
-    provider: "anthropic",
-    name: "Claude 3 Haiku",
-    costPer1kTokens: { input: 0.000_25, output: 0.001_25 },
-    maxTokens: 4096,
-    contextWindow: 200_000,
-    tier: "fast",
-  },
+  // TODO: Uncomment when @ai-sdk/anthropic is installed
+  // {
+  //   id: "claude-3-haiku",
+  //   provider: "anthropic",
+  //   name: "Claude 3 Haiku",
+  //   costPer1kTokens: { input: 0.000_25, output: 0.001_25 },
+  //   maxTokens: 4096,
+  //   contextWindow: 200_000,
+  //   tier: "fast",
+  // },
 
   // Balanced tier (good cost/quality ratio)
   {
@@ -62,15 +63,16 @@ export const MODEL_REGISTRY: ModelConfig[] = [
     contextWindow: 128_000,
     tier: "balanced",
   },
-  {
-    id: "claude-3-sonnet",
-    provider: "anthropic",
-    name: "Claude 3 Sonnet",
-    costPer1kTokens: { input: 0.003, output: 0.015 },
-    maxTokens: 4096,
-    contextWindow: 200_000,
-    tier: "balanced",
-  },
+  // TODO: Uncomment when @ai-sdk/anthropic is installed
+  // {
+  //   id: "claude-3-sonnet",
+  //   provider: "anthropic",
+  //   name: "Claude 3 Sonnet",
+  //   costPer1kTokens: { input: 0.003, output: 0.015 },
+  //   maxTokens: 4096,
+  //   contextWindow: 200_000,
+  //   tier: "balanced",
+  // },
   {
     id: "gemini-pro",
     provider: "google",
@@ -91,15 +93,16 @@ export const MODEL_REGISTRY: ModelConfig[] = [
     contextWindow: 8192,
     tier: "premium",
   },
-  {
-    id: "claude-3-opus",
-    provider: "anthropic",
-    name: "Claude 3 Opus",
-    costPer1kTokens: { input: 0.015, output: 0.075 },
-    maxTokens: 4096,
-    contextWindow: 200_000,
-    tier: "premium",
-  },
+  // TODO: Uncomment when @ai-sdk/anthropic is installed
+  // {
+  //   id: "claude-3-opus",
+  //   provider: "anthropic",
+  //   name: "Claude 3 Opus",
+  //   costPer1kTokens: { input: 0.015, output: 0.075 },
+  //   maxTokens: 4096,
+  //   contextWindow: 200_000,
+  //   tier: "premium",
+  // },
 ];
 
 // ============================================
@@ -241,11 +244,12 @@ export async function generateInference(
       });
       break;
 
-    case "anthropic":
-      provider = createAnthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY,
-      });
-      break;
+    // TODO: Uncomment when @ai-sdk/anthropic is installed
+    // case "anthropic":
+    //   provider = createAnthropic({
+    //     apiKey: process.env.ANTHROPIC_API_KEY,
+    //   });
+    //   break;
 
     case "google":
       provider = createGoogleGenerativeAI({
@@ -328,11 +332,12 @@ export async function generateInferenceStream(
       });
       break;
 
-    case "anthropic":
-      provider = createAnthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY,
-      });
-      break;
+    // TODO: Uncomment when @ai-sdk/anthropic is installed
+    // case "anthropic":
+    //   provider = createAnthropic({
+    //     apiKey: process.env.ANTHROPIC_API_KEY,
+    //   });
+    //   break;
 
     case "google":
       provider = createGoogleGenerativeAI({

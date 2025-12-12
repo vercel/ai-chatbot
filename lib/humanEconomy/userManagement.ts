@@ -3,8 +3,8 @@
  * Handles user identity, roles, and profile management
  */
 
-import DevinLogger from "./devinLogger";
-import { getTiqologyDb } from "./tiqologyDb";
+import DevinLogger from "../devinLogger";
+import { getTiqologyDb } from "../tiqologyDb";
 
 // ============================================
 // TYPES

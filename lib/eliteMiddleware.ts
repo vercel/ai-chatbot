@@ -11,7 +11,7 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { auth } from "@/app/(auth)/auth";
 
 // ============================================
 // RATE LIMITING (Token Bucket Algorithm)
@@ -280,7 +280,7 @@ export async function eliteMiddleware(
   const method = req.method;
 
   // Get user session for rate limiting
-  const session = await getServerSession();
+  const session = await auth();
   const userId = session?.user?.id || req.ip || "anonymous";
   const userTier = (session?.user as any)?.role || "free";
 
@@ -423,7 +423,6 @@ export function getSystemHealth(): {
 
   return {
     status,
-    uptime: process.uptime(),
     metrics: {
       cache: {
         size: requestCache.size(),

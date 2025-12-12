@@ -5,7 +5,7 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { auth } from "@/app/(auth)/auth";
 import {
   generateInference,
   generateInferenceStream,
@@ -14,10 +14,8 @@ import {
 } from "@/lib/ai/eliteInference";
 import { eliteMiddleware } from "@/lib/eliteMiddleware";
 
-export const runtime = "edge";
-
 async function handleInferenceRequest(req: NextRequest): Promise<NextResponse> {
-  const session = await getServerSession();
+  const session = await auth();
 
   if (!session?.user) {
     return NextResponse.json(
@@ -71,7 +69,7 @@ export async function POST(req: NextRequest) {
 
 // Get cost analytics (admin only)
 export async function GET(req: NextRequest) {
-  const session = await getServerSession();
+  const session = await auth();
 
   if (!session?.user || (session.user as any).role !== "admin") {
     return NextResponse.json(

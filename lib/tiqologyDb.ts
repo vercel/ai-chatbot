@@ -38,6 +38,13 @@ function getSupabaseClient(): SupabaseClient {
 }
 
 /**
+ * Export alias for backward compatibility
+ */
+export function getTiqologyDb(): SupabaseClient {
+  return getSupabaseClient();
+}
+
+/**
  * Dimension score for evaluation
  */
 export interface DimensionScore {

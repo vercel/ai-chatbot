@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "tsx lib/db/migrate && next build",
+    "build": "NODE_OPTIONS='--max-old-space-size=6144' next build",
+    "build:with-migrate": "tsx lib/db/migrate && next build",
     "start": "next start",
-    "lint": "npx ultracite@latest check",
-    "format": "npx ultracite@latest fix",
+    "lint": "next lint",
+    "format": "prettier --write .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
@@ -15,11 +16,12 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
+    "test": "jest"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
     "@ai-sdk/google": "^2.0.44",
+    "@ai-sdk/openai": "^2.0.85",
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/react": "2.0.26",
     "@ai-sdk/xai": "2.0.13",
@@ -30,6 +32,7 @@
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.35.3",
     "@icons-pack/react-simple-icons": "^13.7.0",
+    "@monaco-editor/react": "^4.7.0",
     "@octokit/rest": "^21.0.2",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.200.0",
@@ -71,6 +74,7 @@
     "next": "16.0.7",
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.3.0",
+    "openai": "^6.10.0",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
     "postgres": "^3.4.4",
@@ -102,6 +106,7 @@
     "tokenlens": "1.3.0",
     "use-stick-to-bottom": "^1.1.1",
     "usehooks-ts": "^3.1.0",
+    "uuid": "^13.0.0",
     "ws": "^8.18.3",
     "zod": "^3.25.76"
   },

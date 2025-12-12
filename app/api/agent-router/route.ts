@@ -8,7 +8,6 @@ import { NextResponse } from "next/server";
 import { routeAgentTask } from "@/lib/agentos/router";
 import type { AgentTask } from "@/lib/agentos/types";
 
-export const runtime = "edge";
 export const maxDuration = 60;
 
 /**

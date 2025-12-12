@@ -4,16 +4,14 @@
  * Real-time analytics and insights for administrators
  */
 
-import { getServerSession } from "next/auth";
 import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/app/(auth)/auth";
 import { getCostAnalytics } from "@/lib/ai/eliteInference";
 import { performanceMonitor } from "@/lib/eliteMiddleware";
 import { getTiqologyDb } from "@/lib/tiqologyDb";
 
-export const runtime = "edge";
-
 export async function GET(req: NextRequest) {
-  const session = await getServerSession();
+  const session = await auth();
 
   if (!session?.user || (session.user as any).role !== "admin") {
     return NextResponse.json(
