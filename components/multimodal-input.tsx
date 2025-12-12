@@ -190,7 +190,7 @@ function PureMultimodalInput({
       const { error } = await response.json();
       toast.error(error);
     } catch (_error) {
-      toast.error("Failed to upload file, please try again!");
+      toast.error("Error al subir imágenes pegadas, intentalo nuevamente!");
     }
   }, []);
 
@@ -219,7 +219,7 @@ function PureMultimodalInput({
           ...successfullyUploadedAttachments,
         ]);
       } catch (error) {
-        console.error("Error uploading files!", error);
+        console.error("Error al subir imágenes pegadas!", error);
       } finally {
         setUploadQueue([]);
       }
@@ -245,7 +245,7 @@ function PureMultimodalInput({
       // Prevent default paste behavior for images
       event.preventDefault();
 
-      setUploadQueue((prev) => [...prev, "Pasted image"]);
+      setUploadQueue((prev) => [...prev, "pegué imagen"]);
 
       try {
         const uploadPromises = imageItems
@@ -266,8 +266,8 @@ function PureMultimodalInput({
           ...(successfullyUploadedAttachments as Attachment[]),
         ]);
       } catch (error) {
-        console.error("Error uploading pasted images:", error);
-        toast.error("Failed to upload pasted image(s)");
+        console.error("Error al subir imágenes pegadas:", error);
+        toast.error("Falló la subida de la imagen pegada");
       } finally {
         setUploadQueue([]);
       }
@@ -311,8 +311,8 @@ function PureMultimodalInput({
         className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
-          if (status !== "ready") {
-            toast.error("Please wait for the model to finish its response!");
+          if (status !== "listo") {
+            toast.error("¡Por favor, espera a que el modelo termine su respuesta!");
           } else {
             submitForm();
           }
@@ -360,7 +360,7 @@ function PureMultimodalInput({
             maxHeight={200}
             minHeight={44}
             onChange={handleInput}
-            placeholder="Send a message..."
+            placeholder="enviar mensaje..."
             ref={textareaRef}
             rows={1}
             value={input}
