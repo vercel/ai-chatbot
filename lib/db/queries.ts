@@ -521,6 +521,24 @@ export async function updateChatLastContextById({
   }
 }
 
+export async function updateChatTitleById({
+  chatId,
+  title,
+}: {
+  chatId: string;
+  title: string;
+}) {
+  try {
+    return await db
+      .update(chat)
+      .set({ title })
+      .where(eq(chat.id, chatId));
+  } catch (error) {
+    console.warn("Failed to update title for chat", chatId, error);
+    return;
+  }
+}
+
 export async function getMessageCountByUserId({
   id,
   differenceInHours,
