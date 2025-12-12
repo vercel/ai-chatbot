@@ -7,7 +7,7 @@ import type {
   HTMLAttributes,
   KeyboardEventHandler,
 } from "react";
-import { Children } from "react";
+import { Children, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 export type PromptInputProps = HTMLAttributes<HTMLFormElement>;
 
@@ -38,60 +39,111 @@ export type PromptInputTextareaProps = ComponentProps<typeof Textarea> & {
   resizeOnNewLinesOnly?: boolean;
 };
 
-export const PromptInputTextarea = ({
-  onChange,
-  className,
-  placeholder = "What would you like to know?",
-  minHeight = 48,
-  maxHeight = 164,
-  disableAutoResize = false,
-  resizeOnNewLinesOnly = false,
-  ...props
-}: PromptInputTextareaProps) => {
-  const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-    if (e.key === "Enter") {
-      // Don't submit if IME composition is in progress
-      if (e.nativeEvent.isComposing) {
-        return;
-      }
 
-      if (e.shiftKey) {
-        // Allow newline
-        return;
-      }
+export const PromptInputTextarea = React.forwardRef<
+  HTMLTextAreaElement,
+  PromptInputTextareaProps
+>(
+  (
+    {
+      onChange,
+      className,
+      placeholder = "Hi, there! How can I help you today?",
+      minHeight = 48,
+      maxHeight = 164,
+      disableAutoResize = false,
+      resizeOnNewLinesOnly = false,
+      ...props
+    },
+    forwardedRef
+  ) => {
+    const internalRef = useRef<HTMLTextAreaElement>(null);
+    const textareaRef =
+      (forwardedRef as React.RefObject<HTMLTextAreaElement>) || internalRef;
+    const prevLineCountRef = useRef<number>(0);
 
-      // Submit on Enter (without Shift)
-      e.preventDefault();
-      const form = e.currentTarget.form;
-      if (form) {
-        form.requestSubmit();
-      }
-    }
-  };
+    const adjustHeight = useCallback(() => {
+      const textarea = textareaRef.current;
+      if (!textarea || disableAutoResize) return;
 
-  return (
-    <Textarea
-      className={cn(
-        "w-full resize-none rounded-none border-none p-3 shadow-none outline-hidden ring-0",
-        disableAutoResize
-          ? "field-sizing-fixed"
-          : resizeOnNewLinesOnly
-            ? "field-sizing-fixed"
-            : "field-sizing-content max-h-[6lh]",
-        "bg-transparent dark:bg-transparent",
-        "focus-visible:ring-0",
-        className
-      )}
-      name="message"
-      onChange={(e) => {
-        onChange?.(e);
-      }}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      {...props}
-    />
-  );
-};
+      // Reset height to auto to get the correct scrollHeight
+      textarea.style.height = "auto";
+      const scrollHeight = textarea.scrollHeight;
+
+      const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
+      textarea.style.height = `${newHeight}px`;
+    }, [disableAutoResize, maxHeight, minHeight, textareaRef]);
+
+    useEffect(() => {
+      adjustHeight();
+    }, [disableAutoResize, minHeight, maxHeight]);
+
+    useEffect(() => {
+      if (disableAutoResize) return;
+
+      const currentValue = props.value?.toString() || "";
+
+      if (resizeOnNewLinesOnly) {
+        const currentLineCount = (currentValue.match(/\n/g) || []).length;
+        if (currentLineCount !== prevLineCountRef.current) {
+          adjustHeight();
+          prevLineCountRef.current = currentLineCount;
+        }
+      } else {
+        adjustHeight();
+      }
+    }, [props.value, disableAutoResize, resizeOnNewLinesOnly]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange?.(e);
+    };
+
+    const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+      if (e.key === "Enter") {
+        // Don't submit if IME composition is in progress
+        if (e.nativeEvent.isComposing) {
+          return;
+        }
+        if (e.shiftKey) {
+          // Allow newline
+          return;
+        }
+        e.preventDefault();
+        const form = e.currentTarget.form;
+        if (form) {
+          form.requestSubmit();
+        }
+      }
+    };
+
+    return (
+      <Textarea
+        ref={textareaRef}
+        className={cn(
+          "w-full resize-none rounded-none border-none p-3 shadow-none outline-hidden ring-0",
+          "bg-transparent dark:bg-transparent",
+          "focus-visible:ring-0",
+          disableAutoResize && "field-sizing-content max-h-[6lh]",
+          className
+        )}
+        style={
+          disableAutoResize
+            ? undefined
+            : {
+                minHeight: `${minHeight}px`,
+                maxHeight: `${maxHeight}px`,
+              }
+        }
+        name="message"
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        {...props}
+      />
+    );
+  }
+);
+PromptInputTextarea.displayName = "PromptInputTextarea";
 
 export type PromptInputToolbarProps = HTMLAttributes<HTMLDivElement>;
 
