@@ -483,7 +483,11 @@ function PureModelSelectorCompact({
       value={selectedModel?.name}
     >
       <Trigger asChild>
-        <Button className="h-8 px-2" variant="ghost">
+        <Button
+          className="h-8 px-2"
+          data-testid="model-selector"
+          variant="ghost"
+        >
           <CpuIcon size={16} />
           <span className="hidden font-medium text-xs sm:block">
             {selectedModel?.name}
@@ -494,7 +498,11 @@ function PureModelSelectorCompact({
       <PromptInputModelSelectContent className="min-w-[260px] p-0">
         <div className="flex flex-col gap-px">
           {chatModels.map((model) => (
-            <SelectItem key={model.id} value={model.name}>
+            <SelectItem
+              key={model.id}
+              data-testid={`model-selector-item-${model.id}`}
+              value={model.name}
+            >
               <div className="truncate font-medium text-xs">{model.name}</div>
               <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
                 {model.description}

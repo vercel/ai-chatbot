@@ -36,9 +36,10 @@ export async function createAuthenticatedContext({
   const page = await context.newPage();
 
   const email = `test-${name}@playwright.com`;
-  const password = generateId();
+  const password = `${generateId()}!234`;
+  const port = process.env.PORT || 3001;
 
-  await page.goto("http://localhost:3000/register");
+  await page.goto(`http://localhost:${port}/register`);
   await page.getByPlaceholder("user@acme.com").click();
   await page.getByPlaceholder("user@acme.com").fill(email);
   await page.getByLabel("Password").click();
@@ -52,7 +53,9 @@ export async function createAuthenticatedContext({
   const chatPage = new ChatPage(page);
   await chatPage.createNewChat();
   await chatPage.chooseModelFromSelector("chat-model-reasoning");
-  await expect(chatPage.getSelectedModel()).resolves.toEqual("Reasoning model");
+  await expect(chatPage.getSelectedModel()).resolves.toEqual(
+    "GPT-5-mini (with reasoning)"
+  );
 
   await page.waitForTimeout(1000);
   await context.storageState({ path: storageFile });
@@ -70,7 +73,7 @@ export async function createAuthenticatedContext({
 
 export function generateRandomTestUser() {
   const email = `test-${getUnixTime(new Date())}@playwright.com`;
-  const password = generateId();
+  const password = `${generateId()}!234`;
 
   return {
     email,

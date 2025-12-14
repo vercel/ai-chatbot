@@ -3,8 +3,10 @@ import path from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { chatModels } from "@/lib/ai/models";
 
-const CHAT_ID_REGEX =
-  /^http:\/\/localhost:3000\/chat\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const PORT = process.env.PORT || 3001;
+const CHAT_ID_REGEX = new RegExp(
+  `^http://localhost:${PORT}/chat/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`
+);
 
 export class ChatPage {
   private readonly page: Page;
@@ -115,9 +117,23 @@ export class ChatPage {
       throw new Error(`Model with id ${chatModelId} not found`);
     }
 
-    await this.page.getByTestId("model-selector").click();
-    await this.page.getByTestId(`model-selector-item-${chatModelId}`).click();
-    expect(await this.getSelectedModel()).toBe(chatModel.name);
+    // Wait for the model selector to be visible and ready
+    const modelSelector = this.page.getByTestId("model-selector");
+    await expect(modelSelector).toBeVisible({ timeout: 10_000 });
+    await modelSelector.click();
+
+    // Wait for the dropdown menu item to be visible
+    const modelItem = this.page.getByTestId(
+      `model-selector-item-${chatModelId}`
+    );
+    await expect(modelItem).toBeVisible({ timeout: 5000 });
+    await modelItem.click();
+
+    // Wait for the selection to be applied
+    await expect(async () => {
+      const selectedModel = await this.getSelectedModel();
+      expect(selectedModel).toBe(chatModel.name);
+    }).toPass({ timeout: 5000 });
   }
 
   async getSelectedVisibility() {
