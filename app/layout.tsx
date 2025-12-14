@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TokenLensProvider } from "@/components/tokenlens-provider";
 
 import "./globals.css";
-import { SessionProvider } from "next-auth/react";
 import { appConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
@@ -87,9 +86,7 @@ export default function RootLayout({
           enableSystem
         >
           <Toaster position="top-center" />
-          <SessionProvider>
-            <TokenLensProvider>{children}</TokenLensProvider>
-          </SessionProvider>
+          <TokenLensProvider>{children}</TokenLensProvider>
         </ThemeProvider>
       </body>
     </html>

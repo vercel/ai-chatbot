@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
 
 import { AuthForm } from "@/components/auth-form";
@@ -23,26 +22,28 @@ export default function Page() {
     }
   );
 
-  const { update: updateSession } = useSession();
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: router and updateSession are stable refs
+  // biome-ignore lint/correctness/useExhaustiveDependencies: router is a stable ref
   useEffect(() => {
     if (state.status === "failed") {
       toast({
         type: "error",
         description: "Invalid credentials!",
       });
+      setIsSuccessful(false);
     } else if (state.status === "invalid_data") {
       toast({
         type: "error",
         description: "Failed validating your submission!",
       });
+      setIsSuccessful(false);
     } else if (state.status === "success") {
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      // Redirect to chat page after successful login
+      setTimeout(() => {
+        router.push("/");
+      }, 500);
     }
-  }, [state.status]);
+  }, [state.status, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

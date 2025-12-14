@@ -8,9 +8,9 @@ export const isTestEnvironment = Boolean(
     process.env.CI_PLAYWRIGHT
 );
 
-export const guestRegex = /^guest-\d+$/;
+// Guest users have emails like: guest-{uuid}@anonymous.local
+export const guestRegex = /^guest-.*@anonymous\.local$/;
 
 export const DUMMY_PASSWORD = generateDummyPassword();
 
-// Authentication toggle - set DISABLE_AUTH=true to bypass authentication
-export const isAuthDisabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === "true";
+// Note: Authentication is always enabled. Guest users provide anonymous access.

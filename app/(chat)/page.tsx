@@ -4,9 +4,8 @@ import { Suspense } from "react";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
-import { isAuthDisabled } from "@/lib/constants";
+import { getCurrentUser } from "@/lib/auth-service";
 import { generateUUID } from "@/lib/utils";
-import { auth } from "../(auth)/auth";
 
 export default function Page() {
   return (
@@ -17,10 +16,10 @@ export default function Page() {
 }
 
 async function NewChatPage() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  // Only redirect if auth is enabled and no session exists
-  if (!isAuthDisabled && !session) {
+  // If no user exists, redirect to guest creation
+  if (!user) {
     redirect("/api/auth/guest");
   }
 

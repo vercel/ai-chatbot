@@ -1,10 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import {
-  guestRegex,
-  isAuthDisabled,
-  isDevelopmentEnvironment,
-} from "./lib/constants";
+import { guestRegex } from "./lib/constants";
+import { getCurrentUser } from "./lib/auth-service";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -31,18 +27,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // If authentication is disabled, allow all requests through
-  if (isAuthDisabled) {
-    return NextResponse.next();
-  }
+  // Get current user from FastAPI auth cookie
+  const user = await getCurrentUser();
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
-  });
-
-  if (!token) {
+  if (!user) {
     const redirectUrl = encodeURIComponent(request.url);
 
     return NextResponse.redirect(
@@ -50,9 +38,9 @@ export async function proxy(request: NextRequest) {
     );
   }
 
-  const isGuest = guestRegex.test(token?.email ?? "");
+  const isGuest = guestRegex.test(user.email ?? "");
 
-  if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
+  if (user && !isGuest && ["/login", "/register"].includes(pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

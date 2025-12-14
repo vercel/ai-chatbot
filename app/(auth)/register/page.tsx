@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
@@ -22,27 +21,29 @@ export default function Page() {
     }
   );
 
-  const { update: updateSession } = useSession();
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: router and updateSession are stable refs
+  // biome-ignore lint/correctness/useExhaustiveDependencies: router is a stable ref
   useEffect(() => {
     if (state.status === "user_exists") {
       toast({ type: "error", description: "Account already exists!" });
+      setIsSuccessful(false);
     } else if (state.status === "failed") {
       toast({ type: "error", description: "Failed to create account!" });
+      setIsSuccessful(false);
     } else if (state.status === "invalid_data") {
       toast({
         type: "error",
-        description: "Failed validating your submission!",
+        description: "Password must be between 6 and 72 characters!",
       });
+      setIsSuccessful(false);
     } else if (state.status === "success") {
       toast({ type: "success", description: "Account created successfully!" });
-
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      // Redirect to chat page after successful registration
+      setTimeout(() => {
+        router.push("/");
+      }, 500);
     }
-  }, [state.status]);
+  }, [state.status, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

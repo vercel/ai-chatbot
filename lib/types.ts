@@ -1,10 +1,6 @@
-import type { InferUITool, UIMessage } from "ai";
+import type { UIMessage } from "ai";
 import { z } from "zod";
 import type { ArtifactKind } from "@/components/artifact";
-import type { createDocument } from "./ai/tools/create-document";
-import type { getWeather } from "./ai/tools/get-weather";
-import type { requestSuggestions } from "./ai/tools/request-suggestions";
-import type { updateDocument } from "./ai/tools/update-document";
 import type { Suggestion } from "./db/schema";
 import type { AppUsage } from "./usage";
 
@@ -16,12 +12,51 @@ export const messageMetadataSchema = z.object({
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
-type weatherTool = InferUITool<typeof getWeather>;
-type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
-type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
-type requestSuggestionsTool = InferUITool<
-  ReturnType<typeof requestSuggestions>
->;
+// Tool type definitions (tools are now implemented in Python/FastAPI)
+// These types are kept for TypeScript type inference in ChatMessage
+// Using z.any() for tool inputs/outputs since tools are handled by backend
+const weatherToolInput = z.object({
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  city: z.string().optional(),
+});
+
+const createDocumentToolInput = z.object({
+  title: z.string(),
+  kind: z.enum(["text", "code", "image", "sheet"]),
+});
+
+const updateDocumentToolInput = z.object({
+  id: z.string(),
+  description: z.string(),
+});
+
+const requestSuggestionsToolInput = z.object({
+  documentId: z.string(),
+});
+
+// Define tool types that match the structure expected by UIMessage
+// These match what InferUITool would generate from the tool definitions
+// Tools are now implemented in Python/FastAPI, so output types are any
+type weatherTool = {
+  input: z.infer<typeof weatherToolInput>;
+  output: any; // Weather data structure
+};
+
+type createDocumentTool = {
+  input: z.infer<typeof createDocumentToolInput>;
+  output: any; // Document creation result
+};
+
+type updateDocumentTool = {
+  input: z.infer<typeof updateDocumentToolInput>;
+  output: any; // Document update result
+};
+
+type requestSuggestionsTool = {
+  input: z.infer<typeof requestSuggestionsToolInput>;
+  output: any; // Suggestions result
+};
 
 export type ChatTools = {
   getWeather: weatherTool;

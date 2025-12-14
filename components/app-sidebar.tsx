@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { User } from "next-auth";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
@@ -23,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { apiFetch } from "@/lib/api-client";
+import type { User } from "@/lib/auth-service-client";
 import { appConfig } from "@/lib/config";
 import {
   AlertDialog,
@@ -120,7 +120,22 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         <SidebarContent>
           <SidebarHistory user={user} />
         </SidebarContent>
-        <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+        <SidebarFooter>
+          {user ? (
+            <SidebarUserNav user={user} />
+          ) : (
+            // Fallback: Should not happen as middleware ensures user exists
+            // But handle gracefully if it does
+            <SidebarUserNav
+              isLoading={true}
+              user={{
+                id: "guest-temp",
+                email: null,
+                type: "guest",
+              }}
+            />
+          )}
+        </SidebarFooter>
       </Sidebar>
 
       <AlertDialog
