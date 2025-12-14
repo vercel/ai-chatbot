@@ -108,7 +108,9 @@ class LRUCache {
     // Remove oldest if at capacity
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (typeof firstKey === "string") {
+        this.cache.delete(firstKey);
+      }
     }
 
     this.cache.set(key, {
@@ -281,7 +283,9 @@ export async function eliteMiddleware(
 
   // Get user session for rate limiting
   const session = await auth();
-  const userId = session?.user?.id || req.ip || "anonymous";
+  // Get IP address from headers (x-forwarded-for) or fallback
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const userId = session?.user?.id || ip || "anonymous";
   const userTier = (session?.user as any)?.role || "free";
 
   // Check rate limit
@@ -423,6 +427,7 @@ export function getSystemHealth(): {
 
   return {
     status,
+    uptime: process.uptime(),
     metrics: {
       cache: {
         size: requestCache.size(),

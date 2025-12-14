@@ -1,0 +1,43 @@
+# GitHub Actions: Open draft PR for new baselines
+name: Baseline Candidate PR
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ci/explains/current/*.json'
+      - 'ci/scripts/compare_baselines.js'
+      - '.github/workflows/baseline-pr.yml'
+
+jobs:
+  open-baseline-pr:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Copy new baselines
+        run: |
+          mkdir -p ci/explains
+          cp -n ci/explains/current/*.json ci/explains/ 2>/dev/null || true
+      - name: Create branch for new baselines
+        run: |
+          BRANCH=baseline-candidate-$(date +%Y%m%d%H%M%S)
+          git checkout -b $BRANCH
+          git add ci/explains/*.json
+          git commit -m "chore: add new baseline candidates"
+          git push origin $BRANCH
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+      - name: Create draft PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "chore: add new baseline candidates"
+          body: |
+            This PR proposes new baseline EXPLAIN JSONs for queries with no existing baseline. Please review and merge if correct.
+          draft: true
+          branch: ${{ env.BRANCH }}

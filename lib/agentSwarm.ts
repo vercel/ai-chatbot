@@ -144,7 +144,6 @@ export class AgentSwarmOrchestrator extends EventEmitter {
 
       // 1. Decompose goal into tasks
       const tasks = await this.decomposeGoal(request.goal, request.context);
-      Goal(request.goal, request.context);
       console.log(`[AgentSwarm] Decomposed into ${tasks.length} tasks`);
 
       // 2. Create agent team

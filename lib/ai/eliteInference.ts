@@ -266,13 +266,13 @@ export async function generateInference(
     model: provider(model.id),
     prompt: request.prompt,
     system: request.systemPrompt,
-    maxTokens: request.maxTokens || model.maxTokens,
+    maxOutputTokens: request.maxTokens || model.maxTokens,
     temperature: request.temperature || 0.7,
   });
 
   // Calculate cost
-  const inputTokens = usage?.promptTokens || 0;
-  const outputTokens = usage?.completionTokens || 0;
+  const inputTokens = usage?.inputTokens || 0;
+  const outputTokens = usage?.outputTokens || 0;
   const cost =
     (inputTokens / 1000) * model.costPer1kTokens.input +
     (outputTokens / 1000) * model.costPer1kTokens.output;
@@ -354,7 +354,7 @@ export async function generateInferenceStream(
     model: provider(model.id),
     prompt: request.prompt,
     system: request.systemPrompt,
-    maxTokens: request.maxTokens || model.maxTokens,
+    maxOutputTokens: request.maxTokens || model.maxTokens,
     temperature: request.temperature || 0.7,
   });
 

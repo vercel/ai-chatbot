@@ -99,7 +99,15 @@ async function transcribeWithWhisper(
 ): Promise<string> {
   try {
     const formData = new FormData();
-    formData.append("file", new Blob([audioData]), "audio.webm");
+    let blob: Blob;
+    if (audioData instanceof Blob) {
+      blob = audioData;
+    } else if (audioData instanceof Buffer) {
+      blob = new Blob([new Uint8Array(audioData)], { type: "audio/webm" });
+    } else {
+      throw new Error("audioData must be a Blob or Buffer");
+    }
+    formData.append("file", blob, "audio.webm");
     formData.append("model", "whisper-1");
     formData.append("language", language);
 
@@ -294,67 +302,127 @@ export async function executeVoiceCommand(
   console.log("[Voice] Executing command:", command);
 
   switch (command.intent) {
-    case "start_evaluation":
-      // Route to Ghost evaluator
+    case "start_evaluation": {
+      const now = Date.now();
       return {
-        taskId: "voice_eval_" + Date.now(),
+        taskId: "voice_eval_" + now,
         agentId: "voice-agent",
         status: "completed",
-        data: {
-          action: "navigate",
-          route: "/ghost-lab",
-          message: "Opening Ghost Lab for evaluation",
+        result: {
+          data: {
+            action: "navigate",
+            route: "/ghost-lab",
+            message: "Opening Ghost Lab for evaluation",
+          },
         },
-        executionTrace: [],
-        error: null,
+        error: undefined,
+        trace: {
+          steps: [
+            {
+              timestamp: now,
+              agent: "voice-agent",
+              action: "start_evaluation",
+              metadata: { route: "/ghost-lab" },
+            },
+          ],
+          totalDuration: 0,
+        },
+        completedAt: now,
       };
+    }
 
-    case "show_earnings":
+    case "show_earnings": {
+      const now = Date.now();
       return {
-        taskId: "voice_earnings_" + Date.now(),
+        taskId: "voice_earnings_" + now,
         agentId: "voice-agent",
         status: "completed",
-        data: {
-          action: "navigate",
-          route: "/earn-hub",
-          message: "Opening your earnings dashboard",
+        result: {
+          data: {
+            action: "navigate",
+            route: "/earn-hub",
+            message: "Opening your earnings dashboard",
+          },
         },
-        executionTrace: [],
-        error: null,
+        error: undefined,
+        trace: {
+          steps: [
+            {
+              timestamp: now,
+              agent: "voice-agent",
+              action: "show_earnings",
+              metadata: { route: "/earn-hub" },
+            },
+          ],
+          totalDuration: 0,
+        },
+        completedAt: now,
       };
+    }
 
-    case "find_missions":
+    case "find_missions": {
+      const now = Date.now();
       return {
-        taskId: "voice_missions_" + Date.now(),
+        taskId: "voice_missions_" + now,
         agentId: "voice-agent",
         status: "completed",
-        data: {
-          action: "navigate",
-          route: "/fan-ops",
-          message: "Finding missions near you",
+        result: {
+          data: {
+            action: "navigate",
+            route: "/fan-ops",
+            message: "Finding missions near you",
+          },
         },
-        executionTrace: [],
-        error: null,
+        error: undefined,
+        trace: {
+          steps: [
+            {
+              timestamp: now,
+              agent: "voice-agent",
+              action: "find_missions",
+              metadata: { route: "/fan-ops" },
+            },
+          ],
+          totalDuration: 0,
+        },
+        completedAt: now,
       };
+    }
 
-    case "show_level":
+    case "show_level": {
+      const now = Date.now();
       return {
-        taskId: "voice_level_" + Date.now(),
+        taskId: "voice_level_" + now,
         agentId: "voice-agent",
         status: "completed",
-        data: {
-          action: "navigate",
-          route: "/profile",
-          message: "Opening your profile",
+        result: {
+          data: {
+            action: "navigate",
+            route: "/profile",
+            message: "Opening your profile",
+          },
         },
-        executionTrace: [],
-        error: null,
+        error: undefined,
+        trace: {
+          steps: [
+            {
+              timestamp: now,
+              agent: "voice-agent",
+              action: "show_level",
+              metadata: { route: "/profile" },
+            },
+          ],
+          totalDuration: 0,
+        },
+        completedAt: now,
       };
+    }
 
     case "evaluate_text": {
+      const now = Date.now();
       // Create evaluation task for Ghost
       const evaluationTask: AgentTask = {
-        id: "voice_eval_" + Date.now(),
+        id: "voice_eval_" + now,
         origin: "voice-agent",
         targetAgents: ["ghost-evaluator"],
         domain: "general",
@@ -369,6 +437,7 @@ export async function executeVoiceCommand(
           source: "voice_command",
           originalTranscript: command.rawTranscript,
         },
+        createdAt: now,
       };
 
       // Would route through AgentOS in production
@@ -376,29 +445,55 @@ export async function executeVoiceCommand(
         taskId: evaluationTask.id,
         agentId: "voice-agent",
         status: "pending",
-        data: {
-          action: "route_to_agent",
-          task: evaluationTask,
-          message: "Processing your evaluation",
+        result: {
+          data: {
+            action: "route_to_agent",
+            task: evaluationTask,
+            message: "Processing your evaluation",
+          },
         },
-        executionTrace: [],
-        error: null,
+        error: undefined,
+        trace: {
+          steps: [
+            {
+              timestamp: now,
+              agent: "voice-agent",
+              action: "evaluate_text",
+              metadata: { taskId: evaluationTask.id },
+            },
+          ],
+          totalDuration: 0,
+        },
+        completedAt: now,
       };
     }
 
-    default:
+    default: {
+      const now = Date.now();
       return {
-        taskId: "voice_unknown_" + Date.now(),
+        taskId: "voice_unknown_" + now,
         agentId: "voice-agent",
         status: "failed",
-        data: null,
-        executionTrace: [],
+        result: undefined,
         error: {
           code: "UNKNOWN_COMMAND",
           message: `I didn't understand the command: "${command.rawTranscript}"`,
           details: { command },
         },
+        trace: {
+          steps: [
+            {
+              timestamp: now,
+              agent: "voice-agent",
+              action: "unknown_command",
+              metadata: { transcript: command.rawTranscript },
+            },
+          ],
+          totalDuration: 0,
+        },
+        completedAt: now,
       };
+    }
   }
 }
 
@@ -410,86 +505,61 @@ export async function executeVoiceCommand(
  * Main voice agent handler (called from AgentOS router)
  */
 export async function handleVoiceAgent(task: AgentTask): Promise<AgentResult> {
-  const startTime = Date.now();
-  const trace: string[] = [];
-
   try {
-    trace.push("Voice agent started");
-
     // Extract audio data from task payload
-    const audioData = task.payload.audioInput;
-    if (!audioData) {
+    const audioData = (task.payload as Record<string, unknown>).audioInput;
+    if (!audioData || typeof audioData !== "string") {
       throw new Error("No audio input provided");
     }
 
     // Transcribe audio
-    trace.push("Transcribing audio...");
+    const config = (task.payload as Record<string, unknown>).config as
+      | VoiceAgentConfig
+      | undefined;
     const transcript = await transcribeAudio(
       Buffer.from(audioData, "base64"),
-      task.payload.config
+      config
     );
-    trace.push(`Transcript: "${transcript}"`);
 
     // Parse command
     const command = parseVoiceCommand(transcript);
     if (!command) {
       throw new Error("Could not parse voice command");
     }
-    trace.push(`Command intent: ${command.intent}`);
 
-    // Execute command
-    const result = await executeVoiceCommand(command, task.payload.userId);
-    trace.push(`Command executed: ${result.status}`);
-
-    // If response text is provided, synthesize speech
-    let audioResponse: string | undefined;
-    if (result.data?.message) {
-      trace.push("Synthesizing speech response...");
-      const audioBuffer = await synthesizeSpeech(
-        result.data.message,
-        task.payload.config
-      );
-      audioResponse = audioBuffer.toString("base64");
-      trace.push("Speech synthesis complete");
-    }
-
-    return {
-      taskId: task.id,
-      agentId: "voice-agent",
-      status: "completed",
-      data: {
-        transcript,
-        command,
-        action: result.data?.action,
-        route: result.data?.route,
-        message: result.data?.message,
-        audioResponse,
-      },
-      executionTrace: trace,
-      error: null,
-      metadata: {
-        processingTimeMs: Date.now() - startTime,
-        sttProvider: task.payload.config?.sttProvider || "openai-whisper",
-        ttsProvider: task.payload.config?.ttsProvider || "openai",
-      },
-    };
-  } catch (error) {
-    trace.push(
-      `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+    const userId = (task.payload as Record<string, unknown>).userId;
+    const result = await executeVoiceCommand(
+      command,
+      typeof userId === "string" ? userId : ""
     );
 
+    if (
+      result?.result?.data?.message &&
+      typeof result.result.data.message === "string"
+    ) {
+      // Synthesize response
+      const audio = await synthesizeSpeech(result.result.data.message, config);
+      return {
+        ...result,
+        // audio, action, route, message, config are not part of AgentResult, so we omit them for type safety
+        // If needed, extend AgentResult type or handle outside
+        error: undefined,
+      };
+    }
+
+    return result;
+  } catch (error) {
     return {
       taskId: task.id,
       agentId: "voice-agent",
       status: "failed",
-      data: null,
-      executionTrace: trace,
-      error: {
-        code: "VOICE_AGENT_ERROR",
-        message:
-          error instanceof Error ? error.message : "Voice processing failed",
-        details: { error },
-      },
+      result: undefined,
+      error:
+        error instanceof Error
+          ? { code: "VOICE_AGENT_ERROR", message: error.message }
+          : { code: "VOICE_AGENT_ERROR", message: "Unknown error" },
+      trace: { steps: [], totalDuration: 0 },
+      completedAt: Date.now(),
     };
   }
 }

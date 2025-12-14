@@ -1,0 +1,38 @@
+name: DB Best-Practice Checks
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # daily at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  db_checks:
+    if: secrets.DATABASE_URL != ''
+    runs-on: ubuntu-latest
+    env:
+      OUT_DIR: ci/artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup psql
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client jq
+      - name: Run RLS and index checks
+        id: run_rls_and_index_checks
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          chmod +x ci/scripts/run_rls_and_index_checks.sh
+          ./ci/scripts/run_rls_and_index_checks.sh
+        continue-on-error: true
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-checks-artifacts
+          path: ci/artifacts
+      - name: Notify on RLS issues
+        if: failure() && steps.run_rls_and_index_checks.outcome == 'failure'
+        run: echo "RLS/index check failed — review artifacts."
+        # replace with Slack/email notifier or use actions to call webhook

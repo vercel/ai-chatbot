@@ -12,6 +12,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import Gamification from "@/components/gamification";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -210,6 +211,9 @@ export function NexusDashboard({ userId }: { userId: string }) {
                   <div className="text-sm opacity-90">Time Saved</div>
                 </Card>
               </div>
+
+              {/* Gamification & Rewards */}
+              <Gamification />
 
               {/* Feature Cards */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

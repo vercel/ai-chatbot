@@ -404,10 +404,12 @@ Return as JSON: {
         response_format: "url",
       });
 
-      return response.data.map((img) => ({
-        url: img.url || "",
-        revisedPrompt: img.revised_prompt,
-      }));
+      return Array.isArray(response.data)
+        ? response.data.map((img) => ({
+            url: img.url || "",
+            revisedPrompt: img.revised_prompt,
+          }))
+        : [];
     } catch (error) {
       console.error("[Vision] Image generation failed:", error);
       throw error;
@@ -432,9 +434,11 @@ Return as JSON: {
         size: "1024x1024",
       });
 
-      return response.data.map((img) => ({
-        url: img.url || "",
-      }));
+      return Array.isArray(response.data)
+        ? response.data.map((img) => ({
+            url: img.url || "",
+          }))
+        : [];
     } catch (error) {
       console.error("[Vision] Variation generation failed:", error);
       throw error;
@@ -472,7 +476,12 @@ Return as JSON: {
       });
 
       return {
-        url: response.data[0].url || "",
+        url:
+          Array.isArray(response.data) &&
+          response.data.length > 0 &&
+          response.data[0].url
+            ? response.data[0].url
+            : "",
       };
     } catch (error) {
       console.error("[Vision] Image editing failed:", error);

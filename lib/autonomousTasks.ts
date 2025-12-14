@@ -1,3 +1,7 @@
+function isCancelledStatus(status: TaskStatus): status is "cancelled" {
+  return status === "cancelled";
+}
+
 /**
  * TiQology Nexus - Autonomous Task Execution Engine
  * AI that works while you sleep
@@ -168,7 +172,7 @@ export class AutonomousTaskEngine extends EventEmitter {
         await this.executeStep(task, step, request);
 
         // Check if task was cancelled
-        if (task.status === "cancelled") {
+        if (isCancelledStatus(task.status)) {
           this.log(task, "warn", "Task cancelled by user");
           return;
         }

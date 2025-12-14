@@ -220,7 +220,12 @@ async function executeGhostEvaluator(
   task: AgentTask,
   trace: AgentTrace
 ): Promise<AgentResult> {
-  const payload = task.payload as EvaluationPayload;
+  if (!task.payload || typeof (task.payload as any).prompt !== "string") {
+    throw new Error(
+      "Invalid EvaluationPayload: missing required 'prompt' property."
+    );
+  }
+  const payload = task.payload as unknown as EvaluationPayload;
 
   // Call Ghost API internally
   const response = await fetch(
@@ -409,7 +414,16 @@ async function executeDevinBuilder(
   task: AgentTask,
   trace: AgentTrace
 ): Promise<AgentResult> {
-  const payload = task.payload as BuildTaskPayload;
+  if (
+    !task.payload ||
+    typeof (task.payload as any).description !== "string" ||
+    !Array.isArray((task.payload as any).requirements)
+  ) {
+    throw new Error(
+      "Invalid BuildTaskPayload: missing required 'description' (string) or 'requirements' (string[]) property."
+    );
+  }
+  const payload = task.payload as unknown as BuildTaskPayload;
 
   // Generate Rocket-Devin TASK template
   const taskTemplate = generateRocketDevinTask(payload);
@@ -440,7 +454,17 @@ async function executeRocketOps(
   task: AgentTask,
   trace: AgentTrace
 ): Promise<AgentResult> {
-  const payload = task.payload as OpsTaskPayload;
+  if (
+    !task.payload ||
+    typeof (task.payload as any).action !== "string" ||
+    typeof (task.payload as any).target !== "string" ||
+    typeof (task.payload as any).parameters !== "object"
+  ) {
+    throw new Error(
+      "Invalid OpsTaskPayload: missing required 'action' (string), 'target' (string), or 'parameters' (object) property."
+    );
+  }
+  const payload = task.payload as unknown as OpsTaskPayload;
 
   // Generate Rocket ops playbook
   const playbook = generateRocketOpsPlaybook(payload);

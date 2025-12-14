@@ -1,0 +1,64 @@
+      - name: Upload compare report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compare-report
+          path: ci/reports/compare_report.json
+
+      - name: Post compare summary as check annotation
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT_PATH: ci/reports/compare_report.json
+        run: |
+          node .github/actions/post-compare-summary.js
+# GitHub Actions workflow for Supabase performance regression testing
+name: DB Performance Regression
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *' # daily at 3am UTC
+  pull_request:
+    paths:
+      - 'ci/queries/**.sql'
+      - 'ci/scripts/**.js'
+      - '.github/workflows/perf-regression.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vercel-template.json'
+
+jobs:
+  perf-regression:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL_READONLY }}
+      BASELINE_DIR: ci/explains
+      CURRENT_DIR: ci/explains/current
+      THRESHOLD_PCT: 1.25
+      THRESHOLD_MS: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Prepare output dirs
+        run: |
+          mkdir -p ci/explains/current
+      - name: Run EXPLAIN on queries
+        run: |
+          node ci/scripts/run_explain.js ci/queries ci/explains/current
+      - name: Compare to baseline
+        run: |
+          node ci/scripts/compare_baselines.js
+      - name: Upload comparison report
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-perf-comparison
+          path: |
+            ci/explains/comparison_report.json
+            ci/explains/comparison_report.csv
+      - name: Fail if regressions detected
+        if: failure()
+        run: exit 1
