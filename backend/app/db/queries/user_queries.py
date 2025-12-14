@@ -21,6 +21,60 @@ async def get_user_by_id(session: AsyncSession, user_id: UUID) -> Optional[User]
     return result.scalar_one_or_none()
 
 
+async def get_user_by_email(session: AsyncSession, email: str) -> Optional[User]:
+    """Get a user by email address."""
+    result = await session.execute(select(User).where(User.email == email))
+    return result.scalar_one_or_none()
+
+
+async def create_user(session: AsyncSession, email: str, hashed_password: str) -> User:
+    """
+    Create a new user with email and hashed password.
+    Raises IntegrityError if email already exists.
+    """
+    new_user = User(email=email, password=hashed_password)
+    session.add(new_user)
+    try:
+        await session.commit()
+        await session.refresh(new_user)
+        return new_user
+    except IntegrityError:
+        await session.rollback()
+        raise
+
+
+async def create_guest_user(session: AsyncSession) -> User:
+    """
+    Create a guest user with a generated email.
+    Email format: guest-{timestamp}@anonymous.local
+    """
+    import time
+
+    email = f"guest-{int(time.time() * 1000)}@anonymous.local"
+    # Generate a random password hash (guest users don't need to login)
+    from uuid import uuid4
+
+    from app.core.security import get_password_hash
+
+    hashed_password = get_password_hash(str(uuid4()))
+    new_user = User(email=email, password=hashed_password)
+    session.add(new_user)
+
+    try:
+        await session.commit()
+        await session.refresh(new_user)
+        return new_user
+    except IntegrityError:
+        # Race condition: try again with different timestamp
+        await session.rollback()
+        email = f"guest-{int(time.time() * 1000)}-{uuid4()}@anonymous.local"
+        new_user = User(email=email, password=hashed_password)
+        session.add(new_user)
+        await session.commit()
+        await session.refresh(new_user)
+        return new_user
+
+
 async def get_or_create_user_for_session(session: AsyncSession, user_id: UUID) -> User:
     """
     Get or create a user for a session ID (when auth is disabled).

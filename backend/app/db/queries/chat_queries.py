@@ -292,3 +292,87 @@ async def delete_all_chats_by_user_id(session: AsyncSession, user_id: UUID):
     await session.commit()
 
     return {"deletedCount": deleted_count}
+
+
+async def migrate_chats_from_guest_to_user(
+    session: AsyncSession,
+    guest_user_id: UUID,
+    new_user_id: UUID,
+) -> dict:
+    """
+    Migrate all user data (chats, documents, suggestions, files) from a guest user to a new registered user.
+    This is called when a guest user creates an account.
+    Returns: Dictionary with counts of migrated items
+    """
+    from sqlalchemy import update
+
+    from app.models.document import Document
+    from app.models.file import File
+    from app.models.suggestion import Suggestion
+
+    logger.info(
+        "Migrating all data from guest user %s to new user %s",
+        guest_user_id,
+        new_user_id,
+    )
+
+    migration_counts = {
+        "chats": 0,
+        "documents": 0,
+        "suggestions": 0,
+        "files": 0,
+    }
+
+    # Migrate chats
+    result = await session.execute(select(Chat.id).where(Chat.userId == guest_user_id))
+    chat_ids = [row[0] for row in result.all()]
+    if chat_ids:
+        await session.execute(
+            update(Chat).where(Chat.userId == guest_user_id).values(userId=new_user_id)
+        )
+        migration_counts["chats"] = len(chat_ids)
+        logger.info("Migrated %d chat(s)", len(chat_ids))
+
+    # Migrate documents
+    result = await session.execute(select(Document.id).where(Document.user_id == guest_user_id))
+    document_ids = [row[0] for row in result.all()]
+    if document_ids:
+        await session.execute(
+            update(Document).where(Document.user_id == guest_user_id).values(user_id=new_user_id)
+        )
+        migration_counts["documents"] = len(document_ids)
+        logger.info("Migrated %d document(s)", len(document_ids))
+
+    # Migrate suggestions
+    result = await session.execute(select(Suggestion.id).where(Suggestion.user_id == guest_user_id))
+    suggestion_ids = [row[0] for row in result.all()]
+    if suggestion_ids:
+        await session.execute(
+            update(Suggestion)
+            .where(Suggestion.user_id == guest_user_id)
+            .values(user_id=new_user_id)
+        )
+        migration_counts["suggestions"] = len(suggestion_ids)
+        logger.info("Migrated %d suggestion(s)", len(suggestion_ids))
+
+    # Migrate files
+    result = await session.execute(select(File.id).where(File.user_id == guest_user_id))
+    file_ids = [row[0] for row in result.all()]
+    if file_ids:
+        await session.execute(
+            update(File).where(File.user_id == guest_user_id).values(user_id=new_user_id)
+        )
+        migration_counts["files"] = len(file_ids)
+        logger.info("Migrated %d file(s)", len(file_ids))
+
+    # Commit all migrations
+    await session.commit()
+
+    total_migrated = sum(migration_counts.values())
+    logger.info(
+        "Successfully migrated all data from guest to new user: %s (total: %d items)",
+        migration_counts,
+        total_migrated,
+    )
+
+    return migration_counts

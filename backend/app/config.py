@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     # For development/testing, you can use any random string
     # For production, use: openssl rand -hex 32
     JWT_SECRET_KEY: str = "dev-secret-key-change-in-production"
+    # Optional: Old JWT secret key for key rotation (allows validating old tokens during rotation)
+    JWT_SECRET_KEY_OLD: str = ""
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -40,6 +42,9 @@ class Settings(BaseSettings):
 
     # Redis - Optional: Only needed for resumable streams
     REDIS_URL: str = ""
+
+    # Password Security
+    ENABLE_HIBP_CHECK: bool = False  # Enable Have I Been Pwned password checking
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

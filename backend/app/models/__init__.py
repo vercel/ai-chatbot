@@ -2,7 +2,9 @@
 from app.models.chat import Chat
 from app.models.document import Document
 from app.models.file import File
+from app.models.login_attempt import LoginAttempt
 from app.models.message import Message
+from app.models.password_reset_token import PasswordResetToken
 from app.models.stream import Stream
 from app.models.suggestion import Suggestion
 from app.models.user import User
@@ -17,4 +19,6 @@ __all__ = [
     "Vote",
     "Stream",
     "Suggestion",
+    "PasswordResetToken",
+    "LoginAttempt",
 ]

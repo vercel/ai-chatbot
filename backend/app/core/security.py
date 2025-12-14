@@ -14,7 +14,28 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # Bcrypt has a 72-byte limit. Validate before hashing to provide clear error.
+    password_bytes = password.encode("utf-8")
+    password_byte_length = len(password_bytes)
+
+    if password_byte_length > 72:
+        raise ValueError(
+            f"Password cannot exceed 72 bytes (got {password_byte_length} bytes). "
+            "Please use a shorter password or avoid special characters that use multiple bytes."
+        )
+
+    try:
+        return pwd_context.hash(password)
+    except ValueError as e:
+        # Catch bcrypt's own 72-byte limit error and provide a clearer message
+        error_msg = str(e)
+        if "cannot be longer than 72 bytes" in error_msg:
+            raise ValueError(
+                f"Password cannot exceed 72 bytes (got {password_byte_length} bytes). "
+                "Please use a shorter password or avoid special characters that use multiple bytes."
+            ) from e
+        # Re-raise other ValueError exceptions
+        raise
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -29,8 +50,25 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 def decode_access_token(token: str):
+    """
+    Decode JWT token with key rotation support.
+    Tries current key first, then old key (if configured) for backward compatibility.
+    """
+    # Try current key first
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return payload
     except JWTError:
-        return None
+        pass
+
+    # If current key fails and old key is configured, try old key (key rotation)
+    if settings.JWT_SECRET_KEY_OLD:
+        try:
+            payload = jwt.decode(
+                token, settings.JWT_SECRET_KEY_OLD, algorithms=[settings.JWT_ALGORITHM]
+            )
+            return payload
+        except JWTError:
+            pass
+
+    return None
