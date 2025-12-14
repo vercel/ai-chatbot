@@ -3,45 +3,19 @@ import { getUnixTime } from "date-fns";
 import { createAuthenticatedContext, type UserContext } from "./helpers";
 
 type Fixtures = {
-  adaContext: UserContext;
-  babbageContext: UserContext;
-  curieContext: UserContext;
+  authenticatedContext: UserContext;
 };
 
 export const test = baseTest.extend<object, Fixtures>({
-  adaContext: [
+  authenticatedContext: [
     async ({ browser }, use, workerInfo) => {
-      const ada = await createAuthenticatedContext({
+      const userContext = await createAuthenticatedContext({
         browser,
-        name: `ada-${workerInfo.workerIndex}-${getUnixTime(new Date())}`,
+        name: `user-${workerInfo.workerIndex}-${getUnixTime(new Date())}`,
       });
 
-      await use(ada);
-      await ada.context.close();
-    },
-    { scope: "worker" },
-  ],
-  babbageContext: [
-    async ({ browser }, use, workerInfo) => {
-      const babbage = await createAuthenticatedContext({
-        browser,
-        name: `babbage-${workerInfo.workerIndex}-${getUnixTime(new Date())}`,
-      });
-
-      await use(babbage);
-      await babbage.context.close();
-    },
-    { scope: "worker" },
-  ],
-  curieContext: [
-    async ({ browser }, use, workerInfo) => {
-      const curie = await createAuthenticatedContext({
-        browser,
-        name: `curie-${workerInfo.workerIndex}-${getUnixTime(new Date())}`,
-      });
-
-      await use(curie);
-      await curie.context.close();
+      await use(userContext);
+      await userContext.context.close();
     },
     { scope: "worker" },
   ],

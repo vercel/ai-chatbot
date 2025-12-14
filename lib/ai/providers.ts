@@ -6,6 +6,8 @@ import {
 } from "ai";
 import { isTestEnvironment } from "../constants";
 
+const THINKING_SUFFIX_REGEX = /-thinking$/;
+
 export const myProvider = isTestEnvironment
   ? (() => {
       const {
@@ -23,14 +25,38 @@ export const myProvider = isTestEnvironment
         },
       });
     })()
-  : customProvider({
-      languageModels: {
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
-        "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
-          middleware: extractReasoningMiddleware({ tagName: "think" }),
-        }),
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
-      },
+  : null;
+
+export function getLanguageModel(modelId: string) {
+  if (isTestEnvironment && myProvider) {
+    return myProvider.languageModel(modelId);
+  }
+
+  const isReasoningModel =
+    modelId.includes("reasoning") || modelId.endsWith("-thinking");
+
+  if (isReasoningModel) {
+    const gatewayModelId = modelId.replace(THINKING_SUFFIX_REGEX, "");
+
+    return wrapLanguageModel({
+      model: gateway.languageModel(gatewayModelId),
+      middleware: extractReasoningMiddleware({ tagName: "thinking" }),
     });
+  }
+
+  return gateway.languageModel(modelId);
+}
+
+export function getTitleModel() {
+  if (isTestEnvironment && myProvider) {
+    return myProvider.languageModel("title-model");
+  }
+  return gateway.languageModel("anthropic/claude-haiku-4.5");
+}
+
+export function getArtifactModel() {
+  if (isTestEnvironment && myProvider) {
+    return myProvider.languageModel("artifact-model");
+  }
+  return gateway.languageModel("anthropic/claude-haiku-4.5");
+}
