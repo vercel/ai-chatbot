@@ -12,14 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.client import get_ai_client, get_async_ai_client, get_model_name
 from app.ai.prompts import get_system_prompt
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_user
 from app.api.v1.utils.background_tasks import (
     create_save_messages_task,
     create_update_context_task,
 )
 from app.api.v1.utils.continue_stream import _continue_stream_in_background
 from app.api.v1.utils.tool_setup import prepare_tools
-from app.config import settings
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.db.queries.chat_queries import (
@@ -31,12 +30,11 @@ from app.db.queries.chat_queries import (
     save_chat,
     save_messages,
 )
-from app.db.queries.user_queries import get_or_create_user_for_session
 from app.utils.message_converter import convert_messages_to_openai_format
 from app.utils.resumable_stream import mark_stream_complete, store_stream_chunk
 from app.utils.stream import patch_response_with_headers
 from app.utils.stream_processor import StreamEventProcessor
-from app.utils.user_id import get_user_id_uuid, is_session_id, user_ids_match
+from app.utils.user_id import get_user_id_uuid, user_ids_match
 
 logger = logging.getLogger(__name__)
 logger.info("=== CHAT ENDPOINT CALLED ===")
@@ -147,11 +145,8 @@ async def create_chat(
         type(user_id).__name__,
     )
 
-    # 0. Ensure user exists in database (required for foreign key constraint)
-    # When auth is disabled, session IDs need corresponding user records
-    if settings.DISABLE_AUTH or is_session_id(current_user["id"]):
-        logger.info("Ensuring user exists for session: user_id=%s", user_id)
-        await get_or_create_user_for_session(db, user_id)
+    # Note: User should already exist in database (created during registration/guest creation)
+    # No need to check or create users here
 
     # 1. Rate limiting check
     message_count = await get_message_count_by_user_id(db, user_id, hours=24)
@@ -306,9 +301,7 @@ async def create_chat(
                 # Store chunk in Redis asynchronously with sequence number
                 current_sequence = sequence
                 sequence += 1
-                asyncio.create_task(
-                    store_stream_chunk(stream_id, event_bytes, current_sequence)
-                )
+                asyncio.create_task(store_stream_chunk(stream_id, event_bytes, current_sequence))
                 yield event_bytes
         except GeneratorExit:
             # Client disconnected (browser refresh, navigation, etc.)
@@ -346,9 +339,7 @@ async def create_chat(
                     background_tasks, request.id, processor.assistant_messages
                 )
                 if processor.final_usage:
-                    create_update_context_task(
-                        background_tasks, request.id, processor.final_usage
-                    )
+                    create_update_context_task(background_tasks, request.id, processor.final_usage)
 
     response = StreamingResponse(
         stream_generator(),
@@ -366,15 +357,33 @@ async def create_chat(
 @router.get("/{chat_id}")
 async def get_chat(
     chat_id: UUID,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict | None = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Get a chat by ID with its messages.
     Returns chat data, messages, and ownership status for the current user.
+
+    Note: Uses get_optional_user to allow unauthenticated access to public chats,
+    matching the behavior of the deleted Next.js route.
     """
     logger.info("=== GET /api/chat/%s called ===", chat_id)
-    logger.info("current_user_id=%s", current_user.get("id"))
+    logger.info(
+        "current_user=%s (type=%s, restored=%s)",
+        current_user.get("id") if current_user else None,
+        current_user.get("type") if current_user else None,
+        current_user.get("_restore_guest") or current_user.get("_restore_user")
+        if current_user
+        else False,
+    )
+    # Log cookies check
+    logger.info(
+        "Cookies check: current_user present=%s, has_restore_flag=%s",
+        current_user is not None,
+        (current_user.get("_restore_guest") or current_user.get("_restore_user"))
+        if current_user
+        else False,
+    )
 
     # Get chat
     chat = await get_chat_by_id(db, chat_id)
@@ -382,15 +391,43 @@ async def get_chat(
         raise ChatSDKError("not_found:chat", status_code=status.HTTP_404_NOT_FOUND)
 
     # Check access permissions
+    is_owner = False
+
     if chat.visibility == "private":
-        if not user_ids_match(current_user["id"], chat.userId):
+        # Private chats require authentication
+        if not current_user:
+            logger.warning("Access denied: private chat requires authentication")
             raise ChatSDKError("forbidden:chat", status_code=status.HTTP_403_FORBIDDEN)
+
+        # Convert current user ID to UUID for comparison
+        current_user_id_uuid = get_user_id_uuid(current_user["id"])
+        logger.info(
+            "User ID comparison: current_user_id=%s -> uuid=%s, chat.userId=%s (type=%s), visibility=%s",
+            current_user["id"],
+            current_user_id_uuid,
+            chat.userId,
+            type(chat.userId).__name__,
+            chat.visibility,
+        )
+
+        if chat.userId != current_user_id_uuid:
+            logger.warning(
+                "Access denied: chat.userId=%s != current_user_id_uuid=%s (from %s)",
+                chat.userId,
+                current_user_id_uuid,
+                current_user["id"],
+            )
+            raise ChatSDKError("forbidden:chat", status_code=status.HTTP_403_FORBIDDEN)
+
+        is_owner = True
+    else:
+        # Public chats: check ownership if user is authenticated
+        if current_user:
+            current_user_id_uuid = get_user_id_uuid(current_user["id"])
+            is_owner = chat.userId == current_user_id_uuid
 
     # Get messages
     messages = await get_messages_by_chat_id(db, chat_id)
-
-    # Check ownership for readonly status
-    is_owner = user_ids_match(current_user["id"], chat.userId)
 
     # Convert to response format
     return {

@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
-from app.config import settings
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.db.queries.document_queries import (
@@ -15,8 +14,7 @@ from app.db.queries.document_queries import (
     get_documents_by_id,
     save_document,
 )
-from app.db.queries.user_queries import get_or_create_user_for_session
-from app.utils.user_id import get_user_id_uuid, is_session_id, user_ids_match
+from app.utils.user_id import get_user_id_uuid, user_ids_match
 
 router = APIRouter()
 
@@ -94,10 +92,8 @@ async def create_document(
     # Create new version
     user_id = get_user_id_uuid(current_user["id"])
 
-    # Ensure user exists in database (required for foreign key constraint)
-    # When auth is disabled, session IDs need corresponding user records
-    if settings.DISABLE_AUTH or is_session_id(current_user["id"]):
-        await get_or_create_user_for_session(db, user_id)
+    # Note: User should already exist in database (created during registration/guest creation)
+    # No need to check or create users here
     document = await save_document(
         db,
         document_id=id,

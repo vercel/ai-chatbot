@@ -1,63 +1,16 @@
 """
-Utility functions for handling user IDs when authentication is disabled.
-Converts session IDs to deterministic UUIDs for database compatibility.
+Utility functions for handling user IDs.
+All user IDs are UUIDs (from guest users or regular users).
 """
 
-import hashlib
-import logging
 from uuid import UUID
-
-logger = logging.getLogger(__name__)
-
-
-def is_session_id(user_id: str) -> bool:
-    """Check if a user ID is a session ID (starts with 'session-')."""
-    return isinstance(user_id, str) and user_id.startswith("session-")
-
-
-def session_id_to_uuid(session_id: str) -> UUID:
-    """
-    Convert a session ID to a deterministic UUID.
-    Uses SHA-256 hash of the session ID to generate a UUID v5-like identifier.
-    This ensures the same session ID always produces the same UUID.
-
-    IMPORTANT: This function must be deterministic - the same session_id
-    must always produce the same UUID, otherwise ownership checks will fail.
-    """
-    # Validate input
-    if not isinstance(session_id, str):
-        raise ValueError(f"session_id must be a string, got {type(session_id)}")
-
-    if not session_id.startswith("session-"):
-        raise ValueError(f"session_id must start with 'session-', got: {session_id[:20]}...")
-
-    # Hash the session ID using SHA-256 (deterministic)
-    hash_obj = hashlib.sha256(session_id.encode("utf-8"))
-    hash_bytes = hash_obj.digest()[:16]  # Take first 16 bytes
-
-    # Convert to UUID (set version to 5 and variant bits)
-    uuid_bytes = bytearray(hash_bytes)
-    uuid_bytes[6] = (uuid_bytes[6] & 0x0F) | 0x50  # Version 5
-    uuid_bytes[8] = (uuid_bytes[8] & 0x3F) | 0x80  # Variant 10
-
-    result = UUID(bytes=bytes(uuid_bytes))
-
-    # Log for debugging
-    logger.debug("session_id_to_uuid: session_id=%s -> uuid=%s", session_id, result)
-
-    return result
 
 
 def get_user_id_uuid(user_id: str) -> UUID:
     """
-    Convert a user ID to UUID.
-    If it's a session ID, converts it to a deterministic UUID.
-    Otherwise, assumes it's already a valid UUID string.
+    Convert a user ID string to UUID.
+    All user IDs are UUIDs (no session IDs anymore).
     """
-    if is_session_id(user_id):
-        return session_id_to_uuid(user_id)
-
-    # Try to parse as UUID
     try:
         return UUID(user_id)
     except ValueError as e:

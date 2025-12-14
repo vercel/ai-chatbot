@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     )
 
     # Authentication
-    DISABLE_AUTH: bool = False  # Set to True to disable authentication (uses session ID instead)
+    # Note: Authentication is always enabled. Guest users provide anonymous access.
 
     # Blob
     BLOB_READ_WRITE_TOKEN: str = ""

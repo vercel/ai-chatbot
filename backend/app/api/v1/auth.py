@@ -329,9 +329,13 @@ async def register(
             response.delete_cookie(key="guest_session_id", path="/")
 
         # Set user_session_id cookie for regular users (fallback if JWT key is lost)
+        # Use HMAC-signed token instead of raw user ID for security
+        from app.core.session_token import generate_session_token
+
+        session_token = generate_session_token(str(user.id))
         response.set_cookie(
             key="user_session_id",
-            value=str(user.id),
+            value=session_token,
             httponly=True,
             secure=is_production,
             samesite="lax",
@@ -475,19 +479,10 @@ async def get_current_user_info(
             detail="User ID not found in token",
         )
 
-    # Try to convert to UUID - if it fails, it might be a session ID (when auth is disabled)
+    # Convert to UUID - user IDs are always UUIDs
     try:
         user_id = UUID(user_id_str)
     except (ValueError, TypeError):
-        # If auth is disabled, return the session-based user info directly
-        # without querying the database (since session IDs aren't in the DB)
-        if settings.DISABLE_AUTH:
-            return {
-                "id": user_id_str,
-                "email": None,
-                "type": current_user.get("type", "guest"),
-            }
-        # If auth is enabled but ID is invalid, raise error
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid user ID format: {user_id_str}",
@@ -532,10 +527,13 @@ async def get_current_user_info(
 
         # Refresh session ID cookie (sliding expiry - 400 days)
         if user_type == "guest":
-            # Refresh guest_session_id cookie
+            # Refresh guest_session_id cookie (must be HMAC-signed token, not raw user ID)
+            from app.core.session_token import generate_session_token
+
+            guest_session_token = generate_session_token(str(user.id))
             response.set_cookie(
                 key="guest_session_id",
-                value=str(user.id),
+                value=guest_session_token,
                 httponly=True,
                 secure=is_production,
                 samesite="lax",
@@ -543,10 +541,13 @@ async def get_current_user_info(
                 path="/",
             )
         else:
-            # Refresh user_session_id cookie for regular users
+            # Refresh user_session_id cookie for regular users (must be HMAC-signed token)
+            from app.core.session_token import generate_session_token
+
+            user_session_token = generate_session_token(str(user.id))
             response.set_cookie(
                 key="user_session_id",
-                value=str(user.id),
+                value=user_session_token,
                 httponly=True,
                 secure=is_production,
                 samesite="lax",

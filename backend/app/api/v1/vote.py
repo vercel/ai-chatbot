@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
-from app.config import settings
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.db.queries.chat_queries import get_chat_by_id
@@ -74,12 +73,11 @@ async def get_votes(
         )
         if not user_ids_match(current_user["id"], chat.userId):
             logger.warning(
-                "Vote access denied: current_user_id=%s (uuid=%s), chat.userId=%s, visibility=%s, auth_disabled=%s",
+                "Vote access denied: current_user_id=%s (uuid=%s), chat.userId=%s, visibility=%s",
                 current_user["id"],
                 current_user_id_uuid,
                 chat.userId,
                 chat.visibility,
-                settings.DISABLE_AUTH,
             )
             raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
 
@@ -119,12 +117,11 @@ async def vote(
         current_user_id_uuid = get_user_id_uuid(current_user["id"])
         if not user_ids_match(current_user["id"], chat.userId):
             logger.warning(
-                "Vote access denied: current_user_id=%s (uuid=%s), chat.userId=%s, visibility=%s, auth_disabled=%s",
+                "Vote access denied: current_user_id=%s (uuid=%s), chat.userId=%s, visibility=%s",
                 current_user["id"],
                 current_user_id_uuid,
                 chat.userId,
                 chat.visibility,
-                settings.DISABLE_AUTH,
             )
             raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
 
