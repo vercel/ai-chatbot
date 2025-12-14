@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""  # OpenAI API key for aisuite
     XAI_API_KEY: str = ""  # Deprecated: kept for backward compatibility
     AI_GATEWAY_URL: str = ""  # Deprecated: using aisuite instead
+    MODEL_PREFIX: str = "azure/"
 
     # App
     ENVIRONMENT: str = "development"

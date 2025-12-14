@@ -8,6 +8,8 @@ from typing import Any, Protocol, runtime_checkable
 import litellm
 from dotenv import load_dotenv
 
+from app.config import settings
+
 # Configure LiteLLM
 litellm.drop_params = True  # Drop unsupported params for each provider
 litellm.set_verbose = False  # Disable verbose logging by default
@@ -106,13 +108,13 @@ class AsyncOpenACompletionsProtocol(Protocol):
 # ============================================================================
 
 # Default model prefix for LiteLLM (e.g., "azure/", "openai/", "anthropic/")
-DEFAULT_MODEL_PREFIX = "azure/"
+_model_prefix = settings.MODEL_PREFIX
 
 
 class LiteLLMChatCompletions:
     """Synchronous chat completions implementation using LiteLLM."""
 
-    def __init__(self, model_prefix: str = DEFAULT_MODEL_PREFIX):
+    def __init__(self, model_prefix: str = _model_prefix):
         self.completions = self
         self._model_prefix = model_prefix
 
@@ -159,7 +161,7 @@ class LiteLLMChatCompletions:
 class LiteLLMAsyncChatCompletions:
     """Asynchronous chat completions implementation using LiteLLM."""
 
-    def __init__(self, model_prefix: str = DEFAULT_MODEL_PREFIX):
+    def __init__(self, model_prefix: str = _model_prefix):
         self.completions = self
         self._model_prefix = model_prefix
 
@@ -210,7 +212,7 @@ class LiteLLMClient:
     Implements ChatClientProtocol.
     """
 
-    def __init__(self, model_prefix: str = DEFAULT_MODEL_PREFIX):
+    def __init__(self, model_prefix: str = _model_prefix):
         self._chat = LiteLLMChatCompletions(model_prefix=model_prefix)
 
     @property
@@ -224,7 +226,7 @@ class LiteLLMAsyncClient:
     Implements AsyncChatClientProtocol.
     """
 
-    def __init__(self, model_prefix: str = DEFAULT_MODEL_PREFIX):
+    def __init__(self, model_prefix: str = _model_prefix):
         self._chat = LiteLLMAsyncChatCompletions(model_prefix=model_prefix)
 
     @property
@@ -237,12 +239,12 @@ class LiteLLMAsyncClient:
 # ============================================================================
 
 
-def get_ai_client(model_prefix: str = DEFAULT_MODEL_PREFIX) -> OpenAIChatClientProtocol:
+def get_ai_client(model_prefix: str = _model_prefix) -> OpenAIChatClientProtocol:
     """Get configured synchronous LiteLLM client."""
     return LiteLLMClient(model_prefix=model_prefix)
 
 
-def get_async_ai_client(model_prefix: str = DEFAULT_MODEL_PREFIX) -> AsyncOpenAIChatClientProtocol:
+def get_async_ai_client(model_prefix: str = _model_prefix) -> AsyncOpenAIChatClientProtocol:
     """Get configured asynchronous LiteLLM client."""
     return LiteLLMAsyncClient(model_prefix=model_prefix)
 
