@@ -262,11 +262,19 @@ def get_model_name(model_id: str) -> str:
     - title-model -> gpt-4o-mini
     - artifact-model -> gpt-4o-mini
     """
-    model_mapping = {
-        "chat-model": "gpt-4o-mini",
-        "chat-model-reasoning": "o1-mini",
-        "title-model": "gpt-4o-mini",
-        "artifact-model": "gpt-4o-mini",
+    provider_model_mapping = {
+        "azure/": {
+            "chat-model": "gpt-4o-mini",
+            "chat-model-reasoning": "o1-mini",
+            "title-model": "gpt-4o-mini",
+            "artifact-model": "gpt-4o-mini",
+        },
+        "openai/": {
+            "chat-model": "gpt-4.1-mini",
+            "chat-model-reasoning": "o1-mini",
+            "title-model": "gpt-4.1-mini",
+            "artifact-model": "gpt-4.1-mini",
+        },
     }
-
-    return model_mapping.get(model_id, "gpt-4o-mini")
+    model_prefix = _model_prefix
+    return provider_model_mapping.get(model_prefix, {}).get(model_id, "gpt-4.1-mini")
