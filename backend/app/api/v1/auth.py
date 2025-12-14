@@ -467,7 +467,32 @@ async def get_current_user_info(
     Returns user data from JWT token.
     If JWT expired but guest_session_id exists, issues new JWT and refreshes cookies.
     """
-    user_id = UUID(current_user["id"])
+    # Handle case where auth is disabled and session_id is not a UUID
+    user_id_str = current_user.get("id")
+    if not user_id_str:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User ID not found in token",
+        )
+
+    # Try to convert to UUID - if it fails, it might be a session ID (when auth is disabled)
+    try:
+        user_id = UUID(user_id_str)
+    except (ValueError, TypeError):
+        # If auth is disabled, return the session-based user info directly
+        # without querying the database (since session IDs aren't in the DB)
+        if settings.DISABLE_AUTH:
+            return {
+                "id": user_id_str,
+                "email": None,
+                "type": current_user.get("type", "guest"),
+            }
+        # If auth is enabled but ID is invalid, raise error
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid user ID format: {user_id_str}",
+        )
+
     user = await get_user_by_id(db, user_id)
 
     if not user:

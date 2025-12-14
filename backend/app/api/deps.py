@@ -71,26 +71,29 @@ async def get_current_user(
     # Try guest_session_id first (for guest users)
     guest_session_id = request.cookies.get("guest_session_id")
     if guest_session_id:
-        # Try to restore guest user from guest_session_id
-        from uuid import UUID
+        # guest_session_id is an HMAC-signed token, validate it first
+        validated_user_id = validate_session_token(guest_session_id)
+        if validated_user_id:
+            # Try to restore guest user from validated session token
+            from uuid import UUID
 
-        from app.db.queries.user_queries import get_user_by_id
+            from app.db.queries.user_queries import get_user_by_id
 
-        try:
-            user_id = UUID(guest_session_id)
-            user = await get_user_by_id(db, user_id)
-            # Verify it's actually a guest user
-            if (
-                user
-                and user.email
-                and user.email.startswith("guest-")
-                and user.email.endswith("@anonymous.local")
-            ):
-                # Valid guest user - return it (caller should issue new JWT)
-                return {"id": str(user.id), "type": "guest", "_restore_guest": True}
-        except (ValueError, TypeError):
-            # Invalid UUID format - ignore
-            pass
+            try:
+                user_id = UUID(validated_user_id)
+                user = await get_user_by_id(db, user_id)
+                # Verify it's actually a guest user
+                if (
+                    user
+                    and user.email
+                    and user.email.startswith("guest-")
+                    and user.email.endswith("@anonymous.local")
+                ):
+                    # Valid guest user - return it (caller should issue new JWT)
+                    return {"id": str(user.id), "type": "guest", "_restore_guest": True}
+            except (ValueError, TypeError):
+                # Invalid UUID format - ignore
+                pass
 
     # Try user_session_id (for regular users - fallback if JWT key is lost)
     user_session_id = request.cookies.get("user_session_id")
