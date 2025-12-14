@@ -30,6 +30,13 @@ export type ChatTools = {
   requestSuggestions: requestSuggestionsTool;
 };
 
+export type SearchSource = {
+  title: string;
+  url: string;
+  favicon?: string;
+};
+
+
 export type CustomUIDataTypes = {
   textDelta: string;
   imageDelta: string;
@@ -43,6 +50,7 @@ export type CustomUIDataTypes = {
   clear: null;
   finish: null;
   usage: AppUsage;
+  searchResults: SearchSource[];
 };
 
 export type ChatMessage = UIMessage<

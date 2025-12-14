@@ -23,6 +23,7 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { SearchResults, SearchingIndicator } from "./search-results";
 
 const PurePreviewMessage = ({
   chatId,
@@ -51,6 +52,18 @@ const PurePreviewMessage = ({
 
   useDataStream();
 
+  // Check if search results are in the message parts
+  const searchResultsPart = message.parts?.find(
+    (part) => part.type === "data-searchResults"
+  );
+
+  const searchResults =
+    searchResultsPart && "data" in searchResultsPart && searchResultsPart.data
+      ? searchResultsPart.data
+      : undefined;
+
+  // Check if we should show searching indicator (message is loading and assistant role)
+  const isSearching = isLoading && message.role === "assistant" && (!searchResults || searchResults.length === 0);
   return (
     <div
       className="group/message fade-in w-full animate-in duration-200"
@@ -99,6 +112,16 @@ const PurePreviewMessage = ({
                   key={attachment.url}
                 />
               ))}
+            </div>
+          )}
+
+          {message.role === "assistant" && (isSearching || searchResults) && (
+            <div className="w-full">
+              {searchResults ? (
+                <SearchResults searchResult={searchResults} />
+              ) : (
+                <SearchingIndicator />
+              )}
             </div>
           )}
 
