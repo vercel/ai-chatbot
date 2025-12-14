@@ -178,7 +178,6 @@ export async function POST(request: Request) {
     let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
-      sendReasoning: true,
       execute: ({ writer: dataStream }) => {
         const isReasoningModel =
           selectedChatModel.includes("reasoning") ||

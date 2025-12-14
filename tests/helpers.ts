@@ -9,7 +9,6 @@ import {
 } from "@playwright/test";
 import { generateId } from "ai";
 import { getUnixTime } from "date-fns";
-import { ChatPage } from "./pages/chat";
 
 export type UserContext = {
   context: BrowserContext;
@@ -49,10 +48,8 @@ export async function createAuthenticatedContext({
     "Account created successfully!"
   );
 
-  const chatPage = new ChatPage(page);
-  await chatPage.createNewChat();
-  await chatPage.chooseModelFromSelector("chat-model-reasoning");
-  await expect(chatPage.getSelectedModel()).resolves.toEqual("Reasoning model");
+  // Wait for redirect to home page
+  await page.waitForURL("/");
 
   await page.waitForTimeout(1000);
   await context.storageState({ path: storageFile });

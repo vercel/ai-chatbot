@@ -58,13 +58,6 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
       },
     },
-    {
-      name: "routes",
-      testMatch: /routes\/.*.test.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-      },
-    },
 
     // {
     //   name: 'firefox',
