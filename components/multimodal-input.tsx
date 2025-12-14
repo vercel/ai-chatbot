@@ -9,7 +9,6 @@ import {
   type Dispatch,
   memo,
   type SetStateAction,
-  startTransition,
   useCallback,
   useEffect,
   useMemo,
@@ -18,7 +17,6 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
-import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import {
   ModelSelector,
   ModelSelectorContent,
@@ -47,6 +45,12 @@ import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
+
+function setCookie(name: string, value: string) {
+  const maxAge = 60 * 60 * 24 * 365; // 1 year
+  // biome-ignore lint/suspicious/noDocumentCookie: needed for client-side cookie setting
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}`;
+}
 
 function PureMultimodalInput({
   chatId,
@@ -500,9 +504,7 @@ function PureModelSelectorCompact({
                       key={model.id}
                       onSelect={() => {
                         onModelChange?.(model.id);
-                        startTransition(() => {
-                          saveChatModelAsCookie(model.id);
-                        });
+                        setCookie("chat-model", model.id);
                         setOpen(false);
                       }}
                       value={model.id}
