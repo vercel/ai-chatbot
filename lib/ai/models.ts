@@ -1,4 +1,4 @@
-export const DEFAULT_CHAT_MODEL: string = "chat-model";
+export const DEFAULT_CHAT_MODEL: string = "xai/grok-3-mini";
 
 export type ChatModel = {
   id: string;

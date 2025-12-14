@@ -1,9 +1,9 @@
 "use client";
 
 import type { UseChatHelpers } from "@ai-sdk/react";
-import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
+import { CheckIcon } from "lucide-react";
 import {
   type ChangeEvent,
   type Dispatch,
@@ -19,28 +19,31 @@ import {
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
-import { SelectItem } from "@/components/ui/select";
-import { chatModels } from "@/lib/ai/models";
+import {
+  ModelSelector,
+  ModelSelectorContent,
+  ModelSelectorEmpty,
+  ModelSelectorGroup,
+  ModelSelectorInput,
+  ModelSelectorItem,
+  ModelSelectorList,
+  ModelSelectorLogo,
+  ModelSelectorName,
+  ModelSelectorTrigger,
+} from "@/components/ai-elements/model-selector";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
+import { useGateway } from "@/providers/gateway/client";
 import { Context } from "./elements/context";
 import {
   PromptInput,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
 } from "./elements/prompt-input";
-import {
-  ArrowUpIcon,
-  ChevronDownIcon,
-  CpuIcon,
-  PaperclipIcon,
-  StopIcon,
-} from "./icons";
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
@@ -367,7 +370,7 @@ function PureMultimodalInput({
           />{" "}
           <Context {...contextProps} />
         </div>
-        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
+        <PromptInputToolbar className="border-top-0! border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -430,7 +433,8 @@ function PureAttachmentsButton({
   status: UseChatHelpers<ChatMessage>["status"];
   selectedModelId: string;
 }) {
-  const isReasoningModel = selectedModelId === "chat-model-reasoning";
+  const isReasoningModel =
+    selectedModelId.includes("reasoning") || selectedModelId.includes("think");
 
   return (
     <Button
@@ -457,52 +461,73 @@ function PureModelSelectorCompact({
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
 }) {
-  const [optimisticModelId, setOptimisticModelId] = useState(selectedModelId);
+  const [open, setOpen] = useState(false);
+  const { models, isLoading } = useGateway();
 
-  useEffect(() => {
-    setOptimisticModelId(selectedModelId);
-  }, [selectedModelId]);
+  const modelsByProvider = useMemo(() => {
+    const grouped: Record<string, typeof models> = {};
+    for (const model of models) {
+      const modelProvider = model.specification.provider;
+      if (!grouped[modelProvider]) {
+        grouped[modelProvider] = [];
+      }
+      grouped[modelProvider].push(model);
+    }
+    return grouped;
+  }, [models]);
 
-  const selectedModel = chatModels.find(
-    (model) => model.id === optimisticModelId
-  );
+  const selectedModel = models.find((m) => m.id === selectedModelId);
+  const [provider, modelName] = selectedModelId.split("/");
 
   return (
-    <PromptInputModelSelect
-      onValueChange={(modelName) => {
-        const model = chatModels.find((m) => m.name === modelName);
-        if (model) {
-          setOptimisticModelId(model.id);
-          onModelChange?.(model.id);
-          startTransition(() => {
-            saveChatModelAsCookie(model.id);
-          });
-        }
-      }}
-      value={selectedModel?.name}
-    >
-      <Trigger asChild>
-        <Button className="h-8 px-2" variant="ghost">
-          <CpuIcon size={16} />
-          <span className="hidden font-medium text-xs sm:block">
-            {selectedModel?.name}
-          </span>
-          <ChevronDownIcon size={16} />
+    <ModelSelector onOpenChange={setOpen} open={open}>
+      <ModelSelectorTrigger asChild>
+        <Button className="h-8 w-[200px] justify-between px-2" variant="ghost">
+          {provider && <ModelSelectorLogo provider={provider} />}
+          <ModelSelectorName>
+            {selectedModel?.name ?? modelName ?? "Select model"}
+          </ModelSelectorName>
         </Button>
-      </Trigger>
-      <PromptInputModelSelectContent className="min-w-[260px] p-0">
-        <div className="flex flex-col gap-px">
-          {chatModels.map((model) => (
-            <SelectItem key={model.id} value={model.name}>
-              <div className="truncate font-medium text-xs">{model.name}</div>
-              <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
-                {model.description}
-              </div>
-            </SelectItem>
-          ))}
-        </div>
-      </PromptInputModelSelectContent>
-    </PromptInputModelSelect>
+      </ModelSelectorTrigger>
+      <ModelSelectorContent>
+        <ModelSelectorInput placeholder="Search models..." />
+        <ModelSelectorList>
+          {isLoading ? (
+            <ModelSelectorEmpty>Loading models...</ModelSelectorEmpty>
+          ) : models.length === 0 ? (
+            <ModelSelectorEmpty>No models available.</ModelSelectorEmpty>
+          ) : (
+            Object.entries(modelsByProvider).map(
+              ([providerName, providerModels]) => (
+                <ModelSelectorGroup heading={providerName} key={providerName}>
+                  {providerModels.map((model) => (
+                    <ModelSelectorItem
+                      key={model.id}
+                      onSelect={() => {
+                        onModelChange?.(model.id);
+                        startTransition(() => {
+                          saveChatModelAsCookie(model.id);
+                        });
+                        setOpen(false);
+                      }}
+                      value={model.id}
+                    >
+                      <ModelSelectorLogo
+                        provider={model.specification.provider}
+                      />
+                      <ModelSelectorName>{model.name}</ModelSelectorName>
+                      {model.id === selectedModelId && (
+                        <CheckIcon className="ml-auto size-4" />
+                      )}
+                    </ModelSelectorItem>
+                  ))}
+                </ModelSelectorGroup>
+              )
+            )
+          )}
+        </ModelSelectorList>
+      </ModelSelectorContent>
+    </ModelSelector>
   );
 }
 
