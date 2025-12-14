@@ -28,7 +28,11 @@ import {
   ModelSelectorName,
   ModelSelectorTrigger,
 } from "@/components/ai-elements/model-selector";
-import { chatModels, modelsByProvider } from "@/lib/ai/models";
+import {
+  chatModels,
+  DEFAULT_CHAT_MODEL,
+  modelsByProvider,
+} from "@/lib/ai/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
@@ -466,8 +470,11 @@ function PureModelSelectorCompact({
 }) {
   const [open, setOpen] = useState(false);
 
-  const selectedModel = chatModels.find((m) => m.id === selectedModelId);
-  const [provider] = selectedModelId.split("/");
+  const selectedModel =
+    chatModels.find((m) => m.id === selectedModelId) ??
+    chatModels.find((m) => m.id === DEFAULT_CHAT_MODEL) ??
+    chatModels[0];
+  const [provider] = selectedModel.id.split("/");
 
   // Provider display names
   const providerNames: Record<string, string> = {
@@ -483,9 +490,7 @@ function PureModelSelectorCompact({
       <ModelSelectorTrigger asChild>
         <Button className="h-8 w-[200px] justify-between px-2" variant="ghost">
           {provider && <ModelSelectorLogo provider={provider} />}
-          <ModelSelectorName>
-            {selectedModel?.name ?? "Select model"}
-          </ModelSelectorName>
+          <ModelSelectorName>{selectedModel.name}</ModelSelectorName>
         </Button>
       </ModelSelectorTrigger>
       <ModelSelectorContent>
@@ -511,7 +516,7 @@ function PureModelSelectorCompact({
                     >
                       <ModelSelectorLogo provider={logoProvider} />
                       <ModelSelectorName>{model.name}</ModelSelectorName>
-                      {model.id === selectedModelId && (
+                      {model.id === selectedModel.id && (
                         <CheckIcon className="ml-auto size-4" />
                       )}
                     </ModelSelectorItem>
