@@ -179,22 +179,33 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        const isReasoningModel =
+          selectedChatModel.includes("reasoning") ||
+          selectedChatModel.includes("thinking");
+
         const result = streamText({
           model: getLanguageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            selectedChatModel.includes("reasoning") ||
-            selectedChatModel.includes("think")
-              ? []
-              : [
-                  "getWeather",
-                  "createDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
-          experimental_transform: smoothStream({ chunking: "word" }),
+          experimental_activeTools: isReasoningModel
+            ? []
+            : [
+                "getWeather",
+                "createDocument",
+                "updateDocument",
+                "requestSuggestions",
+              ],
+          experimental_transform: isReasoningModel
+            ? undefined
+            : smoothStream({ chunking: "word" }),
+          providerOptions: isReasoningModel
+            ? {
+                anthropic: {
+                  thinking: { type: "enabled", budgetTokens: 10_000 },
+                },
+              }
+            : undefined,
           tools: {
             getWeather,
             createDocument: createDocument({ session, dataStream }),

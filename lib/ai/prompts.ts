@@ -62,7 +62,7 @@ export const systemPrompt = ({
   // reasoning models don't need artifacts prompt (they can't use tools)
   if (
     selectedChatModel.includes("reasoning") ||
-    selectedChatModel.includes("think")
+    selectedChatModel.includes("thinking")
   ) {
     return `${regularPrompt}\n\n${requestPrompt}`;
   }

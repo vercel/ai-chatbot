@@ -6,6 +6,8 @@ import {
 } from "ai";
 import { isTestEnvironment } from "../constants";
 
+const THINKING_SUFFIX_REGEX = /-thinking$/;
+
 export const myProvider = isTestEnvironment
   ? (() => {
       const {
@@ -30,10 +32,15 @@ export function getLanguageModel(modelId: string) {
     return myProvider.languageModel(modelId);
   }
 
-  if (modelId.includes("reasoning") || modelId.includes("think")) {
+  const isReasoningModel =
+    modelId.includes("reasoning") || modelId.endsWith("-thinking");
+
+  if (isReasoningModel) {
+    const gatewayModelId = modelId.replace(THINKING_SUFFIX_REGEX, "");
+
     return wrapLanguageModel({
-      model: gateway.languageModel(modelId),
-      middleware: extractReasoningMiddleware({ tagName: "think" }),
+      model: gateway.languageModel(gatewayModelId),
+      middleware: extractReasoningMiddleware({ tagName: "thinking" }),
     });
   }
 
@@ -44,12 +51,12 @@ export function getTitleModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("title-model");
   }
-  return gateway.languageModel("xai/grok-3-mini");
+  return gateway.languageModel("anthropic/claude-haiku-4.5");
 }
 
 export function getArtifactModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("artifact-model");
   }
-  return gateway.languageModel("xai/grok-3-mini");
+  return gateway.languageModel("anthropic/claude-haiku-4.5");
 }

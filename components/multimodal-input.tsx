@@ -22,7 +22,6 @@ import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import {
   ModelSelector,
   ModelSelectorContent,
-  ModelSelectorEmpty,
   ModelSelectorGroup,
   ModelSelectorInput,
   ModelSelectorItem,
@@ -31,10 +30,10 @@ import {
   ModelSelectorName,
   ModelSelectorTrigger,
 } from "@/components/ai-elements/model-selector";
+import { chatModels, modelsByProvider } from "@/lib/ai/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
-import { useGateway } from "@/providers/gateway/client";
 import { Context } from "./elements/context";
 import {
   PromptInput,
@@ -462,22 +461,18 @@ function PureModelSelectorCompact({
   onModelChange?: (modelId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const { models, isLoading } = useGateway();
 
-  const modelsByProvider = useMemo(() => {
-    const grouped: Record<string, typeof models> = {};
-    for (const model of models) {
-      const modelProvider = model.specification.provider;
-      if (!grouped[modelProvider]) {
-        grouped[modelProvider] = [];
-      }
-      grouped[modelProvider].push(model);
-    }
-    return grouped;
-  }, [models]);
+  const selectedModel = chatModels.find((m) => m.id === selectedModelId);
+  const [provider] = selectedModelId.split("/");
 
-  const selectedModel = models.find((m) => m.id === selectedModelId);
-  const [provider, modelName] = selectedModelId.split("/");
+  // Provider display names
+  const providerNames: Record<string, string> = {
+    anthropic: "Anthropic",
+    openai: "OpenAI",
+    google: "Google",
+    xai: "xAI",
+    reasoning: "Reasoning",
+  };
 
   return (
     <ModelSelector onOpenChange={setOpen} open={open}>
@@ -485,22 +480,22 @@ function PureModelSelectorCompact({
         <Button className="h-8 w-[200px] justify-between px-2" variant="ghost">
           {provider && <ModelSelectorLogo provider={provider} />}
           <ModelSelectorName>
-            {selectedModel?.name ?? modelName ?? "Select model"}
+            {selectedModel?.name ?? "Select model"}
           </ModelSelectorName>
         </Button>
       </ModelSelectorTrigger>
       <ModelSelectorContent>
         <ModelSelectorInput placeholder="Search models..." />
         <ModelSelectorList>
-          {isLoading ? (
-            <ModelSelectorEmpty>Loading models...</ModelSelectorEmpty>
-          ) : models.length === 0 ? (
-            <ModelSelectorEmpty>No models available.</ModelSelectorEmpty>
-          ) : (
-            Object.entries(modelsByProvider).map(
-              ([providerName, providerModels]) => (
-                <ModelSelectorGroup heading={providerName} key={providerName}>
-                  {providerModels.map((model) => (
+          {Object.entries(modelsByProvider).map(
+            ([providerKey, providerModels]) => (
+              <ModelSelectorGroup
+                heading={providerNames[providerKey] ?? providerKey}
+                key={providerKey}
+              >
+                {providerModels.map((model) => {
+                  const logoProvider = model.id.split("/")[0];
+                  return (
                     <ModelSelectorItem
                       key={model.id}
                       onSelect={() => {
@@ -512,17 +507,15 @@ function PureModelSelectorCompact({
                       }}
                       value={model.id}
                     >
-                      <ModelSelectorLogo
-                        provider={model.specification.provider}
-                      />
+                      <ModelSelectorLogo provider={logoProvider} />
                       <ModelSelectorName>{model.name}</ModelSelectorName>
                       {model.id === selectedModelId && (
                         <CheckIcon className="ml-auto size-4" />
                       )}
                     </ModelSelectorItem>
-                  ))}
-                </ModelSelectorGroup>
-              )
+                  );
+                })}
+              </ModelSelectorGroup>
             )
           )}
         </ModelSelectorList>
