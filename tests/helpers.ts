@@ -39,7 +39,16 @@ export async function createAuthenticatedContext({
   const password = `${generateId()}!234`;
   const port = process.env.PORT || 3001;
 
-  await page.goto(`http://localhost:${port}/register`);
+  // Navigate to register page with timeout and wait for DOM to be ready
+  await page.goto(`http://localhost:${port}/register`, {
+    waitUntil: "domcontentloaded",
+    timeout: 30_000, // 30 second timeout
+  });
+
+  // Wait for the form to be visible before proceeding
+  await page.waitForSelector('input[placeholder="user@acme.com"]', {
+    timeout: 10_000,
+  });
   await page.getByPlaceholder("user@acme.com").click();
   await page.getByPlaceholder("user@acme.com").fill(email);
   await page.getByLabel("Password").click();
@@ -59,7 +68,17 @@ export async function createAuthenticatedContext({
 
   await page.waitForTimeout(1000);
   await context.storageState({ path: storageFile });
+
+  // Close the page before closing the context
   await page.close();
+
+  // Close all pages in the context to ensure clean teardown
+  const pages = context.pages();
+  for (const p of pages) {
+    if (!p.isClosed()) {
+      await p.close();
+    }
+  }
 
   const newContext = await browser.newContext({ storageState: storageFile });
   const newPage = await newContext.newPage();

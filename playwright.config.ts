@@ -10,8 +10,8 @@ config({
   path: ".env.local",
 });
 
-/* Use process.env.PORT by default and fallback to port 3000 */
-const PORT = process.env.PORT || 3000;
+/* Use process.env.PORT by default and fallback to port 3001 */
+const PORT = process.env.PORT || 3001;
 
 /**
  * Set webServer.url and use.baseURL with the location
@@ -32,6 +32,18 @@ export default defineConfig({
   retries: 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 2 : 8,
+  /* Stop test run after N failures (useful for CI to fail fast)
+   * Can be overridden with MAX_FAILURES environment variable
+   * Set to undefined to disable (run all tests regardless of failures)
+   * Default: undefined (no limit) for local dev, 10 for CI
+   */
+  maxFailures: (() => {
+    if (process.env.MAX_FAILURES !== undefined && process.env.MAX_FAILURES !== "") {
+      const parsed = Number.parseInt(process.env.MAX_FAILURES, 10);
+      return Number.isNaN(parsed) ? undefined : parsed;
+    }
+    return process.env.CI ? 10 : undefined;
+  })(),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -57,6 +69,8 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
       },
+      // Explicitly inherit maxFailures from global config (undefined = no limit)
+      maxFailures: undefined,
     },
     {
       name: "routes",
@@ -64,6 +78,8 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
       },
+      // Explicitly inherit maxFailures from global config (undefined = no limit)
+      maxFailures: undefined,
     },
 
     // {
@@ -99,7 +115,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "pnpm dev",
+    command: `PORT=${PORT} pnpm dev`,
     url: `${baseURL}/ping`,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

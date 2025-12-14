@@ -24,10 +24,11 @@ test.describe
         request = request.redirectedFrom();
       }
 
+      const port = process.env.PORT || 3001;
       expect(chain).toEqual([
-        "http://localhost:3000/",
-        "http://localhost:3000/api/auth/guest?redirectUrl=http%3A%2F%2Flocalhost%3A3000%2F",
-        "http://localhost:3000/",
+        `http://localhost:${port}/`,
+        `http://localhost:${port}/api/auth/guest?redirectUrl=http%3A%2F%2Flocalhost%3A${port}%2F`,
+        `http://localhost:${port}/`,
       ]);
     });
 
@@ -66,7 +67,8 @@ test.describe
         request = request.redirectedFrom();
       }
 
-      expect(chain).toEqual(["http://localhost:3000/"]);
+      const port = process.env.PORT || 3001;
+      expect(chain).toEqual([`http://localhost:${port}/`]);
     });
 
     test("Allow navigating to /login as guest user", async ({ page }) => {

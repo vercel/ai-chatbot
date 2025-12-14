@@ -17,7 +17,42 @@ export const test = baseTest.extend<object, Fixtures>({
       });
 
       await use(ada);
-      await ada.context.close();
+
+      // Close all pages before closing the context to prevent hanging
+      const pages = ada.context.pages();
+      for (const page of pages) {
+        if (!page.isClosed()) {
+          try {
+            await Promise.race([
+              page.close(),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Page close timeout")), 5_000)
+              ),
+            ]);
+          } catch (error) {
+            // If page close times out, force close without waiting for beforeunload
+            console.warn(`Page close timeout, forcing close: ${error}`);
+            try {
+              await page.close({ runBeforeUnload: false });
+            } catch {
+              // Ignore errors on force close
+            }
+          }
+        }
+      }
+
+      // Close the context with a timeout to prevent indefinite hanging
+      try {
+        await Promise.race([
+          ada.context.close(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Context close timeout")), 10_000)
+          ),
+        ]);
+      } catch (error) {
+        console.warn(`Context close timeout or error: ${error}`);
+        // Context will be garbage collected eventually
+      }
     },
     { scope: "worker" },
   ],
@@ -29,7 +64,42 @@ export const test = baseTest.extend<object, Fixtures>({
       });
 
       await use(babbage);
-      await babbage.context.close();
+
+      // Close all pages before closing the context to prevent hanging
+      const pages = babbage.context.pages();
+      for (const page of pages) {
+        if (!page.isClosed()) {
+          try {
+            await Promise.race([
+              page.close(),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Page close timeout")), 5_000)
+              ),
+            ]);
+          } catch (error) {
+            // If page close times out, force close without waiting for beforeunload
+            console.warn(`Page close timeout, forcing close: ${error}`);
+            try {
+              await page.close({ runBeforeUnload: false });
+            } catch {
+              // Ignore errors on force close
+            }
+          }
+        }
+      }
+
+      // Close the context with a timeout to prevent indefinite hanging
+      try {
+        await Promise.race([
+          babbage.context.close(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Context close timeout")), 10_000)
+          ),
+        ]);
+      } catch (error) {
+        console.warn(`Context close timeout or error: ${error}`);
+        // Context will be garbage collected eventually
+      }
     },
     { scope: "worker" },
   ],
@@ -41,7 +111,42 @@ export const test = baseTest.extend<object, Fixtures>({
       });
 
       await use(curie);
-      await curie.context.close();
+
+      // Close all pages before closing the context to prevent hanging
+      const pages = curie.context.pages();
+      for (const page of pages) {
+        if (!page.isClosed()) {
+          try {
+            await Promise.race([
+              page.close(),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Page close timeout")), 5_000)
+              ),
+            ]);
+          } catch (error) {
+            // If page close times out, force close without waiting for beforeunload
+            console.warn(`Page close timeout, forcing close: ${error}`);
+            try {
+              await page.close({ runBeforeUnload: false });
+            } catch {
+              // Ignore errors on force close
+            }
+          }
+        }
+      }
+
+      // Close the context with a timeout to prevent indefinite hanging
+      try {
+        await Promise.race([
+          curie.context.close(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Context close timeout")), 10_000)
+          ),
+        ]);
+      } catch (error) {
+        console.warn(`Context close timeout or error: ${error}`);
+        // Context will be garbage collected eventually
+      }
     },
     { scope: "worker" },
   ],
