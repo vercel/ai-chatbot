@@ -56,16 +56,10 @@ export const chatModels: ChatModel[] = [
   },
   // xAI
   {
-    id: "xai/grok-code-fast-1",
-    name: "Grok Code Fast",
+    id: "xai/grok-4.1-fast-non-reasoning",
+    name: "Grok 4.1 Fast",
     provider: "xai",
-    description: "Optimized for code generation",
-  },
-  {
-    id: "xai/grok-4-fast",
-    name: "Grok 4 Fast",
-    provider: "xai",
-    description: "Fast and capable with 2M context",
+    description: "Fast with 30K context",
   },
   // Reasoning models (extended thinking)
   {
@@ -73,6 +67,12 @@ export const chatModels: ChatModel[] = [
     name: "Claude 3.7 Sonnet",
     provider: "reasoning",
     description: "Extended thinking for complex problems",
+  },
+  {
+    id: "xai/grok-code-fast-1-thinking",
+    name: "Grok Code Fast",
+    provider: "reasoning",
+    description: "Reasoning optimized for code",
   },
 ];
 
