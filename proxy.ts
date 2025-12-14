@@ -27,6 +27,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow login/register pages to be accessed without authentication
+  // This prevents redirect loops when users try to login after logout
+  if (["/login", "/register"].includes(pathname)) {
+    return NextResponse.next();
+  }
+
   // Get current user from FastAPI auth cookie
   const user = await getCurrentUser();
 
@@ -40,6 +46,7 @@ export async function proxy(request: NextRequest) {
 
   const isGuest = guestRegex.test(user.email ?? "");
 
+  // If user is a regular (non-guest) user trying to access login/register, redirect to home
   if (user && !isGuest && ["/login", "/register"].includes(pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }

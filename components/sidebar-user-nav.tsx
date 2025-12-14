@@ -4,8 +4,11 @@ import { ChevronUp } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
 import type { User } from "@/lib/auth-service-client";
 import { logoutClient } from "@/lib/auth-service-client";
+import { getApiUrl } from "@/lib/api-client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +21,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { getChatHistoryPaginationKey } from "./sidebar-history";
 import { LoaderIcon } from "./icons";
 import { toast } from "./toast";
 
@@ -30,6 +34,7 @@ export function SidebarUserNav({
 }) {
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
+  const { mutate } = useSWRConfig();
 
   const isGuest = user.type === "guest";
 
@@ -102,9 +107,29 @@ export function SidebarUserNav({
                     router.push("/login");
                   } else {
                     try {
+                      // Logout via Next.js API route which handles cookie clearing server-side
                       await logoutClient();
-                      router.push("/");
-                      router.refresh();
+
+                      // Invalidate SWR cache for chat history
+                      mutate(unstable_serialize(getChatHistoryPaginationKey));
+
+                      // Verify logout by checking auth status
+                      // This ensures cookies are actually cleared before navigation
+                      const verifyUrl = getApiUrl("/api/auth/me");
+                      const verifyResponse = await fetch(verifyUrl, {
+                        credentials: "include",
+                      });
+
+                      // If we get 401, we're successfully logged out
+                      // If we get 200, cookies might still be present (shouldn't happen)
+                      if (verifyResponse.status === 401) {
+                        // Successfully logged out - navigate to login
+                        router.push("/login");
+                      } else {
+                        // Unexpected response - still navigate but log warning
+                        console.warn("Logout verification returned unexpected status:", verifyResponse.status);
+                        router.push("/login");
+                      }
                     } catch (error) {
                       toast({
                         type: "error",

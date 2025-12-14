@@ -15,13 +15,21 @@ export type User = {
 
 /**
  * Client-side logout function.
- * Calls FastAPI logout endpoint and clears cookie.
+ * Calls Next.js logout route handler which ensures cookies are properly cleared
+ * before navigation. This is more robust than calling FastAPI directly.
  */
 export async function logoutClient(): Promise<void> {
+  // Use Next.js API route which handles cookie clearing server-side
   const apiUrl = getApiUrl("/api/auth/logout");
-  await fetch(apiUrl, {
+  const response = await fetch(apiUrl, {
     method: "POST",
     credentials: "include", // Important: include cookies
   });
-  // Cookie is cleared by FastAPI response
+
+  if (!response.ok) {
+    throw new Error("Logout failed");
+  }
+
+  // Cookies are cleared by the server-side route handler
+  // The response includes Set-Cookie headers to delete cookies
 }
