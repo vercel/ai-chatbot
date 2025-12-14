@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import {
   type CSSProperties,
@@ -9,6 +8,7 @@ import {
   memo,
   useMemo,
 } from "react";
+import { cn } from "@/lib/utils";
 
 export type TextShimmerProps = {
   children: string;

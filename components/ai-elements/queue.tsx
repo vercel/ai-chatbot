@@ -1,5 +1,7 @@
 "use client";
 
+import { ChevronDownIcon, PaperclipIcon } from "lucide-react";
+import type { ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -8,8 +10,6 @@ import {
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, PaperclipIcon } from "lucide-react";
-import type { ComponentProps } from "react";
 
 export type QueueMessagePart = {
   type: string;
@@ -75,7 +75,7 @@ export const QueueItemContent = ({
 }: QueueItemContentProps) => (
   <span
     className={cn(
-      "line-clamp-1 grow break-words",
+      "wrap-break-word line-clamp-1 grow",
       completed
         ? "text-muted-foreground/50 line-through"
         : "text-muted-foreground",
@@ -151,6 +151,7 @@ export const QueueItemImage = ({
   className,
   ...props
 }: QueueItemImageProps) => (
+  // biome-ignore lint/performance/noImgElement: dynamic blob/data URLs require native img
   <img
     alt=""
     className={cn("h-8 w-8 rounded border object-cover", className)}

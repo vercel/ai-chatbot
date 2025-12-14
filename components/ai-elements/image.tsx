@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import type { Experimental_GeneratedImage } from "ai";
+import { cn } from "@/lib/utils";
 
 export type ImageProps = Experimental_GeneratedImage & {
   className?: string;
@@ -12,6 +12,8 @@ export const Image = ({
   mediaType,
   ...props
 }: ImageProps) => (
+  // biome-ignore lint/nursery/useImageSize: dynamic base64 content
+  // biome-ignore lint/performance/noImgElement: base64 data URLs require native img
   <img
     {...props}
     alt={props.alt}
