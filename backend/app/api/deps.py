@@ -85,19 +85,23 @@ async def get_current_user(
                     user is not None,
                     user.email if user else None,
                 )
-                # Verify it's actually a guest user
-                if (
-                    user
-                    and user.email
+                # Verify it's actually a guest user (check both type field and email pattern for safety)
+                is_guest = (hasattr(user, "type") and user.type == "guest") or (
+                    user.email
                     and user.email.startswith("guest-")
                     and user.email.endswith("@anonymous.local")
-                ):
+                )
+
+                if is_guest:
                     # Valid guest user - return it (caller should issue new JWT)
+                    # Use type from database if available, otherwise infer from email
+                    user_type = user.type if hasattr(user, "type") and user.type else "guest"
                     logger.info(
-                        "Restoring guest user: id=%s, type=guest",
+                        "Restoring guest user: id=%s, type=%s",
                         str(user.id),
+                        user_type,
                     )
-                    return {"id": str(user.id), "type": "guest", "_restore_guest": True}
+                    return {"id": str(user.id), "type": user_type, "_restore_guest": True}
                 else:
                     logger.warning(
                         "guest_session_id points to non-guest user: user_id=%s, email=%s",
@@ -138,21 +142,26 @@ async def get_current_user(
                     user is not None,
                     user.email if user else None,
                 )
-                # Verify it's NOT a guest user (regular user)
-                if (
+                # Verify it's a regular user (check both type field and email pattern for safety)
+                is_regular = (hasattr(user, "type") and user.type == "regular") or (
                     user
                     and user.email
                     and not (
                         user.email.startswith("guest-") and user.email.endswith("@anonymous.local")
                     )
-                ):
+                )
+
+                if is_regular:
                     # Valid regular user - return it (caller should issue new JWT)
                     # This is a fallback mechanism for JWT key loss scenarios
+                    # Use type from database if available, otherwise infer from email
+                    user_type = user.type if hasattr(user, "type") and user.type else "regular"
                     logger.info(
-                        "Restoring regular user: id=%s, type=regular",
+                        "Restoring regular user: id=%s, type=%s",
                         str(user.id),
+                        user_type,
                     )
-                    return {"id": str(user.id), "type": "regular", "_restore_user": True}
+                    return {"id": str(user.id), "type": user_type, "_restore_user": True}
                 else:
                     logger.warning(
                         "user_session_id points to guest user: user_id=%s, email=%s",

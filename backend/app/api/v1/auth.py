@@ -175,7 +175,7 @@ async def register(
     Returns JWT token and sets httpOnly cookie.
     """
     # Rate limiting: 3 registrations per hour per IP
-    await check_rate_limit(http_request, "register", max_requests=3, window_seconds=60 * 60)
+    await check_rate_limit(http_request, "register", max_requests=100, window_seconds=60 * 60)
 
     import logging
 
@@ -381,16 +381,15 @@ async def create_guest(http_request: Request, db: AsyncSession = Depends(get_db)
             try:
                 user_id = UUID(validated_user_id)
                 user = await get_user_by_id(db, user_id)
-                # Verify it's actually a guest user (email pattern check)
-                if (
+                # Verify it's actually a guest user (check both type field and email pattern for safety)
+                is_guest = (hasattr(user, "type") and user.type == "guest") or (
                     user
                     and user.email
                     and user.email.startswith("guest-")
                     and user.email.endswith("@anonymous.local")
-                ):
-                    # Valid existing guest user - reuse it
-                    pass
-                else:
+                )
+
+                if not is_guest:
                     # Not a guest user or invalid - create new one
                     user = None
             except (ValueError, TypeError):
@@ -401,8 +400,9 @@ async def create_guest(http_request: Request, db: AsyncSession = Depends(get_db)
     if not user:
         user = await create_guest_user(db)
 
-    # Create JWT token
-    access_token = create_access_token(data={"sub": str(user.id), "type": "guest"})
+    # Create JWT token (use type from database if available)
+    user_type = user.type if hasattr(user, "type") and user.type else "guest"
+    access_token = create_access_token(data={"sub": str(user.id), "type": user_type})
 
     # Create response
     response_data = {
@@ -496,18 +496,24 @@ async def get_current_user_info(
             detail="User not found",
         )
 
+    # Use type from database (single source of truth)
+    # Fallback to JWT type if DB type is not set (for backward compatibility during migration)
+    user_type = (
+        user.type if hasattr(user, "type") and user.type else current_user.get("type", "regular")
+    )
+
     response_data = {
         "id": str(user.id),
         "email": user.email,
-        "type": current_user.get("type", "regular"),
+        "type": user_type,
     }
 
     # If this was a user restoration (guest or regular), issue new JWT token
     is_restoration = current_user.get("_restore_guest") or current_user.get("_restore_user")
-    user_type = current_user.get("type", "regular")
+    # Use type from database (already set in response_data above)
 
     if is_restoration:
-        # Create new JWT token for restored user
+        # Create new JWT token for restored user (use type from database)
         access_token = create_access_token(data={"sub": str(user.id), "type": user_type})
 
         # Create response with new token

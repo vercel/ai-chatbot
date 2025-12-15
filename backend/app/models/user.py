@@ -13,6 +13,7 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(64), nullable=False, unique=True)
     password = Column(String(64), nullable=True)
+    type = Column(String(10), nullable=False, default="regular")  # "guest" or "regular"
 
     # Relationships
     chats = relationship("Chat", back_populates="user")

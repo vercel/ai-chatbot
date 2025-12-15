@@ -32,7 +32,7 @@ async def create_user(session: AsyncSession, email: str, hashed_password: str) -
     Create a new user with email and hashed password.
     Raises IntegrityError if email already exists.
     """
-    new_user = User(email=email, password=hashed_password)
+    new_user = User(email=email, password=hashed_password, type="regular")
     session.add(new_user)
     try:
         await session.commit()
@@ -57,7 +57,7 @@ async def create_guest_user(session: AsyncSession) -> User:
     from app.core.security import get_password_hash
 
     hashed_password = get_password_hash(str(uuid4()))
-    new_user = User(email=email, password=hashed_password)
+    new_user = User(email=email, password=hashed_password, type="guest")
     session.add(new_user)
 
     try:
@@ -68,7 +68,7 @@ async def create_guest_user(session: AsyncSession) -> User:
         # Race condition: try again with different timestamp
         await session.rollback()
         email = f"guest-{int(time.time() * 1000)}-{uuid4()}@anonymous.local"
-        new_user = User(email=email, password=hashed_password)
+        new_user = User(email=email, password=hashed_password, type="guest")
         session.add(new_user)
         await session.commit()
         await session.refresh(new_user)
