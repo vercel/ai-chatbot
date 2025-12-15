@@ -1,4 +1,6 @@
+from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -7,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from app.core.session_token import validate_session_token
+from app.db.queries.user_queries import get_user_by_id
 
 security = HTTPBearer(auto_error=False)  # Don't auto-raise error, we'll check cookies first
 
@@ -46,13 +49,45 @@ async def get_current_user(
         payload = decode_access_token(token)
 
         if payload is not None:
-            # Valid token - return user info
+            # Valid token - check if password was changed after token was issued (session invalidation)
             user_id: str = payload.get("sub")
             if user_id is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload"
                 )
-            return {"id": user_id, "type": payload.get("type", "regular")}
+
+            # Check if password was changed after token was issued
+            # This invalidates all sessions when password is changed
+            # Note: Requires password_changed_at column in User table (migration needed)
+            try:
+                user_uuid = UUID(user_id)
+                user = await get_user_by_id(db, user_uuid)
+
+                if user and hasattr(user, "password_changed_at") and user.password_changed_at:
+                    # Get token issued at time (iat claim)
+                    token_issued_at = payload.get("iat")
+                    if token_issued_at:
+                        # Convert iat (Unix timestamp) to datetime
+                        token_issued_datetime = datetime.utcfromtimestamp(token_issued_at)
+
+                        # If password was changed after token was issued, token is invalid
+                        if user.password_changed_at > token_issued_datetime:
+                            logger.warning(
+                                "Token invalidated: password changed after token issuance. "
+                                "user_id=%s, token_issued=%s, password_changed=%s",
+                                user_id,
+                                token_issued_datetime,
+                                user.password_changed_at,
+                            )
+                            # Token is invalid - fall through to session cookie check
+                            payload = None
+            except (ValueError, TypeError, AttributeError) as e:
+                # If password_changed_at doesn't exist or other error, continue (backward compatible)
+                logger.debug("Could not check password_changed_at: %s", e)
+                pass
+
+            if payload is not None:
+                return {"id": user_id, "type": payload.get("type", "regular")}
         # Token expired or invalid - fall through to guest session check
 
     # No valid token - check for session ID cookies (fallback for JWT key loss)
@@ -72,10 +107,6 @@ async def get_current_user(
         )
         if validated_user_id:
             # Try to restore guest user from validated session token
-            from uuid import UUID
-
-            from app.db.queries.user_queries import get_user_by_id
-
             try:
                 user_id = UUID(validated_user_id)
                 user = await get_user_by_id(db, user_id)
@@ -129,10 +160,6 @@ async def get_current_user(
         )
         if validated_user_id:
             # Try to restore regular user from validated session token
-            from uuid import UUID
-
-            from app.db.queries.user_queries import get_user_by_id
-
             try:
                 user_id = UUID(validated_user_id)
                 user = await get_user_by_id(db, user_id)
@@ -178,10 +205,6 @@ async def get_current_user(
             logger.warning(
                 "user_session_id validation failed, trying as raw UUID (backward compatibility)"
             )
-            from uuid import UUID
-
-            from app.db.queries.user_queries import get_user_by_id
-
             try:
                 # Try to parse as UUID (might be old raw UUID cookie)
                 user_id = UUID(user_session_id)

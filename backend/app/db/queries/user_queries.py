@@ -3,6 +3,7 @@ User database queries.
 """
 
 import logging
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -30,9 +31,15 @@ async def get_user_by_email(session: AsyncSession, email: str) -> Optional[User]
 async def create_user(session: AsyncSession, email: str, hashed_password: str) -> User:
     """
     Create a new user with email and hashed password.
+    Sets password_changed_at to track when password was set (for session invalidation).
     Raises IntegrityError if email already exists.
     """
-    new_user = User(email=email, password=hashed_password, type="regular")
+    new_user = User(
+        email=email,
+        password=hashed_password,
+        type="regular",
+        password_changed_at=datetime.utcnow(),  # Track initial password creation
+    )
     session.add(new_user)
     try:
         await session.commit()

@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.config import settings
+from app.core.csrf import validate_csrf
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.core.password_validation import is_password_breached, validate_password_strength
@@ -20,6 +21,11 @@ from app.db.queries.login_attempt_queries import (
     clear_failed_attempts,
     get_recent_failed_attempts,
     record_failed_login,
+)
+from app.db.queries.password_reset_attempt_queries import (
+    clear_failed_password_reset_attempts,
+    get_recent_failed_password_reset_attempts,
+    record_failed_password_reset_attempt,
 )
 from app.db.queries.password_reset_queries import (
     create_password_reset_token,
@@ -72,6 +78,9 @@ async def login(
     Authenticate user with email and password.
     Returns JWT token and sets httpOnly cookie.
     """
+    # CSRF protection for state-changing operation
+    validate_csrf(http_request, require_origin=False)  # Allow API clients without Origin
+
     # Rate limiting: 5 attempts per 15 minutes per IP/email
     await check_rate_limit(
         http_request, "login", max_requests=5, window_seconds=15 * 60, identifier=request.email
@@ -97,8 +106,14 @@ async def login(
 
     if not user or not user.password:
         # Use dummy password comparison to prevent timing attacks
+        # Add constant-time delay to prevent user enumeration via timing
+        import asyncio
+
         dummy_hash = get_password_hash("dummy")
         verify_password(request.password, dummy_hash)
+        # Add small delay to make timing consistent (50-100ms typical bcrypt time)
+        await asyncio.sleep(0.05)  # 50ms constant delay
+
         # Record failed attempt if user exists
         if user:
             ip_address = http_request.client.host if http_request.client else "unknown"
@@ -174,6 +189,9 @@ async def register(
     Register a new user with email and password.
     Returns JWT token and sets httpOnly cookie.
     """
+    # CSRF protection for state-changing operation
+    validate_csrf(http_request, require_origin=False)  # Allow API clients without Origin
+
     # Rate limiting: 5 registrations per hour per IP (reduced from 10 for security)
     await check_rate_limit(http_request, "register", max_requests=5, window_seconds=60 * 60)
 
@@ -578,6 +596,9 @@ async def request_password_reset(
     This endpoint works even if JWT tokens are invalid (for recovery scenarios).
     In production, sends an email with reset link. Never returns token in response.
     """
+    # CSRF protection for state-changing operation
+    validate_csrf(http_request, require_origin=False)  # Allow API clients without Origin
+
     # Rate limiting: 3 requests per hour per email, 5 per hour per IP
     await check_rate_limit(
         http_request,
@@ -646,6 +667,9 @@ async def confirm_password_reset(
     This endpoint works even if JWT tokens are invalid (for recovery scenarios).
     Validates token, checks expiration, and resets password.
     """
+    # CSRF protection for state-changing operation
+    validate_csrf(http_request, require_origin=False)  # Allow API clients without Origin
+
     # Rate limiting: 5 attempts per 15 minutes per IP
     await check_rate_limit(
         http_request, "password_reset_confirm", max_requests=5, window_seconds=15 * 60
@@ -693,11 +717,29 @@ async def confirm_password_reset(
             detail="Invalid reset token or email",
         )
 
+    # Check for account lockout (if user exists)
+    failed_attempts = await get_recent_failed_password_reset_attempts(
+        db, user.id, window_minutes=15
+    )
+    max_failed_attempts = 5
+
+    if failed_attempts >= max_failed_attempts:
+        # Account is locked
+        lockout_duration_minutes = 15
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Account temporarily locked due to too many failed password reset attempts. Please try again in {lockout_duration_minutes} minutes.",
+            headers={"Retry-After": str(lockout_duration_minutes * 60)},
+        )
+
     # Get and validate reset token
     reset_token_obj = await get_password_reset_token(db, request.reset_token)
 
     if not reset_token_obj:
         logger.warning("Invalid password reset token provided")
+        # Record failed attempt
+        ip_address = http_request.client.host if http_request.client else "unknown"
+        await record_failed_password_reset_attempt(db, user.id, ip_address)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid reset token or email",
@@ -710,6 +752,9 @@ async def confirm_password_reset(
             reset_token_obj.user_id,
             user.id,
         )
+        # Record failed attempt
+        ip_address = http_request.client.host if http_request.client else "unknown"
+        await record_failed_password_reset_attempt(db, user.id, ip_address)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid reset token or email",
@@ -722,6 +767,9 @@ async def confirm_password_reset(
             datetime.utcnow() >= reset_token_obj.expires_at,
             reset_token_obj.used,
         )
+        # Record failed attempt
+        ip_address = http_request.client.host if http_request.client else "unknown"
+        await record_failed_password_reset_attempt(db, user.id, ip_address)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Reset token has expired or already been used",
@@ -740,11 +788,17 @@ async def confirm_password_reset(
 
     # Update user password
     user.password = hashed_password
+    # Set password_changed_at timestamp for session invalidation
+    # This invalidates all existing JWT tokens (checked in get_current_user)
+    user.password_changed_at = datetime.utcnow()
     await db.commit()
     await db.refresh(user)
 
     # Mark token as used
     await mark_token_as_used(db, reset_token_obj)
+
+    # Clear failed password reset attempts on successful reset
+    await clear_failed_password_reset_attempts(db, user.id)
 
     logger.info("Password reset successful for user: %s", user.id)
 

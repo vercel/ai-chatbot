@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -14,6 +14,9 @@ class User(Base):
     email = Column(String(64), nullable=False, unique=True)
     password = Column(String(64), nullable=True)
     type = Column(String(10), nullable=False, default="regular")  # "guest" or "regular"
+    password_changed_at = Column(
+        DateTime, nullable=True
+    )  # Timestamp when password was last changed (for session invalidation)
 
     # Relationships
     chats = relationship("Chat", back_populates="user")
