@@ -182,11 +182,20 @@ export function PureMessageActions({
         </Action>
 
         <Action
+          className={vote?.feedback ? "text-foreground" : undefined}
           data-testid="message-feedback"
           onClick={() => setIsFeedbackOpen(true)}
-          tooltip="Provide Feedback"
+          tooltip={vote?.feedback ? "View/Edit Feedback" : "Provide Feedback"}
         >
-          <FeedbackIcon />
+          <div className="relative">
+            <FeedbackIcon />
+            {vote?.feedback && (
+              <span
+                aria-label="Feedback provided"
+                className="absolute -right-0.5 -top-0.5 inline-flex size-2 rounded-full bg-primary"
+              />
+            )}
+          </div>
         </Action>
       </Actions>
       <MessageFeedback
