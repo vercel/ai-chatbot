@@ -96,6 +96,18 @@ export const vote = pgTable(
       .references(() => message.id),
     isUpvoted: boolean("isUpvoted"),
     feedback: text("feedback"),
+    // General timestamps (for backward compatibility)
+    createdAt: timestamp("createdAt", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // Separate timestamps for vote and feedback tracking
+    voteCreatedAt: timestamp("voteCreatedAt", { withTimezone: true }),
+    voteUpdatedAt: timestamp("voteUpdatedAt", { withTimezone: true }),
+    feedbackCreatedAt: timestamp("feedbackCreatedAt", { withTimezone: true }),
+    feedbackUpdatedAt: timestamp("feedbackUpdatedAt", { withTimezone: true }),
   },
   (table) => {
     return {

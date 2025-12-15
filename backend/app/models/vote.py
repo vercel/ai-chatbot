@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, String
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
@@ -17,6 +19,14 @@ class Vote(Base):
     )
     isUpvoted = Column(Boolean, nullable=True)
     feedback = Column(String, nullable=True)
+    # General timestamps (for backward compatibility)
+    createdAt = Column(DateTime, nullable=False, default=datetime.utcnow)  # noqa: N815
+    updatedAt = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)  # noqa: N815
+    # Separate timestamps for vote and feedback tracking
+    voteCreatedAt = Column(DateTime, nullable=True)  # noqa: N815
+    voteUpdatedAt = Column(DateTime, nullable=True)  # noqa: N815
+    feedbackCreatedAt = Column(DateTime, nullable=True)  # noqa: N815
+    feedbackUpdatedAt = Column(DateTime, nullable=True)  # noqa: N815
 
     # Relationships
     chat = relationship("Chat", back_populates="votes")
