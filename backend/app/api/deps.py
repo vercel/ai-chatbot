@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from app.core.session_token import validate_session_token
+from app.db.queries.revoked_token_queries import is_token_revoked
 from app.db.queries.user_queries import get_user_by_id
 
 security = HTTPBearer(auto_error=False)  # Don't auto-raise error, we'll check cookies first
@@ -56,35 +57,47 @@ async def get_current_user(
                     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload"
                 )
 
-            # Check if password was changed after token was issued
-            # This invalidates all sessions when password is changed
-            # Note: Requires password_changed_at column in User table (migration needed)
-            try:
-                user_uuid = UUID(user_id)
-                user = await get_user_by_id(db, user_uuid)
+            # Check if token is revoked (by JWT ID)
+            jti = payload.get("jti")
+            if jti:
+                if await is_token_revoked(db, jti):
+                    logger.warning("Token revoked: jti=%s, user_id=%s", jti, user_id)
+                    # Token is revoked - fall through to session cookie check
+                    payload = None
+                else:
+                    # Check if password was changed after token was issued
+                    # This invalidates all sessions when password is changed
+                    # Note: Requires password_changed_at column in User table (migration needed)
+                    try:
+                        user_uuid = UUID(user_id)
+                        user = await get_user_by_id(db, user_uuid)
 
-                if user and hasattr(user, "password_changed_at") and user.password_changed_at:
-                    # Get token issued at time (iat claim)
-                    token_issued_at = payload.get("iat")
-                    if token_issued_at:
-                        # Convert iat (Unix timestamp) to datetime
-                        token_issued_datetime = datetime.utcfromtimestamp(token_issued_at)
+                        if (
+                            user
+                            and hasattr(user, "password_changed_at")
+                            and user.password_changed_at
+                        ):
+                            # Get token issued at time (iat claim)
+                            token_issued_at = payload.get("iat")
+                            if token_issued_at:
+                                # Convert iat (Unix timestamp) to datetime
+                                token_issued_datetime = datetime.utcfromtimestamp(token_issued_at)
 
-                        # If password was changed after token was issued, token is invalid
-                        if user.password_changed_at > token_issued_datetime:
-                            logger.warning(
-                                "Token invalidated: password changed after token issuance. "
-                                "user_id=%s, token_issued=%s, password_changed=%s",
-                                user_id,
-                                token_issued_datetime,
-                                user.password_changed_at,
-                            )
-                            # Token is invalid - fall through to session cookie check
-                            payload = None
-            except (ValueError, TypeError, AttributeError) as e:
-                # If password_changed_at doesn't exist or other error, continue (backward compatible)
-                logger.debug("Could not check password_changed_at: %s", e)
-                pass
+                                # If password was changed after token was issued, token is invalid
+                                if user.password_changed_at > token_issued_datetime:
+                                    logger.warning(
+                                        "Token invalidated: password changed after token issuance. "
+                                        "user_id=%s, token_issued=%s, password_changed=%s",
+                                        user_id,
+                                        token_issued_datetime,
+                                        user.password_changed_at,
+                                    )
+                                    # Token is invalid - fall through to session cookie check
+                                    payload = None
+                    except (ValueError, TypeError, AttributeError) as e:
+                        # If password_changed_at doesn't exist or other error, continue (backward compatible)
+                        logger.debug("Could not check password_changed_at: %s", e)
+                        pass
 
             if payload is not None:
                 return {"id": user_id, "type": payload.get("type", "regular")}

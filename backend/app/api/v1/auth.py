@@ -12,6 +12,7 @@ from app.config import settings
 from app.core.csrf import validate_csrf
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
+from app.core.logging_utils import hash_email, hash_user_id
 from app.core.password_validation import is_password_breached, validate_password_strength
 from app.core.rate_limit import check_rate_limit
 from app.core.security import create_access_token, get_password_hash, verify_password
@@ -32,6 +33,7 @@ from app.db.queries.password_reset_queries import (
     get_password_reset_token,
     mark_token_as_used,
 )
+from app.db.queries.revoked_token_queries import revoke_token
 from app.db.queries.user_queries import (
     create_guest_user,
     create_user,
@@ -199,7 +201,7 @@ async def register(
 
     logger = logging.getLogger(__name__)
     logger.info("=== POST /api/auth/register called ===")
-    logger.info("Email: %s", request.email)
+    logger.info("Registration attempt for email: %s", hash_email(request.email))
 
     try:
         # Validate password length (bcrypt has a 72-byte limit)
@@ -233,12 +235,16 @@ async def register(
             )
 
         # Check if user already exists
+        # Security: Don't reveal if email exists to prevent enumeration
         existing_user = await get_user_by_email(db, request.email)
         if existing_user:
-            logger.warning("User already exists: %s", request.email)
+            # Log with hashed email for security
+            logger.warning("Registration attempt for existing email: %s", hash_email(request.email))
+            # Return generic error that doesn't reveal if email exists
+            # This prevents email enumeration while still indicating an issue
             raise ChatSDKError(
                 "bad_request:api",
-                "Email already registered",
+                "Unable to complete registration. If this email is already registered, please sign in instead.",
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -280,7 +286,7 @@ async def register(
 
         try:
             user = await create_user(db, request.email, hashed_password)
-            logger.info("User created successfully: %s", user.id)
+            logger.info("User created successfully: %s", hash_user_id(str(user.id)))
 
             # Migrate guest data (chats, documents, suggestions, files) to new user account
             if guest_user_id:
@@ -290,8 +296,8 @@ async def register(
                     )
                     logger.info(
                         "Migrated guest data from user %s to new user %s: %s",
-                        guest_user_id,
-                        user.id,
+                        hash_user_id(str(guest_user_id)),
+                        hash_user_id(str(user.id)),
                         migration_result,
                     )
                 except Exception as e:
@@ -299,11 +305,16 @@ async def register(
                     logger.error("Failed to migrate guest data: %s", e, exc_info=True)
         except IntegrityError as e:
             # Race condition: user was created between check and creation
-            logger.warning("IntegrityError during user creation: %s", e)
+            logger.warning(
+                "IntegrityError during user creation for email: %s, error: %s",
+                hash_email(request.email),
+                str(e),
+            )
             await db.rollback()
+            # Return generic error that doesn't reveal if email exists
             raise ChatSDKError(
                 "bad_request:api",
-                "Email already registered",
+                "Unable to complete registration. If this email is already registered, please sign in instead.",
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
@@ -466,11 +477,43 @@ async def create_guest(http_request: Request, db: AsyncSession = Depends(get_db)
 
 
 @router.post("/logout")
-async def logout(http_request: Request):
+async def logout(http_request: Request, db: AsyncSession = Depends(get_db)):
     """
-    Logout user by clearing auth cookies.
+    Logout user by clearing auth cookies and revoking JWT token.
     Clears auth_token, guest_session_id, and user_session_id cookies.
+    Revokes the JWT token by storing its JWT ID (jti) in the database.
     """
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    # Try to revoke the JWT token if present
+    token = http_request.cookies.get("auth_token")
+    if token:
+        from datetime import datetime
+
+        from app.core.security import decode_access_token
+
+        payload = decode_access_token(token)
+        if payload:
+            jti = payload.get("jti")
+            user_id_str = payload.get("sub")
+            exp = payload.get("exp")
+
+            if jti and user_id_str and exp:
+                try:
+                    user_id = UUID(user_id_str)
+                    # Convert exp (Unix timestamp) to datetime
+                    expires_at = datetime.utcfromtimestamp(exp)
+                    await revoke_token(db, jti, user_id, expires_at)
+                    logger.info(
+                        "Token revoked on logout: jti=%s, user_id=%s",
+                        jti[:8] + "...",
+                        hash_user_id(user_id_str),
+                    )
+                except (ValueError, TypeError) as e:
+                    logger.warning("Failed to revoke token on logout: %s", e)
+
     response = JSONResponse(content={"success": True})
     response.delete_cookie(key="auth_token", path="/")
     response.delete_cookie(key="guest_session_id", path="/")
@@ -614,7 +657,7 @@ async def request_password_reset(
     import logging
 
     logger = logging.getLogger(__name__)
-    logger.info("Password reset requested for email: %s", request.email)
+    logger.info("Password reset requested for email: %s", hash_email(request.email))
 
     # Look up user by email
     user = await get_user_by_email(db, request.email)
@@ -628,15 +671,15 @@ async def request_password_reset(
     # Create password reset token
     try:
         reset_token_obj = await create_password_reset_token(db, user.id, expires_in_hours=1)
-        logger.info("Password reset token created for user: %s", user.id)
+        logger.info("Password reset token created for user: %s", hash_user_id(str(user.id)))
 
         # TODO: In production, send email with reset link
         # For now, we'll log it (in production, remove this and send email)
         if settings.ENVIRONMENT == "development":
             logger.info(
                 "DEV MODE: Password reset token for %s: %s",
-                request.email,
-                reset_token_obj.token,
+                hash_email(request.email),
+                reset_token_obj.token[:8] + "...",  # Only show first 8 chars of token
             )
             # Security: Do not return token in response (even in dev mode)
             # Token is logged for testing purposes only
@@ -678,7 +721,7 @@ async def confirm_password_reset(
     import logging
 
     logger = logging.getLogger(__name__)
-    logger.info("Password reset confirmation attempted for email: %s", request.email)
+    logger.info("Password reset confirmation attempted for email: %s", hash_email(request.email))
 
     # Validate password length
     if len(request.password.encode("utf-8")) > 72:
@@ -800,7 +843,7 @@ async def confirm_password_reset(
     # Clear failed password reset attempts on successful reset
     await clear_failed_password_reset_attempts(db, user.id)
 
-    logger.info("Password reset successful for user: %s", user.id)
+    logger.info("Password reset successful for user: %s", hash_user_id(str(user.id)))
 
     # Create new JWT token (user can now login)
     access_token = create_access_token(data={"sub": str(user.id), "type": "regular"})

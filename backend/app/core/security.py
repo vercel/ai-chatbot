@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -46,7 +47,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = now + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     # Add iat (issued at) claim for session invalidation
-    to_encode.update({"exp": expire, "iat": now})
+    # Add jti (JWT ID) claim for token revocation
+    jti = str(uuid.uuid4())
+    to_encode.update({"exp": expire, "iat": now, "jti": jti})
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 

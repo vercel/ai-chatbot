@@ -6,6 +6,7 @@ from app.models.login_attempt import LoginAttempt
 from app.models.message import Message
 from app.models.password_reset_attempt import PasswordResetAttempt
 from app.models.password_reset_token import PasswordResetToken
+from app.models.revoked_token import RevokedToken
 from app.models.stream import Stream
 from app.models.suggestion import Suggestion
 from app.models.user import User
@@ -23,4 +24,5 @@ __all__ = [
     "PasswordResetToken",
     "LoginAttempt",
     "PasswordResetAttempt",
+    "RevokedToken",
 ]
