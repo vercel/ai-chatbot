@@ -1,71 +1,119 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
-</a>
+<div align="center">
 
-<p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
-</p>
+  <h1>Data Chatbot</h1>
+  <p>
+    <strong>Your intelligent assistant for conversations, code, documents, and more</strong>
+  </p>
+  <p>
+    <a href="#what-can-it-do">Features</a> ·
+    <a href="#getting-started">Getting Started</a> ·
+    <a href="DEVELOPER.md">Developer Guide</a>
+  </p>
+  <img alt="AI Chatbot" src="docs/img/chat-preview.png" width="600">
+</div>
 
-<p align="center">
-  <a href="https://chat-sdk.dev"><strong>Read Docs</strong></a> ·
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
-</p>
-<br/>
+---
 
-## Features
+## What is this?
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://ai-sdk.dev/docs/introduction)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
+Data Chatbot is a powerful, modern chatbot application that supports MCP (model context protocol) and is optimized for development data. It brings AI assistance to development data, helping you answer questions, generate code, and more.
 
-## Model Providers
+## What can it do?
 
-This template uses the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) to access multiple AI models through a unified interface. The default configuration includes [xAI](https://x.ai) models (`grok-2-vision-1212`, `grok-3-mini`) routed through the gateway.
+### 💬 Natural Conversations
 
-### AI Gateway Authentication
+Have fluid, context-aware conversations with AI. The chatbot remembers your chat history and maintains context throughout your session, making interactions feel natural and productive.
 
-**For Vercel deployments**: Authentication is handled automatically via OIDC tokens.
+### 📝 Create & Edit Documents
 
-**For non-Vercel deployments**: You need to provide an AI Gateway API key by setting the `AI_GATEWAY_API_KEY` environment variable in your `.env.local` file.
+Generate and edit documents in real-time. The chatbot can create:
 
-With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to direct LLM providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
+- **Text documents** - Articles, emails, reports, and more
+- **Code files** - With syntax highlighting and support for multiple languages
+- **Spreadsheets** - Data tables and structured information
 
-## Deploy Your Own
+All documents are displayed in a side panel, so you can see your content update in real-time as the AI works.
 
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
+### 📊 Data Analysis
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/templates/next.js/nextjs-ai-chatbot)
+Access and analyze data from various sources. The chatbot can help you:
 
-## Running locally
+- Find relevant data indicators
+- Retrieve and visualize data
+- Create charts and tables
+- Perform data analysis
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+### 🎨 Rich Content Support
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+- **File attachments** - Upload and discuss files
+- **Code execution** - Get help with programming in multiple languages
+- **Markdown rendering** - Beautifully formatted text with tables, lists, and more
+- **Math equations** - Support for mathematical expressions
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+### 🔒 Secure & Private
 
-```bash
-pnpm install
-pnpm db:migrate # Setup database or apply latest database changes
-pnpm dev
-```
+- User authentication to keep your conversations private
+- Chat history saved securely
+- Rate limiting to ensure fair usage
 
-Your app template should now be running on [localhost:3000](http://localhost:3000).
+### ⚡ Fast & Responsive
+
+- Streaming responses for real-time interaction
+- Optimized performance with modern web technologies
+- Smooth, responsive user interface
+
+## Getting Started
+
+### For Users
+
+If you're using a deployed version of this chatbot:
+
+1. **Sign up or log in** - Create an account or sign in to access your chat history
+2. **Start chatting** - Type your question or request in the chat interface
+3. **Explore features** - Try asking the AI to:
+   - Write code in your preferred language
+   - Create a document or spreadsheet
+   - Analyze data or answer questions
+   - Help with any task you need
+
+### For Developers
+
+Want to set up your own instance or contribute? Check out the **[Developer Guide](DEVELOPER.md)** for:
+
+- Local development setup
+- Environment configuration
+- Deployment instructions
+- API documentation
+- Contributing guidelines
+
+## Features at a Glance
+
+- ✨ **Smart Conversations** - Context-aware AI that remembers your chat history
+- 📄 **Document Creation** - Generate text, code, and spreadsheets in real-time
+- 📊 **Data Analysis** - Access and visualize data from multiple sources
+- 🔐 **Secure** - Authentication and private chat history
+- ⚡ **Fast** - Streaming responses for instant feedback
+- 🎨 **Beautiful UI** - Modern, accessible interface built with best practices
+- 📱 **Responsive** - Works great on desktop and mobile devices
+
+## Model Support
+
+The chatbot supports multiple AI models, including:
+
+- **OpenAI** - GPT models
+- **Azure OpenAI** - GPT models
+- **Anthropic** - Claude models
+- **Google** - Gemini models
+- And many more through LiteLLM
+
+## Need Help?
+
+- **Technical questions?** See [DEVELOPER.md](DEVELOPER.md)
+- **Found a bug?** Open an issue on GitHub
+- **Have a feature request?** We'd love to hear from you!
+
+---
+
+<div align="center">
+  <p>Built with ❤️ using Next.js, Vercel Data Streaming Protocol, Vercel AI SDK, LiteLLM, FastMCP, and FastAPI</p>
+</div>
