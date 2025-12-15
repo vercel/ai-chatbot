@@ -13,7 +13,12 @@ async def get_votes_by_chat_id(session: AsyncSession, chat_id: UUID):
 
     # Convert to dict format matching frontend expectations
     return [
-        {"chatId": str(vote.chatId), "messageId": str(vote.messageId), "isUpvoted": vote.isUpvoted}
+        {
+            "chatId": str(vote.chatId),
+            "messageId": str(vote.messageId),
+            "isUpvoted": vote.isUpvoted,
+            "feedback": vote.feedback,
+        }
         for vote in votes
     ]
 
@@ -22,10 +27,11 @@ async def vote_message(
     session: AsyncSession,
     chat_id: UUID,
     message_id: UUID,
-    vote_type: str,  # "up" or "down"
+    vote_type: str | None,  # "up", "down", or None (for feedback-only)
+    feedback: str | None = None,
 ):
-    """Vote on a message (upvote or downvote)."""
-    is_upvoted = vote_type == "up"
+    """Vote on a message (upvote or downvote) and/or provide feedback."""
+    is_upvoted = None if vote_type is None else (vote_type == "up")
 
     # Check if vote already exists
     result = await session.execute(select(Vote).where(Vote.messageId == message_id))
@@ -33,12 +39,17 @@ async def vote_message(
 
     if existing_vote:
         # Update existing vote
-        existing_vote.isUpvoted = is_upvoted
+        if vote_type is not None:
+            existing_vote.isUpvoted = is_upvoted
+        if feedback is not None:
+            existing_vote.feedback = feedback
         await session.commit()
         await session.refresh(existing_vote)
     else:
-        # Insert new vote
-        new_vote = Vote(chatId=chat_id, messageId=message_id, isUpvoted=is_upvoted)
+        # Insert new vote (can be feedback-only if vote_type is None)
+        new_vote = Vote(
+            chatId=chat_id, messageId=message_id, isUpvoted=is_upvoted, feedback=feedback
+        )
         session.add(new_vote)
         await session.commit()
         await session.refresh(new_vote)

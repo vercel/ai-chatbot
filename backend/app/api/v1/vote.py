@@ -24,7 +24,8 @@ router = APIRouter()
 class VoteRequest(BaseModel):
     chatId: UUID
     messageId: UUID
-    type: str  # "up" or "down"
+    type: str | None = None  # "up", "down", or None (for feedback-only)
+    feedback: str | None = None
 
 
 # ruff: noqa: N803
@@ -95,13 +96,21 @@ async def vote(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Vote on a message (upvote or downvote).
+    Vote on a message (upvote or downvote) and/or provide feedback.
+    If type is None, only feedback will be saved (no vote).
     """
-    # Validate request
-    if request.type not in ["up", "down"]:
+    # Validate request - either type or feedback must be provided
+    if request.type is not None and request.type not in ["up", "down"]:
         raise ChatSDKError(
             "bad_request:api",
-            "Type must be 'up' or 'down'",
+            "Type must be 'up', 'down', or None",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if request.type is None and not request.feedback:
+        raise ChatSDKError(
+            "bad_request:api",
+            "Either type (vote) or feedback must be provided",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -125,7 +134,7 @@ async def vote(
             )
             raise ChatSDKError("forbidden:vote", status_code=status.HTTP_403_FORBIDDEN)
 
-    # Vote on message
-    await vote_message(db, request.chatId, request.messageId, request.type)
+    # Vote on message or submit feedback
+    await vote_message(db, request.chatId, request.messageId, request.type, request.feedback)
 
-    return {"status": "voted"}
+    return {"status": "voted" if request.type else "feedback_submitted"}

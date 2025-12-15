@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey
+from sqlalchemy import Boolean, Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
@@ -15,7 +15,8 @@ class Vote(Base):
     messageId = Column(
         UUID(as_uuid=True), ForeignKey("Message_v2.id"), nullable=False, primary_key=True
     )
-    isUpvoted = Column(Boolean, nullable=False)
+    isUpvoted = Column(Boolean, nullable=True)
+    feedback = Column(String, nullable=True)
 
     # Relationships
     chat = relationship("Chat", back_populates="votes")

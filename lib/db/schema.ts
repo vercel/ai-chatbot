@@ -94,7 +94,8 @@ export const vote = pgTable(
     messageId: uuid("messageId")
       .notNull()
       .references(() => message.id),
-    isUpvoted: boolean("isUpvoted").notNull(),
+    isUpvoted: boolean("isUpvoted"),
+    feedback: text("feedback"),
   },
   (table) => {
     return {
