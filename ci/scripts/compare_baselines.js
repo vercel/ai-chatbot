@@ -1,4 +1,5 @@
 // Exported helpers for testability
+// Use ESM export for testability and annotation script compatibility
 function extractExecutionMs(explainJson) {
   if (!explainJson) return null;
   try {
@@ -69,10 +70,40 @@ function compareTimes({
     return { status: "REGRESSED", pct, delta_ms: delta };
   }
   return { status: "OK", pct, delta_ms: delta };
-}
+# ESM export for testability
+exports.extractExecutionMs = extractExecutionMs;
+exports.compareTimes = compareTimes;
 
-module.exports.extractExecutionMs = extractExecutionMs;
-module.exports.compareTimes = compareTimes;
+// Write ci/reports/compare_report.json in the required shape for annotation script
+function writeAnnotationReport(results) {
+  // Build summary counts
+  let ok = 0, newb = 0, uncomparable = 0, regressed = 0;
+  const outResults = [];
+  for (const r of results) {
+    const status = r.status;
+    if (status === 'OK') ok++;
+    else if (status === 'NEW_BASELINE') newb++;
+    else if (status === 'UNCOMPARABLE') uncomparable++;
+    else if (status === 'REGRESSED') regressed++;
+    outResults.push({
+      query_file: r.basename ? `ci/explains/current/${r.basename}.json` : undefined,
+      query_name: r.basename,
+      baseline_ms: r.baseline_ms,
+      current_ms: r.current_ms,
+      pct_increase: (r.baseline_ms != null && r.current_ms != null && r.baseline_ms !== 0)
+        ? ((r.current_ms - r.baseline_ms) / r.baseline_ms) * 100
+        : null,
+      status: r.status
+    });
+  }
+  const report = {
+    totals: { ok, new: newb, uncomparable, regressed },
+    results: outResults
+  };
+  const outPath = 'ci/reports/compare_report.json';
+  require('fs').mkdirSync('ci/reports', { recursive: true });
+  require('fs').writeFileSync(outPath, JSON.stringify(report, null, 2));
+}
 #
 !/usr/bin / env;
 node;
@@ -233,6 +264,8 @@ function main() {
       2
     )
   );
+  // Also write annotation report for GitHub check annotation
+  writeAnnotationReport(results);
   const header = [
     "query_file",
     "status",

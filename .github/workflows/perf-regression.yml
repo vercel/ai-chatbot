@@ -1,17 +1,3 @@
-      - name: Upload compare report artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: compare-report
-          path: ci/reports/compare_report.json
-
-      - name: Post compare summary as check annotation
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPORT_PATH: ci/reports/compare_report.json
-        run: |
-          node .github/actions/post-compare-summary.js
 # GitHub Actions workflow for Supabase performance regression testing
 name: DB Performance Regression
 on:
@@ -59,6 +45,19 @@ jobs:
           path: |
             ci/explains/comparison_report.json
             ci/explains/comparison_report.csv
+      - name: Upload compare report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compare-report
+          path: ci/explains/comparison_report.json
+      - name: Post compare summary as check annotation
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT_PATH: ci/explains/comparison_report.json
+        run: |
+          node .github/actions/post-compare-summary.js
       - name: Fail if regressions detected
         if: failure()
         run: exit 1
