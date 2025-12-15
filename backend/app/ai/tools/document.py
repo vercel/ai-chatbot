@@ -61,7 +61,7 @@ async def create_document_tool(
         "id": document_id,
         "title": title,
         "kind": kind,
-        "content": "A document was created and the contents are now visible to the user.",
+        "content": f"A {kind} document titled '{title}' has been fully created with complete content and is now visible to the user in the artifact panel. The document is complete and ready for use. Do NOT update this document unless the user explicitly requests changes.",
     }
 
 
@@ -220,7 +220,7 @@ async def _stream_text_content(
     ]
 
     # Stream from LiteLLM using async
-    stream = await client.chat.completions.acreate(
+    stream = await client.chat.completions.create(
         model=model,
         messages=messages,
         stream=True,
@@ -270,7 +270,7 @@ async def _stream_structured_content(
         {"role": "user", "content": [{"type": "text", "text": prompt}]},
     ]
 
-    stream = await client.chat.completions.acreate(
+    stream = await client.chat.completions.create(
         model=model,
         messages=messages,
         stream=True,
@@ -301,7 +301,7 @@ CREATE_DOCUMENT_TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "createDocument",
-        "description": "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.",
+        "description": "Create a complete document with full content for writing or content creation activities. This tool automatically generates and saves the complete document content based on the title and kind. The document is fully created and ready to use - do NOT call updateDocument immediately after creating a document.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -324,7 +324,7 @@ UPDATE_DOCUMENT_TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "updateDocument",
-        "description": "Update a document with the given description.",
+        "description": "Update an existing document with changes based on the user's description. IMPORTANT: Do NOT use this tool immediately after creating a document. Only use it when the user explicitly requests changes to an existing document, or when you need to modify a document that was created in a previous conversation turn.",
         "parameters": {
             "type": "object",
             "properties": {
