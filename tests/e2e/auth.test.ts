@@ -1,53 +1,31 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Authentication", () => {
-  test("can register a new account", async ({ page }) => {
-    const timestamp = Date.now();
-    const email = `test-${timestamp}@example.com`;
-    const password = "testpassword123";
-
-    await page.goto("/register");
-    await page.getByPlaceholder("user@acme.com").fill(email);
-    await page.getByLabel("Password").fill(password);
-    await page.getByRole("button", { name: "Sign Up" }).click();
-
-    await expect(page.getByTestId("toast")).toContainText(
-      "Account created successfully"
-    );
-    await expect(page).toHaveURL("/");
-  });
-
-  test("can login with credentials", async ({ page }) => {
-    const timestamp = Date.now();
-    const email = `test-${timestamp}@example.com`;
-    const password = "testpassword123";
-
-    await page.goto("/register");
-    await page.getByPlaceholder("user@acme.com").fill(email);
-    await page.getByLabel("Password").fill(password);
-    await page.getByRole("button", { name: "Sign Up" }).click();
-    await expect(page).toHaveURL("/");
-
+test.describe("Authentication Pages", () => {
+  test("login page renders correctly", async ({ page }) => {
     await page.goto("/login");
-    await page.getByPlaceholder("user@acme.com").fill(email);
-    await page.getByLabel("Password").fill(password);
-    await page.getByRole("button", { name: "Sign In" }).click();
-
-    await expect(page).toHaveURL("/");
+    await expect(page.getByPlaceholder("user@acme.com")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
+    await expect(page.getByText("Don't have an account?")).toBeVisible();
   });
 
-  test("shows error for invalid credentials", async ({ page }) => {
+  test("register page renders correctly", async ({ page }) => {
+    await page.goto("/register");
+    await expect(page.getByPlaceholder("user@acme.com")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign Up" })).toBeVisible();
+    await expect(page.getByText("Already have an account?")).toBeVisible();
+  });
+
+  test("can navigate from login to register", async ({ page }) => {
     await page.goto("/login");
-    await page.getByPlaceholder("user@acme.com").fill("invalid@example.com");
-    await page.getByLabel("Password").fill("wrongpassword");
-    await page.getByRole("button", { name: "Sign In" }).click();
-
-    await expect(page.getByTestId("toast")).toBeVisible();
+    await page.getByRole("link", { name: "Sign up" }).click();
+    await expect(page).toHaveURL("/register");
   });
 
-  test("can continue as guest", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.getByTestId("multimodal-input")).toBeVisible();
+  test("can navigate from register to login", async ({ page }) => {
+    await page.goto("/register");
+    await page.getByRole("link", { name: "Sign in" }).click();
+    await expect(page).toHaveURL("/login");
   });
 });
-

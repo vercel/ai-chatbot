@@ -1,24 +1,15 @@
 import { expect as baseExpect, test as baseTest } from "@playwright/test";
-import { getUnixTime } from "date-fns";
-import { createAuthenticatedContext, type UserContext } from "./helpers";
+import { ChatPage } from "./pages/chat";
 
 type Fixtures = {
-  authenticatedContext: UserContext;
+  chatPage: ChatPage;
 };
 
-export const test = baseTest.extend<object, Fixtures>({
-  authenticatedContext: [
-    async ({ browser }, use, workerInfo) => {
-      const userContext = await createAuthenticatedContext({
-        browser,
-        name: `user-${workerInfo.workerIndex}-${getUnixTime(new Date())}`,
-      });
-
-      await use(userContext);
-      await userContext.context.close();
-    },
-    { scope: "worker" },
-  ],
+export const test = baseTest.extend<Fixtures>({
+  chatPage: async ({ page }, use) => {
+    const chatPage = new ChatPage(page);
+    await use(chatPage);
+  },
 });
 
 export const expect = baseExpect;
