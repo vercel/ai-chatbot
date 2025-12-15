@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     INTERNAL_API_SECRET: str = (
         "dev-internal-secret-change-in-production"  # Secret for FastAPI → Next.js internal requests
     )
+    # Cookie Domain - Optional: Set explicit domain for cookies (e.g., ".example.com" for subdomain sharing)
+    # If not set, cookies will use the default domain (current domain only)
+    # For production with subdomains, set to ".yourdomain.com" to share cookies across subdomains
+    COOKIE_DOMAIN: str = ""
 
     # Authentication
     # Note: Authentication is always enabled. Guest users provide anonymous access.

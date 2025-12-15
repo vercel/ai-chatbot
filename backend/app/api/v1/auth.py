@@ -3,19 +3,25 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.config import settings
+from app.core.cookie_utils import delete_auth_cookie, set_auth_cookie
 from app.core.csrf import validate_csrf
 from app.core.database import get_db
 from app.core.errors import ChatSDKError
 from app.core.logging_utils import hash_email, hash_user_id
 from app.core.password_validation import is_password_breached, validate_password_strength
 from app.core.rate_limit import check_rate_limit
-from app.core.security import create_access_token, get_password_hash, verify_password
+from app.core.security import (
+    create_access_token,
+    decode_access_token,
+    get_password_hash,
+    verify_password,
+)
 from app.core.session_token import generate_session_token
 from app.db.queries.chat_queries import migrate_chats_from_guest_to_user
 from app.db.queries.login_attempt_queries import (
@@ -48,20 +54,60 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+    @field_validator("email")
+    @classmethod
+    def validate_email_length(cls, v: str) -> str:
+        """Validate email length (RFC 5321: 320 characters max for entire address)."""
+        if len(v) > 320:
+            raise ValueError("Email address cannot exceed 320 characters")
+        if len(v) < 3:  # Minimum: a@b
+            raise ValueError("Email address must be at least 3 characters")
+        return v
+
 
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
 
+    @field_validator("email")
+    @classmethod
+    def validate_email_length(cls, v: str) -> str:
+        """Validate email length (RFC 5321: 320 characters max for entire address)."""
+        if len(v) > 320:
+            raise ValueError("Email address cannot exceed 320 characters")
+        if len(v) < 3:  # Minimum: a@b
+            raise ValueError("Email address must be at least 3 characters")
+        return v
+
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_length(cls, v: str) -> str:
+        """Validate email length (RFC 5321: 320 characters max for entire address)."""
+        if len(v) > 320:
+            raise ValueError("Email address cannot exceed 320 characters")
+        if len(v) < 3:  # Minimum: a@b
+            raise ValueError("Email address must be at least 3 characters")
+        return v
 
 
 class PasswordResetConfirmRequest(BaseModel):
     email: EmailStr
     password: str
     reset_token: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_length(cls, v: str) -> str:
+        """Validate email length (RFC 5321: 320 characters max for entire address)."""
+        if len(v) > 320:
+            raise ValueError("Email address cannot exceed 320 characters")
+        if len(v) < 3:  # Minimum: a@b
+            raise ValueError("Email address must be at least 3 characters")
+        return v
 
 
 class TokenResponse(BaseModel):
@@ -154,28 +200,21 @@ async def login(
 
     # Set httpOnly cookie
     response = JSONResponse(content=response_data)
-    is_production = settings.ENVIRONMENT == "production"
-    response.set_cookie(
+    set_auth_cookie(
+        response=response,
         key="auth_token",
         value=access_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
         max_age=30 * 60,  # 30 minutes
-        path="/",
     )
 
     # Also set user_session_id cookie for regular users (fallback if JWT key is lost)
     # Use HMAC-signed token instead of raw user ID for security
     session_token = generate_session_token(str(user.id))
-    response.set_cookie(
+    set_auth_cookie(
+        response=response,
         key="user_session_id",
         value=session_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
         max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
-        path="/",
     )
 
     return response
@@ -342,34 +381,27 @@ async def register(
 
         # Set httpOnly cookie
         response = JSONResponse(content=response_data)
-        is_production = settings.ENVIRONMENT == "production"
-        response.set_cookie(
+        set_auth_cookie(
+            response=response,
             key="auth_token",
             value=access_token,
-            httponly=True,
-            secure=is_production,
-            samesite="lax",
             max_age=30 * 60,  # 30 minutes
-            path="/",
         )
 
         # Clear guest_session_id cookie (user is now registered, no longer a guest)
         if guest_user_id:
-            response.delete_cookie(key="guest_session_id", path="/")
+            delete_auth_cookie(response=response, key="guest_session_id")
 
         # Set user_session_id cookie for regular users (fallback if JWT key is lost)
         # Use HMAC-signed token instead of raw user ID for security
         from app.core.session_token import generate_session_token
 
         session_token = generate_session_token(str(user.id))
-        response.set_cookie(
+        set_auth_cookie(
+            response=response,
             key="user_session_id",
             value=session_token,
-            httponly=True,
-            secure=is_production,
-            samesite="lax",
             max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
-            path="/",
         )
 
         return response
@@ -446,31 +478,24 @@ async def create_guest(http_request: Request, db: AsyncSession = Depends(get_db)
 
     # Set httpOnly cookies
     response = JSONResponse(content=response_data)
-    is_production = settings.ENVIRONMENT == "production"
 
     # Short-lived JWT token (30 minutes)
-    response.set_cookie(
+    set_auth_cookie(
+        response=response,
         key="auth_token",
         value=access_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
         max_age=30 * 60,  # 30 minutes
-        path="/",
     )
 
     # Long-lived guest session ID (400 days - browser max)
     # This allows restoring the same guest user after JWT expires
     # Use HMAC-signed token instead of raw user ID for security
     guest_session_token = generate_session_token(str(user.id))
-    response.set_cookie(
+    set_auth_cookie(
+        response=response,
         key="guest_session_id",
         value=guest_session_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
         max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
-        path="/",
     )
 
     return response
@@ -515,9 +540,9 @@ async def logout(http_request: Request, db: AsyncSession = Depends(get_db)):
                     logger.warning("Failed to revoke token on logout: %s", e)
 
     response = JSONResponse(content={"success": True})
-    response.delete_cookie(key="auth_token", path="/")
-    response.delete_cookie(key="guest_session_id", path="/")
-    response.delete_cookie(key="user_session_id", path="/")
+    delete_auth_cookie(response=response, key="auth_token")
+    delete_auth_cookie(response=response, key="guest_session_id")
+    delete_auth_cookie(response=response, key="user_session_id")
     return response
 
 
@@ -579,17 +604,13 @@ async def get_current_user_info(
 
         # Create response with new token
         response = JSONResponse(content=response_data)
-        is_production = settings.ENVIRONMENT == "production"
 
         # Set new JWT token (30 minutes)
-        response.set_cookie(
+        set_auth_cookie(
+            response=response,
             key="auth_token",
             value=access_token,
-            httponly=True,
-            secure=is_production,
-            samesite="lax",
             max_age=30 * 60,  # 30 minutes
-            path="/",
         )
 
         # Refresh session ID cookie (sliding expiry - 400 days)
@@ -598,34 +619,136 @@ async def get_current_user_info(
             from app.core.session_token import generate_session_token
 
             guest_session_token = generate_session_token(str(user.id))
-            response.set_cookie(
+            set_auth_cookie(
+                response=response,
                 key="guest_session_id",
                 value=guest_session_token,
-                httponly=True,
-                secure=is_production,
-                samesite="lax",
                 max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
-                path="/",
             )
         else:
             # Refresh user_session_id cookie for regular users (must be HMAC-signed token)
             from app.core.session_token import generate_session_token
 
             user_session_token = generate_session_token(str(user.id))
-            response.set_cookie(
+            set_auth_cookie(
+                response=response,
                 key="user_session_id",
                 value=user_session_token,
-                httponly=True,
-                secure=is_production,
-                samesite="lax",
                 max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
-                path="/",
             )
 
         return response
 
     # Regular response (no token refresh needed)
     return response_data
+
+
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(
+    http_request: Request,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Refresh JWT token by issuing a new token with extended expiration.
+    This allows users to stay logged in without re-authenticating.
+    The old token is automatically revoked when a new one is issued.
+    """
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    user_id_str = current_user.get("id")
+    if not user_id_str:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User ID not found in token",
+        )
+
+    try:
+        user_id = UUID(user_id_str)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid user ID format: {user_id_str}",
+        )
+
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    # Get user type from database
+    user_type = (
+        user.type if hasattr(user, "type") and user.type else current_user.get("type", "regular")
+    )
+
+    # Revoke the old token if it has a jti claim
+    old_token = http_request.cookies.get("auth_token")
+    if old_token:
+        old_payload = decode_access_token(old_token)
+        if old_payload:
+            old_jti = old_payload.get("jti")
+            old_exp = old_payload.get("exp")
+            if old_jti and old_exp:
+                try:
+                    from datetime import datetime
+
+                    expires_at = datetime.utcfromtimestamp(old_exp)
+                    await revoke_token(db, old_jti, user_id, expires_at)
+                    logger.info(
+                        "Old token revoked on refresh: jti=%s, user_id=%s",
+                        old_jti[:8] + "...",
+                        hash_user_id(user_id_str),
+                    )
+                except Exception as e:
+                    # Log but don't fail refresh if revocation fails
+                    logger.warning("Failed to revoke old token on refresh: %s", e)
+
+    # Create new JWT token
+    access_token = create_access_token(data={"sub": str(user.id), "type": user_type})
+
+    # Create response
+    response_data = {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "type": user_type,
+        },
+    }
+
+    # Set new httpOnly cookie
+    response = JSONResponse(content=response_data)
+    set_auth_cookie(
+        response=response,
+        key="auth_token",
+        value=access_token,
+        max_age=30 * 60,  # 30 minutes
+    )
+
+    # Refresh session ID cookie (sliding expiry)
+    if user_type == "guest":
+        guest_session_token = generate_session_token(str(user.id))
+        set_auth_cookie(
+            response=response,
+            key="guest_session_id",
+            value=guest_session_token,
+            max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
+        )
+    else:
+        user_session_token = generate_session_token(str(user.id))
+        set_auth_cookie(
+            response=response,
+            key="user_session_id",
+            value=user_session_token,
+            max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
+        )
+
+    return response
 
 
 @router.post("/password-reset/request")
@@ -861,28 +984,21 @@ async def confirm_password_reset(
 
     # Set httpOnly cookie
     response = JSONResponse(content=response_data)
-    is_production = settings.ENVIRONMENT == "production"
-    response.set_cookie(
+    set_auth_cookie(
+        response=response,
         key="auth_token",
         value=access_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
         max_age=30 * 60,  # 30 minutes
-        path="/",
     )
 
     # Also set user_session_id cookie for regular users (fallback if JWT key is lost)
     # Use HMAC-signed token instead of raw user ID for security
     session_token = generate_session_token(str(user.id))
-    response.set_cookie(
+    set_auth_cookie(
+        response=response,
         key="user_session_id",
         value=session_token,
-        httponly=True,
-        secure=is_production,
-        samesite="lax",
         max_age=400 * 24 * 60 * 60,  # 400 days (browser maximum)
-        path="/",
     )
 
     return response
