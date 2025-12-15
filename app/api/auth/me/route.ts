@@ -38,11 +38,31 @@ export async function GET(request: NextRequest) {
       ...(token && { Authorization: `Bearer ${token}` }),
     };
 
-    const response = await fetch(fastApiUrl, {
-      headers,
-      credentials: "include",
-      cache: "no-store",
-    });
+    // Add timeout to prevent hanging requests (5 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5_000);
+
+    let response: Response;
+    try {
+      response = await fetch(fastApiUrl, {
+        headers,
+        credentials: "include",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        console.error("Timeout fetching /api/auth/me from FastAPI");
+        return NextResponse.json(
+          { detail: "Request timeout" },
+          { status: 504 }
+        );
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     // Get response data
     const data = await response.json();

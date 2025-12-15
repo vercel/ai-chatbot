@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Session Token Secret - Separate from JWT for better security isolation
+    # If not set, falls back to JWT_SECRET_KEY for backward compatibility
+    # For production, use: openssl rand -hex 32
+    SESSION_SECRET_KEY: str = ""
+
     # AI
     OPENAI_API_KEY: str = ""  # OpenAI API key for aisuite
     XAI_API_KEY: str = ""  # Deprecated: kept for backward compatibility

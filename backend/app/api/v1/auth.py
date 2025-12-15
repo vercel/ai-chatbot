@@ -174,8 +174,8 @@ async def register(
     Register a new user with email and password.
     Returns JWT token and sets httpOnly cookie.
     """
-    # Rate limiting: 3 registrations per hour per IP
-    await check_rate_limit(http_request, "register", max_requests=100, window_seconds=60 * 60)
+    # Rate limiting: 5 registrations per hour per IP (reduced from 10 for security)
+    await check_rate_limit(http_request, "register", max_requests=5, window_seconds=60 * 60)
 
     import logging
 
@@ -364,8 +364,8 @@ async def create_guest(http_request: Request, db: AsyncSession = Depends(get_db)
     Returns JWT token and sets httpOnly cookies.
     Sets both auth_token (30 min) and guest_session_id (400 days) for persistence.
     """
-    # Rate limiting: 10 guest users per minute per IP
-    await check_rate_limit(http_request, "guest", max_requests=10, window_seconds=60)
+    # Rate limiting: 5 guest users per minute per IP (reduced from 10 for security)
+    await check_rate_limit(http_request, "guest", max_requests=5, window_seconds=60)
 
     # Check if guest_session_id cookie exists - reuse existing guest user
     guest_session_id = http_request.cookies.get("guest_session_id")
@@ -617,15 +617,11 @@ async def request_password_reset(
                 request.email,
                 reset_token_obj.token,
             )
-            # In development, we can return the token for testing
-            # But this should be removed or only enabled via a flag
+            # Security: Do not return token in response (even in dev mode)
+            # Token is logged for testing purposes only
             return {
                 "success": True,
-                "message": "Password reset link sent (dev mode: token in logs)",
-                # Only return token in development for testing
-                "reset_token": reset_token_obj.token
-                if settings.ENVIRONMENT == "development"
-                else None,
+                "message": "Password reset link sent (dev mode: check server logs for token)",
             }
         else:
             # In production, send email (implement email service)
