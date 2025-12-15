@@ -2,6 +2,15 @@
 name: DB Performance Regression
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ci/queries/**.sql'
+      - 'ci/scripts/**.js'
+      - '.github/workflows/perf-regression.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   schedule:
     - cron: '0 3 * * *' # daily at 3am UTC
   pull_request:
