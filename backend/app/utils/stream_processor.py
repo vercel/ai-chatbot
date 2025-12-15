@@ -51,8 +51,24 @@ class StreamEventProcessor:
             self.message_parts_buffer.append(self.current_part)
             self.current_part = {}
 
+    def _finalize_pending_text_part(self) -> None:
+        """Finalize any pending text part before starting a new part type."""
+        if (
+            self.current_part
+            and self.current_part.get("type") == "text"
+            and self.current_message_id
+            and self.current_part.get("text", "")
+        ):
+            # Text part exists but hasn't been finalized - finalize it now
+            self.current_part["state"] = "done"
+            self.message_parts_buffer.append(self.current_part)
+            self.current_part = {}
+
     def _handle_tool_input_start_event(self, data: Dict[str, Any]) -> None:
         """Handle 'tool-input-start' event - initialize tool part."""
+        # Finalize any pending text part before starting tool part
+        self._finalize_pending_text_part()
+
         self.current_part = {
             "type": "tool-" + data.get("toolName", ""),
             "toolCallId": data.get("toolCallId"),
@@ -91,6 +107,10 @@ class StreamEventProcessor:
 
     def _handle_finish_event(self, data: Dict[str, Any]) -> None:
         """Handle 'finish' event - finalize message and track usage."""
+        # Finalize any pending text part before saving the message
+        # This handles cases where text-end event wasn't emitted (e.g., when finish_reason is tool_calls)
+        self._finalize_pending_text_part()
+
         if self.message_parts_buffer and self.current_message_id:
             self.assistant_messages.append(
                 {
