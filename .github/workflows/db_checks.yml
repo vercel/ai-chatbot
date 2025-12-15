@@ -7,7 +7,6 @@ on:
 
 jobs:
   db_checks:
-    if: secrets.DATABASE_URL != ''
     runs-on: ubuntu-latest
     env:
       OUT_DIR: ci/artifacts
