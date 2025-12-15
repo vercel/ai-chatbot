@@ -25,47 +25,72 @@ export async function POST(request: NextRequest) {
       // Even if FastAPI fails, clear cookies locally
     }
 
-    // Clear cookies in Next.js response (server-side)
+    // Create response
+    const nextResponse = NextResponse.json({ success: true });
+
+    // Delete cookies by setting them with Expires in the past
+    // Note: Set-Cookie headers from FastAPI are not accessible via fetch() in Node.js
+    // So we manually delete cookies by setting them with Expires in the past
+    const pastDate = new Date(0).toUTCString();
+    const isProduction = process.env.NODE_ENV === "production";
+
+    // Delete auth_token cookie
+    nextResponse.headers.set(
+      "Set-Cookie",
+      `auth_token=; Path=/; Expires=${pastDate}; SameSite=Lax${isProduction ? "; Secure" : ""}; HttpOnly`
+    );
+
+    // Delete guest_session_id cookie
+    nextResponse.headers.append(
+      "Set-Cookie",
+      `guest_session_id=; Path=/; Expires=${pastDate}; SameSite=Lax${isProduction ? "; Secure" : ""}; HttpOnly`
+    );
+
+    // Delete user_session_id cookie
+    nextResponse.headers.append(
+      "Set-Cookie",
+      `user_session_id=; Path=/; Expires=${pastDate}; SameSite=Lax${isProduction ? "; Secure" : ""}; HttpOnly`
+    );
+
+    // Also delete cookies in Next.js cookie store (server-side)
     const cookieStore = await cookies();
     cookieStore.delete("auth_token");
     cookieStore.delete("guest_session_id");
     cookieStore.delete("user_session_id");
 
-    // Forward Set-Cookie headers from FastAPI to ensure cookies are deleted
-    // FastAPI sets delete cookies via Set-Cookie headers
-    const setCookieHeaders = response.headers.getSetCookie?.() || [];
-    if (setCookieHeaders.length === 0) {
-      const setCookieHeader = response.headers.get("set-cookie");
-      if (setCookieHeader) {
-        const cookies = Array.isArray(setCookieHeader)
-          ? setCookieHeader
-          : setCookieHeader.split(", ");
-        for (const cookie of cookies) {
-          // Extract cookie name and create delete cookie
-          const cookieName = cookie.split("=")[0];
-          cookieStore.delete(cookieName);
-        }
-      }
-    } else {
-      // Process Set-Cookie headers from FastAPI
-      for (const cookie of setCookieHeaders) {
-        // FastAPI delete cookies have format: "auth_token=; Path=/; Expires=..."
-        // We need to extract the cookie name
-        const cookieName = cookie.split("=")[0];
-        cookieStore.delete(cookieName);
-      }
-    }
-
-    // Return success response - client will handle redirect
-    return NextResponse.json({ success: true });
+    return nextResponse;
   } catch (error) {
     console.error("Error during logout:", error);
     // Even on error, try to clear cookies
-    const cookieStore = await cookies();
-    cookieStore.delete("auth_token");
-    cookieStore.delete("guest_session_id");
-    cookieStore.delete("user_session_id");
+    const nextResponse = NextResponse.json({ success: true }, { status: 200 });
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    // Explicitly delete cookies by setting them with Expires in the past
+    const pastDate = new Date(0).toUTCString();
+    const isProduction = process.env.NODE_ENV === "production";
+
+    nextResponse.headers.set(
+      "Set-Cookie",
+      `auth_token=; Path=/; Expires=${pastDate}; SameSite=Lax${isProduction ? "; Secure" : ""}; HttpOnly`
+    );
+    nextResponse.headers.append(
+      "Set-Cookie",
+      `guest_session_id=; Path=/; Expires=${pastDate}; SameSite=Lax${isProduction ? "; Secure" : ""}; HttpOnly`
+    );
+    nextResponse.headers.append(
+      "Set-Cookie",
+      `user_session_id=; Path=/; Expires=${pastDate}; SameSite=Lax${isProduction ? "; Secure" : ""}; HttpOnly`
+    );
+
+    // Also delete cookies in Next.js cookie store (server-side)
+    try {
+      const cookieStore = await cookies();
+      cookieStore.delete("auth_token");
+      cookieStore.delete("guest_session_id");
+      cookieStore.delete("user_session_id");
+    } catch {
+      // Ignore errors when deleting cookies
+    }
+
+    return nextResponse;
   }
 }

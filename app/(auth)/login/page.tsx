@@ -7,6 +7,8 @@ import { useActionState, useEffect, useState } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
 import { toast } from "@/components/toast";
+import { Button } from "@/components/ui/button";
+import { LoaderIcon } from "@/components/icons";
 import { type LoginActionState, login } from "../actions";
 
 export default function Page() {
@@ -14,6 +16,7 @@ export default function Page() {
 
   const [email, setEmail] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isCreatingGuest, setIsCreatingGuest] = useState(false);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
@@ -50,6 +53,28 @@ export default function Page() {
     formAction(formData);
   };
 
+  const handleTryAsGuest = async () => {
+    if (isCreatingGuest) {
+      return;
+    }
+
+    setIsCreatingGuest(true);
+
+    try {
+      // Use window.location.href to navigate to the guest endpoint
+      // This allows the server-side route handler to set cookies and redirect properly
+      // The route handler will create the guest session and redirect to home
+      window.location.href = "/api/auth/guest?redirectUrl=/";
+    } catch (error) {
+      console.error("Error creating guest session:", error);
+      toast({
+        type: "error",
+        description: "Failed to start guest session. Please try again.",
+      });
+      setIsCreatingGuest(false);
+    }
+  };
+
   return (
     <div className="flex h-dvh w-screen items-start justify-center bg-background pt-12 md:items-center md:pt-0">
       <div className="flex w-full max-w-md flex-col gap-12 overflow-hidden rounded-2xl">
@@ -61,16 +86,46 @@ export default function Page() {
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
-          <p className="mt-4 text-center text-gray-600 text-sm dark:text-zinc-400">
-            {"Don't have an account? "}
-            <Link
-              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
-              href="/register"
+          <div className="mt-4 flex flex-col gap-3">
+            <p className="text-center text-gray-600 text-sm dark:text-zinc-400">
+              {"Don't have an account? "}
+              <Link
+                className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
+                href="/register"
+              >
+                Sign up
+              </Link>
+              {" for free."}
+            </p>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-300 dark:border-zinc-700" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-gray-500 dark:text-zinc-400">
+                  Or
+                </span>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleTryAsGuest}
+              disabled={isCreatingGuest || isSuccessful}
+              className="w-full"
             >
-              Sign up
-            </Link>
-            {" for free."}
-          </p>
+              {isCreatingGuest ? (
+                <>
+                  <span className="mr-2 animate-spin">
+                    <LoaderIcon />
+                  </span>
+                  Creating guest session...
+                </>
+              ) : (
+                "Try as guest"
+              )}
+            </Button>
+          </div>
         </AuthForm>
       </div>
     </div>

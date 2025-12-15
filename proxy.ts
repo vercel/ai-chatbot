@@ -29,6 +29,7 @@ export async function proxy(request: NextRequest) {
 
   // Allow login/register pages to be accessed without authentication
   // This prevents redirect loops when users try to login after logout
+  // IMPORTANT: Return early to prevent any user lookup or guest creation
   if (["/login", "/register"].includes(pathname)) {
     return NextResponse.next();
   }
@@ -45,11 +46,6 @@ export async function proxy(request: NextRequest) {
   }
 
   const isGuest = guestRegex.test(user.email ?? "");
-
-  // If user is a regular (non-guest) user trying to access login/register, redirect to home
-  if (user && !isGuest && ["/login", "/register"].includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
 
   return NextResponse.next();
 }

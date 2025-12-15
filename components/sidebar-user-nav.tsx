@@ -114,21 +114,34 @@ export function SidebarUserNav({
                       mutate(unstable_serialize(getChatHistoryPaginationKey));
 
                       // Verify logout by checking auth status
-                      // This ensures cookies are actually cleared before navigation
-                      const verifyUrl = getApiUrl("/api/auth/me");
-                      const verifyResponse = await fetch(verifyUrl, {
-                        credentials: "include",
-                      });
+                      // Retry a few times to ensure cookies are cleared
+                      let isLoggedOut = false;
+                      for (let i = 0; i < 5; i++) {
+                        await new Promise((resolve) => {
+                          setTimeout(resolve, 50);
+                        });
 
-                      // If we get 401, we're successfully logged out
-                      // If we get 200, cookies might still be present (shouldn't happen)
-                      if (verifyResponse.status === 401) {
-                        // Successfully logged out - navigate to login
-                        router.push("/login");
+                        const verifyUrl = getApiUrl("/api/auth/me");
+                        const verifyResponse = await fetch(verifyUrl, {
+                          credentials: "include",
+                          cache: "no-store",
+                        });
+
+                        if (verifyResponse.status === 401) {
+                          isLoggedOut = true;
+                          break;
+                        }
+                      }
+
+                      // Use window.location.href for a full page reload
+                      // This ensures cookies are fully cleared before navigation
+                      // and prevents any client-side state from interfering
+                      if (isLoggedOut) {
+                        window.location.href = "/login";
                       } else {
-                        // Unexpected response - still navigate but log warning
-                        console.warn("Logout verification returned unexpected status:", verifyResponse.status);
-                        router.push("/login");
+                        // If verification failed, still navigate but log warning
+                        console.warn("Logout verification failed, but proceeding with navigation");
+                        window.location.href = "/login";
                       }
                     } catch (error) {
                       toast({
