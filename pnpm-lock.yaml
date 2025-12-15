@@ -186,7 +186,7 @@ importers:
         specifier: ^5.5.2
         version: 5.5.2
       pg:
-        specifier: ^8.16.3
+        specifier: 8.16.3
         version: 8.16.3
       postgres:
         specifier: ^3.4.4
@@ -4100,9 +4100,6 @@ packages:
   pg-protocol@1.10.3:
     resolution: {integrity: sha512-6DIBgBQaTKDJyxnXaLiLR8wBpQQcGWuAESkRBX/t6OwA8YsqP+iVSiond2EDy6Y/dsGk8rh/jtax3js5NeV7JQ==}
 
-  pg-protocol@1.8.0:
-    resolution: {integrity: sha512-jvuYlEkL03NRvOoyoRktBK7+qU5kOvlAwvmrH8sr3wbLrOdVWsRxQfz8mMy9sZFsqJ1hEWNfdWKI4SAmoL+j7g==}
-
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
@@ -7060,7 +7057,7 @@ snapshots:
   '@types/pg@8.11.6':
     dependencies:
       '@types/node': 22.13.10
-      pg-protocol: 1.8.0
+      pg-protocol: 1.10.3
       pg-types: 4.0.2
     optional: true
 
@@ -8715,9 +8712,6 @@ snapshots:
       pg: 8.16.3
 
   pg-protocol@1.10.3: {}
-
-  pg-protocol@1.8.0:
-    optional: true
 
   pg-types@2.2.0:
     dependencies:
