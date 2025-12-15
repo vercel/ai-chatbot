@@ -99,6 +99,7 @@ export function TimeSeriesChart({
         <LineChart
           data={chartData}
           margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+          isAnimationActive={false}
         >
           <CartesianGrid
             opacity={0.3}
@@ -156,6 +157,7 @@ export function TimeSeriesChart({
               dot={{ r: 3 }}
               activeDot={{ r: 5 }}
               connectNulls={false}
+              isAnimationActive={false}
             />
           ))}
         </LineChart>
