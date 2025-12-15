@@ -2,7 +2,7 @@
 
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { motion } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { User } from "next-auth";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -99,7 +99,8 @@ export function getChatHistoryPaginationKey(
 
 export function SidebarHistory({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
-  const { id } = useParams();
+  const pathname = usePathname();
+  const id = pathname?.startsWith("/chat/") ? pathname.split("/")[2] : null;
 
   const {
     data: paginatedChatHistories,
@@ -124,7 +125,12 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     : false;
 
   const handleDelete = () => {
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
+    const chatToDelete = deleteId;
+    const isCurrentChat = pathname === `/chat/${chatToDelete}`;
+
+    setShowDeleteDialog(false);
+
+    const deletePromise = fetch(`/api/chat?id=${chatToDelete}`, {
       method: "DELETE",
     });
 
@@ -135,21 +141,22 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
           if (chatHistories) {
             return chatHistories.map((chatHistory) => ({
               ...chatHistory,
-              chats: chatHistory.chats.filter((chat) => chat.id !== deleteId),
+              chats: chatHistory.chats.filter(
+                (chat) => chat.id !== chatToDelete
+              ),
             }));
           }
         });
+
+        if (isCurrentChat) {
+          router.replace("/");
+          router.refresh();
+        }
 
         return "Chat deleted successfully";
       },
       error: "Failed to delete chat",
     });
-
-    setShowDeleteDialog(false);
-
-    if (deleteId === id) {
-      router.push("/");
-    }
   };
 
   if (!user) {

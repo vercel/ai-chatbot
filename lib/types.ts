@@ -6,7 +6,6 @@ import type { getWeather } from "./ai/tools/get-weather";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type { updateDocument } from "./ai/tools/update-document";
 import type { Suggestion } from "./db/schema";
-import type { AppUsage } from "./usage";
 
 export type DataPart = { type: "append-message"; message: string };
 
@@ -42,7 +41,7 @@ export type CustomUIDataTypes = {
   kind: ArtifactKind;
   clear: null;
   finish: null;
-  usage: AppUsage;
+  "chat-title": string;
 };
 
 export type ChatMessage = UIMessage<

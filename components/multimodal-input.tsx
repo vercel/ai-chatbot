@@ -34,9 +34,7 @@ import {
   modelsByProvider,
 } from "@/lib/ai/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
-import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
-import { Context } from "./elements/context";
 import {
   PromptInput,
   PromptInputSubmit,
@@ -71,7 +69,6 @@ function PureMultimodalInput({
   selectedVisibilityType,
   selectedModelId,
   onModelChange,
-  usage,
 }: {
   chatId: string;
   input: string;
@@ -87,7 +84,6 @@ function PureMultimodalInput({
   selectedVisibilityType: VisibilityType;
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
-  usage?: AppUsage;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -203,13 +199,6 @@ function PureMultimodalInput({
       toast.error("Failed to upload file, please try again!");
     }
   }, []);
-
-  const contextProps = useMemo(
-    () => ({
-      usage,
-    }),
-    [usage]
-  );
 
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -374,8 +363,7 @@ function PureMultimodalInput({
             ref={textareaRef}
             rows={1}
             value={input}
-          />{" "}
-          <Context {...contextProps} />
+          />
         </div>
         <PromptInputToolbar className="border-top-0! border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
