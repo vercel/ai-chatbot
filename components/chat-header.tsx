@@ -56,8 +56,8 @@ function PureChatHeader({
       >
         <Link
           href={"https://vercel.com/templates/next.js/nextjs-ai-chatbot"}
-          rel="noreferrer"
-          target="_noblank"
+          rel="noopener noreferrer"
+          target="_blank"
         >
           <VercelIcon size={16} />
           Deploy with Vercel
