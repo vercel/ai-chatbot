@@ -9,6 +9,7 @@ import type { UIArtifact } from "./artifact";
 import { PreviewMessage, ThinkingMessage } from "./message";
 
 type ArtifactMessagesProps = {
+  addToolApprovalResponse: UseChatHelpers<ChatMessage>["addToolApprovalResponse"];
   chatId: string;
   status: UseChatHelpers<ChatMessage>["status"];
   votes: Vote[] | undefined;
@@ -20,6 +21,7 @@ type ArtifactMessagesProps = {
 };
 
 function PureArtifactMessages({
+  addToolApprovalResponse,
   chatId,
   status,
   votes,
@@ -45,6 +47,7 @@ function PureArtifactMessages({
     >
       {messages.map((message, index) => (
         <PreviewMessage
+          addToolApprovalResponse={addToolApprovalResponse}
           chatId={chatId}
           isLoading={status === "streaming" && index === messages.length - 1}
           isReadonly={isReadonly}
@@ -64,7 +67,12 @@ function PureArtifactMessages({
       ))}
 
       <AnimatePresence mode="wait">
-        {status === "submitted" && <ThinkingMessage key="thinking" />}
+        {status === "submitted" &&
+          !messages.some((msg) =>
+            msg.parts?.some(
+              (part) => "state" in part && part.state === "approval-responded"
+            )
+          ) && <ThinkingMessage key="thinking" />}
       </AnimatePresence>
 
       <motion.div

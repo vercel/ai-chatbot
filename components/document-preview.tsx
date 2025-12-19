@@ -102,7 +102,7 @@ export function DocumentPreview({
   }
 
   return (
-    <div className="relative w-full cursor-pointer">
+    <div className="relative w-full max-w-[450px] cursor-pointer">
       <HitboxLayer
         hitboxRef={hitboxRef}
         result={result}
@@ -119,7 +119,7 @@ export function DocumentPreview({
 }
 
 const LoadingSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => (
-  <div className="w-full">
+  <div className="w-full max-w-[450px]">
     <div className="flex h-[57px] flex-row items-center justify-between gap-2 rounded-t-2xl border border-b-0 p-4 dark:border-zinc-700 dark:bg-muted">
       <div className="flex flex-row items-center gap-3">
         <div className="text-muted-foreground">

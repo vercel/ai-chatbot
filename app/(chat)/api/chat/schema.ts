@@ -14,13 +14,24 @@ const filePartSchema = z.object({
 
 const partSchema = z.union([textPartSchema, filePartSchema]);
 
+const userMessageSchema = z.object({
+  id: z.string().uuid(),
+  role: z.enum(["user"]),
+  parts: z.array(partSchema),
+});
+
+// For tool approval flows, we accept all messages (more permissive schema)
+const messageSchema = z.object({
+  id: z.string(),
+  role: z.string(),
+  parts: z.array(z.any()),
+});
+
 export const postRequestBodySchema = z.object({
   id: z.string().uuid(),
-  message: z.object({
-    id: z.string().uuid(),
-    role: z.enum(["user"]),
-    parts: z.array(partSchema),
-  }),
+  // Either a single new message or all messages (for tool approvals)
+  message: userMessageSchema.optional(),
+  messages: z.array(messageSchema).optional(),
   selectedChatModel: z.string(),
   selectedVisibilityType: z.enum(["public", "private"]),
 });
