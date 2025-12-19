@@ -6,6 +6,11 @@ const mockResponses: Record<string, string> = {
   greeting: "Hello! How can I help you today?",
 };
 
+const mockUsage = {
+  inputTokens: { total: 10, noCache: 10, cacheRead: 0, cacheWrite: 0 },
+  outputTokens: { total: 20, text: 20, reasoning: 0 },
+};
+
 function getResponseForPrompt(prompt: unknown): string {
   const promptStr = JSON.stringify(prompt).toLowerCase();
 
@@ -25,17 +30,14 @@ function getResponseForPrompt(prompt: unknown): string {
 
 const createMockModel = (): LanguageModel => {
   return {
-    specificationVersion: "v2",
+    specificationVersion: "v3",
     provider: "mock",
     modelId: "mock-model",
     defaultObjectGenerationMode: "tool",
-    supportedUrls: [],
-    supportsImageUrls: false,
-    supportsStructuredOutputs: false,
+    supportedUrls: {},
     doGenerate: async ({ prompt }: { prompt: unknown }) => ({
-      rawCall: { rawPrompt: null, rawSettings: {} },
       finishReason: "stop",
-      usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+      usage: mockUsage,
       content: [{ type: "text", text: getResponseForPrompt(prompt) }],
       warnings: [],
     }),
@@ -46,24 +48,26 @@ const createMockModel = (): LanguageModel => {
       return {
         stream: new ReadableStream({
           async start(controller) {
+            controller.enqueue({ type: "text-start", id: "t1" });
             for (const word of words) {
               controller.enqueue({
                 type: "text-delta",
-                textDelta: `${word} `,
+                id: "t1",
+                delta: `${word} `,
               });
               await new Promise((resolve) => {
                 setTimeout(resolve, 10);
               });
             }
+            controller.enqueue({ type: "text-end", id: "t1" });
             controller.enqueue({
               type: "finish",
               finishReason: "stop",
-              usage: { inputTokens: 10, outputTokens: 20 },
+              usage: mockUsage,
             });
             controller.close();
           },
         }),
-        rawCall: { rawPrompt: null, rawSettings: {} },
       };
     },
   } as unknown as LanguageModel;
@@ -71,17 +75,14 @@ const createMockModel = (): LanguageModel => {
 
 const createMockReasoningModel = (): LanguageModel => {
   return {
-    specificationVersion: "v2",
+    specificationVersion: "v3",
     provider: "mock",
     modelId: "mock-reasoning-model",
     defaultObjectGenerationMode: "tool",
-    supportedUrls: [],
-    supportsImageUrls: false,
-    supportsStructuredOutputs: false,
+    supportedUrls: {},
     doGenerate: async () => ({
-      rawCall: { rawPrompt: null, rawSettings: {} },
       finishReason: "stop",
-      usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+      usage: mockUsage,
       content: [{ type: "text", text: "This is a reasoned response." }],
       reasoning: [
         { type: "text", text: "Let me think through this step by step..." },
@@ -91,62 +92,77 @@ const createMockReasoningModel = (): LanguageModel => {
     doStream: () => ({
       stream: new ReadableStream({
         async start(controller) {
+          controller.enqueue({ type: "reasoning-start", id: "r1" });
           controller.enqueue({
-            type: "reasoning",
-            textDelta: "Let me think through this step by step... ",
+            type: "reasoning-delta",
+            id: "r1",
+            delta: "Let me think through this step by step... ",
           });
+          controller.enqueue({ type: "reasoning-end", id: "r1" });
           await new Promise((resolve) => {
             setTimeout(resolve, 10);
           });
+          controller.enqueue({ type: "text-start", id: "t1" });
           controller.enqueue({
             type: "text-delta",
-            textDelta: "This is a reasoned response.",
+            id: "t1",
+            delta: "This is a reasoned response.",
           });
+          controller.enqueue({ type: "text-end", id: "t1" });
           controller.enqueue({
             type: "finish",
             finishReason: "stop",
-            usage: { inputTokens: 10, outputTokens: 20 },
+            usage: mockUsage,
           });
           controller.close();
         },
       }),
-      rawCall: { rawPrompt: null, rawSettings: {} },
     }),
   } as unknown as LanguageModel;
 };
 
 const createMockTitleModel = (): LanguageModel => {
   return {
-    specificationVersion: "v2",
+    specificationVersion: "v3",
     provider: "mock",
     modelId: "mock-title-model",
     defaultObjectGenerationMode: "tool",
-    supportedUrls: [],
-    supportsImageUrls: false,
-    supportsStructuredOutputs: false,
+    supportedUrls: {},
     doGenerate: async () => ({
-      rawCall: { rawPrompt: null, rawSettings: {} },
       finishReason: "stop",
-      usage: { inputTokens: 5, outputTokens: 5, totalTokens: 10 },
+      usage: {
+        inputTokens: { total: 5, noCache: 5, cacheRead: 0, cacheWrite: 0 },
+        outputTokens: { total: 5, text: 5, reasoning: 0 },
+      },
       content: [{ type: "text", text: "Test Conversation" }],
       warnings: [],
     }),
     doStream: () => ({
       stream: new ReadableStream({
         start(controller) {
+          controller.enqueue({ type: "text-start", id: "t1" });
           controller.enqueue({
             type: "text-delta",
-            textDelta: "Test Conversation",
+            id: "t1",
+            delta: "Test Conversation",
           });
+          controller.enqueue({ type: "text-end", id: "t1" });
           controller.enqueue({
             type: "finish",
             finishReason: "stop",
-            usage: { inputTokens: 5, outputTokens: 5 },
+            usage: {
+              inputTokens: {
+                total: 5,
+                noCache: 5,
+                cacheRead: 0,
+                cacheWrite: 0,
+              },
+              outputTokens: { total: 5, text: 5, reasoning: 0 },
+            },
           });
           controller.close();
         },
       }),
-      rawCall: { rawPrompt: null, rawSettings: {} },
     }),
   } as unknown as LanguageModel;
 };
