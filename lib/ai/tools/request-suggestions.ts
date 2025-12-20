@@ -1,4 +1,4 @@
-import { streamObject, tool, type UIMessageStreamWriter } from "ai";
+import { Output, streamText, tool, type UIMessageStreamWriter } from "ai";
 import type { Session } from "next-auth";
 import { z } from "zod";
 import { getDocumentById, saveSuggestions } from "@/lib/db/queries";
@@ -17,11 +17,14 @@ export const requestSuggestions = ({
   dataStream,
 }: RequestSuggestionsProps) =>
   tool({
-    description: "Request suggestions for a document",
+    description:
+      "Request writing suggestions for an existing document artifact. Only use this when the user explicitly asks to improve or get suggestions for a document they have already created. Never use for general questions.",
     inputSchema: z.object({
       documentId: z
         .string()
-        .describe("The ID of the document to request edits"),
+        .describe(
+          "The UUID of an existing document artifact that was previously created with createDocument"
+        ),
     }),
     execute: async ({ documentId }) => {
       const document = await getDocumentById({ id: documentId });
@@ -37,37 +40,56 @@ export const requestSuggestions = ({
         "userId" | "createdAt" | "documentCreatedAt"
       >[] = [];
 
-      const { elementStream } = streamObject({
+      const { partialOutputStream } = streamText({
         model: getArtifactModel(),
         system:
           "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.",
         prompt: document.content,
-        output: "array",
-        schema: z.object({
-          originalSentence: z.string().describe("The original sentence"),
-          suggestedSentence: z.string().describe("The suggested sentence"),
-          description: z.string().describe("The description of the suggestion"),
+        output: Output.array({
+          element: z.object({
+            originalSentence: z.string().describe("The original sentence"),
+            suggestedSentence: z.string().describe("The suggested sentence"),
+            description: z
+              .string()
+              .describe("The description of the suggestion"),
+          }),
         }),
       });
 
-      for await (const element of elementStream) {
-        // @ts-expect-error todo: fix type
-        const suggestion: Suggestion = {
-          originalText: element.originalSentence,
-          suggestedText: element.suggestedSentence,
-          description: element.description,
-          id: generateUUID(),
-          documentId,
-          isResolved: false,
-        };
+      let processedCount = 0;
+      for await (const partialOutput of partialOutputStream) {
+        if (!partialOutput) {
+          continue;
+        }
 
-        dataStream.write({
-          type: "data-suggestion",
-          data: suggestion,
-          transient: true,
-        });
+        for (let i = processedCount; i < partialOutput.length; i++) {
+          const element = partialOutput[i];
+          if (
+            !element?.originalSentence ||
+            !element?.suggestedSentence ||
+            !element?.description
+          ) {
+            continue;
+          }
 
-        suggestions.push(suggestion);
+          const suggestion = {
+            originalText: element.originalSentence,
+            suggestedText: element.suggestedSentence,
+            description: element.description,
+            id: generateUUID(),
+            documentId,
+            isResolved: false,
+          };
+
+          dataStream.write({
+            type: "data-suggestion",
+            data: suggestion as Suggestion,
+            transient: true,
+          });
+
+          suggestions.push(suggestion);
+          processedCount++;
+        }
       }
 
       if (session.user?.id) {
