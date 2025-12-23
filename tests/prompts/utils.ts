@@ -23,7 +23,7 @@ export function getResponseChunksByPrompt(
     { type: "text-start", id: "t1" },
     { type: "text-delta", id: "t1", delta: "Hello, world!" },
     { type: "text-end", id: "t1" },
-    { type: "finish", finishReason: "stop", usage: mockUsage }
+    { type: "finish", finishReason: { unified: "stop", raw: "stop" }, usage: mockUsage }
   );
 
   return chunks;
