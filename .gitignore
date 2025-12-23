@@ -30,6 +30,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# MCP configuration (may contain sensitive tokens)
+mcp.json
+
 # turbo
 .turbo
 

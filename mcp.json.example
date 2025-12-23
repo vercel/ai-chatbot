@@ -1,0 +1,20 @@
+{
+  "servers": {
+    "example-http": {
+      "url": "https://your-mcp-server.com/mcp",
+      "env": {
+        "Authorization": "Bearer ${input:api_token}"
+      },
+      "type": "http"
+    }
+  },
+  "inputs": [
+    {
+      "id": "api_token",
+      "type": "promptString",
+      "description": "API Token",
+      "password": true
+    }
+  ]
+}
+

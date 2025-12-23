@@ -8,6 +8,7 @@ import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
+import { DynamicToolRenderer } from "./dynamic-tool-renderer";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
 import {
@@ -336,6 +337,22 @@ const PurePreviewMessage = ({
                     )}
                   </ToolContent>
                 </Tool>
+              );
+            }
+
+            // Handle dynamic tools from MCP servers
+            if (
+              type.startsWith("tool-") &&
+              !["tool-getWeather", "tool-createDocument", "tool-updateDocument", "tool-requestSuggestions"].includes(type)
+            ) {
+              // This is a dynamic tool
+              const dynamicPart = part as any;
+              return (
+                <DynamicToolRenderer
+                  addToolApprovalResponse={addToolApprovalResponse}
+                  key={dynamicPart.toolCallId}
+                  part={dynamicPart}
+                />
               );
             }
 
