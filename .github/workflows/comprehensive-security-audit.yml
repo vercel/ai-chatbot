@@ -1,0 +1,312 @@
+name: Comprehensive Security Audit
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '9.12.3'
+
+jobs:
+  # Rate limiting check
+  rate-limit-check:
+    name: Check Rate Limits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check concurrent workflows
+        run: |
+          echo "🔍 Checking for concurrent workflows..."
+          
+          # Get running workflows for this repo
+          RUNNING_WORKFLOWS=$(gh run list --repo ${{ github.repository }} --status in_progress --json workflowName,status | jq 'length')
+          
+          echo "Currently running workflows: $RUNNING_WORKFLOWS"
+          
+          # Limit to 5 concurrent workflows
+          if [ $RUNNING_WORKFLOWS -gt 5 ]; then
+            echo "⚠️ Too many concurrent workflows ($RUNNING_WORKFLOWS)"
+            echo "Rate limiting triggered. Please wait for other workflows to complete."
+            exit 1
+          fi
+          
+          echo "✅ Rate limit check passed"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # Trivy vulnerability scanning
+  trivy-scan:
+    name: Trivy Security Scan
+    runs-on: ubuntu-latest
+    needs: rate-limit-check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          ignore-unfixed: true
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy in table format
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Generate vulnerability report
+        if: always()
+        run: |
+          echo "## 🔐 Trivy Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Scan completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See Security tab for detailed results." >> $GITHUB_STEP_SUMMARY
+
+  # CodeQL Analysis
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    needs: rate-limit-check
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'typescript']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: +security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # Dependency audit
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    needs: rate-limit-check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        run: |
+          echo "🔍 Running dependency audit..."
+          pnpm audit --audit-level=high || exit_code=$?
+          
+          if [ ${exit_code:-0} -ne 0 ]; then
+            echo "⚠️ Security vulnerabilities found"
+            pnpm audit --audit-level=high --json > audit-results.json || true
+          else
+            echo "✅ No high/critical vulnerabilities found"
+          fi
+        continue-on-error: true
+
+      - name: Check for outdated packages
+        run: |
+          echo "📦 Checking for outdated packages..."
+          pnpm outdated || true
+
+      - name: Generate audit report
+        if: always()
+        run: |
+          echo "## 📦 Dependency Audit Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Audit completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f audit-results.json ]; then
+            echo "⚠️ Vulnerabilities detected. Review audit-results.json" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No critical vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: audit-results.json
+          retention-days: 90
+          if-no-files-found: ignore
+
+  # Container security scan
+  docker-security-scan:
+    name: Docker Image Security Scan
+    runs-on: ubuntu-latest
+    needs: rate-limit-check
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: tiqology:security-scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy on Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'tiqology:security-scan'
+          format: 'sarif'
+          output: 'trivy-docker-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Docker scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-docker-results.sarif'
+
+  # Environment security check
+  environment-security:
+    name: Environment Security Check
+    runs-on: ubuntu-latest
+    needs: rate-limit-check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for exposed secrets in env templates
+        run: |
+          echo "🔍 Scanning environment templates for exposed secrets..."
+          
+          # Check that templates don't contain real secrets
+          if grep -rE "(sk-[a-zA-Z0-9]{48}|[a-zA-Z0-9]{64})" .env*.template 2>/dev/null; then
+            echo "❌ Potential real secrets found in templates!"
+            exit 1
+          fi
+          
+          echo "✅ No exposed secrets in templates"
+
+      - name: Verify .gitignore includes .env files
+        run: |
+          if grep -q "^\.env$" .gitignore && grep -q "^\.env\.local$" .gitignore; then
+            echo "✅ .env files properly ignored"
+          else
+            echo "⚠️ .env files may not be properly ignored in .gitignore"
+          fi
+
+      - name: Check for unencrypted secrets in repo
+        run: |
+          echo "🔍 Checking for unencrypted secrets..."
+          
+          # Look for common secret patterns (excluding allowed directories)
+          if git grep -E "(password|secret|key|token).*=.*['\"][^'\"]{20,}['\"]" \
+            -- ':!*.md' ':!*.example' ':!*.template' ':!.github/workflows' ':!node_modules' \
+            2>/dev/null | head -5; then
+            echo "⚠️ Potential secrets detected - review manually"
+          else
+            echo "✅ No obvious unencrypted secrets found"
+          fi
+
+  # Summary report
+  security-summary:
+    name: Security Summary Report
+    runs-on: ubuntu-latest
+    needs: [trivy-scan, codeql-analysis, dependency-audit, docker-security-scan, environment-security]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🔐 Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Audit completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Trivy Scan | ${{ needs.trivy-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Audit | ${{ needs.dependency-audit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Security | ${{ needs.docker-security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment Security | ${{ needs.environment-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Calculate pass rate
+          total=5
+          passed=0
+          
+          [[ "${{ needs.trivy-scan.result }}" == "success" ]] && ((passed++))
+          [[ "${{ needs.codeql-analysis.result }}" == "success" ]] && ((passed++))
+          [[ "${{ needs.dependency-audit.result }}" == "success" ]] && ((passed++))
+          [[ "${{ needs.docker-security-scan.result }}" == "success" ]] && ((passed++))
+          [[ "${{ needs.environment-security.result }}" == "success" ]] && ((passed++))
+          
+          pass_rate=$((passed * 100 / total))
+          
+          echo "**Pass Rate**: ${pass_rate}% (${passed}/${total})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ $pass_rate -ge 80 ]; then
+            echo "✅ **Status**: Approved for production" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Status**: Security improvements needed" >> $GITHUB_STEP_SUMMARY
+          fi

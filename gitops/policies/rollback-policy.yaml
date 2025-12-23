@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rollback-policy
+  namespace: argocd
+  labels:
+    policy-type: rollback
+data:
+  policy.yaml: |
+    # TiQology Automated Rollback Policy
+    
+    rollback:
+      enabled: true
+      
+      # Trigger conditions for automatic rollback
+      triggers:
+        - name: health-check-failure
+          enabled: true
+          threshold: 3
+          window: 5m
+          description: "Rollback if health checks fail 3 times in 5 minutes"
+          
+        - name: error-rate-spike
+          enabled: true
+          threshold: 50  # 50% error rate
+          window: 2m
+          description: "Rollback if error rate exceeds 50% for 2 minutes"
+          
+        - name: deployment-timeout
+          enabled: true
+          timeout: 10m
+          description: "Rollback if deployment doesn't complete in 10 minutes"
+          
+        - name: pod-crash-loop
+          enabled: true
+          threshold: 5
+          description: "Rollback if pods crash-loop 5 times"
+      
+      # Rollback strategy
+      strategy:
+        type: previous-stable
+        keep_history: 10
+        validation_timeout: 5m
+        
+      # Notifications
+      notifications:
+        - type: github-comment
+          enabled: true
+        - type: slack
+          enabled: false
+          webhook: $SLACK_WEBHOOK_URL
+        - type: discord
+          enabled: false
+          webhook: $DISCORD_WEBHOOK_URL
+          
+      # Environments
+      environments:
+        production:
+          auto_rollback: true
+          require_approval: false  # Auto-rollback on failure
+          max_attempts: 3
+        staging:
+          auto_rollback: true
+          require_approval: false
+          max_attempts: 2
+        development:
+          auto_rollback: false
+          require_approval: false
+          max_attempts: 1

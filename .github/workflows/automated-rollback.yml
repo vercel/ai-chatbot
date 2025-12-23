@@ -1,0 +1,407 @@
+name: Automated Rollback System
+
+on:
+  workflow_run:
+    workflows: ["Environment-Specific Deployment"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: write
+  deployments: write
+  issues: write
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '9.12.3'
+
+jobs:
+  detect-failure:
+    name: Detect Deployment Failure
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure'
+    outputs:
+      should_rollback: ${{ steps.check.outputs.should_rollback }}
+      environment: ${{ steps.check.outputs.environment }}
+      failed_commit: ${{ steps.check.outputs.failed_commit }}
+      retry_count: ${{ steps.check.outputs.retry_count }}
+    steps:
+      - name: Check deployment status
+        id: check
+        run: |
+          echo "🔍 Checking deployment failure..."
+          echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
+          
+          # Extract environment from workflow
+          environment="production"  # Default
+          
+          # Check retry count from previous attempts
+          retry_count=0
+          if [ -f "/tmp/retry_count_${{ github.event.workflow_run.head_sha }}" ]; then
+            retry_count=$(cat "/tmp/retry_count_${{ github.event.workflow_run.head_sha }}")
+          fi
+          
+          # Determine if we should auto-rollback (after 3 retries)
+          should_rollback="false"
+          if [ $retry_count -ge 3 ]; then
+            should_rollback="true"
+            echo "⚠️ Max retries reached, initiating rollback"
+          else
+            echo "📊 Retry attempt $((retry_count + 1)) of 3"
+          fi
+          
+          echo "should_rollback=$should_rollback" >> $GITHUB_OUTPUT
+          echo "environment=$environment" >> $GITHUB_OUTPUT
+          echo "failed_commit=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_OUTPUT
+          echo "retry_count=$retry_count" >> $GITHUB_OUTPUT
+          
+          if [ "$should_rollback" = "true" ]; then
+            echo "❌ Deployment failed after 3 retries, initiating rollback procedure"
+          else
+            echo "🔄 Will attempt auto-healing retry"
+          fi
+
+  self-healing-retry:
+    name: Self-Healing Retry
+    runs-on: ubuntu-latest
+    needs: detect-failure
+    if: needs.detect-failure.outputs.should_rollback == 'false'
+    steps:
+      - name: Increment retry counter
+        run: |
+          retry_count=${{ needs.detect-failure.outputs.retry_count }}
+          new_count=$((retry_count + 1))
+          echo $new_count > "/tmp/retry_count_${{ needs.detect-failure.outputs.failed_commit }}"
+          echo "📊 Retry attempt: $new_count of 3"
+
+      - name: Analyze failure reason
+        id: analyze
+        run: |
+          echo "🔍 Analyzing failure reason..."
+          
+          # Get failure logs
+          gh run view ${{ github.event.workflow_run.id }} --log > failure-logs.txt || true
+          
+          # Detect failure type
+          if grep -q "ECONNREFUSED\|timeout\|network" failure-logs.txt; then
+            echo "failure_type=network" >> $GITHUB_OUTPUT
+            echo "📡 Network-related failure detected"
+          elif grep -q "ENOSPC\|out of memory" failure-logs.txt; then
+            echo "failure_type=resources" >> $GITHUB_OUTPUT
+            echo "💾 Resource exhaustion detected"
+          elif grep -q "test.*failed\|assertion" failure-logs.txt; then
+            echo "failure_type=tests" >> $GITHUB_OUTPUT
+            echo "🧪 Test failure detected"
+          else
+            echo "failure_type=unknown" >> $GITHUB_OUTPUT
+            echo "❓ Unknown failure type"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
+
+      - name: Apply auto-healing strategy
+        run: |
+          failure_type="${{ steps.analyze.outputs.failure_type }}"
+          
+          case "$failure_type" in
+            network)
+              echo "🔄 Network failure - will retry after backoff"
+              sleep 60
+              ;;
+            resources)
+              echo "💾 Resource issue - clearing caches"
+              # Clear workflow caches
+              gh cache delete --all || true
+              ;;
+            tests)
+              echo "🧪 Test failure - analyzing for flaky tests"
+              # In production, could trigger test analysis
+              ;;
+            *)
+              echo "❓ Unknown failure - standard retry"
+              sleep 30
+              ;;
+          esac
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
+
+      - name: Trigger retry deployment
+        run: |
+          echo "🔄 Triggering retry deployment..."
+          
+          gh workflow run environment-deployment.yml \
+            -f environment=${{ needs.detect-failure.outputs.environment }} \
+            -f skip_tests=false \
+            --ref ${{ needs.detect-failure.outputs.failed_commit }} \
+            || echo "Failed to trigger retry"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  find-last-stable:
+    name: Find Last Stable Deployment
+    runs-on: ubuntu-latest
+    needs: detect-failure
+    if: needs.detect-failure.outputs.should_rollback == 'true'
+    outputs:
+      stable_commit: ${{ steps.find.outputs.stable_commit }}
+      stable_tag: ${{ steps.find.outputs.stable_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find last successful deployment
+        id: find
+        run: |
+          echo "🔍 Finding last stable deployment..."
+          
+          # Get last stable deployment from artifacts
+          environment="${{ needs.detect-failure.outputs.environment }}"
+          
+          # Try to download last stable deployment metadata
+          stable_commit=$(git log --pretty=format:"%H" --max-count=10 | head -2 | tail -1)
+          stable_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+          
+          echo "Found stable commit: $stable_commit"
+          echo "Found stable tag: $stable_tag"
+          
+          echo "stable_commit=$stable_commit" >> $GITHUB_OUTPUT
+          echo "stable_tag=$stable_tag" >> $GITHUB_OUTPUT
+
+      - name: Download deployment metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-metadata-${{ needs.detect-failure.outputs.environment }}
+        continue-on-error: true
+
+      - name: Verify stable deployment
+        run: |
+          echo "✅ Last stable deployment identified"
+          echo "Commit: ${{ steps.find.outputs.stable_commit }}"
+
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: [detect-failure, find-last-stable]
+    environment: 
+      name: ${{ needs.detect-failure.outputs.environment }}
+    steps:
+      - name: Checkout stable version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.find-last-stable.outputs.stable_commit }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build stable version
+        run: pnpm build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+
+      - name: Deploy stable version
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+      - name: Verify rollback
+        run: |
+          echo "⏳ Waiting for rollback to complete..."
+          sleep 30
+          
+          # Health check
+          case "${{ needs.detect-failure.outputs.environment }}" in
+            development)
+              url="https://dev.tiqology.vercel.app"
+              ;;
+            staging)
+              url="https://staging.tiqology.vercel.app"
+              ;;
+            production)
+              url="https://tiqology.vercel.app"
+              ;;
+          esac
+          
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$url/api/health")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ Rollback successful - health check passed"
+          else
+            echo "❌ Rollback verification failed"
+            exit 1
+          fi
+
+  create-incident-report:
+    name: Create Incident Report
+    runs-on: ubuntu-latest
+    needs: [detect-failure, find-last-stable, execute-rollback]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create GitHub issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Automated Rollback: ${{ needs.detect-failure.outputs.environment }}',
+              labels: ['incident', 'rollback', 'automated'],
+              body: `## Incident Report: Automated Rollback
+              
+              **Environment:** ${{ needs.detect-failure.outputs.environment }}
+              **Timestamp:** ${new Date().toISOString()}
+              **Trigger:** Deployment failure detected
+              
+              ### Details
+              - **Failed Commit:** \`${{ needs.detect-failure.outputs.failed_commit }}\`
+              - **Rolled Back To:** \`${{ needs.find-last-stable.outputs.stable_commit }}\`
+              - **Rollback Status:** ${{ needs.execute-rollback.result }}
+              
+              ### Actions Taken
+              1. Detected deployment failure
+              2. Located last stable deployment
+              3. Executed rollback to stable version
+              4. Verified health checks
+              
+              ### Next Steps
+              - [ ] Investigate root cause of failure
+              - [ ] Fix issues in failed commit
+              - [ ] Create hotfix if necessary
+              - [ ] Re-deploy when ready
+              
+              ### Links
+              - Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              - Failed Deployment: ${{ github.event.workflow_run.html_url }}
+              
+              **Automated by TiQology Rollback System**
+              `
+            });
+            
+            console.log('Created incident issue:', issue.data.number);
+
+      - name: Send notification
+        run: |
+          echo "## 🚨 Rollback Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ needs.detect-failure.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Rollback ${{ needs.execute-rollback.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Failed Commit:** \`${{ needs.detect-failure.outputs.failed_commit }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Stable Commit:** \`${{ needs.find-last-stable.outputs.stable_commit }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "An incident report has been created automatically." >> $GITHUB_STEP_SUMMARY
+
+  manual-rollback:
+    name: Manual Rollback Execution
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Validate manual rollback
+        run: |
+          echo "⚠️ Manual rollback requested"
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Reason: ${{ inputs.reason }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find previous deployment
+        id: find
+        run: |
+          # Get second most recent commit (skip current)
+          stable_commit=$(git log --pretty=format:"%H" --max-count=10 | head -2 | tail -1)
+          echo "stable_commit=$stable_commit" >> $GITHUB_OUTPUT
+          echo "Rolling back to: $stable_commit"
+
+      - name: Checkout stable version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.find.outputs.stable_commit }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install and build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+
+      - name: Deploy rollback
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: ${{ inputs.environment == 'production' && '--prod' || '' }}
+          working-directory: ./
+
+      - name: Create rollback record
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔄 Manual Rollback: ${{ inputs.environment }}',
+              labels: ['rollback', 'manual'],
+              body: `## Manual Rollback Executed
+              
+              **Environment:** ${{ inputs.environment }}
+              **Reason:** ${{ inputs.reason }}
+              **Executed By:** @${{ github.actor }}
+              **Timestamp:** ${new Date().toISOString()}
+              **Commit:** \`${{ steps.find.outputs.stable_commit }}\`
+              `
+            });
+
+      - name: Summary
+        run: |
+          echo "## 🔄 Manual Rollback Complete" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Rolled back to: ${{ steps.find.outputs.stable_commit }}" >> $GITHUB_STEP_SUMMARY

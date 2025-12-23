@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tiqology-ai-agents
+  namespace: argocd
+spec:
+  project: tiqology
+  
+  source:
+    repoURL: https://github.com/vercel/ai-chatbot.git
+    targetRevision: HEAD
+    path: gitops/apps/ai-agents
+    
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tiqology-prod
+    
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

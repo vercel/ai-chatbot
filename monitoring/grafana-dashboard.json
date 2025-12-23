@@ -1,0 +1,129 @@
+{
+  "dashboard": {
+    "title": "TiQology Services Overview",
+    "tags": ["tiqology", "services"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Services Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=~\"voice-engine|video-engine|inference-engine\"}",
+            "legendFormat": "{{ job }}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 }
+      },
+      {
+        "id": 2,
+        "title": "Request Rate (req/s)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": { "x": 6, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "id": 3,
+        "title": "Response Time (p95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": { "x": 18, "y": 0, "w": 6, "h": 8 }
+      },
+      {
+        "id": 4,
+        "title": "CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{namespace=\"tiqology-services\"}[5m])",
+            "legendFormat": "{{ pod }}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+      },
+      {
+        "id": 5,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{namespace=\"tiqology-services\"} / 1024 / 1024 / 1024",
+            "legendFormat": "{{ pod }}"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+      },
+      {
+        "id": 6,
+        "title": "GPU Utilization",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "nvidia_gpu_duty_cycle",
+            "legendFormat": "GPU {{ gpu }}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }
+      },
+      {
+        "id": 7,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m])",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 }
+      },
+      {
+        "id": 8,
+        "title": "Cost Tracking ($/hour)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(tiqology_inference_cost_usd[1h])",
+            "legendFormat": "Inference Cost"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 24, "w": 6, "h": 4 }
+      },
+      {
+        "id": 9,
+        "title": "Vector DB Operations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(tiqology_vector_operations_total[5m])",
+            "legendFormat": "{{ operation }}"
+          }
+        ],
+        "gridPos": { "x": 6, "y": 24, "w": 12, "h": 8 }
+      },
+      {
+        "id": 10,
+        "title": "Savings Tracking",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "tiqology_monthly_savings_usd",
+            "legendFormat": "Monthly Savings"
+          }
+        ],
+        "gridPos": { "x": 18, "y": 24, "w": 6, "h": 4 }
+      }
+    ]
+  }
+}

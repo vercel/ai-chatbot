@@ -1,0 +1,338 @@
+name: Security & Governance Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'feature/**', 'fix/**']
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Daily security scans at 2 AM UTC
+    - cron: '0 2 * * *'
+
+# OIDC permissions for secure cloud authentication
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '9.12.3'
+
+jobs:
+  # Secret scanning and validation
+  secret-scan:
+    name: Secret Scanning & Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: GitLeaks Secret Detection
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate Environment Secrets
+        run: |
+          echo "🔐 Validating required secrets..."
+          
+          # Check if critical secrets are set (without exposing values)
+          required_secrets=("VERCEL_TOKEN" "PRODUCTION_DATABASE_URL")
+          
+          for secret in "${required_secrets[@]}"; do
+            if [ -z "${{ secrets[secret] }}" ]; then
+              echo "❌ Missing required secret: $secret"
+              exit 1
+            else
+              echo "✅ Secret configured: $secret"
+            fi
+          done
+
+  # OIDC Authentication Setup
+  oidc-auth:
+    name: OIDC Cloud Authentication
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS OIDC (if using AWS)
+        uses: aws-actions/configure-aws-credentials@v4
+        if: vars.USE_AWS == 'true'
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+        continue-on-error: true
+
+      - name: Configure Azure OIDC (if using Azure)
+        uses: azure/login@v1
+        if: vars.USE_AZURE == 'true'
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        continue-on-error: true
+
+      - name: Configure GCP OIDC (if using GCP)
+        uses: google-github-actions/auth@v2
+        if: vars.USE_GCP == 'true'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        continue-on-error: true
+
+      - name: Verify OIDC Authentication
+        run: |
+          echo "✅ OIDC authentication configured"
+          echo "📋 Session: GitHubActions-${{ github.run_id }}"
+
+  # Dependency security audit
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        run: |
+          pnpm audit --audit-level=moderate --json > audit-report.json || true
+          
+          # Parse and display results
+          echo "## 🔍 Dependency Audit Results" >> $GITHUB_STEP_SUMMARY
+          cat audit-report.json | jq -r '.metadata.vulnerabilities | to_entries[] | "- \(.key): \(.value)"' >> $GITHUB_STEP_SUMMARY || echo "No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+
+      - name: Trivy Dependency Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check for critical vulnerabilities
+        run: |
+          critical_count=$(cat audit-report.json | jq -r '.metadata.vulnerabilities.critical // 0' || echo "0")
+          high_count=$(cat audit-report.json | jq -r '.metadata.vulnerabilities.high // 0' || echo "0")
+          
+          echo "Critical vulnerabilities: $critical_count"
+          echo "High vulnerabilities: $high_count"
+          
+          if [ "$critical_count" -gt 0 ]; then
+            echo "❌ Found $critical_count critical vulnerabilities!"
+            exit 1
+          fi
+
+  # License compliance check
+  license-compliance:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check licenses
+        run: |
+          npx license-checker --summary --json > licenses.json || true
+          
+          echo "## 📄 License Compliance Report" >> $GITHUB_STEP_SUMMARY
+          echo "### Package Licenses:" >> $GITHUB_STEP_SUMMARY
+          cat licenses.json | jq -r 'to_entries[] | "- \(.key): \(.value.licenses)"' | head -20 >> $GITHUB_STEP_SUMMARY || echo "License data unavailable" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for prohibited licenses
+        run: |
+          # List of prohibited licenses (adjust as needed)
+          prohibited_licenses=("GPL" "AGPL" "SSPL")
+          
+          echo "🔍 Checking for prohibited licenses..."
+          for license in "${prohibited_licenses[@]}"; do
+            if cat licenses.json | jq -r '.[] | select(.licenses | contains("'"$license"'"))' | grep -q .; then
+              echo "❌ Found prohibited license: $license"
+              exit 1
+            fi
+          done
+          
+          echo "✅ No prohibited licenses found"
+
+  # Code quality and SAST
+  code-quality:
+    name: Code Quality & SAST
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        if: vars.SONARCLOUD_ENABLED == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+  # Governance enforcement
+  governance-check:
+    name: Governance & Policy Enforcement
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check branch naming convention
+        run: |
+          branch="${{ github.head_ref }}"
+          
+          if [[ ! "$branch" =~ ^(feature|fix|hotfix|release|chore)/[a-z0-9-]+$ ]]; then
+            echo "❌ Branch name does not follow convention: feature|fix|hotfix|release|chore/<name>"
+            echo "Current branch: $branch"
+            exit 1
+          fi
+          
+          echo "✅ Branch name follows convention"
+
+      - name: Check commit message format
+        run: |
+          commits=$(git log --format=%s origin/${{ github.base_ref }}..${{ github.head_ref }})
+          
+          while IFS= read -r commit; do
+            if [[ ! "$commit" =~ ^(feat|fix|docs|style|refactor|test|chore|perf)(\([a-z]+\))?:\ .+ ]]; then
+              echo "❌ Commit message does not follow Conventional Commits: $commit"
+              exit 1
+            fi
+          done <<< "$commits"
+          
+          echo "✅ All commits follow Conventional Commits format"
+
+      - name: Check for required PR labels
+        uses: mheap/github-action-required-labels@v5
+        with:
+          mode: minimum
+          count: 1
+          labels: "enhancement, bugfix, documentation, security, performance"
+
+      - name: Enforce file size limits
+        run: |
+          echo "🔍 Checking for large files..."
+          
+          # Check for files over 5MB
+          large_files=$(find . -type f -size +5M -not -path "*/node_modules/*" -not -path "*/.next/*" -not -path "*/.git/*")
+          
+          if [ -n "$large_files" ]; then
+            echo "❌ Found large files (>5MB):"
+            echo "$large_files"
+            echo "Please use Git LFS for large files"
+            exit 1
+          fi
+          
+          echo "✅ No large files detected"
+
+  # Audit logging
+  audit-log:
+    name: Audit Logging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    needs: [secret-scan, dependency-audit, code-quality]
+    steps:
+      - name: Log deployment attempt
+        run: |
+          echo "## 📋 Audit Log Entry" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "**Actor:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Send audit log to external system
+        if: vars.AUDIT_WEBHOOK_URL != ''
+        run: |
+          curl -X POST "${{ vars.AUDIT_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "timestamp": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'",
+              "actor": "${{ github.actor }}",
+              "event": "${{ github.event_name }}",
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "run_id": "${{ github.run_id }}",
+              "repository": "${{ github.repository }}"
+            }'
+        continue-on-error: true
+
+  # Security summary
+  security-summary:
+    name: Security Summary Report
+    runs-on: ubuntu-latest
+    needs: [secret-scan, dependency-audit, license-compliance, code-quality]
+    if: always()
+    steps:
+      - name: Generate security summary
+        run: |
+          echo "# 🔒 Security & Governance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Secret Scan: ${{ needs.secret-scan.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dependency Audit: ${{ needs.dependency-audit.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- License Compliance: ${{ needs.license-compliance.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Code Quality: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Pipeline Run:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY

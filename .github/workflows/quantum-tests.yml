@@ -1,0 +1,49 @@
+name: Quantum Computing Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'lib/quantum/**'
+  pull_request:
+    paths:
+      - 'lib/quantum/**'
+
+jobs:
+  test-quantum:
+    name: Test Quantum Engine
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '9.12.3'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test quantum circuits
+        run: |
+          echo "Testing quantum compute engine..."
+          pnpm test -- quantum
+
+      - name: Test Grover's algorithm
+        run: |
+          echo "Testing Grover's search..."
+          node -e "
+            const { QuantumComputeEngine } = require('./lib/quantum/compute-engine');
+            const engine = new QuantumComputeEngine('mock');
+            engine.initialize().then(async () => {
+              const result = await engine.groverSearch(16, 7);
+              console.log('Grover search result:', result);
+            });
+          "

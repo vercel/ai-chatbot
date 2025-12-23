@@ -1,0 +1,259 @@
+name: Discord Notifications
+
+on:
+  workflow_run:
+    workflows: ["TiQology Custom CI/CD Pipeline", "Environment-Specific Deployment", "Automated Rollback System"]
+    types: [completed]
+  push:
+    branches: [main, develop]
+  pull_request:
+    types: [opened, closed, reopened]
+
+env:
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+jobs:
+  notify-deployment:
+    name: Deployment Notifications
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion != 'cancelled'
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          conclusion="${{ github.event.workflow_run.conclusion }}"
+          
+          if [ "$conclusion" = "success" ]; then
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=3066993" >> $GITHUB_OUTPUT  # Green
+            echo "status=Success" >> $GITHUB_OUTPUT
+          else
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=15158332" >> $GITHUB_OUTPUT  # Red
+            echo "status=Failed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Discord notification
+        if: env.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "${{ steps.status.outputs.emoji }} Deployment ${{ steps.status.outputs.status }}",
+                "description": "TiQology deployment pipeline completed",
+                "color": ${{ steps.status.outputs.color }},
+                "fields": [
+                  {
+                    "name": "Repository",
+                    "value": "${{ github.repository }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Branch",
+                    "value": "`${{ github.ref_name }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Commit",
+                    "value": "`${{ github.sha }}` ",
+                    "inline": false
+                  },
+                  {
+                    "name": "Workflow",
+                    "value": "${{ github.event.workflow_run.name }}",
+                    "inline": false
+                  },
+                  {
+                    "name": "Triggered by",
+                    "value": "@${{ github.actor }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Status",
+                    "value": "${{ steps.status.outputs.status }}",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "TiQology DevOps",
+                  "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                },
+                "timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"
+              }],
+              "username": "TiQology Bot",
+              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
+        continue-on-error: true
+
+  notify-pr:
+    name: Pull Request Notifications
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Set PR status
+        id: pr-status
+        run: |
+          action="${{ github.event.action }}"
+          
+          case "$action" in
+            opened)
+              echo "emoji=🔔" >> $GITHUB_OUTPUT
+              echo "color=5793266" >> $GITHUB_OUTPUT  # Blue
+              echo "title=New Pull Request" >> $GITHUB_OUTPUT
+              ;;
+            closed)
+              if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+                echo "emoji=✅" >> $GITHUB_OUTPUT
+                echo "color=3066993" >> $GITHUB_OUTPUT  # Green
+                echo "title=Pull Request Merged" >> $GITHUB_OUTPUT
+              else
+                echo "emoji=❌" >> $GITHUB_OUTPUT
+                echo "color=15158332" >> $GITHUB_OUTPUT  # Red
+                echo "title=Pull Request Closed" >> $GITHUB_OUTPUT
+              fi
+              ;;
+            reopened)
+              echo "emoji=🔄" >> $GITHUB_OUTPUT
+              echo "color=16776960" >> $GITHUB_OUTPUT  # Yellow
+              echo "title=Pull Request Reopened" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Send PR notification
+        if: env.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "${{ steps.pr-status.outputs.emoji }} ${{ steps.pr-status.outputs.title }}",
+                "description": "${{ github.event.pull_request.title }}",
+                "url": "${{ github.event.pull_request.html_url }}",
+                "color": ${{ steps.pr-status.outputs.color }},
+                "fields": [
+                  {
+                    "name": "Author",
+                    "value": "@${{ github.event.pull_request.user.login }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Branch",
+                    "value": "`${{ github.event.pull_request.head.ref }}` → `${{ github.event.pull_request.base.ref }}`",
+                    "inline": false
+                  },
+                  {
+                    "name": "Changed Files",
+                    "value": "${{ github.event.pull_request.changed_files }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Additions",
+                    "value": "+${{ github.event.pull_request.additions }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Deletions",
+                    "value": "-${{ github.event.pull_request.deletions }}",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "TiQology Pull Requests"
+                },
+                "timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"
+              }],
+              "username": "TiQology Bot"
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
+        continue-on-error: true
+
+  notify-release:
+    name: Release Notifications
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Send release notification
+        if: env.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "🎉 Production Deployment Complete",
+                "description": "TiQology has been successfully deployed to production!",
+                "color": 3066993,
+                "fields": [
+                  {
+                    "name": "Environment",
+                    "value": "Production",
+                    "inline": true
+                  },
+                  {
+                    "name": "Version",
+                    "value": "`${{ github.sha }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "🌐 Live URL",
+                    "value": "[Visit TiQology](https://tiqology.vercel.app)",
+                    "inline": false
+                  },
+                  {
+                    "name": "Services Status",
+                    "value": "✅ AI Swarms\n✅ Quantum Engine\n✅ Holographic System",
+                    "inline": false
+                  }
+                ],
+                "thumbnail": {
+                  "url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                },
+                "footer": {
+                  "text": "TiQology Production"
+                },
+                "timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"
+              }],
+              "username": "TiQology Bot"
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
+        continue-on-error: true
+
+  notify-security-alert:
+    name: Security Alert Notifications
+    runs-on: ubuntu-latest
+    if: contains(github.event.workflow_run.name, 'Security') && github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Send security alert
+        if: env.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "content": "@here Security Alert! 🚨",
+              "embeds": [{
+                "title": "⚠️ Security Scan Failed",
+                "description": "Security vulnerabilities detected in TiQology repository",
+                "color": 15158332,
+                "fields": [
+                  {
+                    "name": "Severity",
+                    "value": "HIGH",
+                    "inline": true
+                  },
+                  {
+                    "name": "Action Required",
+                    "value": "Immediate review needed",
+                    "inline": true
+                  },
+                  {
+                    "name": "Workflow",
+                    "value": "${{ github.event.workflow_run.name }}",
+                    "inline": false
+                  }
+                ],
+                "footer": {
+                  "text": "TiQology Security"
+                },
+                "timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"
+              }],
+              "username": "TiQology Security Bot"
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
+        continue-on-error: true

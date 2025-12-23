@@ -1,0 +1,25 @@
+
+> ai-chatbot@3.1.0 build /workspaces/ai-chatbot
+> NODE_OPTIONS='--max-old-space-size=6144' next build
+
+   ▲ Next.js 16.0.7 (Turbopack, Cache Components)
+   - Environments: .env.local, .env.production
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 32.6s
+   Running TypeScript ...
+Failed to compile.
+
+./lib/rendering/webgpu-engine.ts:70:9
+Type error: Type 'RenderingContext | null' is not assignable to type 'GPUCanvasContext | null'.
+  Type 'CanvasRenderingContext2D' is missing the following properties from type 'GPUCanvasContext': configure, unconfigure, getCurrentTexture
+
+[0m [90m 68 |[39m       [90m// Setup canvas context if canvas provided[39m
+ [90m 69 |[39m       [36mif[39m ([36mthis[39m[33m.[39mconfig[33m.[39mcanvas) {
+[31m[1m>[22m[39m[90m 70 |[39m         [36mthis[39m[33m.[39mcontext [33m=[39m [36mthis[39m[33m.[39mconfig[33m.[39mcanvas[33m.[39mgetContext([32m"webgpu"[39m)[33m;[39m
+ [90m    |[39m         [31m[1m^[22m[39m
+ [90m 71 |[39m         [36mif[39m ([36mthis[39m[33m.[39mcontext [33m&&[39m [36mthis[39m[33m.[39mdevice) {
+ [90m 72 |[39m           [36mconst[39m format [33m=[39m navigator[33m.[39mgpu[33m.[39mgetPreferredCanvasFormat()[33m;[39m
+ [90m 73 |[39m           [36mthis[39m[33m.[39mcontext[33m.[39mconfigure({[0m
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.

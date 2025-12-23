@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TiQology DevOps Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-degraded {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-down {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .deployment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .deployment-item {
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .deployment-item.success {
+            border-left-color: #28a745;
+        }
+
+        .deployment-item.failure {
+            border-left-color: #dc3545;
+        }
+
+        .timestamp {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <h1>🚀 TiQology DevOps Dashboard</h1>
+            <p class="subtitle">Real-time CI/CD Pipeline & System Health Monitoring</p>
+        </header>
+
+        <div class="grid">
+            <!-- System Health -->
+            <div class="card">
+                <h2>🏥 System Health</h2>
+                <div id="system-health" class="loading pulse">Loading...</div>
+            </div>
+
+            <!-- Current Deployment -->
+            <div class="card">
+                <h2>🚢 Current Deployment</h2>
+                <div id="current-deployment" class="loading pulse">Loading...</div>
+            </div>
+
+            <!-- Pipeline Status -->
+            <div class="card">
+                <h2>⚙️ Pipeline Status</h2>
+                <div id="pipeline-status" class="loading pulse">Loading...</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Performance Metrics -->
+            <div class="card">
+                <h2>📊 Performance Metrics</h2>
+                <div id="performance-metrics" class="loading pulse">Loading...</div>
+            </div>
+
+            <!-- Recent Deployments -->
+            <div class="card" style="grid-column: span 2;">
+                <h2>📋 Recent Deployments</h2>
+                <div id="recent-deployments" class="loading pulse">Loading...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🛠️ Quick Actions</h2>
+            <div class="actions">
+                <button onclick="refreshData()">🔄 Refresh Data</button>
+                <button onclick="window.open('https://tiqology.vercel.app/api/health', '_blank')">🏥 Check Health</button>
+                <button onclick="window.open('https://vercel.com/dashboard', '_blank')" class="secondary">📊 Vercel Dashboard</button>
+                <button onclick="window.open('https://github.com/vercel/ai-chatbot/actions', '_blank')" class="secondary">⚡ GitHub Actions</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const HEALTH_ENDPOINT = 'https://tiqology.vercel.app/api/health';
+        const GITHUB_API = 'https://api.github.com/repos/vercel/ai-chatbot';
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+
+        // Fetch system health
+        async function fetchSystemHealth() {
+            try {
+                const response = await fetch(HEALTH_ENDPOINT);
+                const data = await response.json();
+                
+                const statusClass = data.status === 'healthy' ? 'status-healthy' : 
+                                  data.status === 'degraded' ? 'status-degraded' : 'status-down';
+                
+                document.getElementById('system-health').innerHTML = `
+                    <div class="metric">
+                        <span class="metric-label">Status</span>
+                        <span class="status ${statusClass}">${data.status.toUpperCase()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Database</span>
+                        <span class="status ${data.services?.database?.status === 'healthy' ? 'status-healthy' : 'status-down'}">
+                            ${data.services?.database?.status || 'unknown'}
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">API Latency</span>
+                        <span class="metric-value">${data.services?.api?.latency || 'N/A'}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Version</span>
+                        <span>${data.version || 'N/A'}</span>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('system-health').innerHTML = `
+                    <div class="metric">
+                        <span class="metric-label">Status</span>
+                        <span class="status status-down">ERROR</span>
+                    </div>
+                    <p style="color: #dc3545; margin-top: 10px;">Failed to fetch health data</p>
+                `;
+            }
+        }
+
+        // Fetch GitHub workflow runs
+        async function fetchPipelineStatus() {
+            try {
+                const response = await fetch(`${GITHUB_API}/actions/runs?per_page=5`);
+                const data = await response.json();
+                
+                const runs = data.workflow_runs || [];
+                const latestRun = runs[0];
+                
+                if (latestRun) {
+                    const statusClass = latestRun.conclusion === 'success' ? 'status-healthy' : 
+                                      latestRun.conclusion === 'failure' ? 'status-down' : 'status-degraded';
+                    
+                    document.getElementById('pipeline-status').innerHTML = `
+                        <div class="metric">
+                            <span class="metric-label">Latest Build</span>
+                            <span class="status ${statusClass}">${latestRun.conclusion || latestRun.status}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Workflow</span>
+                            <span>${latestRun.name}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Branch</span>
+                            <span>${latestRun.head_branch}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Triggered</span>
+                            <span class="timestamp">${new Date(latestRun.created_at).toLocaleString()}</span>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('pipeline-status').innerHTML = '<p>No recent runs</p>';
+                }
+            } catch (error) {
+                document.getElementById('pipeline-status').innerHTML = '<p style="color: #dc3545;">Failed to fetch pipeline data</p>';
+            }
+        }
+
+        // Fetch current deployment
+        async function fetchCurrentDeployment() {
+            try {
+                const response = await fetch(`${GITHUB_API}/deployments?per_page=1`);
+                const data = await response.json();
+                
+                if (data.length > 0) {
+                    const deployment = data[0];
+                    document.getElementById('current-deployment').innerHTML = `
+                        <div class="metric">
+                            <span class="metric-label">Environment</span>
+                            <span class="metric-value">${deployment.environment || 'production'}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Ref</span>
+                            <span>${deployment.ref}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Deployed</span>
+                            <span class="timestamp">${new Date(deployment.created_at).toLocaleString()}</span>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('current-deployment').innerHTML = '<p>No active deployments</p>';
+                }
+            } catch (error) {
+                document.getElementById('current-deployment').innerHTML = '<p style="color: #dc3545;">Failed to fetch deployment data</p>';
+            }
+        }
+
+        // Fetch performance metrics
+        async function fetchPerformanceMetrics() {
+            try {
+                const response = await fetch(HEALTH_ENDPOINT);
+                const data = await response.json();
+                
+                if (data.performance) {
+                    document.getElementById('performance-metrics').innerHTML = `
+                        <div class="metric">
+                            <span class="metric-label">Avg Response Time</span>
+                            <span class="metric-value">${data.performance.avgResponseTime || 'N/A'}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">P95 Response Time</span>
+                            <span class="metric-value">${data.performance.p95ResponseTime || 'N/A'}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Error Rate</span>
+                            <span class="metric-value">${data.performance.errorRate || '0%'}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Requests/Min</span>
+                            <span class="metric-value">${data.performance.requestsPerMinute || 0}</span>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('performance-metrics').innerHTML = '<p style="color: #dc3545;">Failed to fetch metrics</p>';
+            }
+        }
+
+        // Fetch recent deployments
+        async function fetchRecentDeployments() {
+            try {
+                const response = await fetch(`${GITHUB_API}/actions/runs?per_page=10`);
+                const data = await response.json();
+                
+                const runs = data.workflow_runs || [];
+                const deploymentsHTML = runs.map(run => {
+                    const itemClass = run.conclusion === 'success' ? 'success' : 
+                                    run.conclusion === 'failure' ? 'failure' : '';
+                    
+                    return `
+                        <div class="deployment-item ${itemClass}">
+                            <strong>${run.name}</strong>
+                            <div style="margin-top: 5px;">
+                                <span class="status ${run.conclusion === 'success' ? 'status-healthy' : 'status-down'}">
+                                    ${run.conclusion || run.status}
+                                </span>
+                                <span style="margin-left: 10px;">${run.head_branch}</span>
+                            </div>
+                            <div class="timestamp" style="margin-top: 5px;">
+                                ${new Date(run.created_at).toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('recent-deployments').innerHTML = `
+                    <div class="deployment-list">${deploymentsHTML || '<p>No recent deployments</p>'}</div>
+                `;
+            } catch (error) {
+                document.getElementById('recent-deployments').innerHTML = '<p style="color: #dc3545;">Failed to fetch deployments</p>';
+            }
+        }
+
+        // Refresh all data
+        function refreshData() {
+            fetchSystemHealth();
+            fetchPipelineStatus();
+            fetchCurrentDeployment();
+            fetchPerformanceMetrics();
+            fetchRecentDeployments();
+        }
+
+        // Initial load
+        refreshData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, REFRESH_INTERVAL);
+
+        // Show last update time
+        setInterval(() => {
+            const now = new Date().toLocaleTimeString();
+            console.log(`Dashboard refreshed at ${now}`);
+        }, REFRESH_INTERVAL);
+    </script>
+</body>
+</html>

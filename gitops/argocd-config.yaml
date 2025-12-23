@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # Repository configuration
+  repositories: |
+    - url: https://github.com/vercel/ai-chatbot.git
+      name: tiqology-main
+      type: git
+      
+  # Resource customizations
+  resource.customizations: |
+    apps/Deployment:
+      health.lua: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.replicas ~= nil and obj.status.updatedReplicas ~= nil and obj.status.availableReplicas ~= nil then
+            if obj.status.replicas == obj.status.updatedReplicas and obj.status.replicas == obj.status.availableReplicas then
+              hs.status = "Healthy"
+              hs.message = "All replicas are running and available"
+              return hs
+            end
+          end
+        end
+        hs.status = "Progressing"
+        hs.message = "Waiting for deployment"
+        return hs
+        
+  # Application sync settings
+  application.instanceLabelKey: argocd.argoproj.io/instance
+  
+  # Timeout settings
+  timeout.reconciliation: 180s
+  timeout.hard.reconciliation: 0
+  
+  # Git commit status
+  statusbadge.enabled: "true"
+  
+  # Webhooks
+  webhook.github.secret: $GITHUB_WEBHOOK_SECRET
+  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # RBAC policy
+  policy.csv: |
+    # Default role for all users
+    p, role:readonly, applications, get, */*, allow
+    p, role:readonly, certificates, get, *, allow
+    p, role:readonly, clusters, get, *, allow
+    p, role:readonly, repositories, get, *, allow
+    p, role:readonly, projects, get, *, allow
+    p, role:readonly, accounts, get, *, allow
+    p, role:readonly, gpgkeys, get, *, allow
+    
+    # Developer role - can sync dev and staging
+    p, role:developer, applications, get, */*, allow
+    p, role:developer, applications, sync, tiqology-dev/*, allow
+    p, role:developer, applications, sync, tiqology-staging/*, allow
+    p, role:developer, applications, override, tiqology-dev/*, allow
+    
+    # DevOps role - full access except production secrets
+    p, role:devops, applications, *, */*, allow
+    p, role:devops, clusters, *, *, allow
+    p, role:devops, repositories, *, *, allow
+    p, role:devops, projects, *, *, allow
+    
+    # Admin role - full access including production
+    p, role:admin, *, *, */*, allow
+    
+  # Default role
+  policy.default: role:readonly
+  
+  # OIDC groups mapping (if using SSO)
+  scopes: '[groups, email]'
+  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  # Notification templates
+  template.app-deployed: |
+    message: |
+      Application {{.app.metadata.name}} has been deployed to {{.app.spec.destination.namespace}}.
+      Revision: {{.app.status.sync.revision}}
+      Status: {{.app.status.health.status}}
+      
+  template.app-health-degraded: |
+    message: |
+      Application {{.app.metadata.name}} health is {{.app.status.health.status}}.
+      Immediate attention required!
+      
+  template.app-sync-failed: |
+    message: |
+      Application {{.app.metadata.name}} sync failed.
+      Error: {{.app.status.operationState.message}}
+      
+  # Notification triggers
+  trigger.on-deployed: |
+    - when: app.status.operationState.phase in ['Succeeded']
+      send: [app-deployed]
+      
+  trigger.on-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+      
+  trigger.on-sync-failed: |
+    - when: app.status.operationState.phase in ['Error', 'Failed']
+      send: [app-sync-failed]
+      
+  # Notification services
+  service.slack: |
+    token: $slack-token
+    
+  service.webhook.github: |
+    url: https://api.github.com
+    headers:
+    - name: Authorization
+      value: token $github-token
+      
+  # Subscriptions
+  subscriptions: |
+    - recipients:
+      - slack:tiqology-deployments
+      - github:vercel/ai-chatbot
+      triggers:
+      - on-deployed
+      - on-health-degraded
+      - on-sync-failed

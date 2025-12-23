@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drift-detection-policy
+  namespace: argocd
+  labels:
+    policy-type: drift-detection
+data:
+  policy.yaml: |
+    # TiQology Drift Detection Policy
+    
+    drift_detection:
+      enabled: true
+      
+      # Scan frequency
+      scan_interval: 5m
+      
+      # Detection rules
+      rules:
+        - name: config-drift
+          enabled: true
+          severity: high
+          description: "Detect changes to ConfigMaps or Secrets"
+          resources:
+            - ConfigMap
+            - Secret
+          action: alert-and-sync
+          
+        - name: deployment-drift
+          enabled: true
+          severity: critical
+          description: "Detect changes to Deployments or StatefulSets"
+          resources:
+            - Deployment
+            - StatefulSet
+          action: auto-sync
+          
+        - name: service-drift
+          enabled: true
+          severity: medium
+          description: "Detect changes to Services or Ingress"
+          resources:
+            - Service
+            - Ingress
+          action: alert
+          
+        - name: resource-quota-drift
+          enabled: true
+          severity: high
+          description: "Detect changes to resource quotas"
+          resources:
+            - ResourceQuota
+            - LimitRange
+          action: alert-and-sync
+      
+      # Auto-sync settings
+      auto_sync:
+        enabled: true
+        prune: true
+        self_heal: true
+        allow_empty: false
+        
+      # Drift tolerance
+      tolerance:
+        # Ignore certain fields that are expected to change
+        ignore_differences:
+          - group: apps
+            kind: Deployment
+            jsonPointers:
+              - /spec/replicas  # Allow manual scaling
+              - /metadata/generation
+          - group: ""
+            kind: Service
+            jsonPointers:
+              - /spec/clusterIP
+              - /spec/clusterIPs
+              
+      # Notifications
+      notifications:
+        on_drift_detected:
+          - type: github-issue
+            enabled: true
+            labels: ["drift-detected", "ops"]
+          - type: slack
+            enabled: false
+          - type: email
+            enabled: false
+            recipients: ["ops@tiqology.com"]
+            
+      # Remediation
+      remediation:
+        auto_fix: true
+        max_attempts: 3
+        backoff_duration: 1m
+        
+      # Environments
+      environments:
+        production:
+          strict_mode: true
+          auto_sync: true
+          notify_on_drift: true
+        staging:
+          strict_mode: false
+          auto_sync: true
+          notify_on_drift: false
+        development:
+          strict_mode: false
+          auto_sync: false
+          notify_on_drift: false

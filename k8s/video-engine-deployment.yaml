@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-engine
+  namespace: tiqology-services
+  labels:
+    app: video-engine
+    tier: ai-services
+spec:
+  replicas: 1  # Expensive GPU, start with 1
+  selector:
+    matchLabels:
+      app: video-engine
+  template:
+    metadata:
+      labels:
+        app: video-engine
+    spec:
+      nodeSelector:
+        gpu: "true"
+      containers:
+      - name: video-engine
+        image: tiqology/video-engine:latest
+        ports:
+        - containerPort: 8002
+          name: http
+        resources:
+          requests:
+            memory: "16Gi"
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "32Gi"
+            cpu: "8"
+            nvidia.com/gpu: 1
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        - name: SERVICE_NAME
+          value: "video-engine"
+        volumeMounts:
+        - name: model-cache
+          mountPath: /root/.cache
+      volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: video-models-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: video-engine-service
+  namespace: tiqology-services
+spec:
+  selector:
+    app: video-engine
+  ports:
+  - protocol: TCP
+    port: 8002
+    targetPort: 8002
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: video-models-pvc
+  namespace: tiqology-services
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp3
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: video-engine-hpa
+  namespace: tiqology-services
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: video-engine
+  minReplicas: 1
+  maxReplicas: 5  # GPU expensive, limit scaling
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: nvidia.com/gpu
+      target:
+        type: Utilization
+        averageUtilization: 75

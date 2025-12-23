@@ -1,0 +1,322 @@
+name: 🎯 GitOps with ArgoCD Integration
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+env:
+  ARGOCD_SERVER: 'argocd.tiqology.com'
+  APP_NAME: 'tiqology-ai-chatbot'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # 🔨 BUILD & PUBLISH - Container Image
+  # ═══════════════════════════════════════════════════════════════
+  build-and-push:
+    name: 🔨 Build & Push Container Image
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 🔐 Configure Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 📝 Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: 🔨 Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDTIME=${{ github.event.head_commit.timestamp }}
+            VERSION=${{ github.sha }}
+      
+      - name: 📊 Build Summary
+        run: |
+          echo "### 🔨 Container Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image Details:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏷️ Tag: \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔐 Digest: \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 Registry: ghcr.io" >> $GITHUB_STEP_SUMMARY
+
+  # ═══════════════════════════════════════════════════════════════
+  # 📝 UPDATE GITOPS REPO - Manifest Update
+  # ═══════════════════════════════════════════════════════════════
+  update-gitops-repo:
+    name: 📝 Update GitOps Repository
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    
+    steps:
+      - name: 🔑 Checkout GitOps Repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}-gitops
+          token: ${{ secrets.GITOPS_PAT || secrets.GITHUB_TOKEN }}
+          path: gitops
+      
+      - name: 📝 Update Kubernetes Manifests
+        run: |
+          cd gitops
+          
+          ENV="${{ github.event.inputs.environment || 'development' }}"
+          IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
+          
+          echo "🔄 Updating manifests for environment: $ENV"
+          echo "🏷️ New image tag: $IMAGE_TAG"
+          
+          # Update kustomization or helm values
+          if [ -f "overlays/$ENV/kustomization.yaml" ]; then
+            # Kustomize approach
+            cd overlays/$ENV
+            kustomize edit set image app=$IMAGE_TAG
+          elif [ -f "environments/$ENV/values.yaml" ]; then
+            # Helm approach
+            yq eval ".image.tag = \"$IMAGE_TAG\"" -i environments/$ENV/values.yaml
+          fi
+          
+          git config user.name "TiQology GitOps Bot"
+          git config user.email "gitops@tiqology.com"
+          git add -A
+          git commit -m "🚀 Deploy $IMAGE_TAG to $ENV [skip ci]" || echo "No changes to commit"
+          git push
+      
+      - name: 📊 GitOps Update Summary
+        run: |
+          echo "### 📝 GitOps Repository Updated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Update Details:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌍 Environment: ${{ github.event.inputs.environment || 'development' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏷️ Image: ${{ needs.build-and-push.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 Repository: ${{ github.repository }}-gitops" >> $GITHUB_STEP_SUMMARY
+
+  # ═══════════════════════════════════════════════════════════════
+  # 🎯 ARGOCD SYNC - Automated Deployment
+  # ═══════════════════════════════════════════════════════════════
+  argocd-sync:
+    name: 🎯 ArgoCD Application Sync
+    runs-on: ubuntu-latest
+    needs: [build-and-push, update-gitops-repo]
+    
+    steps:
+      - name: 🔧 Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin/
+      
+      - name: 🔑 Login to ArgoCD
+        run: |
+          argocd login ${{ env.ARGOCD_SERVER }} \
+            --username admin \
+            --password ${{ secrets.ARGOCD_PASSWORD }} \
+            --grpc-web
+      
+      - name: 🎯 Sync Application
+        run: |
+          ENV="${{ github.event.inputs.environment || 'development' }}"
+          APP_NAME="${{ env.APP_NAME }}-$ENV"
+          
+          echo "🎯 Syncing ArgoCD application: $APP_NAME"
+          
+          argocd app sync $APP_NAME --prune --force
+          
+          echo "⏳ Waiting for sync to complete..."
+          argocd app wait $APP_NAME --health --timeout 600
+      
+      - name: 📊 Deployment Status
+        run: |
+          ENV="${{ github.event.inputs.environment || 'development' }}"
+          APP_NAME="${{ env.APP_NAME }}-$ENV"
+          
+          STATUS=$(argocd app get $APP_NAME --output json | jq -r '.status.health.status')
+          SYNC_STATUS=$(argocd app get $APP_NAME --output json | jq -r '.status.sync.status')
+          
+          echo "### 🎯 ArgoCD Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Application: $APP_NAME**" >> $GITHUB_STEP_SUMMARY
+          echo "- 💚 Health: $STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Sync: $SYNC_STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌍 Environment: $ENV" >> $GITHUB_STEP_SUMMARY
+
+  # ═══════════════════════════════════════════════════════════════
+  # ✅ POST-DEPLOYMENT VALIDATION
+  # ═══════════════════════════════════════════════════════════════
+  post-deployment-validation:
+    name: ✅ Post-Deployment Validation
+    runs-on: ubuntu-latest
+    needs: argocd-sync
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 🔍 Health Check
+        run: |
+          ENV="${{ github.event.inputs.environment || 'development' }}"
+          
+          case $ENV in
+            production)
+              ENDPOINT="https://ai-chatbot-five-gamma-48.vercel.app"
+              ;;
+            staging)
+              ENDPOINT="https://staging.tiqology.com"
+              ;;
+            *)
+              ENDPOINT="https://dev.tiqology.com"
+              ;;
+          esac
+          
+          echo "🔍 Checking deployment health at: $ENDPOINT"
+          
+          MAX_RETRIES=10
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$ENDPOINT/api/health" || echo "000")
+            
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Health check passed!"
+              break
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "⏳ Waiting for deployment... ($RETRY_COUNT/$MAX_RETRIES)"
+            sleep 10
+          done
+          
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "❌ Health check failed after $MAX_RETRIES retries"
+            exit 1
+          fi
+      
+      - name: 🧪 Smoke Tests
+        run: |
+          echo "🧪 Running smoke tests..."
+          
+          ENV="${{ github.event.inputs.environment || 'development' }}"
+          
+          case $ENV in
+            production)
+              ENDPOINT="https://ai-chatbot-five-gamma-48.vercel.app"
+              ;;
+            staging)
+              ENDPOINT="https://staging.tiqology.com"
+              ;;
+            *)
+              ENDPOINT="https://dev.tiqology.com"
+              ;;
+          esac
+          
+          # Test critical endpoints
+          TESTS=(
+            "GET $ENDPOINT/api/health"
+            "GET $ENDPOINT/api/analytics"
+            "GET $ENDPOINT/login"
+          )
+          
+          PASSED=0
+          TOTAL=${#TESTS[@]}
+          
+          for test in "${TESTS[@]}"; do
+            METHOD=$(echo $test | awk '{print $1}')
+            URL=$(echo $test | awk '{print $2}')
+            
+            STATUS=$(curl -X $METHOD -o /dev/null -s -w "%{http_code}" "$URL")
+            
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ]; then
+              echo "✅ $test - PASSED"
+              PASSED=$((PASSED + 1))
+            else
+              echo "❌ $test - FAILED (Status: $STATUS)"
+            fi
+          done
+          
+          echo "SMOKE_TEST_PASSED=$PASSED" >> $GITHUB_ENV
+          echo "SMOKE_TEST_TOTAL=$TOTAL" >> $GITHUB_ENV
+      
+      - name: 📊 Validation Summary
+        run: |
+          echo "### ✅ Post-Deployment Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏥 Health Check: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧪 Smoke Tests: ${{ env.SMOKE_TEST_PASSED }}/${{ env.SMOKE_TEST_TOTAL }} Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌍 Environment: ${{ github.event.inputs.environment || 'development' }}" >> $GITHUB_STEP_SUMMARY
+
+  # ═══════════════════════════════════════════════════════════════
+  # 🎉 DEPLOYMENT COMPLETE
+  # ═══════════════════════════════════════════════════════════════
+  deployment-complete:
+    name: 🎉 Deployment Complete
+    runs-on: ubuntu-latest
+    needs: [build-and-push, argocd-sync, post-deployment-validation]
+    if: always()
+    
+    steps:
+      - name: 🎉 Success Notification
+        if: ${{ !contains(needs.*.result, 'failure') }}
+        run: |
+          echo "## 🎉 GitOps Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Phase | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔨 Build & Push | ✅ Complete |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📝 GitOps Update | ✅ Complete |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎯 ArgoCD Sync | ✅ Complete |" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Validation | ✅ Complete |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Details:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌍 Environment: ${{ github.event.inputs.environment || 'development' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏷️ Image: ${{ needs.build-and-push.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔐 Digest: ${{ needs.build-and-push.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🚀 **Application is live and healthy!**" >> $GITHUB_STEP_SUMMARY
+      
+      - name: ❌ Failure Notification
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: |
+          echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please review the failed jobs above and check ArgoCD console." >> $GITHUB_STEP_SUMMARY
+          exit 1

@@ -1,0 +1,186 @@
+name: Lighthouse Performance & Accessibility Audit
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL to audit'
+        required: true
+        default: 'https://tiqology.vercel.app'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  lighthouse-audit:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
+
+      - name: Wait for deployment (if PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: deployments } = await github.rest.repos.listDeployments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.pull_request.head.ref,
+              per_page: 1
+            });
+            
+            if (deployments.length > 0) {
+              console.log('Deployment found, waiting for completion...');
+              await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30s
+            }
+
+      - name: Determine audit URL
+        id: url
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            URL="${{ inputs.url }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Try to get Vercel preview URL
+            URL="https://tiqology-git-${{ github.head_ref }}.vercel.app"
+          else
+            URL="https://tiqology.vercel.app"
+          fi
+          
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "Audit URL: $URL"
+
+      - name: Run Lighthouse CI
+        id: lighthouse
+        run: |
+          echo "🔍 Running Lighthouse audit on ${{ steps.url.outputs.url }}"
+          
+          lhci autorun \
+            --collect.url="${{ steps.url.outputs.url }}" \
+            --collect.numberOfRuns=3 \
+            --upload.target=temporary-public-storage \
+            || lighthouse_status=$?
+          
+          echo "lighthouse_status=${lighthouse_status:-0}" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Run manual Lighthouse audit
+        id: manual-lighthouse
+        run: |
+          npm install -g lighthouse
+          
+          lighthouse "${{ steps.url.outputs.url }}" \
+            --output=json \
+            --output=html \
+            --output-path=./lighthouse-report \
+            --chrome-flags="--headless --no-sandbox" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            || echo "Manual lighthouse failed"
+          
+          # Extract scores
+          if [ -f "lighthouse-report.json" ]; then
+            PERF_SCORE=$(jq -r '.categories.performance.score * 100' lighthouse-report.json)
+            A11Y_SCORE=$(jq -r '.categories.accessibility.score * 100' lighthouse-report.json)
+            BP_SCORE=$(jq -r '.categories["best-practices"].score * 100' lighthouse-report.json)
+            SEO_SCORE=$(jq -r '.categories.seo.score * 100' lighthouse-report.json)
+            
+            echo "performance_score=$PERF_SCORE" >> $GITHUB_OUTPUT
+            echo "accessibility_score=$A11Y_SCORE" >> $GITHUB_OUTPUT
+            echo "best_practices_score=$BP_SCORE" >> $GITHUB_OUTPUT
+            echo "seo_score=$SEO_SCORE" >> $GITHUB_OUTPUT
+            
+            echo "📊 Performance: $PERF_SCORE"
+            echo "♿ Accessibility: $A11Y_SCORE"
+            echo "✅ Best Practices: $BP_SCORE"
+            echo "🔍 SEO: $SEO_SCORE"
+          fi
+        continue-on-error: true
+
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-results
+          path: |
+            lighthouse-report.html
+            lighthouse-report.json
+            .lighthouseci/
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && steps.manual-lighthouse.outputs.performance_score
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const perfScore = ${{ steps.manual-lighthouse.outputs.performance_score }};
+            const a11yScore = ${{ steps.manual-lighthouse.outputs.accessibility_score }};
+            const bpScore = ${{ steps.manual-lighthouse.outputs.best_practices_score }};
+            const seoScore = ${{ steps.manual-lighthouse.outputs.seo_score }};
+            
+            const getEmoji = (score) => {
+              if (score >= 90) return '🟢';
+              if (score >= 50) return '🟡';
+              return '🔴';
+            };
+            
+            const body = `## 🔍 Lighthouse Performance Audit
+            
+            **URL**: ${{ steps.url.outputs.url }}
+            
+            | Category | Score | Status |
+            |----------|-------|--------|
+            | ⚡ Performance | ${perfScore}/100 | ${getEmoji(perfScore)} |
+            | ♿ Accessibility | ${a11yScore}/100 | ${getEmoji(a11yScore)} |
+            | ✅ Best Practices | ${bpScore}/100 | ${getEmoji(bpScore)} |
+            | 🔍 SEO | ${seoScore}/100 | ${getEmoji(seoScore)} |
+            
+            ### Scoring Guide
+            - 🟢 90-100: Good
+            - 🟡 50-89: Needs Improvement
+            - 🔴 0-49: Poor
+            
+            📄 [View detailed report in artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "# ⚡ Lighthouse Performance Audit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: ${{ steps.url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -n "${{ steps.manual-lighthouse.outputs.performance_score }}" ]; then
+            echo "## Scores" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- ⚡ Performance: ${{ steps.manual-lighthouse.outputs.performance_score }}/100" >> $GITHUB_STEP_SUMMARY
+            echo "- ♿ Accessibility: ${{ steps.manual-lighthouse.outputs.accessibility_score }}/100" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Best Practices: ${{ steps.manual-lighthouse.outputs.best_practices_score }}/100" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔍 SEO: ${{ steps.manual-lighthouse.outputs.seo_score }}/100" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Lighthouse audit did not complete successfully" >> $GITHUB_STEP_SUMMARY
+          fi

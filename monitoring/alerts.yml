@@ -1,0 +1,125 @@
+# TiQology Services - Performance Alerts
+
+groups:
+  - name: TiQology Services
+    interval: 30s
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{namespace="tiqology-services"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} CPU"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{namespace="tiqology-services"} / container_spec_memory_limit_bytes{namespace="tiqology-services"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} memory"
+
+      # Pod Restarts
+      - alert: PodRestarts
+        expr: rate(kube_pod_container_status_restarts_total{namespace="tiqology-services"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} is restarting"
+          description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes"
+
+      # Service Down
+      - alert: ServiceDown
+        expr: up{job=~"voice-engine|video-engine|inference-engine"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 2 minutes"
+
+      # High Response Time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time for {{ $labels.service }}"
+          description: "95th percentile response time is {{ $value }}s"
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate for {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      # GPU Utilization
+      - alert: LowGPUUtilization
+        expr: avg(nvidia_gpu_duty_cycle) < 0.2
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "Low GPU utilization"
+          description: "GPU utilization is {{ $value | humanizePercentage }}, consider scaling down"
+
+      # High GPU Utilization
+      - alert: HighGPUUtilization
+        expr: avg(nvidia_gpu_duty_cycle) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High GPU utilization"
+          description: "GPU utilization is {{ $value | humanizePercentage }}, consider scaling up"
+
+      # Disk Usage
+      - alert: HighDiskUsage
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+
+      # PostgreSQL Connections
+      - alert: HighPostgresConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High PostgreSQL connections"
+          description: "Using {{ $value | humanizePercentage }} of available connections"
+
+      # Redis Memory Usage
+      - alert: HighRedisMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis is using {{ $value | humanizePercentage }} of available memory"
+
+      # Cost Tracking - High Inference Cost
+      - alert: HighInferenceCost
+        expr: rate(tiqology_inference_cost_usd[1h]) > 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High inference costs detected"
+          description: "Inference costs are ${{ $value }}/hour, investigate usage patterns"

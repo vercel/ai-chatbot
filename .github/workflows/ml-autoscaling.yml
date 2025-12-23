@@ -1,0 +1,473 @@
+name: ML-Powered Auto-Scaling & Cost Prediction
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every 10 minutes for real-time scaling decisions
+    - cron: '*/10 * * * *'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  collect-training-data:
+    name: Collect Historical Metrics
+    runs-on: ubuntu-latest
+    outputs:
+      data_file: ${{ steps.collect.outputs.file }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn prophet xgboost requests
+
+      - name: Collect historical metrics
+        id: collect
+        run: |
+          cat > collect_metrics.py << 'EOF'
+          import pandas as pd
+          import json
+          from datetime import datetime, timedelta
+          import requests
+          
+          # Fetch from Vercel Analytics, Prometheus, or Supabase
+          def fetch_metrics():
+              # Simulate fetching last 30 days of data
+              dates = pd.date_range(end=datetime.now(), periods=30*24, freq='H')
+              
+              # In production, fetch real data from:
+              # - Vercel Analytics API
+              # - Prometheus query API
+              # - Supabase metrics table
+              
+              data = {
+                  'timestamp': dates,
+                  'requests_per_minute': [100 + i * 2 + (50 if i % 24 < 8 else 0) for i in range(len(dates))],
+                  'active_users': [50 + i + (20 if i % 24 < 8 else 0) for i in range(len(dates))],
+                  'response_time_ms': [300 + (i % 50) for i in range(len(dates))],
+                  'error_rate': [0.02 + (0.01 if i % 24 > 20 else 0) for i in range(len(dates))],
+                  'cpu_usage': [0.4 + (i % 100) / 200 for i in range(len(dates))],
+                  'memory_usage': [0.5 + (i % 100) / 200 for i in range(len(dates))],
+                  'cost_per_hour': [2.5 + (i % 10) / 10 for i in range(len(dates))],
+              }
+              
+              df = pd.DataFrame(data)
+              df.to_csv('metrics_history.csv', index=False)
+              print(f"✅ Collected {len(df)} data points")
+              
+              return df
+          
+          if __name__ == '__main__':
+              fetch_metrics()
+          EOF
+          
+          python collect_metrics.py
+          echo "file=metrics_history.csv" >> $GITHUB_OUTPUT
+
+      - name: Upload training data
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-data
+          path: metrics_history.csv
+          retention-days: 7
+
+  train-prediction-models:
+    name: Train ML Models
+    runs-on: ubuntu-latest
+    needs: collect-training-data
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ML libraries
+        run: |
+          pip install pandas numpy scikit-learn prophet xgboost joblib matplotlib
+
+      - name: Download training data
+        uses: actions/download-artifact@v4
+        with:
+          name: training-data
+
+      - name: Train traffic prediction model
+        run: |
+          cat > train_models.py << 'EOF'
+          import pandas as pd
+          import numpy as np
+          from prophet import Prophet
+          from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+          from sklearn.model_selection import train_test_split
+          from sklearn.metrics import mean_absolute_error, r2_score
+          import joblib
+          import json
+          
+          def train_traffic_predictor():
+              """Train Prophet model for traffic forecasting"""
+              print("🧠 Training traffic prediction model...")
+              
+              df = pd.read_csv('metrics_history.csv')
+              df['ds'] = pd.to_datetime(df['timestamp'])
+              df['y'] = df['requests_per_minute']
+              
+              # Train Prophet model for time series forecasting
+              model = Prophet(
+                  daily_seasonality=True,
+                  weekly_seasonality=True,
+                  changepoint_prior_scale=0.05
+              )
+              model.fit(df[['ds', 'y']])
+              
+              # Forecast next 24 hours
+              future = model.make_future_dataframe(periods=24, freq='H')
+              forecast = model.predict(future)
+              
+              # Save model
+              joblib.dump(model, 'traffic_model.pkl')
+              
+              print(f"✅ Traffic model trained (MAE: {mean_absolute_error(df['y'], forecast['yhat'][:len(df)]):.2f})")
+              
+              return forecast
+          
+          def train_cost_predictor():
+              """Train model to predict infrastructure costs"""
+              print("💰 Training cost prediction model...")
+              
+              df = pd.read_csv('metrics_history.csv')
+              
+              # Features: requests, users, cpu, memory
+              X = df[['requests_per_minute', 'active_users', 'cpu_usage', 'memory_usage']]
+              y = df['cost_per_hour']
+              
+              X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+              
+              # Train Gradient Boosting model
+              model = GradientBoostingRegressor(n_estimators=100, random_state=42)
+              model.fit(X_train, y_train)
+              
+              # Evaluate
+              predictions = model.predict(X_test)
+              mae = mean_absolute_error(y_test, predictions)
+              r2 = r2_score(y_test, predictions)
+              
+              # Save model
+              joblib.dump(model, 'cost_model.pkl')
+              
+              print(f"✅ Cost model trained (MAE: ${mae:.2f}, R²: {r2:.3f})")
+              
+              # Feature importance
+              importance = dict(zip(X.columns, model.feature_importances_))
+              print(f"Feature importance: {importance}")
+              
+              return model
+          
+          def train_scaling_decision_model():
+              """Train model to decide scaling actions"""
+              print("⚖️ Training scaling decision model...")
+              
+              df = pd.read_csv('metrics_history.csv')
+              
+              # Create target: 0=scale_down, 1=maintain, 2=scale_up
+              def determine_action(row):
+                  if row['cpu_usage'] > 0.8 or row['memory_usage'] > 0.8:
+                      return 2  # scale up
+                  elif row['cpu_usage'] < 0.3 and row['memory_usage'] < 0.3 and row['response_time_ms'] < 400:
+                      return 0  # scale down
+                  else:
+                      return 1  # maintain
+              
+              df['action'] = df.apply(determine_action, axis=1)
+              
+              X = df[['requests_per_minute', 'active_users', 'cpu_usage', 'memory_usage', 'response_time_ms', 'error_rate']]
+              y = df['action']
+              
+              X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+              
+              # Train Random Forest classifier
+              model = RandomForestRegressor(n_estimators=100, random_state=42)
+              model.fit(X_train, y_train)
+              
+              # Evaluate
+              accuracy = model.score(X_test, y_test)
+              
+              # Save model
+              joblib.dump(model, 'scaling_model.pkl')
+              
+              print(f"✅ Scaling model trained (Accuracy: {accuracy:.2%})")
+              
+              return model
+          
+          if __name__ == '__main__':
+              traffic_forecast = train_traffic_predictor()
+              cost_model = train_cost_predictor()
+              scaling_model = train_scaling_decision_model()
+              
+              # Save predictions for next 24 hours
+              predictions = {
+                  'next_24h_traffic': traffic_forecast['yhat'].tail(24).tolist(),
+                  'timestamp': traffic_forecast['ds'].tail(24).dt.strftime('%Y-%m-%d %H:%M:%S').tolist()
+              }
+              
+              with open('predictions.json', 'w') as f:
+                  json.dump(predictions, f, indent=2)
+              
+              print("✅ All models trained and saved")
+          EOF
+          
+          python train_models.py
+
+      - name: Upload trained models
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-models
+          path: |
+            *.pkl
+            predictions.json
+          retention-days: 7
+
+  make-scaling-decision:
+    name: Make Auto-Scaling Decision
+    runs-on: ubuntu-latest
+    needs: train-prediction-models
+    outputs:
+      action: ${{ steps.decide.outputs.action }}
+      confidence: ${{ steps.decide.outputs.confidence }}
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install pandas numpy scikit-learn joblib
+
+      - name: Download models
+        uses: actions/download-artifact@v4
+        with:
+          name: ml-models
+
+      - name: Get current metrics
+        id: current
+        run: |
+          # In production, fetch from Prometheus/Vercel/Supabase
+          echo "requests_per_minute=180" >> $GITHUB_OUTPUT
+          echo "active_users=65" >> $GITHUB_OUTPUT
+          echo "cpu_usage=0.72" >> $GITHUB_OUTPUT
+          echo "memory_usage=0.68" >> $GITHUB_OUTPUT
+          echo "response_time_ms=520" >> $GITHUB_OUTPUT
+          echo "error_rate=0.03" >> $GITHUB_OUTPUT
+
+      - name: Make scaling decision
+        id: decide
+        run: |
+          cat > decide_scaling.py << 'EOF'
+          import joblib
+          import numpy as np
+          import json
+          import sys
+          
+          # Load models
+          scaling_model = joblib.load('scaling_model.pkl')
+          cost_model = joblib.load('cost_model.pkl')
+          
+          # Current metrics
+          current = {
+              'requests_per_minute': 180,
+              'active_users': 65,
+              'cpu_usage': 0.72,
+              'memory_usage': 0.68,
+              'response_time_ms': 520,
+              'error_rate': 0.03
+          }
+          
+          # Predict scaling action
+          X = np.array([[
+              current['requests_per_minute'],
+              current['active_users'],
+              current['cpu_usage'],
+              current['memory_usage'],
+              current['response_time_ms'],
+              current['error_rate']
+          ]])
+          
+          action_score = scaling_model.predict(X)[0]
+          
+          # Map to action
+          if action_score < 0.5:
+              action = 'scale_down'
+              target_replicas = 1
+          elif action_score > 1.5:
+              action = 'scale_up'
+              target_replicas = 3
+          else:
+              action = 'maintain'
+              target_replicas = 2
+          
+          # Predict cost impact
+          current_cost = cost_model.predict(X)[0]
+          
+          # Calculate confidence (0-100)
+          confidence = min(int(abs(action_score - 1) * 100), 95)
+          
+          decision = {
+              'action': action,
+              'target_replicas': target_replicas,
+              'confidence': confidence,
+              'current_cost_per_hour': round(current_cost, 2),
+              'reason': f"CPU: {current['cpu_usage']:.0%}, Memory: {current['memory_usage']:.0%}, Latency: {current['response_time_ms']}ms"
+          }
+          
+          print(f"✅ Decision: {action.upper()} (confidence: {confidence}%)")
+          print(f"   Target replicas: {target_replicas}")
+          print(f"   Current cost: ${current_cost:.2f}/hour")
+          print(f"   Reason: {decision['reason']}")
+          
+          # Output to GitHub Actions
+          with open('decision.json', 'w') as f:
+              json.dump(decision, f, indent=2)
+          
+          # Set outputs
+          print(f"::set-output name=action::{action}")
+          print(f"::set-output name=confidence::{confidence}")
+          print(f"::set-output name=target_replicas::{target_replicas}")
+          EOF
+          
+          python decide_scaling.py
+
+  execute-scaling:
+    name: Execute Auto-Scaling
+    runs-on: ubuntu-latest
+    needs: make-scaling-decision
+    if: needs.make-scaling-decision.outputs.confidence > 70
+    steps:
+      - name: Scale Vercel deployment
+        run: |
+          ACTION="${{ needs.make-scaling-decision.outputs.action }}"
+          
+          echo "⚡ Executing scaling action: $ACTION"
+          
+          case "$ACTION" in
+            scale_up)
+              echo "📈 Scaling UP (increasing instances)"
+              # In production:
+              # vercel scale --replicas 3
+              ;;
+            scale_down)
+              echo "📉 Scaling DOWN (reducing instances)"
+              # In production:
+              # vercel scale --replicas 1
+              ;;
+            maintain)
+              echo "✅ Maintaining current scale"
+              ;;
+          esac
+
+      - name: Notify scaling action
+        run: |
+          echo "📢 Notifying team of scaling decision..."
+          # Send to Discord
+          # curl -X POST $DISCORD_WEBHOOK -d "Auto-scaled: $ACTION"
+
+  cost-forecast-report:
+    name: Generate Cost Forecast
+    runs-on: ubuntu-latest
+    needs: train-prediction-models
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install pandas joblib numpy
+
+      - name: Download models
+        uses: actions/download-artifact@v4
+        with:
+          name: ml-models
+
+      - name: Generate 7-day cost forecast
+        run: |
+          cat > forecast_costs.py << 'EOF'
+          import joblib
+          import numpy as np
+          import json
+          
+          cost_model = joblib.load('cost_model.pkl')
+          
+          # Load traffic predictions
+          with open('predictions.json', 'r') as f:
+              predictions = json.load(f)
+          
+          # Forecast costs for next 7 days
+          traffic_forecast = predictions['next_24h_traffic']
+          
+          daily_costs = []
+          for i in range(7):
+              # Simulate full day (24 hours)
+              day_traffic = [traffic_forecast[h % 24] for h in range(24)]
+              day_cost = sum([
+                  cost_model.predict(np.array([[
+                      traffic,
+                      traffic * 0.4,  # active_users
+                      0.6,  # cpu
+                      0.55  # memory
+                  ]]))[0]
+                  for traffic in day_traffic
+              ])
+              daily_costs.append(round(day_cost, 2))
+          
+          total_weekly_cost = sum(daily_costs)
+          
+          print(f"💰 7-Day Cost Forecast:")
+          for i, cost in enumerate(daily_costs, 1):
+              print(f"   Day {i}: ${cost:.2f}")
+          print(f"   Total: ${total_weekly_cost:.2f}")
+          print(f"   Average: ${total_weekly_cost/7:.2f}/day")
+          
+          # Check if costs are trending up
+          if daily_costs[-1] > daily_costs[0] * 1.2:
+              print("⚠️ WARNING: Costs trending up by >20%")
+          EOF
+          
+          python forecast_costs.py
+
+  summary:
+    name: ML Auto-Scaling Summary
+    runs-on: ubuntu-latest
+    needs: [make-scaling-decision, execute-scaling, cost-forecast-report]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🤖 ML-Powered Auto-Scaling Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Decision**: ${{ needs.make-scaling-decision.outputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Confidence**: ${{ needs.make-scaling-decision.outputs.confidence }}%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Models Trained" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Traffic Predictor (Prophet)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Cost Predictor (Gradient Boosting)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Scaling Decision (Random Forest)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Features" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 📈 Predict traffic 24h ahead" >> $GITHUB_STEP_SUMMARY
+          echo "- 💰 7-day cost forecasting" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ Automatic scaling decisions" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎯 70%+ confidence threshold" >> $GITHUB_STEP_SUMMARY

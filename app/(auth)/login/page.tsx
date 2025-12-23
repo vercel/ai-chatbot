@@ -222,12 +222,12 @@ export default function Page() {
                   </div>
 
                   <p className="text-center text-muted-foreground text-sm">
-                    {"Don't have an account? "}
+                    Don't have an account?{" "}
                     <Link
                       className="font-semibold text-primary hover:underline"
                       href="/register"
                     >
-                      Sign up for free
+                      Create account Register here
                     </Link>
                   </p>
                 </>

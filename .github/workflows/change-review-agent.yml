@@ -1,0 +1,369 @@
+name: AI Change Review Agent
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  ai-risk-analysis:
+    name: AI-Powered Change Risk Assessment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          echo "📝 Extracting PR changes..."
+          
+          # Get diff summary
+          git diff origin/${{ github.base_ref }}...HEAD > pr-diff.txt
+          
+          # Count changes
+          ADDITIONS=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | grep -oP '\d+(?= insertion)')
+          DELETIONS=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | grep -oP '\d+(?= deletion)')
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          
+          echo "additions=${ADDITIONS:-0}" >> $GITHUB_OUTPUT
+          echo "deletions=${DELETIONS:-0}" >> $GITHUB_OUTPUT
+          echo "files_changed=${FILES_CHANGED}" >> $GITHUB_OUTPUT
+          
+          echo "📊 Changes: +${ADDITIONS:-0}/-${DELETIONS:-0} across ${FILES_CHANGED} files"
+
+      - name: Analyze Changed Files
+        id: analyze
+        run: |
+          echo "🔍 Analyzing file changes..."
+          
+          # Categorize changes
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed-files.txt
+          
+          cat > analyze-changes.js << 'EOF'
+          const fs = require('fs');
+          const files = fs.readFileSync('changed-files.txt', 'utf8').split('\n').filter(Boolean);
+          
+          const categories = {
+            infrastructure: 0,
+            database: 0,
+            security: 0,
+            api: 0,
+            ui: 0,
+            config: 0,
+            tests: 0,
+            docs: 0
+          };
+          
+          const highRiskPatterns = [
+            'Dockerfile', 'docker-compose', '.github/workflows',
+            'vercel.json', 'next.config', 'package.json',
+            'db/', 'database', 'migration',
+            'auth', 'security', '.env',
+            '/api/', 'route.ts'
+          ];
+          
+          let riskScore = 0;
+          const riskFactors = [];
+          
+          files.forEach(file => {
+            // Categorize
+            if (file.includes('.github/workflows') || file.includes('gitops/')) {
+              categories.infrastructure++;
+              riskScore += 3;
+            }
+            if (file.includes('db/') || file.includes('migration') || file.includes('schema')) {
+              categories.database++;
+              riskScore += 5;
+            }
+            if (file.includes('auth') || file.includes('security') || file.includes('.env')) {
+              categories.security++;
+              riskScore += 4;
+            }
+            if (file.includes('/api/') || file.includes('route.ts')) {
+              categories.api++;
+              riskScore += 2;
+            }
+            if (file.includes('component') || file.includes('.tsx') || file.includes('.css')) {
+              categories.ui++;
+              riskScore += 1;
+            }
+            if (file.includes('config') || file.includes('.json')) {
+              categories.config++;
+              riskScore += 2;
+            }
+            if (file.includes('test') || file.includes('.test.') || file.includes('.spec.')) {
+              categories.tests++;
+            }
+            if (file.includes('README') || file.includes('.md') || file.includes('docs/')) {
+              categories.docs++;
+            }
+            
+            // Check high-risk patterns
+            highRiskPatterns.forEach(pattern => {
+              if (file.includes(pattern)) {
+                riskFactors.push(`High-risk file modified: ${file}`);
+              }
+            });
+          });
+          
+          const result = {
+            categories,
+            riskScore,
+            riskLevel: riskScore > 20 ? 'HIGH' : riskScore > 10 ? 'MEDIUM' : 'LOW',
+            riskFactors,
+            totalFiles: files.length
+          };
+          
+          console.log(JSON.stringify(result));
+          fs.writeFileSync('risk-analysis.json', JSON.stringify(result, null, 2));
+          EOF
+          
+          node analyze-changes.js
+          
+          RISK_LEVEL=$(jq -r '.riskLevel' risk-analysis.json)
+          RISK_SCORE=$(jq -r '.riskScore' risk-analysis.json)
+          
+          echo "risk_level=$RISK_LEVEL" >> $GITHUB_OUTPUT
+          echo "risk_score=$RISK_SCORE" >> $GITHUB_OUTPUT
+          
+          echo "⚖️ Risk Assessment: $RISK_LEVEL (Score: $RISK_SCORE)"
+
+      - name: AI Security Analysis
+        id: security
+        run: |
+          echo "🔒 Performing AI security analysis..."
+          
+          # Check for security-sensitive patterns in diff
+          cat > security-scan.js << 'EOF'
+          const fs = require('fs');
+          const diff = fs.readFileSync('pr-diff.txt', 'utf8');
+          
+          const securityPatterns = [
+            { pattern: /password.*=.*['"]/, severity: 'critical', message: 'Potential hardcoded password' },
+            { pattern: /api[_-]?key.*=.*['"]/, severity: 'critical', message: 'Potential API key exposure' },
+            { pattern: /secret.*=.*['"]/, severity: 'high', message: 'Potential secret exposure' },
+            { pattern: /eval\(/, severity: 'high', message: 'Use of eval() detected' },
+            { pattern: /dangerouslySetInnerHTML/, severity: 'medium', message: 'XSS risk with dangerouslySetInnerHTML' },
+            { pattern: /\.exec\(/, severity: 'medium', message: 'Command execution detected' },
+            { pattern: /process\.env\./, severity: 'low', message: 'Environment variable usage' }
+          ];
+          
+          const findings = [];
+          
+          securityPatterns.forEach(({ pattern, severity, message }) => {
+            if (pattern.test(diff)) {
+              findings.push({ severity, message, pattern: pattern.toString() });
+            }
+          });
+          
+          const result = {
+            findings,
+            securityScore: Math.max(0, 100 - findings.length * 10),
+            hasCritical: findings.some(f => f.severity === 'critical'),
+            hasHigh: findings.some(f => f.severity === 'high')
+          };
+          
+          console.log(JSON.stringify(result, null, 2));
+          fs.writeFileSync('security-findings.json', JSON.stringify(result, null, 2));
+          EOF
+          
+          node security-scan.js
+          
+          SECURITY_SCORE=$(jq -r '.securityScore' security-findings.json)
+          HAS_CRITICAL=$(jq -r '.hasCritical' security-findings.json)
+          
+          echo "security_score=$SECURITY_SCORE" >> $GITHUB_OUTPUT
+          echo "has_critical=$HAS_CRITICAL" >> $GITHUB_OUTPUT
+          
+          echo "🔒 Security Score: $SECURITY_SCORE/100"
+
+      - name: Generate AI Review Summary
+        id: ai-review
+        run: |
+          echo "🤖 Generating AI-powered review summary..."
+          
+          # Compile data for AI analysis
+          cat > ai-input.json << EOF
+          {
+            "pr": {
+              "title": "${{ github.event.pull_request.title }}",
+              "additions": ${{ steps.diff.outputs.additions }},
+              "deletions": ${{ steps.diff.outputs.deletions }},
+              "files_changed": ${{ steps.diff.outputs.files_changed }}
+            },
+            "risk_analysis": $(cat risk-analysis.json),
+            "security_findings": $(cat security-findings.json)
+          }
+          EOF
+          
+          # Simulate AI review (in production, call OpenAI/Anthropic API)
+          cat > ai-review.js << 'EOF'
+          const data = require('./ai-input.json');
+          
+          const review = {
+            summary: `This PR modifies ${data.pr.files_changed} files with ${data.pr.additions} additions and ${data.pr.deletions} deletions.`,
+            risk_assessment: {
+              level: data.risk_analysis.riskLevel,
+              score: data.risk_analysis.riskScore,
+              description: data.risk_analysis.riskLevel === 'HIGH' 
+                ? '⚠️ High-risk changes detected. Careful review recommended.'
+                : data.risk_analysis.riskLevel === 'MEDIUM'
+                ? '⚡ Medium-risk changes. Standard review process.'
+                : '✅ Low-risk changes. Straightforward review.'
+            },
+            security_assessment: {
+              score: data.security_findings.securityScore,
+              critical_issues: data.security_findings.hasCritical,
+              findings_count: data.security_findings.findings.length
+            },
+            recommendations: [],
+            approval_recommendation: 'conditional'
+          };
+          
+          // Generate recommendations
+          if (data.risk_analysis.riskLevel === 'HIGH') {
+            review.recommendations.push('Request review from senior engineer');
+            review.recommendations.push('Test in staging environment before merge');
+            review.recommendations.push('Prepare rollback plan');
+          }
+          
+          if (data.security_findings.hasCritical) {
+            review.recommendations.push('⚠️ CRITICAL: Address security findings before merge');
+            review.approval_recommendation = 'reject';
+          }
+          
+          if (data.risk_analysis.categories.database > 0) {
+            review.recommendations.push('Verify database migration plan');
+            review.recommendations.push('Backup database before deployment');
+          }
+          
+          if (data.risk_analysis.categories.infrastructure > 0) {
+            review.recommendations.push('Review infrastructure changes with DevOps team');
+          }
+          
+          if (review.recommendations.length === 0) {
+            review.recommendations.push('Standard code review sufficient');
+            review.approval_recommendation = 'approve';
+          }
+          
+          console.log(JSON.stringify(review, null, 2));
+          require('fs').writeFileSync('ai-review-result.json', JSON.stringify(review, null, 2));
+          EOF
+          
+          node ai-review.js
+          
+          APPROVAL=$(jq -r '.approval_recommendation' ai-review-result.json)
+          echo "approval=$APPROVAL" >> $GITHUB_OUTPUT
+
+      - name: Post AI Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = JSON.parse(fs.readFileSync('ai-review-result.json', 'utf8'));
+            const riskAnalysis = JSON.parse(fs.readFileSync('risk-analysis.json', 'utf8'));
+            const securityFindings = JSON.parse(fs.readFileSync('security-findings.json', 'utf8'));
+            
+            const getRiskEmoji = (level) => {
+              return level === 'HIGH' ? '🔴' : level === 'MEDIUM' ? '🟡' : '🟢';
+            };
+            
+            const body = `# 🤖 AI Change Review Analysis
+            
+            ## Risk Assessment
+            
+            **Overall Risk**: ${getRiskEmoji(review.risk_assessment.level)} **${review.risk_assessment.level}** (Score: ${review.risk_assessment.score}/100)
+            
+            ${review.risk_assessment.description}
+            
+            ### Change Categories
+            
+            | Category | Files Changed |
+            |----------|---------------|
+            | 🏗️ Infrastructure | ${riskAnalysis.categories.infrastructure} |
+            | 🗄️ Database | ${riskAnalysis.categories.database} |
+            | 🔒 Security | ${riskAnalysis.categories.security} |
+            | 🔌 API | ${riskAnalysis.categories.api} |
+            | 🎨 UI | ${riskAnalysis.categories.ui} |
+            | ⚙️ Configuration | ${riskAnalysis.categories.config} |
+            | 🧪 Tests | ${riskAnalysis.categories.tests} |
+            | 📚 Documentation | ${riskAnalysis.categories.docs} |
+            
+            ## Security Analysis
+            
+            **Security Score**: ${securityFindings.securityScore}/100
+            
+            ${securityFindings.findings.length > 0 ? `
+            ### 🔍 Security Findings
+            
+            ${securityFindings.findings.map(f => `- **[${f.severity.toUpperCase()}]** ${f.message}`).join('\n')}
+            ` : '✅ No security issues detected'}
+            
+            ## 📋 Recommendations
+            
+            ${review.recommendations.map(r => `- ${r}`).join('\n')}
+            
+            ## 🎯 AI Approval Status
+            
+            **Recommendation**: ${review.approval_recommendation === 'approve' ? '✅ **APPROVE**' : review.approval_recommendation === 'reject' ? '❌ **CHANGES REQUIRED**' : '⚠️ **CONDITIONAL APPROVAL**'}
+            
+            ${review.approval_recommendation === 'reject' ? '⚠️ Critical issues must be resolved before merge.' : ''}
+            
+            ---
+            
+            <details>
+            <summary>📊 Detailed Metrics</summary>
+            
+            - **Files Changed**: ${riskAnalysis.totalFiles}
+            - **Lines Added**: +${{ steps.diff.outputs.additions }}
+            - **Lines Deleted**: -${{ steps.diff.outputs.deletions }}
+            - **Risk Factors**: ${riskAnalysis.riskFactors.length}
+            
+            </details>
+            
+            ---
+            
+            *🤖 This analysis was automatically generated by TiQology AI Change Review Agent*  
+            *Powered by predictive AI analysis • Generated at ${new Date().toISOString()}*
+            `;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Block PR if Critical Issues
+        if: steps.security.outputs.has_critical == 'true'
+        run: |
+          echo "❌ CRITICAL SECURITY ISSUES DETECTED"
+          echo "This PR cannot be merged until critical security findings are resolved."
+          exit 1
+
+      - name: Generate Summary
+        if: always()
+        run: |
+          echo "# 🤖 AI Change Review Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**PR**: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Analysis Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Risk Level**: ${{ steps.analyze.outputs.risk_level }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Risk Score**: ${{ steps.analyze.outputs.risk_score }}/100" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Score**: ${{ steps.security.outputs.security_score }}/100" >> $GITHUB_STEP_SUMMARY
+          echo "- **Files Changed**: ${{ steps.diff.outputs.files_changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **AI Recommendation**: ${{ steps.ai-review.outputs.approval }}" >> $GITHUB_STEP_SUMMARY

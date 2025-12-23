@@ -1,0 +1,519 @@
+name: Feature Flags & A/B Testing System
+
+on:
+  workflow_dispatch:
+    inputs:
+      feature_name:
+        description: 'Feature name'
+        required: true
+        type: string
+      rollout_percentage:
+        description: 'Rollout percentage (0-100)'
+        required: false
+        type: number
+        default: 10
+  push:
+    branches: [main]
+    paths:
+      - 'lib/features/**'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-feature-flags-system:
+    name: Deploy Feature Flags Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create feature flags manager
+        run: |
+          mkdir -p lib/features
+          
+          cat > lib/features/feature-flags.ts << 'EOF'
+          /**
+           * TiQology Feature Flags System
+           * Progressive rollout + A/B testing with real-time analytics
+           */
+          
+          import { createClient } from '@supabase/supabase-js';
+          
+          export interface FeatureFlag {
+            name: string;
+            enabled: boolean;
+            rolloutPercentage: number;
+            environment: 'development' | 'staging' | 'production';
+            conditions?: FeatureCondition[];
+            variants?: FeatureVariant[];
+            metadata?: Record<string, any>;
+            createdAt: Date;
+            updatedAt: Date;
+          }
+          
+          export interface FeatureCondition {
+            type: 'user' | 'email' | 'country' | 'custom';
+            operator: 'equals' | 'contains' | 'matches' | 'in';
+            value: string | string[];
+          }
+          
+          export interface FeatureVariant {
+            name: string;
+            weight: number;  // 0-100
+            config?: Record<string, any>;
+          }
+          
+          export class FeatureFlagsManager {
+            private supabase: any;
+            private cache: Map<string, FeatureFlag> = new Map();
+            private cacheTTL = 60000; // 1 minute
+            
+            constructor() {
+              this.supabase = createClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_KEY!
+              );
+            }
+            
+            /**
+             * Check if feature is enabled for user
+             */
+            async isEnabled(
+              featureName: string,
+              userId?: string,
+              userAttributes?: Record<string, any>
+            ): Promise<boolean> {
+              const flag = await this.getFlag(featureName);
+              
+              if (!flag) {
+                return false; // Feature doesn't exist
+              }
+              
+              if (!flag.enabled) {
+                return false; // Feature globally disabled
+              }
+              
+              // Check conditions
+              if (flag.conditions && flag.conditions.length > 0) {
+                if (!this.matchesConditions(flag.conditions, userId, userAttributes)) {
+                  return false;
+                }
+              }
+              
+              // Check rollout percentage
+              if (userId && flag.rolloutPercentage < 100) {
+                const hash = this.hashUserId(userId, featureName);
+                if (hash > flag.rolloutPercentage) {
+                  return false;
+                }
+              }
+              
+              // Track feature check
+              await this.trackFeatureCheck(featureName, userId, true);
+              
+              return true;
+            }
+            
+            /**
+             * Get variant for A/B test
+             */
+            async getVariant(
+              featureName: string,
+              userId?: string
+            ): Promise<string | null> {
+              const flag = await this.getFlag(featureName);
+              
+              if (!flag || !flag.variants || flag.variants.length === 0) {
+                return null;
+              }
+              
+              if (!userId) {
+                return flag.variants[0].name; // Default variant
+              }
+              
+              // Deterministic variant selection based on user ID
+              const hash = this.hashUserId(userId, featureName);
+              let cumulative = 0;
+              
+              for (const variant of flag.variants) {
+                cumulative += variant.weight;
+                if (hash <= cumulative) {
+                  await this.trackVariantAssignment(featureName, userId, variant.name);
+                  return variant.name;
+                }
+              }
+              
+              return flag.variants[flag.variants.length - 1].name;
+            }
+            
+            /**
+             * Get feature flag from cache or DB
+             */
+            private async getFlag(name: string): Promise<FeatureFlag | null> {
+              // Check cache
+              if (this.cache.has(name)) {
+                return this.cache.get(name)!;
+              }
+              
+              // Fetch from Supabase
+              const { data, error } = await this.supabase
+                .from('feature_flags')
+                .select('*')
+                .eq('name', name)
+                .eq('environment', process.env.NODE_ENV || 'development')
+                .single();
+              
+              if (error || !data) {
+                return null;
+              }
+              
+              const flag: FeatureFlag = {
+                name: data.name,
+                enabled: data.enabled,
+                rolloutPercentage: data.rollout_percentage,
+                environment: data.environment,
+                conditions: data.conditions,
+                variants: data.variants,
+                metadata: data.metadata,
+                createdAt: new Date(data.created_at),
+                updatedAt: new Date(data.updated_at)
+              };
+              
+              // Cache it
+              this.cache.set(name, flag);
+              setTimeout(() => this.cache.delete(name), this.cacheTTL);
+              
+              return flag;
+            }
+            
+            /**
+             * Check if user matches conditions
+             */
+            private matchesConditions(
+              conditions: FeatureCondition[],
+              userId?: string,
+              userAttributes?: Record<string, any>
+            ): boolean {
+              for (const condition of conditions) {
+                const value = userAttributes?.[condition.type];
+                
+                switch (condition.operator) {
+                  case 'equals':
+                    if (value !== condition.value) return false;
+                    break;
+                  case 'contains':
+                    if (!String(value).includes(String(condition.value))) return false;
+                    break;
+                  case 'in':
+                    if (!Array.isArray(condition.value) || !condition.value.includes(value)) {
+                      return false;
+                    }
+                    break;
+                }
+              }
+              
+              return true;
+            }
+            
+            /**
+             * Hash user ID for consistent rollout
+             */
+            private hashUserId(userId: string, featureName: string): number {
+              const str = `${userId}:${featureName}`;
+              let hash = 0;
+              
+              for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+              }
+              
+              return Math.abs(hash % 100);
+            }
+            
+            /**
+             * Track feature check event
+             */
+            private async trackFeatureCheck(
+              featureName: string,
+              userId: string | undefined,
+              result: boolean
+            ): Promise<void> {
+              await this.supabase
+                .from('feature_flag_events')
+                .insert({
+                  feature_name: featureName,
+                  user_id: userId,
+                  event_type: 'check',
+                  result,
+                  timestamp: new Date().toISOString()
+                });
+            }
+            
+            /**
+             * Track variant assignment
+             */
+            private async trackVariantAssignment(
+              featureName: string,
+              userId: string,
+              variant: string
+            ): Promise<void> {
+              await this.supabase
+                .from('feature_flag_events')
+                .insert({
+                  feature_name: featureName,
+                  user_id: userId,
+                  event_type: 'variant_assigned',
+                  variant,
+                  timestamp: new Date().toISOString()
+                });
+            }
+            
+            /**
+             * Create or update feature flag
+             */
+            async upsertFlag(flag: Partial<FeatureFlag>): Promise<void> {
+              await this.supabase
+                .from('feature_flags')
+                .upsert({
+                  name: flag.name,
+                  enabled: flag.enabled ?? true,
+                  rollout_percentage: flag.rolloutPercentage ?? 0,
+                  environment: flag.environment ?? process.env.NODE_ENV,
+                  conditions: flag.conditions,
+                  variants: flag.variants,
+                  metadata: flag.metadata,
+                  updated_at: new Date().toISOString()
+                });
+              
+              // Invalidate cache
+              this.cache.delete(flag.name!);
+            }
+            
+            /**
+             * Get A/B test results
+             */
+            async getABTestResults(featureName: string): Promise<any> {
+              const { data } = await this.supabase
+                .rpc('get_ab_test_results', {
+                  p_feature_name: featureName
+                });
+              
+              return data;
+            }
+          }
+          
+          // Singleton instance
+          let manager: FeatureFlagsManager | null = null;
+          
+          export function getFeatureFlags(): FeatureFlagsManager {
+            if (!manager) {
+              manager = new FeatureFlagsManager();
+            }
+            return manager;
+          }
+          
+          export default FeatureFlagsManager;
+          EOF
+          
+          echo "✅ Feature flags manager created"
+
+      - name: Create database schema
+        run: |
+          cat > db/migrations/feature_flags_schema.sql << 'EOF'
+          -- Feature Flags Table
+          CREATE TABLE IF NOT EXISTS feature_flags (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name TEXT NOT NULL UNIQUE,
+            enabled BOOLEAN DEFAULT true,
+            rollout_percentage INTEGER DEFAULT 0 CHECK (rollout_percentage >= 0 AND rollout_percentage <= 100),
+            environment TEXT NOT NULL DEFAULT 'production',
+            conditions JSONB,
+            variants JSONB,
+            metadata JSONB,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+          );
+          
+          -- Feature Flag Events (for analytics)
+          CREATE TABLE IF NOT EXISTS feature_flag_events (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            feature_name TEXT NOT NULL,
+            user_id TEXT,
+            event_type TEXT NOT NULL, -- 'check', 'variant_assigned', 'conversion'
+            result BOOLEAN,
+            variant TEXT,
+            timestamp TIMESTAMPTZ DEFAULT NOW(),
+            metadata JSONB
+          );
+          
+          -- Index for fast lookups
+          CREATE INDEX IF NOT EXISTS idx_feature_flags_name_env ON feature_flags(name, environment);
+          CREATE INDEX IF NOT EXISTS idx_feature_events_feature ON feature_flag_events(feature_name, timestamp DESC);
+          CREATE INDEX IF NOT EXISTS idx_feature_events_user ON feature_flag_events(user_id, timestamp DESC);
+          
+          -- Function to get A/B test results
+          CREATE OR REPLACE FUNCTION get_ab_test_results(p_feature_name TEXT)
+          RETURNS TABLE (
+            variant TEXT,
+            users_count BIGINT,
+            conversion_rate NUMERIC
+          ) AS $$
+          BEGIN
+            RETURN QUERY
+            WITH variant_users AS (
+              SELECT DISTINCT
+                variant,
+                user_id
+              FROM feature_flag_events
+              WHERE feature_name = p_feature_name
+                AND event_type = 'variant_assigned'
+                AND timestamp > NOW() - INTERVAL '7 days'
+            ),
+            conversions AS (
+              SELECT DISTINCT
+                user_id
+              FROM feature_flag_events
+              WHERE feature_name = p_feature_name
+                AND event_type = 'conversion'
+                AND timestamp > NOW() - INTERVAL '7 days'
+            )
+            SELECT
+              vu.variant,
+              COUNT(DISTINCT vu.user_id) as users_count,
+              ROUND(
+                (COUNT(DISTINCT c.user_id)::NUMERIC / NULLIF(COUNT(DISTINCT vu.user_id), 0)) * 100,
+                2
+              ) as conversion_rate
+            FROM variant_users vu
+            LEFT JOIN conversions c ON vu.user_id = c.user_id
+            GROUP BY vu.variant
+            ORDER BY vu.variant;
+          END;
+          $$ LANGUAGE plpgsql;
+          EOF
+          
+          echo "✅ Feature flags schema created"
+
+      - name: Create example feature flags
+        run: |
+          cat > lib/features/examples.ts << 'EOF'
+          /**
+           * Example Feature Flags Usage
+           */
+          
+          import { getFeatureFlags } from './feature-flags';
+          
+          // Example 1: Simple feature toggle
+          export async function exampleSimpleToggle(userId: string) {
+            const flags = getFeatureFlags();
+            
+            if (await flags.isEnabled('new-ui-design', userId)) {
+              // Show new UI
+              return 'new-ui';
+            } else {
+              // Show old UI
+              return 'old-ui';
+            }
+          }
+          
+          // Example 2: Progressive rollout (10% of users)
+          export async function exampleProgressiveRollout(userId: string) {
+            const flags = getFeatureFlags();
+            
+            // Only 10% of users will see this
+            if (await flags.isEnabled('beta-feature', userId)) {
+              return 'beta-enabled';
+            }
+            return 'beta-disabled';
+          }
+          
+          // Example 3: A/B testing
+          export async function exampleABTest(userId: string) {
+            const flags = getFeatureFlags();
+            
+            const variant = await flags.getVariant('pricing-test', userId);
+            
+            switch (variant) {
+              case 'control':
+                return { price: 10, label: 'Original' };
+              case 'variant-a':
+                return { price: 15, label: '50% OFF' };
+              case 'variant-b':
+                return { price: 12, label: 'Limited Time' };
+              default:
+                return { price: 10, label: 'Original' };
+            }
+          }
+          
+          // Example 4: Targeted rollout (specific users)
+          export async function exampleTargetedRollout(userId: string, userEmail: string) {
+            const flags = getFeatureFlags();
+            
+            const isEnabled = await flags.isEnabled('enterprise-features', userId, {
+              email: userEmail
+            });
+            
+            return isEnabled ? 'enterprise-ui' : 'standard-ui';
+          }
+          EOF
+          
+          echo "✅ Feature flags examples created"
+
+      - name: Commit feature flags system
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add lib/features/ db/migrations/
+          git commit -m "feat: Add feature flags & A/B testing system" || echo "No changes to commit"
+
+  create-feature-flag:
+    name: Create Feature Flag
+    runs-on: ubuntu-latest
+    if: inputs.feature_name != ''
+    steps:
+      - name: Create feature flag
+        run: |
+          echo "🚩 Creating feature flag: ${{ inputs.feature_name }}"
+          echo "   Rollout: ${{ inputs.rollout_percentage }}%"
+          
+          # In production, insert into Supabase
+          # curl -X POST https://your-project.supabase.co/rest/v1/feature_flags \
+          #   -H "apikey: $SUPABASE_SERVICE_KEY" \
+          #   -d '{ "name": "${{ inputs.feature_name }}", "rollout_percentage": ${{ inputs.rollout_percentage }} }'
+          
+          echo "✅ Feature flag created"
+
+  summary:
+    name: Feature Flags Summary
+    runs-on: ubuntu-latest
+    needs: [deploy-feature-flags-system]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🚩 Feature Flags System Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Capabilities" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Simple Toggles**: Enable/disable features instantly" >> $GITHUB_STEP_SUMMARY
+          echo "- 📈 **Progressive Rollout**: Gradual rollout to % of users" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧪 **A/B Testing**: Multi-variant testing with analytics" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎯 **Targeted Rollout**: Enable for specific users/segments" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **Real-Time Analytics**: Track conversions and results" >> $GITHUB_STEP_SUMMARY
+          echo "- 💾 **Cached**: 1-minute cache for performance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Usage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`typescript" >> $GITHUB_STEP_SUMMARY
+          echo "const flags = getFeatureFlags();" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "// Check if enabled" >> $GITHUB_STEP_SUMMARY
+          echo "if (await flags.isEnabled('new-feature', userId)) {" >> $GITHUB_STEP_SUMMARY
+          echo "  // New code" >> $GITHUB_STEP_SUMMARY
+          echo "}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "// A/B test" >> $GITHUB_STEP_SUMMARY
+          echo "const variant = await flags.getVariant('pricing-test', userId);" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

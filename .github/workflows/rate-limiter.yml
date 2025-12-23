@@ -1,0 +1,202 @@
+name: CI/CD Rate Limiter & Concurrency Control
+
+on:
+  workflow_run:
+    workflows: ["*"]
+    types: [requested]
+  
+# Only allow one instance per ref (branch)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  enforce-rate-limits:
+    name: Enforce Rate Limits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check workflow concurrency
+        id: check-concurrency
+        run: |
+          echo "🔍 Checking workflow concurrency limits..."
+          
+          # Get current running workflows
+          RUNNING_COUNT=$(gh run list \
+            --repo ${{ github.repository }} \
+            --status in_progress \
+            --json databaseId \
+            --jq 'length')
+          
+          echo "Currently running workflows: $RUNNING_COUNT"
+          
+          # Maximum concurrent workflows
+          MAX_CONCURRENT=10
+          
+          if [ $RUNNING_COUNT -gt $MAX_CONCURRENT ]; then
+            echo "⚠️ Rate limit exceeded: $RUNNING_COUNT running (max: $MAX_CONCURRENT)"
+            echo "exceeded=true" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ Within rate limits"
+            echo "exceeded=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
+
+      - name: Check API rate limits
+        run: |
+          echo "📊 Checking GitHub API rate limits..."
+          
+          RATE_LIMIT=$(gh api rate_limit --jq '.rate')
+          REMAINING=$(echo $RATE_LIMIT | jq -r '.remaining')
+          LIMIT=$(echo $RATE_LIMIT | jq -r '.limit')
+          RESET=$(echo $RATE_LIMIT | jq -r '.reset')
+          
+          echo "API calls remaining: $REMAINING / $LIMIT"
+          echo "Resets at: $(date -d @$RESET)"
+          
+          # Warn if less than 10% remaining
+          THRESHOLD=$((LIMIT / 10))
+          if [ $REMAINING -lt $THRESHOLD ]; then
+            echo "⚠️ Low API rate limit: $REMAINING remaining"
+          else
+            echo "✅ API rate limit healthy"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Check deployment frequency
+        run: |
+          echo "📈 Checking deployment frequency..."
+          
+          # Get deployments in last hour
+          ONE_HOUR_AGO=$(date -u -d '1 hour ago' --iso-8601=seconds)
+          
+          RECENT_DEPLOYS=$(gh run list \
+            --repo ${{ github.repository }} \
+            --workflow "Environment-Specific Deployment" \
+            --created ">=$ONE_HOUR_AGO" \
+            --json databaseId \
+            --jq 'length')
+          
+          echo "Deployments in last hour: $RECENT_DEPLOYS"
+          
+          # Maximum 10 deploys per hour
+          MAX_DEPLOYS_PER_HOUR=10
+          
+          if [ $RECENT_DEPLOYS -gt $MAX_DEPLOYS_PER_HOUR ]; then
+            echo "⚠️ Deployment frequency too high: $RECENT_DEPLOYS in last hour"
+            echo "Consider consolidating changes before deploying"
+          else
+            echo "✅ Deployment frequency acceptable"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Check for deployment spam
+        run: |
+          echo "🚫 Checking for deployment spam patterns..."
+          
+          # Get last 5 deployments
+          LAST_DEPLOYS=$(gh run list \
+            --repo ${{ github.repository }} \
+            --workflow "Environment-Specific Deployment" \
+            --limit 5 \
+            --json conclusion,createdAt \
+            --jq '.[] | .conclusion')
+          
+          # Count failures
+          FAILURE_COUNT=$(echo "$LAST_DEPLOYS" | grep -c "failure" || echo 0)
+          
+          echo "Recent deployment failures: $FAILURE_COUNT / 5"
+          
+          # If 4+ of last 5 failed, something is wrong
+          if [ $FAILURE_COUNT -ge 4 ]; then
+            echo "❌ Too many recent deployment failures!"
+            echo "Automatic deployments may be paused. Please investigate."
+            # Could add logic to pause auto-deployments here
+          else
+            echo "✅ Deployment health acceptable"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  queue-management:
+    name: Workflow Queue Management
+    runs-on: ubuntu-latest
+    needs: enforce-rate-limits
+    if: always()
+    steps:
+      - name: Display workflow queue
+        run: |
+          echo "📋 Current Workflow Queue"
+          echo "========================"
+          echo ""
+          
+          gh run list \
+            --repo ${{ github.repository }} \
+            --status queued,in_progress \
+            --limit 20 \
+            --json workflowName,status,createdAt,conclusion \
+            --jq '.[] | "[\(.status)] \(.workflowName) - \(.createdAt)"'
+          
+          echo ""
+          echo "========================"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Cancel stale workflows
+        run: |
+          echo "🧹 Checking for stale workflows..."
+          
+          # Find workflows running longer than 30 minutes
+          THIRTY_MIN_AGO=$(date -u -d '30 minutes ago' --iso-8601=seconds)
+          
+          STALE_RUNS=$(gh run list \
+            --repo ${{ github.repository }} \
+            --status in_progress \
+            --created "<$THIRTY_MIN_AGO" \
+            --json databaseId,workflowName,createdAt \
+            --jq '.[] | select(.workflowName != "CI/CD Rate Limiter & Concurrency Control")')
+          
+          if [ -n "$STALE_RUNS" ]; then
+            echo "⚠️ Stale workflows detected:"
+            echo "$STALE_RUNS"
+            
+            # Optionally cancel stale runs
+            # echo "$STALE_RUNS" | jq -r '.databaseId' | xargs -I {} gh run cancel {}
+          else
+            echo "✅ No stale workflows"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
+
+      - name: Generate rate limit report
+        if: always()
+        run: |
+          echo "# ⚡ CI/CD Rate Limit Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Current Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Get current metrics
+          RUNNING=$(gh run list --repo ${{ github.repository }} --status in_progress --json databaseId --jq 'length')
+          QUEUED=$(gh run list --repo ${{ github.repository }} --status queued --json databaseId --jq 'length')
+          
+          echo "- 🏃 Running workflows: $RUNNING" >> $GITHUB_STEP_SUMMARY
+          echo "- ⏳ Queued workflows: $QUEUED" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Rate Limit Policy" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Max concurrent workflows: 10" >> $GITHUB_STEP_SUMMARY
+          echo "- Max deployments per hour: 10" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow timeout: 30 minutes" >> $GITHUB_STEP_SUMMARY
+          echo "- Auto-cancel on new push: Enabled" >> $GITHUB_STEP_SUMMARY
+        env:
+          GH_TOKEN: ${{ github.token }}

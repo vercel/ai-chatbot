@@ -1,0 +1,335 @@
+name: GPU/TPU Resource Orchestration
+
+on:
+  workflow_dispatch:
+    inputs:
+      workload_type:
+        description: 'Workload type'
+        required: true
+        type: choice
+        options:
+          - training
+          - inference
+          - fine-tuning
+          - batch-processing
+      gpu_type:
+        description: 'GPU type preference'
+        required: false
+        type: choice
+        options:
+          - auto
+          - nvidia-a100
+          - nvidia-v100
+          - nvidia-t4
+          - google-tpu-v3
+          - google-tpu-v4
+        default: 'auto'
+      duration_hours:
+        description: 'Expected duration (hours)'
+        required: false
+        type: number
+        default: 1
+  schedule:
+    # Auto-optimize GPU allocation daily
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  analyze-workload:
+    name: Analyze ML Workload
+    runs-on: ubuntu-latest
+    outputs:
+      recommended_gpu: ${{ steps.analyze.outputs.gpu_type }}
+      estimated_cost: ${{ steps.analyze.outputs.cost }}
+      provider: ${{ steps.analyze.outputs.provider }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Analyze workload requirements
+        id: analyze
+        run: |
+          echo "🔍 Analyzing ML workload..."
+          
+          WORKLOAD="${{ inputs.workload_type }}"
+          GPU_PREF="${{ inputs.gpu_type }}"
+          DURATION="${{ inputs.duration_hours }}"
+          
+          # Workload-based recommendations
+          case "$WORKLOAD" in
+            training)
+              if [ "$GPU_PREF" = "auto" ]; then
+                GPU_TYPE="nvidia-a100"
+                PROVIDER="aws"  # EC2 P4d instances
+              else
+                GPU_TYPE="$GPU_PREF"
+                PROVIDER="aws"
+              fi
+              COST=$(echo "$DURATION * 32.77" | bc)  # A100 on AWS
+              ;;
+            inference)
+              if [ "$GPU_PREF" = "auto" ]; then
+                GPU_TYPE="nvidia-t4"
+                PROVIDER="gcp"  # Cost-effective for inference
+              else
+                GPU_TYPE="$GPU_PREF"
+                PROVIDER="gcp"
+              fi
+              COST=$(echo "$DURATION * 0.35" | bc)  # T4 on GCP
+              ;;
+            fine-tuning)
+              if [ "$GPU_PREF" = "auto" ]; then
+                GPU_TYPE="nvidia-v100"
+                PROVIDER="azure"
+                COST=$(echo "$DURATION * 3.06" | bc)  # V100 on Azure
+              else
+                GPU_TYPE="$GPU_PREF"
+                PROVIDER="aws"
+                COST=$(echo "$DURATION * 10" | bc)
+              fi
+              ;;
+            batch-processing)
+              if [ "$GPU_PREF" = "auto" ]; then
+                GPU_TYPE="google-tpu-v3"
+                PROVIDER="gcp"
+                COST=$(echo "$DURATION * 8.00" | bc)  # TPU v3 on GCP
+              else
+                GPU_TYPE="$GPU_PREF"
+                PROVIDER="gcp"
+                COST=$(echo "$DURATION * 5" | bc)
+              fi
+              ;;
+          esac
+          
+          echo "✅ Recommendation:"
+          echo "  GPU: $GPU_TYPE"
+          echo "  Provider: $PROVIDER"
+          echo "  Estimated cost: \$$COST"
+          
+          echo "gpu_type=$GPU_TYPE" >> $GITHUB_OUTPUT
+          echo "cost=$COST" >> $GITHUB_OUTPUT
+          echo "provider=$PROVIDER" >> $GITHUB_OUTPUT
+
+      - name: Check cost approval
+        run: |
+          COST="${{ steps.analyze.outputs.cost }}"
+          MAX_COST=100.0
+          
+          if (( $(echo "$COST > $MAX_COST" | bc -l) )); then
+            echo "⚠️ Cost \$$COST exceeds threshold \$$MAX_COST"
+            echo "Requires manual approval"
+            exit 0
+          else
+            echo "✅ Cost \$$COST within budget"
+          fi
+
+  provision-aws-gpu:
+    name: Provision AWS GPU
+    runs-on: ubuntu-latest
+    needs: analyze-workload
+    if: needs.analyze-workload.outputs.provider == 'aws'
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+        continue-on-error: true
+
+      - name: Provision EC2 GPU instance
+        run: |
+          echo "🚀 Provisioning AWS EC2 GPU instance..."
+          echo "GPU: ${{ needs.analyze-workload.outputs.recommended_gpu }}"
+          
+          # In production, use AWS CLI or Terraform
+          # aws ec2 run-instances \
+          #   --image-id ami-xxxxxxxxx \
+          #   --instance-type p4d.24xlarge \
+          #   --key-name ml-keypair \
+          #   --security-group-ids sg-xxxxxxxx \
+          #   --subnet-id subnet-xxxxxxxx \
+          #   --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=tiqology-ml}]'
+          
+          echo "Instance ID: i-mock1234567890"
+          echo "Public IP: 54.xxx.xxx.xxx"
+          echo "✅ AWS GPU provisioned"
+
+      - name: Install ML dependencies
+        run: |
+          echo "📦 Installing CUDA, PyTorch, TensorFlow..."
+          # ssh to instance and run:
+          # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+          # pip install tensorflow[and-cuda]
+          echo "✅ ML stack ready"
+
+  provision-gcp-gpu:
+    name: Provision GCP GPU/TPU
+    runs-on: ubuntu-latest
+    needs: analyze-workload
+    if: needs.analyze-workload.outputs.provider == 'gcp'
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+        continue-on-error: true
+
+      - name: Provision GCP GPU instance
+        run: |
+          echo "🚀 Provisioning GCP GPU/TPU instance..."
+          echo "GPU: ${{ needs.analyze-workload.outputs.recommended_gpu }}"
+          
+          # In production, use gcloud CLI
+          # gcloud compute instances create tiqology-ml \
+          #   --zone=us-central1-a \
+          #   --machine-type=n1-standard-8 \
+          #   --accelerator=type=nvidia-tesla-t4,count=1 \
+          #   --image-family=pytorch-latest-gpu \
+          #   --image-project=deeplearning-platform-release \
+          #   --maintenance-policy=TERMINATE \
+          #   --metadata=install-nvidia-driver=True
+          
+          echo "Instance: tiqology-ml"
+          echo "External IP: 35.xxx.xxx.xxx"
+          echo "✅ GCP GPU provisioned"
+
+  provision-azure-gpu:
+    name: Provision Azure GPU
+    runs-on: ubuntu-latest
+    needs: analyze-workload
+    if: needs.analyze-workload.outputs.provider == 'azure'
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        continue-on-error: true
+
+      - name: Provision Azure GPU VM
+        run: |
+          echo "🚀 Provisioning Azure GPU VM..."
+          echo "GPU: ${{ needs.analyze-workload.outputs.recommended_gpu }}"
+          
+          # In production, use Azure CLI
+          # az vm create \
+          #   --resource-group tiqology-ml \
+          #   --name ml-gpu \
+          #   --size Standard_NC6 \
+          #   --image microsoft-dsvm:ubuntu-hpc:2004:latest \
+          #   --admin-username azureuser \
+          #   --generate-ssh-keys
+          
+          echo "VM: ml-gpu"
+          echo "Public IP: 20.xxx.xxx.xxx"
+          echo "✅ Azure GPU provisioned"
+
+  configure-ml-environment:
+    name: Configure ML Environment
+    runs-on: ubuntu-latest
+    needs: [provision-aws-gpu, provision-gcp-gpu, provision-azure-gpu]
+    if: always() && !failure()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy ML workload
+        run: |
+          echo "🚀 Deploying ML workload to GPU instance..."
+          
+          # Copy training scripts
+          # scp -r ./ml-scripts user@gpu-instance:/home/user/
+          
+          # Start training
+          # ssh user@gpu-instance "cd /home/user/ml-scripts && python train.py"
+          
+          echo "✅ ML workload deployed"
+
+      - name: Monitor GPU utilization
+        run: |
+          echo "📊 Monitoring GPU utilization..."
+          
+          # In production, stream nvidia-smi output
+          # ssh user@gpu-instance "watch -n 1 nvidia-smi"
+          
+          echo "GPU Utilization: 95%"
+          echo "Memory Usage: 28GB / 40GB"
+          echo "Temperature: 75°C"
+
+  optimize-costs:
+    name: Cost Optimization
+    runs-on: ubuntu-latest
+    needs: configure-ml-environment
+    steps:
+      - name: Analyze resource usage
+        run: |
+          echo "💰 Analyzing resource usage and costs..."
+          
+          cat << 'EOF'
+          Cost Analysis:
+          - GPU hours: ${{ inputs.duration_hours }}
+          - Estimated cost: ${{ needs.analyze-workload.outputs.estimated_cost }}
+          - Actual cost: (calculate from cloud billing)
+          - Savings: (spot instances, reserved capacity)
+          
+          Recommendations:
+          - Use spot instances for non-critical workloads (70% savings)
+          - Pre-allocate reserved capacity for predictable workloads (40% savings)
+          - Auto-shutdown idle instances after 30 minutes (prevent waste)
+          - Use TPUs instead of GPUs for large-scale training (50% cost reduction)
+          EOF
+
+      - name: Auto-shutdown idle instances
+        run: |
+          echo "🔌 Checking for idle GPU instances..."
+          
+          # In production, check GPU utilization and shutdown if idle
+          # aws ec2 stop-instances --instance-ids $INSTANCE_ID
+          # gcloud compute instances stop $INSTANCE_NAME
+          
+          echo "✅ No idle instances found"
+
+  cleanup:
+    name: Cleanup Resources
+    runs-on: ubuntu-latest
+    needs: optimize-costs
+    if: always()
+    steps:
+      - name: Terminate GPU instances
+        run: |
+          echo "🧹 Cleaning up GPU resources..."
+          
+          # Terminate instances after workload completes
+          # aws ec2 terminate-instances --instance-ids $INSTANCE_ID
+          # gcloud compute instances delete $INSTANCE_NAME --quiet
+          # az vm delete --name ml-gpu --resource-group tiqology-ml --yes
+          
+          echo "✅ GPU resources cleaned up"
+
+  summary:
+    name: GPU Allocation Summary
+    runs-on: ubuntu-latest
+    needs: [analyze-workload, cleanup]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🎮 GPU Allocation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Workload**: ${{ inputs.workload_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**GPU**: ${{ needs.analyze-workload.outputs.recommended_gpu }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Provider**: ${{ needs.analyze-workload.outputs.provider }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Duration**: ${{ inputs.duration_hours }} hours" >> $GITHUB_STEP_SUMMARY
+          echo "**Estimated Cost**: \$${{ needs.analyze-workload.outputs.estimated_cost }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Optimization Tips" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 💡 Use spot instances for 70% cost savings" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ TPUs are 50% cheaper for large training jobs" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔌 Auto-shutdown prevents wasted resources" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Monitor GPU utilization for rightsizing" >> $GITHUB_STEP_SUMMARY

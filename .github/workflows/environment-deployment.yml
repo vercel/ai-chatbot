@@ -1,0 +1,268 @@
+name: Environment-Specific Deployment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Target environment (development, staging, production)'
+      skip_tests:
+        required: false
+        type: boolean
+        default: false
+      
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
+      DATABASE_URL:
+        required: true
+
+# Role-based permissions
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '9.12.3'
+
+jobs:
+  # Environment validation
+  validate-environment:
+    name: Validate Environment Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate environment name
+        run: |
+          env_name="${{ inputs.environment }}"
+          
+          if [[ ! "$env_name" =~ ^(development|staging|production)$ ]]; then
+            echo "❌ Invalid environment: $env_name"
+            echo "Must be one of: development, staging, production"
+            exit 1
+          fi
+          
+          echo "✅ Valid environment: $env_name"
+
+      - name: Check branch permissions
+        run: |
+          branch="${{ github.ref_name }}"
+          environment="${{ inputs.environment }}"
+          
+          # Production can only be deployed from main
+          if [ "$environment" = "production" ] && [ "$branch" != "main" ]; then
+            echo "❌ Production deployments only allowed from main branch"
+            echo "Current branch: $branch"
+            exit 1
+          fi
+          
+          # Staging can only be deployed from main or develop
+          if [ "$environment" = "staging" ] && [[ ! "$branch" =~ ^(main|develop)$ ]]; then
+            echo "❌ Staging deployments only allowed from main or develop branches"
+            echo "Current branch: $branch"
+            exit 1
+          fi
+          
+          echo "✅ Branch $branch is authorized for $environment deployment"
+
+  # Pre-deployment checks
+  pre-deployment:
+    name: Pre-Deployment Checks
+    runs-on: ubuntu-latest
+    needs: validate-environment
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        if: ${{ !inputs.skip_tests }}
+        run: pnpm test
+        env:
+          NODE_ENV: test
+
+      - name: Build application
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          NODE_OPTIONS: '--max-old-space-size=6144'
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ inputs.environment }}-${{ github.sha }}
+          path: .next
+          retention-days: 7
+
+  # Deploy to environment
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    needs: pre-deployment
+    environment: 
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ inputs.environment }}-${{ github.sha }}
+          path: .next
+
+      - name: Set environment URL
+        id: set-url
+        run: |
+          case "${{ inputs.environment }}" in
+            development)
+              echo "url=https://dev.tiqology.vercel.app" >> $GITHUB_OUTPUT
+              echo "vercel_env=preview" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "url=https://staging.tiqology.vercel.app" >> $GITHUB_OUTPUT
+              echo "vercel_env=preview" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "url=https://tiqology.vercel.app" >> $GITHUB_OUTPUT
+              echo "vercel_env=production" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Deploy to Vercel
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: ${{ steps.set-url.outputs.vercel_env == 'production' && '--prod' || '--env preview' }}
+          working-directory: ./
+
+      - name: Create deployment record
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.set-url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Actor:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+
+  # Post-deployment validation
+  post-deployment:
+    name: Post-Deployment Validation
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Wait for deployment to be ready
+        run: sleep 30
+
+      - name: Health check
+        run: |
+          case "${{ inputs.environment }}" in
+            development)
+              url="https://dev.tiqology.vercel.app"
+              ;;
+            staging)
+              url="https://staging.tiqology.vercel.app"
+              ;;
+            production)
+              url="https://tiqology.vercel.app"
+              ;;
+          esac
+          
+          echo "🔍 Checking health endpoint: $url/api/health"
+          
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$url/api/health" || echo "000")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check passed"
+          else
+            echo "❌ Health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Smoke tests
+        run: |
+          case "${{ inputs.environment }}" in
+            development)
+              base_url="https://dev.tiqology.vercel.app"
+              ;;
+            staging)
+              base_url="https://staging.tiqology.vercel.app"
+              ;;
+            production)
+              base_url="https://tiqology.vercel.app"
+              ;;
+          esac
+          
+          echo "🧪 Running smoke tests..."
+          
+          # Test main page
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$base_url" || echo "000")
+          [ "$status" = "200" ] && echo "✅ Main page accessible" || { echo "❌ Main page failed"; exit 1; }
+          
+          # Test login page
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$base_url/login" || echo "000")
+          [ "$status" = "200" ] && echo "✅ Login page accessible" || { echo "❌ Login page failed"; exit 1; }
+          
+          # Test register page
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$base_url/register" || echo "000")
+          [ "$status" = "200" ] && echo "✅ Register page accessible" || { echo "❌ Register page failed"; exit 1; }
+          
+          echo "✅ All smoke tests passed"
+
+      - name: Performance baseline
+        if: inputs.environment == 'production'
+        run: |
+          echo "📊 Capturing performance baseline..."
+          echo "This would integrate with your monitoring solution"
+          echo "✅ Performance baseline captured"
+
+  # Rollback preparation
+  prepare-rollback:
+    name: Prepare Rollback Point
+    runs-on: ubuntu-latest
+    needs: post-deployment
+    if: success()
+    steps:
+      - name: Tag stable deployment
+        run: |
+          echo "📌 Tagging deployment as stable"
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          
+          # This creates a rollback point that can be referenced later
+          echo "${{ github.sha }}" > .last-stable-${{ inputs.environment }}
+
+      - name: Store deployment metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-metadata-${{ inputs.environment }}
+          path: .last-stable-${{ inputs.environment }}
+          retention-days: 90

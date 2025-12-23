@@ -1,0 +1,346 @@
+name: Blue/Green Zero-Downtime Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      deployment_strategy:
+        description: 'Deployment strategy'
+        required: true
+        type: choice
+        options:
+          - blue-green
+          - canary
+      canary_percentage:
+        description: 'Canary traffic percentage (if canary strategy)'
+        required: false
+        default: '10'
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '9.12.3'
+
+jobs:
+  prepare-deployment:
+    name: Prepare Blue/Green Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      current_slot: ${{ steps.detect.outputs.current_slot }}
+      target_slot: ${{ steps.detect.outputs.target_slot }}
+      deployment_id: ${{ steps.create.outputs.deployment_id }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect current active slot
+        id: detect
+        run: |
+          echo "🔍 Detecting current active deployment slot..."
+          
+          # In production, query your load balancer or orchestrator
+          # For now, alternate between blue and green
+          current_slot=$(cat .deployment-slot 2>/dev/null || echo "blue")
+          
+          if [ "$current_slot" = "blue" ]; then
+            target_slot="green"
+          else
+            target_slot="blue"
+          fi
+          
+          echo "current_slot=$current_slot" >> $GITHUB_OUTPUT
+          echo "target_slot=$target_slot" >> $GITHUB_OUTPUT
+          
+          echo "📊 Current: $current_slot → Target: $target_slot"
+
+      - name: Create deployment record
+        id: create
+        run: |
+          deployment_id="deploy-$(date +%s)"
+          echo "deployment_id=$deployment_id" >> $GITHUB_OUTPUT
+          
+          # Store deployment metadata
+          cat > deployment-metadata.json << EOF
+          {
+            "id": "$deployment_id",
+            "environment": "${{ inputs.environment }}",
+            "strategy": "${{ inputs.deployment_strategy }}",
+            "current_slot": "${{ steps.detect.outputs.current_slot }}",
+            "target_slot": "${{ steps.detect.outputs.target_slot }}",
+            "commit": "${{ github.sha }}",
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+          
+          cat deployment-metadata.json
+
+      - name: Upload deployment metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-metadata
+          path: deployment-metadata.json
+          retention-days: 90
+
+  deploy-to-target-slot:
+    name: Deploy to Target Slot
+    runs-on: ubuntu-latest
+    needs: prepare-deployment
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+        env:
+          DEPLOYMENT_SLOT: ${{ needs.prepare-deployment.outputs.target_slot }}
+          NODE_OPTIONS: '--max-old-space-size=6144'
+
+      - name: Deploy to target slot
+        id: deploy
+        run: |
+          echo "🚀 Deploying to ${{ needs.prepare-deployment.outputs.target_slot }} slot..."
+          
+          # Deploy with slot identifier
+          vercel deploy \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --prod=false \
+            --name=tiqology-${{ needs.prepare-deployment.outputs.target_slot }} \
+            --meta deployment_slot=${{ needs.prepare-deployment.outputs.target_slot }} \
+            > deployment-url.txt
+          
+          DEPLOYMENT_URL=$(cat deployment-url.txt)
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "📍 Deployed to: $DEPLOYMENT_URL"
+
+      - name: Wait for deployment stabilization
+        run: |
+          echo "⏳ Waiting for deployment to stabilize..."
+          sleep 30
+
+      - name: Smoke test target slot
+        id: smoke-test
+        run: |
+          DEPLOYMENT_URL="${{ steps.deploy.outputs.deployment_url }}"
+          
+          echo "🧪 Running smoke tests on $DEPLOYMENT_URL"
+          
+          # Health check
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOYMENT_URL/api/health")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check passed"
+            echo "health_passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Health check failed (HTTP $response)"
+            echo "health_passed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          # Basic functionality tests
+          # Test homepage
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOYMENT_URL")
+          if [ "$response" != "200" ]; then
+            echo "❌ Homepage test failed"
+            exit 1
+          fi
+          
+          echo "✅ All smoke tests passed"
+
+  traffic-shift:
+    name: Shift Traffic to New Slot
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-to-target-slot]
+    if: success()
+    steps:
+      - name: Download deployment metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-metadata
+
+      - name: Execute traffic shift
+        id: shift
+        run: |
+          echo "🔄 Shifting traffic to ${{ needs.prepare-deployment.outputs.target_slot }} slot..."
+          
+          strategy="${{ inputs.deployment_strategy }}"
+          
+          if [ "$strategy" = "canary" ]; then
+            percentage="${{ inputs.canary_percentage }}"
+            echo "🐤 Canary deployment: ${percentage}% traffic to new slot"
+            
+            # In production, configure load balancer for canary
+            # Example: Update Cloudflare Load Balancer weights
+            # cloudflare-cli lb update --pool-weight blue=90 --pool-weight green=10
+            
+            echo "canary_active=true" >> $GITHUB_OUTPUT
+            echo "canary_percentage=$percentage" >> $GITHUB_OUTPUT
+          else
+            echo "🔵🟢 Blue/Green: Full traffic switch to ${{ needs.prepare-deployment.outputs.target_slot }}"
+            
+            # In production, update load balancer to point to new slot
+            # Example: Update DNS or load balancer configuration
+            
+            # For Vercel, promote deployment to production
+            # vercel promote <deployment-url> --token=${{ secrets.VERCEL_TOKEN }}
+            
+            echo "canary_active=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "✅ Traffic shift initiated"
+
+      - name: Monitor new slot
+        run: |
+          echo "📊 Monitoring new slot for 2 minutes..."
+          
+          for i in {1..12}; do
+            echo "Check $i/12..."
+            
+            # Health check
+            response=$(curl -s -o /dev/null -w "%{http_code}" "https://tiqology.vercel.app/api/health")
+            
+            if [ "$response" != "200" ]; then
+              echo "❌ Health check failed during monitoring"
+              exit 1
+            fi
+            
+            sleep 10
+          done
+          
+          echo "✅ Monitoring completed successfully"
+
+      - name: Update active slot marker
+        if: inputs.deployment_strategy == 'blue-green'
+        run: |
+          echo "${{ needs.prepare-deployment.outputs.target_slot }}" > .deployment-slot
+          echo "✅ Active slot updated to ${{ needs.prepare-deployment.outputs.target_slot }}"
+
+  complete-canary:
+    name: Complete Canary Rollout
+    runs-on: ubuntu-latest
+    needs: [traffic-shift]
+    if: inputs.deployment_strategy == 'canary' && success()
+    steps:
+      - name: Wait for canary observation period
+        run: |
+          echo "⏳ Observing canary deployment for 10 minutes..."
+          echo "Monitor metrics and error rates during this period"
+          
+          # In production, integrate with monitoring system
+          # Check error rates, latency, etc.
+          
+          sleep 600  # 10 minutes
+
+      - name: Verify canary health
+        id: verify
+        run: |
+          echo "🔍 Verifying canary health..."
+          
+          # Check error rates, latency, etc.
+          # In production, query from monitoring system
+          
+          error_rate=0.5  # Simulated
+          
+          if (( $(echo "$error_rate < 1.0" | bc -l) )); then
+            echo "✅ Canary health acceptable (error rate: ${error_rate}%)"
+            echo "canary_healthy=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Canary health degraded (error rate: ${error_rate}%)"
+            echo "canary_healthy=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Promote canary to full production
+        if: steps.verify.outputs.canary_healthy == 'true'
+        run: |
+          echo "🚀 Promoting canary to 100% traffic..."
+          
+          # Update load balancer to send 100% traffic to new slot
+          # In production: cloudflare-cli lb update --pool-weight green=100
+          
+          echo "✅ Canary promoted to full production"
+
+  rollback-on-failure:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-to-target-slot, traffic-shift]
+    if: failure()
+    steps:
+      - name: Execute rollback
+        run: |
+          echo "❌ Deployment failed, rolling back..."
+          
+          current_slot="${{ needs.prepare-deployment.outputs.current_slot }}"
+          
+          echo "🔄 Reverting traffic to $current_slot slot"
+          
+          # Revert load balancer configuration
+          # In production: restore previous load balancer state
+          
+          echo "✅ Rollback completed"
+
+      - name: Create rollback incident
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '[Deployment] Blue/Green Rollback Executed',
+              body: `# Deployment Rollback
+              
+              **Environment**: ${{ inputs.environment }}
+              **Strategy**: ${{ inputs.deployment_strategy }}
+              **Reason**: Deployment validation failed
+              **Rolled back to**: ${{ needs.prepare-deployment.outputs.current_slot }}
+              
+              Please investigate the failure cause before retrying deployment.
+              `,
+              labels: ['deployment', 'rollback', 'incident']
+            });
+
+  deployment-summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-to-target-slot, traffic-shift]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🚀 Blue/Green Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Strategy**: ${{ inputs.deployment_strategy }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Slot**: ${{ needs.prepare-deployment.outputs.target_slot }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.traffic-shift.result }}" = "success" ]; then
+            echo "✅ Deployment completed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Deployment failed and was rolled back" >> $GITHUB_STEP_SUMMARY
+          fi

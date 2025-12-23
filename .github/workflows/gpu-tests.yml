@@ -1,0 +1,44 @@
+name: GPU Acceleration Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'lib/ai/gpu-acceleration.ts'
+      - 'lib/rendering/**'
+  pull_request:
+    paths:
+      - 'lib/ai/gpu-acceleration.ts'
+      - 'lib/rendering/**'
+
+jobs:
+  test-gpu-acceleration:
+    name: Test GPU Acceleration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '9.12.3'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run GPU acceleration tests
+        run: |
+          echo "Testing GPU.js integration..."
+          pnpm test -- gpu-acceleration
+
+      - name: Test WebGPU compatibility
+        run: |
+          echo "Testing WebGPU engine..."
+          pnpm test -- webgpu-engine

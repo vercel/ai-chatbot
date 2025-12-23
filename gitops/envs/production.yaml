@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tiqology-config-prod
+  namespace: tiqology-prod
+  labels:
+    app: tiqology
+    environment: production
+data:
+  # Application Configuration
+  NODE_ENV: "production"
+  NEXT_TELEMETRY_DISABLED: "1"
+  
+  # Feature Flags
+  ENABLE_AI_SWARMS: "true"
+  ENABLE_QUANTUM_ENGINE: "true"
+  ENABLE_HOLOGRAPHIC: "true"
+  ENABLE_DEBUG_MODE: "false"
+  
+  # Rate Limiting
+  RATE_LIMIT_MAX_REQUESTS: "100"
+  RATE_LIMIT_WINDOW_MS: "60000"
+  
+  # URLs
+  NEXTAUTH_URL: "https://tiqology.vercel.app"
+  SENTRY_ENVIRONMENT: "production"
+  SENTRY_TRACES_SAMPLE_RATE: "0.1"
+  
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tiqology-prod
+  labels:
+    name: tiqology-prod
+    environment: production
+    managed-by: argocd
+    critical: "true"

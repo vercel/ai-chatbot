@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TiQology Command Center v2.0</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #e0e0e0;
+      overflow-x: hidden;
+    }
+
+    .header {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-bottom: 2px solid #00ff88;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    .status-operational {
+      background: #00ff88;
+      color: #0f0f23;
+    }
+
+    .status-warning {
+      background: #ffaa00;
+      color: #0f0f23;
+    }
+
+    .status-critical {
+      background: #ff3366;
+      color: white;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: #00ff88;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+
+    .card-header {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #00ff88;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-body {
+      color: #e0e0e0;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .metric:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      color: #aaa;
+    }
+
+    .metric-value {
+      font-weight: bold;
+      color: #00ff88;
+    }
+
+    .health-bar {
+      width: 100%;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .health-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff88, #00ccff);
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: #0f0f23;
+    }
+
+    .agent-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .agent-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      border-left: 3px solid #00ff88;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .agent-unhealthy {
+      border-left-color: #ffaa00;
+    }
+
+    .agent-critical {
+      border-left-color: #ff3366;
+    }
+
+    .verdict-feed {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .verdict-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .verdict-approved {
+      border-left: 3px solid #00ff88;
+    }
+
+    .verdict-warning {
+      border-left: 3px solid #ffaa00;
+    }
+
+    .verdict-rejected {
+      border-left: 3px solid #ff3366;
+    }
+
+    .cost-display {
+      font-size: 32px;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    .savings-display {
+      font-size: 18px;
+      text-align: center;
+      color: #aaa;
+    }
+
+    .chart-container {
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .chart-bar {
+      flex: 1;
+      margin: 0 2px;
+      background: linear-gradient(0deg, #00ff88, #00ccff);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.5s ease;
+      min-height: 5px;
+    }
+
+    .connection-status {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid #00ff88;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .connection-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00ff88;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .audit-log {
+      max-height: 250px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .audit-entry {
+      padding: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #aaa;
+    }
+
+    .audit-entry:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #00ff88;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🧠 TiQology Command Center v2.0</h1>
+    <div class="status-badge status-operational" id="systemStatus">OPERATIONAL</div>
+  </div>
+
+  <div class="connection-status">
+    <div class="connection-dot"></div>
+    <span id="connectionStatus">Connected</span>
+  </div>
+
+  <div class="dashboard">
+    <!-- Cost Tracker -->
+    <div class="card">
+      <div class="card-header">
+        💰 Cost Tracker
+      </div>
+      <div class="card-body">
+        <div class="cost-display" id="costToday">$0.00</div>
+        <div class="savings-display">Annual Savings: <strong>$42,456</strong></div>
+        <div class="metric">
+          <span class="metric-label">Daily Budget</span>
+          <span class="metric-value" id="dailyBudget">$50.00</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Utilization</span>
+          <span class="metric-value" id="budgetUtilization">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Swarm Health -->
+    <div class="card">
+      <div class="card-header">
+        🤖 Agent Swarm Health
+        <span id="agentCount">13/13</span>
+      </div>
+      <div class="card-body">
+        <div class="health-bar">
+          <div class="health-fill" id="swarmHealth" style="width: 100%">100%</div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Healthy</span>
+          <span class="metric-value" id="healthyAgents">13</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Busy</span>
+          <span class="metric-value" id="busyAgents">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Avg Health Score</span>
+          <span class="metric-value" id="avgHealthScore">100</span>
+        </div>
+        <div class="agent-list" id="agentList"></div>
+      </div>
+    </div>
+
+    <!-- Governance Verdicts -->
+    <div class="card">
+      <div class="card-header">
+        ⚖️ Governance Verdicts
+        <span id="verdictCount">0</span>
+      </div>
+      <div class="card-body">
+        <div class="verdict-feed" id="verdictFeed">
+          <div style="text-align: center; color: #666; padding: 20px;">
+            Awaiting governance decisions...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Privacy Mesh Audit -->
+    <div class="card">
+      <div class="card-header">
+        🔒 Privacy Mesh Audit
+        <span id="auditCount">0</span>
+      </div>
+      <div class="card-body">
+        <div class="metric">
+          <span class="metric-label">Chain Integrity</span>
+          <span class="metric-value" id="chainIntegrity">✓ Verified</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">PII Events</span>
+          <span class="metric-value" id="piiEvents">0</span>
+        </div>
+        <div class="audit-log" id="auditLog"></div>
+      </div>
+    </div>
+
+    <!-- System Metrics -->
+    <div class="card">
+      <div class="card-header">
+        📊 System Metrics
+      </div>
+      <div class="card-body">
+        <div class="metric">
+          <span class="metric-label">Active Users</span>
+          <span class="metric-value" id="activeUsers">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Requests/Min</span>
+          <span class="metric-value" id="requestsPerMin">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Avg Latency</span>
+          <span class="metric-value" id="avgLatency">0ms</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Error Rate</span>
+          <span class="metric-value" id="errorRate">0%</span>
+        </div>
+        <div class="chart-container" id="latencyChart"></div>
+      </div>
+    </div>
+
+    <!-- Neural Mesh Status -->
+    <div class="card">
+      <div class="card-header">
+        🧬 Neural Mesh Status
+      </div>
+      <div class="card-body">
+        <div class="metric">
+          <span class="metric-label">Active Nodes</span>
+          <span class="metric-value" id="activeNodes">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Messages/Sec</span>
+          <span class="metric-value" id="messagesPerSec">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Sync Latency</span>
+          <span class="metric-value" id="syncLatency">0ms</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // WebSocket connection for real-time updates
+    let ws = null;
+    let reconnectInterval = null;
+
+    // Simulated data (will be replaced by real WebSocket data)
+    let simulatedData = {
+      costToday: 0,
+      agents: [],
+      verdicts: [],
+      auditLogs: [],
+      systemMetrics: {
+        activeUsers: 0,
+        requestsPerMin: 0,
+        avgLatency: 0,
+        errorRate: 0
+      }
+    };
+
+    function connectWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/api/command-center/ws`;
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        document.getElementById('connectionStatus').textContent = 'Connected';
+        document.querySelector('.connection-dot').style.background = '#00ff88';
+        
+        if (reconnectInterval) {
+          clearInterval(reconnectInterval);
+          reconnectInterval = null;
+        }
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        updateDashboard(data);
+      };
+
+      ws.onclose = () => {
+        document.getElementById('connectionStatus').textContent = 'Disconnected';
+        document.querySelector('.connection-dot').style.background = '#ff3366';
+        
+        if (!reconnectInterval) {
+          reconnectInterval = setInterval(connectWebSocket, 5000);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
+
+    function updateDashboard(data) {
+      // Update cost
+      if (data.cost !== undefined) {
+        document.getElementById('costToday').textContent = `$${data.cost.toFixed(2)}`;
+        const utilization = (data.cost / 50) * 100;
+        document.getElementById('budgetUtilization').textContent = `${utilization.toFixed(1)}%`;
+      }
+
+      // Update agents
+      if (data.agents) {
+        updateAgents(data.agents);
+      }
+
+      // Update verdicts
+      if (data.verdict) {
+        addVerdict(data.verdict);
+      }
+
+      // Update audit logs
+      if (data.auditLog) {
+        addAuditLog(data.auditLog);
+      }
+
+      // Update system metrics
+      if (data.systemMetrics) {
+        updateSystemMetrics(data.systemMetrics);
+      }
+    }
+
+    function updateAgents(agents) {
+      const healthyCount = agents.filter(a => a.health >= 70).length;
+      const busyCount = agents.filter(a => a.status === 'busy').length;
+      const avgHealth = agents.reduce((sum, a) => sum + a.health, 0) / agents.length;
+
+      document.getElementById('agentCount').textContent = `${agents.length}/${agents.length}`;
+      document.getElementById('healthyAgents').textContent = healthyCount;
+      document.getElementById('busyAgents').textContent = busyCount;
+      document.getElementById('avgHealthScore').textContent = avgHealth.toFixed(0);
+      document.getElementById('swarmHealth').style.width = `${avgHealth}%`;
+      document.getElementById('swarmHealth').textContent = `${avgHealth.toFixed(0)}%`;
+
+      const agentList = document.getElementById('agentList');
+      agentList.innerHTML = agents.map(agent => `
+        <div class="agent-item ${agent.health < 70 ? 'agent-unhealthy' : ''} ${agent.health < 50 ? 'agent-critical' : ''}">
+          <span>${agent.name}</span>
+          <span>${agent.health}%</span>
+        </div>
+      `).join('');
+    }
+
+    function addVerdict(verdict) {
+      const feed = document.getElementById('verdictFeed');
+      const count = document.getElementById('verdictCount');
+      
+      const item = document.createElement('div');
+      item.className = `verdict-item verdict-${verdict.verdict}`;
+      item.innerHTML = `
+        <strong>${verdict.action}</strong><br>
+        <small>${verdict.reasoning}</small><br>
+        <small style="color: #666;">${new Date(verdict.timestamp).toLocaleTimeString()}</small>
+      `;
+      
+      feed.insertBefore(item, feed.firstChild);
+      count.textContent = parseInt(count.textContent) + 1;
+
+      // Keep only last 10 verdicts
+      while (feed.children.length > 10) {
+        feed.removeChild(feed.lastChild);
+      }
+    }
+
+    function addAuditLog(log) {
+      const auditLog = document.getElementById('auditLog');
+      const count = document.getElementById('auditCount');
+      
+      const entry = document.createElement('div');
+      entry.className = 'audit-entry';
+      entry.textContent = `[${new Date(log.timestamp).toLocaleTimeString()}] ${log.action} - ${log.dataType}`;
+      
+      auditLog.insertBefore(entry, auditLog.firstChild);
+      count.textContent = parseInt(count.textContent) + 1;
+
+      // Keep only last 20 entries
+      while (auditLog.children.length > 20) {
+        auditLog.removeChild(auditLog.lastChild);
+      }
+    }
+
+    function updateSystemMetrics(metrics) {
+      document.getElementById('activeUsers').textContent = metrics.activeUsers || 0;
+      document.getElementById('requestsPerMin').textContent = metrics.requestsPerMin || 0;
+      document.getElementById('avgLatency').textContent = `${metrics.avgLatency || 0}ms`;
+      document.getElementById('errorRate').textContent = `${(metrics.errorRate || 0).toFixed(2)}%`;
+    }
+
+    // Initialize
+    connectWebSocket();
+
+    // Simulate data updates (remove when real WebSocket is working)
+    setInterval(() => {
+      updateDashboard({
+        cost: Math.random() * 50,
+        agents: Array(13).fill(0).map((_, i) => ({
+          name: `Agent ${i + 1}`,
+          health: 70 + Math.random() * 30,
+          status: Math.random() > 0.7 ? 'busy' : 'idle'
+        })),
+        systemMetrics: {
+          activeUsers: Math.floor(Math.random() * 100),
+          requestsPerMin: Math.floor(Math.random() * 1000),
+          avgLatency: Math.floor(Math.random() * 200),
+          errorRate: Math.random() * 2
+        }
+      });
+    }, 5000);
+  </script>
+</body>
+</html>

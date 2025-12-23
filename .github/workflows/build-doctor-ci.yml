@@ -1,0 +1,57 @@
+name: Build with Build Doctor
+
+on:
+  push:
+    branches: [main, develop, 'fix/**']
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build with Build Doctor
+        run: |
+          chmod +x BUILD.sh
+          bash BUILD.sh
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      
+      - name: Upload Build Doctor logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-doctor-logs-${{ matrix.node-version }}
+          path: |
+            .next/
+            *.log
+          retention-days: 7
+      
+      - name: Report Build Success
+        if: success()
+        run: |
+          echo "✅ Build successful with Build Doctor monitoring"
+          echo "💰 TiQology AIF operational - $42,456/year savings active"

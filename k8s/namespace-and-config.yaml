@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tiqology-services
+  labels:
+    name: tiqology-services
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: services-config
+  namespace: tiqology-services
+data:
+  VOICE_ENGINE_URL: "http://voice-engine-service:8001"
+  VIDEO_ENGINE_URL: "http://video-engine-service:8002"
+  INFERENCE_ENGINE_URL: "http://inference-engine-service:8000"
+  REDIS_URL: "redis://redis-service:6379"
+  PROMETHEUS_URL: "http://prometheus-service:9090"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: services-secrets
+  namespace: tiqology-services
+type: Opaque
+stringData:
+  OPENAI_API_KEY: ""  # Fallback for complex queries
+  ANTHROPIC_API_KEY: ""  # Fallback
+  SUPABASE_URL: ""
+  SUPABASE_ANON_KEY: ""
+  SUPABASE_SERVICE_ROLE_KEY: ""
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tiqology-quota
+  namespace: tiqology-services
+spec:
+  hard:
+    requests.cpu: "64"
+    requests.memory: "256Gi"
+    requests.nvidia.com/gpu: "8"
+    limits.cpu: "128"
+    limits.memory: "512Gi"
+    limits.nvidia.com/gpu: "8"
+    persistentvolumeclaims: "10"
+    services.loadbalancers: "3"
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: voice-engine-pdb
+  namespace: tiqology-services
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: voice-engine
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: inference-engine-pdb
+  namespace: tiqology-services
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: inference-engine

@@ -26,8 +26,35 @@ pnpm start
 ```
 
 ## Deployment
+
+### Quick Deploy
 - Deploy to Vercel or your preferred platform
 - Set all required environment variables in the dashboard
+
+### CI/CD Pipeline
+This project includes a comprehensive CI/CD pipeline with automated testing, security scanning, and multi-environment deployments.
+
+**Features:**
+- ✅ Automated quality checks and testing
+- ✅ Security vulnerability scanning
+- ✅ Multi-environment deployments (Dev, Staging, Production)
+- ✅ Performance monitoring with Lighthouse
+- ✅ Automated dependency updates
+- ✅ Docker support for containerized deployments
+
+**Quick Setup:**
+```bash
+# Run the automated setup script
+./scripts/setup-cicd.sh
+```
+
+**Documentation:**
+- 📖 [Complete CI/CD Guide](./docs/CI-CD-PIPELINE.md)
+- 🚀 [Quick Reference](./docs/CI-CD-QUICK-REFERENCE.md)
+- 📋 [Setup Instructions](./CI-CD-SETUP.md)
+
+**Pipeline Status:**
+![CI/CD Pipeline](https://github.com/vercel/ai-chatbot/actions/workflows/ci-cd-pipeline.yml/badge.svg)
 
 ## Optimization
 - Uses dynamic imports and cache components for performance

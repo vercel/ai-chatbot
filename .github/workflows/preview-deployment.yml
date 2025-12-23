@@ -1,0 +1,87 @@
+name: Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '9.12.3'
+
+jobs:
+  preview-deploy:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+
+      - name: Deploy to Vercel Preview
+        uses: amondnet/vercel-action@v25
+        id: vercel-preview
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-comment: true
+          working-directory: ./
+
+      - name: Comment Preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentUrl = '${{ steps.vercel-preview.outputs.preview-url }}';
+            const sha = '${{ github.event.pull_request.head.sha }}';
+            const shortSha = sha.substring(0, 7);
+            const comment = `## 🚀 Preview Deployment Ready!
+            
+            Your changes have been deployed to a preview environment:
+            
+            🔗 **Preview URL:** ${deploymentUrl}
+            
+            📝 **Branch:** \`${{ github.head_ref }}\`
+            📦 **Commit:** \`${shortSha}\`
+            
+            ### Quick Links:
+            - [View App](${deploymentUrl})
+            - [Login Page](${deploymentUrl}/login)
+            - [Register Page](${deploymentUrl}/register)
+            
+            This preview will be automatically updated with new commits.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Run Lighthouse on Preview
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: ${{ steps.vercel-preview.outputs.preview-url }}
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        continue-on-error: true

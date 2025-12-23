@@ -1,0 +1,59 @@
+==================================================
+VERCEL ENVIRONMENT VARIABLES TO UPDATE
+==================================================
+
+KEEP ALL YOUR EXISTING VARIABLES!
+Only UPDATE these 5 variables with the values below:
+
+==================================================
+1. POSTGRES_URL
+==================================================
+Environment: Production only
+Value:
+postgresql://postgres:GZGLrGQV4bGRdrTZ@db.iomzbddkmykfruslybxq.supabase.co:5432/postgres
+
+==================================================
+2. NEXT_PUBLIC_SUPABASE_URL
+==================================================
+Environment: All Environments
+Value:
+https://iomzbddkmykfruslybxq.supabase.co
+
+==================================================
+3. NEXTAUTH_URL
+==================================================
+Environment: Production
+Value:
+https://ai-chatbot-five-gamma-48.vercel.app
+
+==================================================
+4. DATABASE_URL
+==================================================
+Environment: Production
+Value:
+postgresql://postgres:GZGLrGQV4bGRdrTZ@db.iomzbddkmykfruslybxq.supabase.co:5432/postgres
+
+==================================================
+5. DIRECT_URL
+==================================================
+Environment: Production
+Value:
+postgresql://postgres:GZGLrGQV4bGRdrTZ@db.iomzbddkmykfruslybxq.supabase.co:5432/postgres
+
+==================================================
+SUMMARY
+==================================================
+✅ KEEP these (they're correct):
+   - GOOGLE_GENERATIVE_AI_API_KEY
+   - NEXTAUTH_SECRET
+   - AUTH_SECRET
+   - OPENAI_API_KEY
+   - AI_PROVIDER
+   - NEXT_PUBLIC_SUPABASE_ANON_KEY
+   - SUPABASE_SERVICE_ROLE_KEY
+   - STRIPE_SECRET_KEY
+   - STRIPE_WEBHOOK_SECRET
+
+✏️ UPDATE only the 5 variables above
+
+After saving, Vercel auto-redeploys in ~2 minutes

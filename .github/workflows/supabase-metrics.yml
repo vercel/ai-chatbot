@@ -1,0 +1,204 @@
+name: Supabase Metrics Integration
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  collect-metrics:
+    name: Collect Supabase Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Query database health
+        id: db-health
+        run: |
+          echo "🔍 Checking Supabase database health..."
+          
+          # Create simple health check script
+          cat > check-db.js << 'EOF'
+          const { createClient } = require('@supabase/supabase-js');
+          
+          const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+          
+          async function checkHealth() {
+            const start = Date.now();
+            
+            try {
+              // Simple query to check connectivity
+              const { data, error, count } = await supabase
+                .from('tiq_users')
+                .select('id', { count: 'exact', head: true });
+              
+              const latency = Date.now() - start;
+              
+              if (error) {
+                console.log(JSON.stringify({
+                  status: 'error',
+                  error: error.message,
+                  latency
+                }));
+                process.exit(1);
+              }
+              
+              console.log(JSON.stringify({
+                status: 'healthy',
+                latency,
+                user_count: count || 0
+              }));
+            } catch (err) {
+              console.log(JSON.stringify({
+                status: 'error',
+                error: err.message
+              }));
+              process.exit(1);
+            }
+          }
+          
+          checkHealth();
+          EOF
+          
+          # Install dependencies
+          npm install @supabase/supabase-js
+          
+          # Run health check
+          HEALTH_RESULT=$(node check-db.js)
+          echo "health_result=$HEALTH_RESULT" >> $GITHUB_OUTPUT
+          echo "$HEALTH_RESULT"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        continue-on-error: true
+
+      - name: Query connection pool stats
+        id: pool-stats
+        run: |
+          echo "📊 Checking connection pool statistics..."
+          
+          cat > pool-stats.js << 'EOF'
+          const { createClient } = require('@supabase/supabase-js');
+          
+          const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+          
+          async function getPoolStats() {
+            try {
+              // Query pg_stat_activity for connection info
+              const { data, error } = await supabase
+                .rpc('get_connection_stats');
+              
+              if (error) {
+                console.log(JSON.stringify({ error: error.message }));
+                return;
+              }
+              
+              console.log(JSON.stringify({
+                active_connections: data?.active || 0,
+                idle_connections: data?.idle || 0,
+                max_connections: 100
+              }));
+            } catch (err) {
+              console.log(JSON.stringify({ error: err.message }));
+            }
+          }
+          
+          getPoolStats();
+          EOF
+          
+          POOL_RESULT=$(node pool-stats.js || echo '{"active_connections": 0}')
+          echo "pool_result=$POOL_RESULT" >> $GITHUB_OUTPUT
+          echo "$POOL_RESULT"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        continue-on-error: true
+
+      - name: Generate metrics report
+        if: always()
+        run: |
+          echo "# 📊 Supabase Database Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          HEALTH='${{ steps.db-health.outputs.health_result }}'
+          
+          if [ -n "$HEALTH" ]; then
+            STATUS=$(echo $HEALTH | jq -r '.status // "unknown"')
+            LATENCY=$(echo $HEALTH | jq -r '.latency // "N/A"')
+            USER_COUNT=$(echo $HEALTH | jq -r '.user_count // "N/A"')
+            
+            echo "## Health Status" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status**: $STATUS" >> $GITHUB_STEP_SUMMARY
+            echo "- **Latency**: ${LATENCY}ms" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total Users**: $USER_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Alert if latency is high
+            if [ "$LATENCY" != "N/A" ] && [ $LATENCY -gt 500 ]; then
+              echo "⚠️ **Warning**: High database latency detected (${LATENCY}ms)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ Unable to retrieve health metrics" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          POOL='${{ steps.pool-stats.outputs.pool_result }}'
+          
+          if [ -n "$POOL" ]; then
+            ACTIVE=$(echo $POOL | jq -r '.active_connections // 0')
+            IDLE=$(echo $POOL | jq -r '.idle_connections // 0')
+            MAX=$(echo $POOL | jq -r '.max_connections // 100')
+            
+            echo "## Connection Pool" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Active**: $ACTIVE" >> $GITHUB_STEP_SUMMARY
+            echo "- **Idle**: $IDLE" >> $GITHUB_STEP_SUMMARY
+            echo "- **Max**: $MAX" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Calculate utilization
+            TOTAL=$((ACTIVE + IDLE))
+            if [ $MAX -gt 0 ]; then
+              UTIL=$((TOTAL * 100 / MAX))
+              echo "- **Utilization**: ${UTIL}%" >> $GITHUB_STEP_SUMMARY
+              
+              if [ $UTIL -gt 80 ]; then
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "⚠️ **Warning**: Connection pool utilization above 80%" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          fi
+
+      - name: Send alert if unhealthy
+        if: failure()
+        run: |
+          echo "🚨 Database health check failed!"
+          
+          # Could send Discord/Slack notification here
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            curl -H "Content-Type: application/json" \
+              -d '{"content": "🚨 **Database Health Alert**\n\nSupabase health check failed. Please investigate immediately."}' \
+              "${{ secrets.DISCORD_WEBHOOK_URL }}"
+          fi
+        continue-on-error: true
