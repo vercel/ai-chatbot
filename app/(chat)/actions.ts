@@ -8,6 +8,7 @@ import { getTitleModel } from "@/lib/ai/providers";
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
+  updateChatTitleById,
   updateChatVisibilityById,
 } from "@/lib/db/queries";
 import { getTextFromMessage } from "@/lib/utils";
@@ -48,4 +49,14 @@ export async function updateChatVisibility({
   visibility: VisibilityType;
 }) {
   await updateChatVisibilityById({ chatId, visibility });
+}
+
+export async function updateChatTitle({
+  chatId,
+  title,
+}: {
+  chatId: string;
+  title: string;
+}) {
+  await updateChatTitleById({ chatId, title });
 }
