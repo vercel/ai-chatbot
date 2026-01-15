@@ -60,11 +60,11 @@ export const VersionFooter = ({
               await fetch(
                 `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
                   documents,
-                  currentVersionIndex
+                  currentVersionIndex,
                 )}`,
                 {
                   method: "DELETE",
-                }
+                },
               ),
               {
                 optimisticData: documents
@@ -75,14 +75,14 @@ export const VersionFooter = ({
                           new Date(
                             getDocumentTimestampByIndex(
                               documents,
-                              currentVersionIndex
-                            )
-                          )
-                        )
+                              currentVersionIndex,
+                            ),
+                          ),
+                        ),
                       ),
                     ]
                   : [],
-              }
+              },
             );
           }}
         >

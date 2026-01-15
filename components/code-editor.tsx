@@ -49,7 +49,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
       const updateListener = EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           const transaction = update.transactions.find(
-            (tr) => !tr.annotation(Transaction.remote)
+            (tr) => !tr.annotation(Transaction.remote),
           );
 
           if (transaction) {

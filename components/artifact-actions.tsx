@@ -28,7 +28,7 @@ function PureArtifactActions({
   const [isLoading, setIsLoading] = useState(false);
 
   const artifactDefinition = artifactDefinitions.find(
-    (definition) => definition.kind === artifact.kind
+    (definition) => definition.kind === artifact.kind,
   );
 
   if (!artifactDefinition) {
@@ -103,5 +103,5 @@ export const ArtifactActions = memo(
     }
 
     return true;
-  }
+  },
 );

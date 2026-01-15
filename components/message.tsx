@@ -47,7 +47,7 @@ const PurePreviewMessage = ({
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   const attachmentsFromMessage = message.parts.filter(
-    (part) => part.type === "file"
+    (part) => part.type === "file",
   );
 
   useDataStream();
@@ -73,12 +73,12 @@ const PurePreviewMessage = ({
         <div
           className={cn("flex flex-col", {
             "gap-2 md:gap-4": message.parts?.some(
-              (p) => p.type === "text" && p.text?.trim()
+              (p) => p.type === "text" && p.text?.trim(),
             ),
             "w-full":
               (message.role === "assistant" &&
                 (message.parts?.some(
-                  (p) => p.type === "text" && p.text?.trim()
+                  (p) => p.type === "text" && p.text?.trim(),
                 ) ||
                   message.parts?.some((p) => p.type.startsWith("tool-")))) ||
               mode === "edit",
@@ -108,14 +108,18 @@ const PurePreviewMessage = ({
             const { type } = part;
             const key = `message-${message.id}-part-${index}`;
 
-            if (type === "reasoning" && part.text?.trim().length > 0) {
-              return (
-                <MessageReasoning
-                  isLoading={isLoading}
-                  key={key}
-                  reasoning={part.text}
-                />
-              );
+            if (type === "reasoning") {
+              const hasContent = part.text?.trim().length > 0;
+              const isStreaming = "state" in part && part.state === "streaming";
+              if (hasContent || isStreaming) {
+                return (
+                  <MessageReasoning
+                    isLoading={isLoading || isStreaming}
+                    key={key}
+                    reasoning={part.text || ""}
+                  />
+                );
+              }
             }
 
             if (type === "text") {

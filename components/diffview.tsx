@@ -60,10 +60,10 @@ export const DiffView = ({ oldContent, newContent }: DiffEditorProps) => {
       const parser = DOMParser.fromSchema(diffSchema);
 
       const oldHtmlContent = renderToString(
-        <Streamdown>{oldContent}</Streamdown>
+        <Streamdown>{oldContent}</Streamdown>,
       );
       const newHtmlContent = renderToString(
-        <Streamdown>{newContent}</Streamdown>
+        <Streamdown>{newContent}</Streamdown>,
       );
 
       const oldContainer = document.createElement("div");

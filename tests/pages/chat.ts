@@ -46,7 +46,7 @@ export class ChatPage {
 
   async clickSuggestedAction(index = 0) {
     const suggestions = this.page.locator(
-      "[data-testid='suggested-actions'] button"
+      "[data-testid='suggested-actions'] button",
     );
     await suggestions.nth(index).click();
   }

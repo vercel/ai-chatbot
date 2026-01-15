@@ -45,7 +45,7 @@ function findPositionsInDoc(doc: Node, searchText: string): Position | null {
 
 export function projectWithPositions(
   doc: Node,
-  suggestions: Suggestion[]
+  suggestions: Suggestion[],
 ): UISuggestion[] {
   return suggestions.map((suggestion) => {
     const positions = findPositionsInDoc(doc, suggestion.originalText);
@@ -69,7 +69,7 @@ export function projectWithPositions(
 export function createSuggestionWidget(
   suggestion: UISuggestion,
   view: EditorView,
-  artifactKind: ArtifactKind = "text"
+  artifactKind: ArtifactKind = "text",
 ): { dom: HTMLElement; destroy: () => void } {
   const dom = document.createElement("span");
   const root = createRoot(dom);
@@ -91,7 +91,7 @@ export function createSuggestionWidget(
         state.doc,
         currentDecorations.find().filter((decoration: Decoration) => {
           return decoration.spec.suggestionId !== suggestion.id;
-        })
+        }),
       );
 
       decorationTransaction.setMeta(suggestionsPluginKey, {
@@ -104,7 +104,7 @@ export function createSuggestionWidget(
     const textTransaction = view.state.tr.replaceWith(
       suggestion.selectionStart,
       suggestion.selectionEnd,
-      state.schema.text(suggestion.suggestedText)
+      state.schema.text(suggestion.suggestedText),
     );
 
     textTransaction.setMeta("no-debounce", true);
@@ -117,7 +117,7 @@ export function createSuggestionWidget(
       artifactKind={artifactKind}
       onApply={onApply}
       suggestion={suggestion}
-    />
+    />,
   );
 
   return {

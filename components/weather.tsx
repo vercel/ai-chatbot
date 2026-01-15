@@ -284,10 +284,10 @@ export function Weather({
   weatherAtLocation?: WeatherAtLocation;
 }) {
   const currentHigh = Math.max(
-    ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
+    ...weatherAtLocation.hourly.temperature_2m.slice(0, 24),
   );
   const currentLow = Math.min(
-    ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
+    ...weatherAtLocation.hourly.temperature_2m.slice(0, 24),
   );
 
   const isDay = isWithinInterval(new Date(weatherAtLocation.current.time), {
@@ -311,16 +311,16 @@ export function Weather({
   const hoursToShow = isMobile ? 5 : 6;
 
   const currentTimeIndex = weatherAtLocation.hourly.time.findIndex(
-    (time) => new Date(time) >= new Date(weatherAtLocation.current.time)
+    (time) => new Date(time) >= new Date(weatherAtLocation.current.time),
   );
 
   const displayTimes = weatherAtLocation.hourly.time.slice(
     currentTimeIndex,
-    currentTimeIndex + hoursToShow
+    currentTimeIndex + hoursToShow,
   );
   const displayTemperatures = weatherAtLocation.hourly.temperature_2m.slice(
     currentTimeIndex,
-    currentTimeIndex + hoursToShow
+    currentTimeIndex + hoursToShow,
   );
 
   const location =
@@ -337,7 +337,7 @@ export function Weather({
         {
           "bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900":
             !isDay,
-        }
+        },
       )}
     >
       <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
@@ -392,7 +392,7 @@ export function Weather({
                     "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-md px-1 py-1.5",
                     {
                       "bg-white/20": isCurrentHour,
-                    }
+                    },
                   )}
                   key={time}
                 >

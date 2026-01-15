@@ -97,7 +97,7 @@ export function PureMessageActions({
                   }
 
                   const votesWithoutCurrent = currentVotes.filter(
-                    (currentVote) => currentVote.messageId !== message.id
+                    (currentVote) => currentVote.messageId !== message.id,
                   );
 
                   return [
@@ -109,7 +109,7 @@ export function PureMessageActions({
                     },
                   ];
                 },
-                { revalidate: false }
+                { revalidate: false },
               );
 
               return "Upvoted Response!";
@@ -146,7 +146,7 @@ export function PureMessageActions({
                   }
 
                   const votesWithoutCurrent = currentVotes.filter(
-                    (currentVote) => currentVote.messageId !== message.id
+                    (currentVote) => currentVote.messageId !== message.id,
                   );
 
                   return [
@@ -158,7 +158,7 @@ export function PureMessageActions({
                     },
                   ];
                 },
-                { revalidate: false }
+                { revalidate: false },
               );
 
               return "Downvoted Response!";
@@ -185,5 +185,5 @@ export const MessageActions = memo(
     }
 
     return true;
-  }
+  },
 );

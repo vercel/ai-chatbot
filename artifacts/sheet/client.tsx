@@ -73,7 +73,7 @@ export const sheetArtifact = new Artifact<"sheet", Metadata>({
         const parsed = parse<string[]>(content, { skipEmptyLines: true });
 
         const nonEmptyRows = parsed.data.filter((row) =>
-          row.some((cell) => cell.trim() !== "")
+          row.some((cell) => cell.trim() !== ""),
         );
 
         const cleanedCsv = unparse(nonEmptyRows);

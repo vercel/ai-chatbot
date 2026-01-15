@@ -23,7 +23,7 @@ export const requestSuggestions = ({
       documentId: z
         .string()
         .describe(
-          "The UUID of an existing document artifact that was previously created with createDocument"
+          "The UUID of an existing document artifact that was previously created with createDocument",
         ),
     }),
     execute: async ({ documentId }) => {

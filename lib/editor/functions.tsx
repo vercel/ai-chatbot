@@ -24,7 +24,7 @@ export const buildContentFromDocument = (document: Node) => {
 
 export const createDecorations = (
   suggestions: UISuggestion[],
-  view: EditorView
+  view: EditorView,
 ) => {
   const decorations: Decoration[] = [];
 
@@ -39,8 +39,8 @@ export const createDecorations = (
         {
           suggestionId: suggestion.id,
           type: "highlight",
-        }
-      )
+        },
+      ),
     );
 
     decorations.push(
@@ -53,8 +53,8 @@ export const createDecorations = (
         {
           suggestionId: suggestion.id,
           type: "widget",
-        }
-      )
+        },
+      ),
     );
   }
 

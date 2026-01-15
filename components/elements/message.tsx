@@ -13,7 +13,7 @@ export const Message = ({ className, from, ...props }: MessageProps) => (
       "group flex w-full items-end justify-end gap-2 py-4",
       from === "user" ? "is-user" : "is-assistant flex-row-reverse justify-end",
       "[&>div]:max-w-[80%]",
-      className
+      className,
     )}
     {...props}
   />
@@ -32,7 +32,7 @@ export const MessageContent = ({
       "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground",
       "group-[.is-assistant]:bg-secondary group-[.is-assistant]:text-foreground",
       "is-user:dark",
-      className
+      className,
     )}
     {...props}
   >

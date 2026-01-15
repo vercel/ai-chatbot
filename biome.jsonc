@@ -1,9 +1,18 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite"],
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
   "files": {
     "includes": [
-      "**/*",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "!node_modules",
+      "!.next",
+      "!ai-sdk",
       "!components/ui",
       "!lib/utils.ts",
       "!hooks/use-mobile.ts"
@@ -45,6 +54,10 @@
       "a11y": {
         /* Needs more work to fix */
         "noSvgWithoutTitle": "off"
+      },
+      "correctness": {
+        /* Allow static IDs in SVGs */
+        "useUniqueElementIds": "off"
       }
     }
   }

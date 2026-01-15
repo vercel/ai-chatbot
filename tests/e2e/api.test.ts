@@ -81,7 +81,7 @@ test.describe("Suggested Actions", () => {
     await page.goto("/");
 
     const suggestions = page.locator(
-      "[data-testid='suggested-actions'] button"
+      "[data-testid='suggested-actions'] button",
     );
     const count = await suggestions.count();
 

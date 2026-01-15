@@ -55,7 +55,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         }
       }
     },
-    [isResizing]
+    [isResizing],
   );
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
           "fixed bottom-0 z-40 flex w-full flex-col overflow-x-hidden overflow-y-scroll border-zinc-200 border-t bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900",
           {
             "select-none": isResizing,
-          }
+          },
         )}
         style={{ height }}
       >
@@ -144,7 +144,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                 [{index + 1}]
               </div>
               {["in_progress", "loading_packages"].includes(
-                consoleOutput.status
+                consoleOutput.status,
               ) ? (
                 <div className="flex flex-row gap-2">
                   <div className="mt-0.5 mb-auto size-fit self-center">
@@ -155,7 +155,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                       ? "Initializing..."
                       : consoleOutput.status === "loading_packages"
                         ? consoleOutput.contents.map((content) =>
-                            content.type === "text" ? content.value : null
+                            content.type === "text" ? content.value : null,
                           )
                         : null}
                   </div>
@@ -165,7 +165,6 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                   {consoleOutput.contents.map((content, contentIndex) =>
                     content.type === "image" ? (
                       <picture key={`${consoleOutput.id}-${contentIndex}`}>
-                        {/** biome-ignore lint/nursery/useImageSize: "Generated image without explicit size" */}
                         <img
                           alt="output"
                           className="w-full max-w-(--breakpoint-toast-mobile) rounded-md"
@@ -179,7 +178,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                       >
                         {content.value}
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               )}

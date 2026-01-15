@@ -22,13 +22,15 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
-  const { text: title } = await generateText({
+  const { text } = await generateText({
     model: getTitleModel(),
     system: titlePrompt,
     prompt: getTextFromMessage(message),
   });
-
-  return title;
+  return text
+    .replace(/^[#*"\s]+/, "")
+    .replace(/["]+$/, "")
+    .trim();
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {

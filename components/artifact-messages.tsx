@@ -70,8 +70,8 @@ function PureArtifactMessages({
         {status === "submitted" &&
           !messages.some((msg) =>
             msg.parts?.some(
-              (part) => "state" in part && part.state === "approval-responded"
-            )
+              (part) => "state" in part && part.state === "approval-responded",
+            ),
           ) && <ThinkingMessage key="thinking" />}
       </AnimatePresence>
 
@@ -87,7 +87,7 @@ function PureArtifactMessages({
 
 function areEqual(
   prevProps: ArtifactMessagesProps,
-  nextProps: ArtifactMessagesProps
+  nextProps: ArtifactMessagesProps,
 ) {
   if (
     prevProps.artifactStatus === "streaming" &&

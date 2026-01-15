@@ -13,7 +13,7 @@ export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
     className={cn(
       "relative flex-1 touch-pan-y overflow-y-auto will-change-scroll",
-      className
+      className,
     )}
     initial="smooth"
     resize="smooth"
@@ -50,7 +50,7 @@ export const ConversationScrollButton = ({
       <Button
         className={cn(
           "-translate-x-1/2 absolute bottom-4 left-1/2 z-10 rounded-full shadow-lg",
-          className
+          className,
         )}
         onClick={handleScrollToBottom}
         size="icon"

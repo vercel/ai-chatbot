@@ -36,7 +36,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
 
       const documentHandler = documentHandlersByArtifactKind.find(
         (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === document.kind
+          documentHandlerByArtifactKind.kind === document.kind,
       );
 
       if (!documentHandler) {

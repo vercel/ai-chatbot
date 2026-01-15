@@ -17,7 +17,7 @@ export type LoginActionState = {
 
 export const login = async (
   _: LoginActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<LoginActionState> => {
   try {
     const validatedData = authFormSchema.parse({
@@ -53,7 +53,7 @@ export type RegisterActionState = {
 
 export const register = async (
   _: RegisterActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<RegisterActionState> => {
   try {
     const validatedData = authFormSchema.parse({

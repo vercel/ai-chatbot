@@ -107,7 +107,7 @@ export const Reasoning = memo(
         </Collapsible>
       </ReasoningContext.Provider>
     );
-  }
+  },
 );
 
 export type ReasoningTriggerProps = ComponentProps<typeof CollapsibleTrigger>;
@@ -120,7 +120,7 @@ export const ReasoningTrigger = memo(
       <CollapsibleTrigger
         className={cn(
           "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-          className
+          className,
         )}
         {...props}
       >
@@ -135,14 +135,14 @@ export const ReasoningTrigger = memo(
             <ChevronDownIcon
               className={cn(
                 "size-2.5 transition-transform",
-                isOpen ? "rotate-180" : "rotate-0"
+                isOpen ? "rotate-180" : "rotate-0",
               )}
             />
           </>
         )}
       </CollapsibleTrigger>
     );
-  }
+  },
 );
 
 export type ReasoningContentProps = ComponentProps<
@@ -157,7 +157,7 @@ export const ReasoningContent = memo(
       className={cn(
         "mt-1.5 text-[11px] text-muted-foreground leading-relaxed",
         "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 outline-hidden data-[state=closed]:animate-out data-[state=open]:animate-in",
-        className
+        className,
       )}
       {...props}
     >
@@ -167,7 +167,7 @@ export const ReasoningContent = memo(
         </Response>
       </div>
     </CollapsibleContent>
-  )
+  ),
 );
 
 Reasoning.displayName = "Reasoning";

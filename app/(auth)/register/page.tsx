@@ -19,7 +19,7 @@ export default function Page() {
     register,
     {
       status: "idle",
-    }
+    },
   );
 
   const { update: updateSession } = useSession();

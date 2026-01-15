@@ -85,5 +85,5 @@ export const modelsByProvider = chatModels.reduce(
     acc[model.provider].push(model);
     return acc;
   },
-  {} as Record<string, ChatModel[]>
+  {} as Record<string, ChatModel[]>,
 );

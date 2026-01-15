@@ -27,7 +27,7 @@ export async function proxy(request: NextRequest) {
     const redirectUrl = encodeURIComponent(request.url);
 
     return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
+      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
     );
   }
 

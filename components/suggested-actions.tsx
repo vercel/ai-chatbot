@@ -64,5 +64,5 @@ export const SuggestedActions = memo(
     }
 
     return true;
-  }
+  },
 );

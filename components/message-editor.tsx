@@ -31,7 +31,7 @@ export function MessageEditor({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [draftContent, setDraftContent] = useState<string>(
-    getTextFromMessage(message)
+    getTextFromMessage(message),
   );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
