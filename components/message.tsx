@@ -1,7 +1,6 @@
 "use client";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import equal from "fast-deep-equal";
-import { memo, useState } from "react";
+import { useState } from "react";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
@@ -358,21 +357,7 @@ const PurePreviewMessage = ({
   );
 };
 
-export const PreviewMessage = memo(
-  PurePreviewMessage,
-  (prevProps, nextProps) => {
-    if (
-      prevProps.isLoading === nextProps.isLoading &&
-      prevProps.message.id === nextProps.message.id &&
-      prevProps.requiresScrollPadding === nextProps.requiresScrollPadding &&
-      equal(prevProps.message.parts, nextProps.message.parts) &&
-      equal(prevProps.vote, nextProps.vote)
-    ) {
-      return true;
-    }
-    return false;
-  }
-);
+export const PreviewMessage = PurePreviewMessage;
 
 export const ThinkingMessage = () => {
   return (
