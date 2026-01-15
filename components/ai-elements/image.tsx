@@ -12,7 +12,6 @@ export const Image = ({
   mediaType,
   ...props
 }: ImageProps) => (
-  // biome-ignore lint/nursery/useImageSize: dynamic base64 content
   // biome-ignore lint/performance/noImgElement: base64 data URLs require native img
   <img
     {...props}

@@ -108,14 +108,18 @@ const PurePreviewMessage = ({
             const { type } = part;
             const key = `message-${message.id}-part-${index}`;
 
-            if (type === "reasoning" && part.text?.trim().length > 0) {
-              return (
-                <MessageReasoning
-                  isLoading={isLoading}
-                  key={key}
-                  reasoning={part.text}
-                />
-              );
+            if (type === "reasoning") {
+              const hasContent = part.text?.trim().length > 0;
+              const isStreaming = "state" in part && part.state === "streaming";
+              if (hasContent || isStreaming) {
+                return (
+                  <MessageReasoning
+                    isLoading={isLoading || isStreaming}
+                    key={key}
+                    reasoning={part.text || ""}
+                  />
+                );
+              }
             }
 
             if (type === "text") {

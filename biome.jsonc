@@ -1,9 +1,23 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite"],
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/next",
+    "ultracite/biome/react"
+  ],
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
   "files": {
     "includes": [
-      "**/*",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "!node_modules",
+      "!.next",
+      "!ai-sdk",
       "!components/ui",
       "!lib/utils.ts",
       "!hooks/use-mobile.ts"
@@ -12,39 +26,34 @@
   "linter": {
     "rules": {
       "suspicious": {
-        /* Needs more work to fix */
         "noExplicitAny": "off",
-
-        /* Allow for Tailwind @ rules */
         "noUnknownAtRules": "off",
-
-        /* Allowing console for debugging */
         "noConsole": "off",
-
-        /* Needed for generateUUID() */
         "noBitwiseOperators": "off"
       },
       "style": {
-        /* Allowing magic numbers */
         "noMagicNumbers": "off",
-
-        /* Needs more work to fix */
-        "noNestedTernary": "off"
+        "noNestedTernary": "off",
+        "useConsistentTypeDefinitions": "off"
       },
       "nursery": {
-        /* Too many false positives */
-        "noUnnecessaryConditions": "off"
+        "noUnnecessaryConditions": "off",
+        "useSortedClasses": "off"
       },
       "complexity": {
-        /* Needs more work to fix */
         "noExcessiveCognitiveComplexity": "off",
-
-        /* This one has false positives. It's a bit... iffy 😉 */
         "useSimplifiedLogicExpression": "off"
       },
       "a11y": {
-        /* Needs more work to fix */
         "noSvgWithoutTitle": "off"
+      },
+      "correctness": {
+        "useUniqueElementIds": "off",
+        "useImageSize": "off"
+      },
+      "performance": {
+        "noBarrelFile": "off",
+        "useTopLevelRegex": "off"
       }
     }
   }
