@@ -27,7 +27,7 @@ export const Suggestion = ({
       {isExpanded ? (
         <motion.div
           animate={{ opacity: 1, y: -20 }}
-          className="-right-12 md:-right-16 absolute z-50 flex w-56 flex-col gap-3 rounded-2xl border bg-background p-3 font-sans text-sm shadow-xl"
+          className="absolute -right-12 z-50 flex w-56 flex-col gap-3 rounded-2xl border bg-background p-3 font-sans text-sm shadow-xl md:-right-16"
           exit={{ opacity: 0, y: -10 }}
           initial={{ opacity: 0, y: -10 }}
           key={suggestion.id}
@@ -61,7 +61,7 @@ export const Suggestion = ({
       ) : (
         <motion.div
           className={cn("cursor-pointer p-1 text-muted-foreground", {
-            "-right-8 absolute": artifactKind === "text",
+            "absolute -right-8": artifactKind === "text",
             "sticky top-0 right-4": artifactKind === "code",
           })}
           onClick={() => {

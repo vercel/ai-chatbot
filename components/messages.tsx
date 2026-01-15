@@ -46,10 +46,10 @@ function PureMessages({
   return (
     <div className="relative flex-1">
       <div
-        className="overflow-y-auto absolute inset-0 touch-pan-y"
+        className="absolute inset-0 touch-pan-y overflow-y-auto"
         ref={messagesContainerRef}
       >
-        <div className="flex flex-col gap-4 px-2 py-4 mx-auto min-w-0 max-w-4xl md:gap-6 md:px-4">
+        <div className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
           {messages.length === 0 && <Greeting />}
 
           {messages.map((message, index) => (
@@ -78,9 +78,8 @@ function PureMessages({
           {status === "submitted" &&
             !messages.some((msg) =>
               msg.parts?.some(
-                (part) =>
-                  "state" in part && part.state === "approval-responded",
-              ),
+                (part) => "state" in part && part.state === "approval-responded"
+              )
             ) && <ThinkingMessage />}
 
           <div
@@ -92,10 +91,10 @@ function PureMessages({
 
       <button
         aria-label="Scroll to bottom"
-        className={`-translate-x-1/2 absolute bottom-4 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-all hover:bg-muted ${
+        className={`absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border bg-background p-2 shadow-lg transition-all hover:bg-muted ${
           isAtBottom
-            ? "opacity-0 scale-0 pointer-events-none"
-            : "opacity-100 scale-100 pointer-events-auto"
+            ? "pointer-events-none scale-0 opacity-0"
+            : "pointer-events-auto scale-100 opacity-100"
         }`}
         onClick={() => scrollToBottom("smooth")}
         type="button"

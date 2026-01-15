@@ -83,7 +83,7 @@ test.describe("Model Selector", () => {
 
     // Model button should now show the selected model
     await expect(
-      page.locator("button").filter({ hasText: "Claude Haiku" }).first(),
+      page.locator("button").filter({ hasText: "Claude Haiku" }).first()
     ).toBeVisible();
   });
 });
