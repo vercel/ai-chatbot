@@ -266,7 +266,8 @@ export function Chat({
               onClick={() => {
                 window.open(
                   "https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card",
-                  "_blank"
+                  "_blank",
+                  "noopener,noreferrer"
                 );
                 window.location.href = "/";
               }}
