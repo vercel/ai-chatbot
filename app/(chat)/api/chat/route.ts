@@ -18,6 +18,7 @@ import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { isProductionEnvironment } from "@/lib/constants";
+import { bluebag } from "@bluebag/ai-sdk";
 import {
   createStreamId,
   deleteChatById,
@@ -129,7 +130,7 @@ export async function POST(request: Request) {
         ],
       });
     }
-
+    const enhance = bluebag(process.env.BLUEBAG_API_KEY ?? "");
     const isReasoningModel =
       selectedChatModel.includes("reasoning") ||
       selectedChatModel.includes("thinking");
@@ -139,7 +140,7 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       originalMessages: isToolApprovalFlow ? uiMessages : undefined,
       execute: async ({ writer: dataStream }) => {
-        const result = streamText({
+       const enhancedConfig = await enhance({
           model: getLanguageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: modelMessages,
@@ -169,7 +170,8 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",
           },
-        });
+        })
+        const result = streamText(enhancedConfig);
 
         dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
 

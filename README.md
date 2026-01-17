@@ -1,71 +1,239 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
-</a>
+# Chat → Agent (in ~10 minutes)
 
-<p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
-</p>
+This repository shows how to turn Vercel's AI Chat SDK template into a **real AI agent**
+by adding Bluebag — **without changing the UI**.
 
-<p align="center">
-  <a href="https://chat-sdk.dev"><strong>Read Docs</strong></a> ·
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
-</p>
-<br/>
+Same chat interface.
+Same model.
+But now the AI can actually *do things*.
 
-## Features
+---
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://ai-sdk.dev/docs/introduction)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
+## TL;DR
 
-## Model Providers
+- Start with a normal AI chat app
+- Add **one wrapper** around your `streamText` config
+- The AI can now:
+  - Execute tools in a sandbox
+  - Read & write files
+  - Run bash commands
+  - Reason across real steps
 
-This template uses the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) to access multiple AI models through a unified interface. The default configuration includes [xAI](https://x.ai) models (`grok-2-vision-1212`, `grok-3-mini`) routed through the gateway.
+No UI changes.
+No framework rewrites.
+No prompt hacks.
 
-### AI Gateway Authentication
+---
 
-**For Vercel deployments**: Authentication is handled automatically via OIDC tokens.
+## What does "Chat → Agent" actually mean?
 
-**For non-Vercel deployments**: You need to provide an AI Gateway API key by setting the `AI_GATEWAY_API_KEY` environment variable in your `.env.local` file.
+### A normal AI chat app
 
-With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to direct LLM providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
+A typical AI chat app (including the default Vercel AI Chat SDK template):
 
-## Deploy Your Own
+- Generates text only
+- Cannot run commands
+- Cannot create or modify files
+- Cannot execute multi-step actions
 
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
+Even if it *says* it did something — it didn't.
+It's just text.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/templates/next.js/nextjs-ai-chatbot)
+---
 
-## Running locally
+### This repo (with Bluebag)
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+With Bluebag added under the hood, the same chat UI now:
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+- Uses tools (bash, scripts, file I/O)
+- Executes real actions in a sandbox
+- Reads and writes files
+- Reasons across multiple steps
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+In other words:
+
+**It behaves like an agent, not just a chatbot.**
+
+---
+
+## Try this prompt
+
+Once the app is running, paste this into the chat:
+
+> Create a file called plan.md with a 3-step startup launch plan, then update it with one more step.
+
+If that works, you're no longer talking to a chatbot.
+
+---
+
+## How does this work?
+
+This project is built directly on top of the official Vercel AI Chat SDK template.
+
+Normally, the flow looks like this:
+
+```
+User → LLM → text response
+```
+
+With Bluebag added:
+
+```
+User → LLM
+     → Bluebag (agent skills + tools + sandbox)
+     → LLM executes real actions
+     → text response
+```
+
+The UI stays exactly the same.
+
+---
+
+## The changes we made
+
+### 1. Install the Bluebag SDK
+
+```bash
+pnpm add @bluebag/ai-sdk
+```
+
+### 2. Add your API key to `.env.local`
+
+```bash
+BLUEBAG_API_KEY=bb_xxx
+```
+
+### 3. Wrap your streamText config (one file change)
+
+In `app/(chat)/api/chat/route.ts`:
+
+```ts
+import { bluebag } from "@bluebag/ai-sdk";
+
+// Create the enhance function with your API key
+const enhance = bluebag(process.env.BLUEBAG_API_KEY ?? "");
+
+// Wrap your existing streamText config
+const enhancedConfig = await enhance({
+  model: getLanguageModel(selectedChatModel),
+  system: systemPrompt({ selectedChatModel, requestHints }),
+  messages: modelMessages,
+  tools: {
+    getWeather,
+    createDocument: createDocument({ session, dataStream }),
+    updateDocument: updateDocument({ session, dataStream }),
+    requestSuggestions: requestSuggestions({ session, dataStream }),
+  },
+  // ... other config options
+});
+
+// Pass the enhanced config to streamText
+const result = streamText(enhancedConfig);
+```
+
+That's it. The `enhance()` wrapper:
+
+- Injects agent skills (file I/O, bash execution, etc.)
+- Augments the system prompt with agent capabilities
+- Connects the model to a real sandbox
+- Enables multi-step reasoning across actions
+
+---
+
+## Getting started
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/ohansFavour/chat-to-agent
+cd chat-to-agent
+```
+
+### 2. Install dependencies
 
 ```bash
 pnpm install
-pnpm db:migrate # Setup database or apply latest database changes
+```
+
+### 3. Set environment variables
+
+Copy the example env file and fill in your keys:
+
+```bash
+cp .env.example .env.local
+```
+
+Required variables:
+
+```bash
+AUTH_SECRET=<generate with: openssl rand -base64 32>
+POSTGRES_URL=<your PostgreSQL connection string>
+BLUEBAG_API_KEY=bb_xxx
+```
+
+Optional (for full functionality):
+
+```bash
+AI_GATEWAY_API_KEY=<from https://vercel.com/ai-gateway>
+BLOB_READ_WRITE_TOKEN=<from Vercel Blob>
+REDIS_URL=<your Redis connection string>
+```
+
+### 4. Run database migrations
+
+```bash
+pnpm db:migrate
+```
+
+### 5. Run the app
+
+```bash
 pnpm dev
 ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000).
+Open http://localhost:3000 and start chatting.
+
+---
+
+## What this repo is (and isn't)
+
+### This is
+
+- A minimal proof-of-concept
+- A teaching repository
+- A concrete demo of agentic behavior
+- Something you can understand in minutes
+
+### This is not
+
+- A framework
+- A production starter
+- A full product
+- A replacement for your stack
+
+---
+
+## Why this repo exists
+
+Most AI chat apps today are still text-only systems.
+
+This repo demonstrates how little it takes to cross the line from:
+
+> "The AI says it did something"
+
+to:
+
+> "The AI actually did something"
+
+---
+
+## Credits
+
+- Built on the [Vercel AI Chat SDK template](https://github.com/vercel/ai-chatbot)
+- Agent capabilities powered by [Bluebag](https://bluebag.dev)
+
+---
+
+## License
+
+MIT
