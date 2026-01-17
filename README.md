@@ -171,6 +171,18 @@ POSTGRES_URL=<your PostgreSQL connection string>
 BLUEBAG_API_KEY=bb_xxx
 ```
 
+#### How to get your Bluebag API key
+
+1. Go to [bluebag.ai](https://www.bluebag.ai/) and sign up or log in
+2. Navigate to the **API Keys** section in your dashboard
+3. Click **Create API Key** and give it a name (e.g., `chat-to-agent`)
+4. Copy the key immediately — you won't see it again
+5. Add it to your `.env.local` as `BLUEBAG_API_KEY=bb_xxx`
+
+> ⚠️ Keep your API key server-side only. Never expose it in client-side code.
+
+For more details, see the [Bluebag documentation](https://www.bluebag.ai/docs/quickstart/ai-sdk).
+
 Optional (for full functionality):
 
 ```bash
