@@ -89,10 +89,13 @@ Open http://localhost:3000 and start chatting.
 
 
 
-## Credits
+## Bluebag 
+This project uses Bluebag for using Agent Skills in ai-sdk agents
 
-- Built on the [Vercel AI Chat SDK template](https://github.com/vercel/ai-chatbot)
-- Agent Skills capabilities powered by [Bluebag](https://bluebag.dev)
+[Bluebag Documentation](https://www.bluebag.ai/docs)
+[Bluebag Dashboard](https://www.bluebag.ai/overview)
+[Bluebag GitHub](https://github.com/BluebagAI)
+
 
 ---
 
