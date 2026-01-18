@@ -1,4 +1,5 @@
 import type { InferUITool, UIMessage } from "ai";
+import type { BluebagToolTypes } from "@bluebag/ai-sdk";
 import { z } from "zod";
 import type { ArtifactKind } from "@/components/artifact";
 import type { createDocument } from "./ai/tools/create-document";
@@ -27,7 +28,7 @@ export type ChatTools = {
   createDocument: createDocumentTool;
   updateDocument: updateDocumentTool;
   requestSuggestions: requestSuggestionsTool;
-};
+} & BluebagToolTypes
 
 export type CustomUIDataTypes = {
   textDelta: string;

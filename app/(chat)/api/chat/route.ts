@@ -14,11 +14,10 @@ import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { getLanguageModel } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
-import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { isProductionEnvironment } from "@/lib/constants";
-import { bluebag } from "@bluebag/ai-sdk";
+import { Bluebag } from "@bluebag/ai-sdk";
 import {
   createStreamId,
   deleteChatById,
@@ -38,6 +37,10 @@ import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
 export const maxDuration = 60;
+
+const bluebag = new Bluebag({
+  apiKey: process.env.BLUEBAG_API_KEY ?? "",
+});
 
 function getStreamContext() {
   try {
@@ -130,7 +133,6 @@ export async function POST(request: Request) {
         ],
       });
     }
-    const enhance = bluebag(process.env.BLUEBAG_API_KEY ?? "");
     const isReasoningModel =
       selectedChatModel.includes("reasoning") ||
       selectedChatModel.includes("thinking");
@@ -140,19 +142,11 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       originalMessages: isToolApprovalFlow ? uiMessages : undefined,
       execute: async ({ writer: dataStream }) => {
-       const enhancedConfig = await enhance({
+       const enhancedConfig = await bluebag.enhance({
           model: getLanguageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),
-          experimental_activeTools: isReasoningModel
-            ? []
-            : [
-                "getWeather",
-                "createDocument",
-                "updateDocument",
-                "requestSuggestions",
-              ],
           providerOptions: isReasoningModel
             ? {
                 anthropic: {
@@ -160,17 +154,14 @@ export async function POST(request: Request) {
                 },
               }
             : undefined,
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({ session, dataStream }),
-          },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",
           },
         })
+
+        console.log({system: enhancedConfig.system, tools: enhancedConfig.tools})
+
         const result = streamText(enhancedConfig);
 
         dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
