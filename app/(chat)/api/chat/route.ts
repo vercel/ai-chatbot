@@ -143,7 +143,7 @@ export async function POST(request: Request) {
       originalMessages: isToolApprovalFlow ? uiMessages : undefined,
       execute: async ({ writer: dataStream }) => {
        const enhancedConfig = await bluebag.enhance({
-          model: getLanguageModel(selectedChatModel),
+          model: getLanguageModel("google/gemini-3-flash"),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),
