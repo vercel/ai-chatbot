@@ -1,144 +1,26 @@
-# Chat → Agent (in ~10 minutes)
+<a href="https://chat.vercel.ai/">
+  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
+  <h1 align="center">Agent RBP</h1>
+</a>
 
-This repository shows how to turn Vercel's AI Chat SDK template into a **real AI agent**
-by adding Bluebag — **without changing the UI**.
+<p align="center">
+    Agent RBP is a free, open-source React Best Practices Agent built on 10+ years of real-world experience distilled in Skills powered by Bluebag
+</p>
 
-Same chat interface.
-Same model.
-But now the AI can actually *do things*.
+<p align="center">
+  <a href="https://x.com/rauchg/status/2011179888976544134"><strong>Official Tweet</strong></a> ·
+  <a href="#features"><strong>Features</strong></a> ·
+  <a href="#model-providers"><strong>Model Providers</strong></a> ·
+  <a href="#running-locally"><strong>Running locally</strong></a>
+</p>
+<br/>
 
----
 
-## TL;DR
 
-- Start with a normal AI chat app
-- Add **one wrapper** around your `streamText` config
-- The AI can now:
-  - Execute tools in a sandbox
-  - Read & write files
-  - Run bash commands
-  - Reason across real steps
+### Agent Skills via [Bluebag](https://www.bluebag.ai)
 
-No UI changes.
-No framework rewrites.
-No prompt hacks.
+To load and use Skills in the ai-sdk agent, this repo uses [Bluebag](https://www.bluebag.ai) for managing the entire Skills lifecycle, and Vercel's ai-sdk for the actual agent plumbing.
 
----
-
-## What does "Chat → Agent" actually mean?
-
-### A normal AI chat app
-
-A typical AI chat app (including the default Vercel AI Chat SDK template):
-
-- Generates text only
-- Cannot run commands
-- Cannot create or modify files
-- Cannot execute multi-step actions
-
-Even if it *says* it did something — it didn't.
-It's just text.
-
----
-
-### This repo (with Bluebag)
-
-With Bluebag added under the hood, the same chat UI now:
-
-- Uses tools (bash, scripts, file I/O)
-- Executes real actions in a sandbox
-- Reads and writes files
-- Reasons across multiple steps
-
-In other words:
-
-**It behaves like an agent, not just a chatbot.**
-
----
-
-## Try this prompt
-
-Once the app is running, paste this into the chat:
-
-> Create a file called plan.md with a 3-step startup launch plan, then update it with one more step.
-
-If that works, you're no longer talking to a chatbot.
-
----
-
-## How does this work?
-
-This project is built directly on top of the official Vercel AI Chat SDK template.
-
-Normally, the flow looks like this:
-
-```
-User → LLM → text response
-```
-
-With Bluebag added:
-
-```
-User → LLM
-     → Bluebag (agent skills + tools + sandbox)
-     → LLM executes real actions
-     → text response
-```
-
-The UI stays exactly the same.
-
----
-
-## The changes we made
-
-### 1. Install the Bluebag SDK
-
-```bash
-pnpm add @bluebag/ai-sdk
-```
-
-### 2. Add your API key to `.env.local`
-
-```bash
-BLUEBAG_API_KEY=bb_xxx
-```
-
-### 3. Wrap your streamText config (one file change)
-
-In `app/(chat)/api/chat/route.ts`:
-
-```ts
-import { bluebag } from "@bluebag/ai-sdk";
-
-// Create the enhance function with your API key
-const enhance = bluebag(process.env.BLUEBAG_API_KEY ?? "");
-
-// Wrap your existing streamText config
-const enhancedConfig = await enhance({
-  model: getLanguageModel(selectedChatModel),
-  system: systemPrompt({ selectedChatModel, requestHints }),
-  messages: modelMessages,
-  tools: {
-    getWeather,
-    createDocument: createDocument({ session, dataStream }),
-    updateDocument: updateDocument({ session, dataStream }),
-    requestSuggestions: requestSuggestions({ session, dataStream }),
-  },
-  // ... other config options
-});
-
-// Pass the enhanced config to streamText
-const result = streamText(enhancedConfig);
-```
-
-That's it. The `enhance()` wrapper:
-
-- Injects agent skills (file I/O, bash execution, etc.)
-- Augments the system prompt with agent capabilities
-- Connects the model to a real sandbox
-- Enables multi-step reasoning across actions
-
----
 
 ## Getting started
 
@@ -205,44 +87,12 @@ pnpm dev
 
 Open http://localhost:3000 and start chatting.
 
----
 
-## What this repo is (and isn't)
-
-### This is
-
-- A minimal proof-of-concept
-- A teaching repository
-- A concrete demo of agentic behavior
-- Something you can understand in minutes
-
-### This is not
-
-- A framework
-- A production starter
-- A full product
-- A replacement for your stack
-
----
-
-## Why this repo exists
-
-Most AI chat apps today are still text-only systems.
-
-This repo demonstrates how little it takes to cross the line from:
-
-> "The AI says it did something"
-
-to:
-
-> "The AI actually did something"
-
----
 
 ## Credits
 
 - Built on the [Vercel AI Chat SDK template](https://github.com/vercel/ai-chatbot)
-- Agent capabilities powered by [Bluebag](https://bluebag.dev)
+- Agent Skills capabilities powered by [Bluebag](https://bluebag.dev)
 
 ---
 
