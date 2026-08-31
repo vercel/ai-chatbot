@@ -18,7 +18,6 @@ import {
   chatModels,
   DEFAULT_CHAT_MODEL,
   getCapabilities,
-  getModelAvailability,
 } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { getLanguageModel } from "@/lib/ai/providers";
@@ -48,8 +47,6 @@ import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
 export const maxDuration = 60;
-
-const HEALTH_CHECK_DELAY_MS = 9000;
 
 function isModelStreamActivity(chunk: { type: string }) {
   return !["start", "start-step", "finish-step", "finish", "raw"].includes(
@@ -195,7 +192,7 @@ export async function POST(request: Request) {
     }
 
     const modelConfig = chatModels.find((m) => m.id === chatModel);
-    const modelCapabilities = await getCapabilities();
+    const modelCapabilities = getCapabilities();
     const capabilities = modelCapabilities[chatModel];
     const isReasoningModel = capabilities?.reasoning === true;
     const supportsTools = capabilities?.tools === true;
@@ -206,13 +203,6 @@ export async function POST(request: Request) {
       execute: async ({ writer: dataStream }) => {
         const modelName = modelConfig?.name ?? chatModel;
         let hasModelActivity = false;
-        let healthCheckTimer: ReturnType<typeof setTimeout> | undefined;
-
-        const clearHealthCheckTimer = () => {
-          if (healthCheckTimer) {
-            clearTimeout(healthCheckTimer);
-          }
-        };
 
         const writeWaitingStatus = (
           phase: WaitingStatusData["phase"],
@@ -235,35 +225,16 @@ export async function POST(request: Request) {
 
         writeWaitingStatus("waiting", "Waiting...");
 
-        healthCheckTimer = setTimeout(() => {
-          getModelAvailability(chatModel)
-            .then((availability) => {
-              if (availability === "impacted") {
-                writeWaitingStatus(
-                  "health",
-                  `${modelName} may be slow or unavailable right now...`
-                );
-              } else {
-                writeWaitingStatus("still-waiting", "Still waiting...");
-              }
-            })
-            .catch(() => {
-              writeWaitingStatus("still-waiting", "Still waiting...");
-            });
-        }, HEALTH_CHECK_DELAY_MS);
-
         const markModelActive = () => {
           if (hasModelActivity) {
             return;
           }
           hasModelActivity = true;
-          clearHealthCheckTimer();
           writeWaitingStatus("thinking", "Thinking...");
         };
 
         const stopWaitingStatus = () => {
           hasModelActivity = true;
-          clearHealthCheckTimer();
         };
 
         const result = streamText({
@@ -293,14 +264,6 @@ export async function POST(request: Request) {
           },
           onError() {
             stopWaitingStatus();
-          },
-          providerOptions: {
-            ...(modelConfig?.gatewayOrder && {
-              gateway: { order: modelConfig.gatewayOrder },
-            }),
-            ...(modelConfig?.reasoningEffort && {
-              openai: { reasoningEffort: modelConfig.reasoningEffort },
-            }),
           },
           stopWhen: isStepCount(5),
           telemetry: {
@@ -388,17 +351,7 @@ export async function POST(request: Request) {
           });
         }
       },
-      onError: (error) => {
-        if (
-          error instanceof Error &&
-          error.message?.includes(
-            "AI Gateway requires a valid credit card on file to service requests"
-          )
-        ) {
-          return "AI Gateway requires a valid credit card on file to service requests. Please visit https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card to add a card and unlock your free credits.";
-        }
-        return "Oops, an error occurred!";
-      },
+      onError: () => "Oops, an error occurred!",
       originalMessages: isToolApprovalFlow ? uiMessages : undefined,
     });
 
@@ -428,15 +381,6 @@ export async function POST(request: Request) {
 
     if (error instanceof ChatbotError) {
       return error.toResponse();
-    }
-
-    if (
-      error instanceof Error &&
-      error.message?.includes(
-        "AI Gateway requires a valid credit card on file to service requests"
-      )
-    ) {
-      return new ChatbotError("bad_request:activate_gateway").toResponse();
     }
 
     console.error("Unhandled error in chat API:", error, { vercelId });

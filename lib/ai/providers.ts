@@ -1,6 +1,17 @@
-import { customProvider, gateway } from "ai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { customProvider } from "ai";
 import { isTestEnvironment } from "../constants";
 import { titleModel } from "./models";
+
+export const HYPO_PROVIDER = "@HypO";
+const HYPO_PREFIX = `${HYPO_PROVIDER}/`;
+
+// Custom provider (OpenAI-compatible), base URL + key from .env
+export const hypO = createOpenAICompatible({
+  apiKey: process.env.AI_GATEWAY_API_KEY ?? "",
+  baseURL: process.env.AI_GATEWAY_BASE_URL ?? "",
+  name: HYPO_PROVIDER,
+});
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -22,12 +33,9 @@ export function getLanguageModel(modelId: string) {
     return myProvider.languageModel(modelId);
   }
 
-  return gateway.languageModel(modelId);
+  return hypO.chatModel(modelId.replace(HYPO_PREFIX, ""));
 }
 
 export function getTitleModel() {
-  if (isTestEnvironment && myProvider) {
-    return myProvider.languageModel("title-model");
-  }
-  return gateway.languageModel(titleModel.id);
+  return getLanguageModel(titleModel.id);
 }

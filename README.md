@@ -24,7 +24,7 @@
 - [AI SDK](https://ai-sdk.dev/docs/introduction)
   - Unified API for generating text, structured objects, and tool calls with LLMs
   - Hooks for building dynamic chat and generative user interfaces
-  - Supports OpenAI, Anthropic, Google, xAI, and other model providers via AI Gateway
+  - Supports OpenAI, Anthropic, Google, xAI, and other model providers via custom OpenAI-compatible provider
 - [shadcn/ui](https://ui.shadcn.com)
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
@@ -36,15 +36,16 @@
 
 ## Model Providers
 
-This template uses the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) to access multiple AI models through a unified interface. Models are configured in `lib/ai/models.ts` with per-model provider routing. Included models: Mistral, Moonshot, DeepSeek, OpenAI, and xAI.
+This template uses a custom OpenAI-compatible provider named `@HypO` (configured in `lib/ai/providers.ts` via `createOpenAICompatible`). Models are defined in `lib/ai/models.ts`. Included models: HyperMax, HyperMix, and HyperLite (default).
 
-### AI Gateway Authentication
+### Authentication
 
-**For Vercel deployments**: Authentication is handled automatically via OIDC tokens.
+Set the provider base URL and API key in your `.env` file:
 
-**For non-Vercel deployments**: You need to provide an AI Gateway API key by setting the `AI_GATEWAY_API_KEY` environment variable in your `.env.local` file.
+- `AI_GATEWAY_BASE_URL` — OpenAI-compatible base URL (e.g. `https://example.com/v1`)
+- `AI_GATEWAY_API_KEY` — bearer token for the provider
 
-With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to direct LLM providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
+With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to other providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
 
 ## Deploy Your Own
 

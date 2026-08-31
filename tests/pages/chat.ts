@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-const MODEL_BUTTON_REGEX = /Kimi|Codestral|Mistral|DeepSeek|GPT|Grok/i;
+const MODEL_BUTTON_REGEX = /HyperMax|HyperMix|HyperLite/i;
 
 export class ChatPage {
   page: Page;
